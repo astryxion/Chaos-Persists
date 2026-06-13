@@ -1,85 +1,61 @@
-/*
- * Decompiled with CFR 0_125.
- * 
- * Could not load the following classes:
- *  net.minecraftforge.fml.relauncher.Side
- *  net.minecraftforge.fml.relauncher.SideOnly
- *  com.astryxion.chaospersists.ItemSpawnEgg
- *  net.minecraft.client.renderer.texture.IIconRegister
- *  net.minecraft.creativetab.CreativeTabs
- *  net.minecraft.entity.Entity
- *  net.minecraft.entity.EntityList
- *  net.minecraft.entity.EntityLiving
- *  net.minecraft.entity.monster.EntitySkeleton
- *  net.minecraft.entity.player.EntityPlayer
- *  net.minecraft.entity.player.PlayerCapabilities
- *  net.minecraft.item.Item
- *  net.minecraft.item.ItemStack
- *  net.minecraft.util.IIcon
- *  net.minecraft.world.World
- */
 package com.astryxion.chaospersists.item;
 
 import com.astryxion.chaospersists.entity.PitchBlack;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
-import java.util.Random;
-import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityList;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.monster.EntitySkeleton;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.PlayerCapabilities;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.MobEntity;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemUseContext;
 import net.minecraft.util.ActionResult;
-import net.minecraft.util.EnumActionResult;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
+import net.minecraft.util.ActionResultType;
+import net.minecraft.util.Hand;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraft.world.server.ServerWorld;
+import net.minecraftforge.registries.ForgeRegistries;
 
-/*
- * Exception performing whole class analysis ignored.
- */
-public class ItemSpawnEgg
-extends Item {
+public class ItemSpawnEgg extends Item {
     public int my_id = 0;
 
     public ItemSpawnEgg(int i, int j) {
+        super(new Item.Properties().stacksTo(64).tab(ItemGroup.TAB_MISC));
         this.my_id = j;
-        this.maxStackSize = 64;
-        this.setCreativeTab(CreativeTabs.MISC);
     }
 
-    /** 1.12.2: Called when right-clicking on a block. */
     @Override
-    public EnumActionResult onItemUse(EntityPlayer player, World worldIn, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
-        ItemStack stack = player.getHeldItem(hand);
-        if (worldIn.isRemote) {
-            return EnumActionResult.SUCCESS;
+    public ActionResultType useOn(ItemUseContext context) {
+        World world = context.getLevel();
+        PlayerEntity player = context.getPlayer();
+        if (player == null) {
+            return ActionResultType.FAIL;
         }
+        ItemStack stack = context.getItemInHand();
+        if (world.isClientSide) {
+            return ActionResultType.SUCCESS;
+        }
+        BlockPos pos = context.getClickedPos();
         double spawnX = pos.getX() + 0.5;
         double spawnY = pos.getY() + 1.0;
         double spawnZ = pos.getZ() + 0.5;
-        if (doSpawn(stack, player, worldIn, spawnX, spawnY, spawnZ)) {
-            return EnumActionResult.SUCCESS;
+        if (doSpawn(stack, player, world, spawnX, spawnY, spawnZ)) {
+            return ActionResultType.SUCCESS;
         }
-        return EnumActionResult.FAIL;
+        return ActionResultType.FAIL;
     }
 
-    /** 1.12.2: Called when right-clicking in air. */
     @Override
-    public ActionResult<ItemStack> onItemRightClick(World worldIn, EntityPlayer playerIn, EnumHand handIn) {
-        ItemStack stack = playerIn.getHeldItem(handIn);
-        // 1.7.10 parity: spawn eggs only spawn from block use.
-        // Prevent air right-click from spawning mobs at player position.
-        return new ActionResult<>(EnumActionResult.PASS, stack);
+    public ActionResult<ItemStack> use(World worldIn, PlayerEntity playerIn, Hand handIn) {
+        ItemStack stack = playerIn.getItemInHand(handIn);
+        return new ActionResult<>(ActionResultType.PASS, stack);
     }
 
-    /** Shared spawn logic for onItemUse and onItemRightClick. */
-    private boolean doSpawn(ItemStack stack, EntityPlayer player, World world, double spawnX, double spawnY, double spawnZ) {
+    private boolean doSpawn(ItemStack stack, PlayerEntity player, World world, double spawnX, double spawnY, double spawnZ) {
         Entity ent = ItemSpawnEgg.spawn_something((int) this.my_id, world, spawnX, spawnY, spawnZ);
         if (ent == null) {
             return false;
@@ -87,10 +63,10 @@ extends Item {
         if (ent instanceof PitchBlack) {
             ((PitchBlack) ent).setSpawnedFromEgg();
         }
-        if (ent instanceof EntityLiving && stack.hasDisplayName()) {
-            ((EntityLiving) ent).setCustomNameTag(stack.getDisplayName());
+        if (ent instanceof MobEntity && stack.hasCustomHoverName()) {
+            ((MobEntity) ent).setCustomName(stack.getHoverName());
         }
-        if (!player.capabilities.isCreativeMode) {
+        if (!player.isCreative()) {
             stack.shrink(1);
         }
         return true;
@@ -100,6 +76,7 @@ extends Item {
         int entityID = 0;
         int skelly_type = 0;
         String name = null;
+        EntityType<?> entityType = null;
         switch (id) {
             case 192: {
                 skelly_type = 1;
@@ -559,24 +536,39 @@ extends Item {
                 break;
             }
         }
-        Entity ent = null;
-        if ((entityID != 0 || name != null) && (ent = ItemSpawnEgg.spawnCreature((World)world, (int)entityID, (String)name, (double)d0, (double)d1, (double)d2)) != null && entityID == 51 && skelly_type != 0) {
-            EntitySkeleton sk = (EntitySkeleton)ent;
-            try { sk.getDataManager().set((net.minecraft.network.datasync.DataParameter<Byte>)net.minecraft.entity.monster.EntitySkeleton.class.getDeclaredField("SKELETON_TYPE").get(null), Byte.valueOf((byte)skelly_type)); } catch (Exception ignored) { }
+        if (entityID == 51 && skelly_type != 0) {
+            entityType = EntityType.WITHER_SKELETON;
+            entityID = 0;
         }
-        return ent;
+        if (entityID == 0 && name == null && entityType == null) {
+            return null;
+        }
+        return ItemSpawnEgg.spawnCreature(world, entityID, name, entityType, d0, d1, d2);
     }
 
-    public static Entity spawnCreature(World par0World, int par1, String name, double par2, double par4, double par6) {
-        Entity var8 = name == null ? EntityList.createEntityByID((int)par1, (World)par0World) : EntityList.createEntityByIDFromName(new net.minecraft.util.ResourceLocation("chaospersists", (String)name), par0World);
-        if (var8 != null) {
-            var8.setLocationAndAngles(par2, par4, par6, par0World.rand.nextFloat() * 360.0f, 0.0f);
-            par0World.spawnEntity(var8);
-            if (var8 instanceof EntityLiving) {
-                ((EntityLiving)var8).playLivingSound();
-            }
+    public static Entity spawnCreature(World world, int legacyEntityId, String name, EntityType<?> presetType, double x, double y, double z) {
+        EntityType<?> entityType = presetType;
+        if (entityType == null && name != null) {
+            entityType = ForgeRegistries.ENTITIES.getValue(new ResourceLocation("chaospersists", name));
+        } else if (entityType == null && legacyEntityId != 0) {
+            entityType = Registry.ENTITY_TYPE.byId(legacyEntityId);
         }
-        return var8;
+        if (entityType == null) {
+            return null;
+        }
+        Entity entity = entityType.create(world);
+        if (entity == null) {
+            return null;
+        }
+        entity.moveTo(x, y, z, world.random.nextFloat() * 360.0F, 0.0F);
+        if (world instanceof ServerWorld) {
+            ((ServerWorld) world).addFreshEntity(entity);
+        } else {
+            world.addFreshEntity(entity);
+        }
+        if (entity instanceof MobEntity) {
+                com.astryxion.chaospersists.entity.RockBase.playSpawnAmbientSound((LivingEntity) entity);
+        }
+        return entity;
     }
 }
-

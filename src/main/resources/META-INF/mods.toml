@@ -1,0 +1,27 @@
+modLoader="javafml"
+loaderVersion="[36,)"
+license="All Rights Reserved"
+
+[[mods]]
+modId="chaospersists"
+version="1.0.0"
+displayName="Chaos Persists"
+authors="Astryxion"
+description='''
+Chaos Persists is a modern reimagining inspired by the classic chaos-era mods.
+Featuring dimensions, bosses, creatures, structures, weapons, and large-scale world generation.
+'''
+
+[[dependencies.chaospersists]]
+    modId="forge"
+    mandatory=true
+    versionRange="[36,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.chaospersists]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.16.5]"
+    ordering="NONE"
+    side="BOTH"

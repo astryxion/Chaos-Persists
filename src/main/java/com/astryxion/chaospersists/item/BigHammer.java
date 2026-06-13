@@ -1,54 +1,43 @@
 package com.astryxion.chaospersists.item;
 
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.item.ItemSword;
-import net.minecraft.item.ItemStack;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.item.ItemGroup;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.SwordItem;
+import net.minecraft.item.IItemTier;
+import net.minecraft.inventory.EquipmentSlotType;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.math.MathHelper;
 
-public class BigHammer extends ItemSword {
+public class BigHammer extends SwordItem {
 
-    public BigHammer(Item.ToolMaterial material) {
-        super(material);
-
-        this.setMaxStackSize(1);
-        this.setMaxDamage(9000);
-        this.setCreativeTab(CreativeTabs.COMBAT);
+    public BigHammer(IItemTier material) {
+        this(material, new Item.Properties().stacksTo(1).durability(9000));
     }
 
-    /**
-     * Big hammer launches enemies upward on hit
-     */
+    public BigHammer(IItemTier material, Item.Properties properties) {
+        super(material, 3, -2.4F, properties);
+    }
+
     @Override
-    public boolean hitEntity(ItemStack stack,
-                             EntityLivingBase target,
-                             EntityLivingBase attacker) {
-
-        if (!target.world.isRemote) {
-
-            // Strong vertical launch
-            target.motionY += 1.2D;
-
-            // Slight horizontal knockback away from attacker
-            double dx = target.posX - attacker.posX;
-            double dz = target.posZ - attacker.posZ;
-
+    public boolean hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
+        if (!target.level.isClientSide) {
+            net.minecraft.util.math.vector.Vector3d motion = target.getDeltaMovement();
+            double dx = target.getX() - attacker.getX();
+            double dz = target.getZ() - attacker.getZ();
             double distance = MathHelper.sqrt(dx * dx + dz * dz);
-            if (distance > 0) {
-                target.motionX += (dx / distance) * 0.8D;
-                target.motionZ += (dz / distance) * 0.8D;
-            }
-
-            target.velocityChanged = true;
+            double knockX = distance > 0 ? (dx / distance) * 0.8D : 0.0D;
+            double knockZ = distance > 0 ? (dz / distance) * 0.8D : 0.0D;
+            target.setDeltaMovement(motion.x + knockX, motion.y + 1.2D, motion.z + knockZ);
+            target.hurtMarked = true;
         }
-
-        stack.damageItem(1, attacker);
+        stack.hurtAndBreak(1, attacker, (e) -> e.broadcastBreakEvent(EquipmentSlotType.MAINHAND));
         return true;
     }
 
     @Override
-    public int getMaxItemUseDuration(ItemStack stack) {
+    public int getUseDuration(ItemStack stack) {
         return 3000;
     }
 }

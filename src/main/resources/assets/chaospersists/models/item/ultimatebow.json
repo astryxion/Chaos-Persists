@@ -1,6 +1,6 @@
-{
+﻿{
   "parent": "item/bow",
   "textures": {
-    "layer0": "chaospersists:items/ultimatebow"
+    "layer0": "chaospersists:item/ultimatebow"
   }
 }

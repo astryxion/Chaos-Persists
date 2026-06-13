@@ -1,94 +1,67 @@
 package com.astryxion.chaospersists.world.dimension.worldprovider;
 
 import com.astryxion.chaospersists.core.ChaosPersists;
-import com.astryxion.chaospersists.world.dimension.chunkprovider.ChunkProviderChaos3;
-import net.minecraft.init.Biomes;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.WorldServer;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.biome.BiomeProvider;
-import net.minecraft.world.biome.BiomeProviderSingle;
-import net.minecraft.world.storage.WorldInfo;
-import net.minecraftforge.common.DimensionManager;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import net.minecraft.world.biome.Biomes;
+import net.minecraft.world.biome.provider.SingleBiomeProvider;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.world.server.ServerWorld;
+import net.minecraftforge.fml.server.ServerLifecycleHooks;
 
-public class WorldProviderChaos3 extends net.minecraft.world.WorldProvider {
+/** Village Mania dimension (formerly {@code WorldProviderChaos3}). */
+public class WorldProviderChaos3 {
 
-    private BiomeProviderSingle villageBiomeProvider;
+    private WorldProviderChaos3() {
+    }
 
-    private Biome resolveVillageBiome() {
+    private static Biome resolveVillageBiome(Registry<Biome> registry) {
         if (ChaosPersists.VILLAGE_BIOME != null) {
             return ChaosPersists.VILLAGE_BIOME;
         }
-        Biome registered = ForgeRegistries.BIOMES.getValue(new ResourceLocation("chaospersists", "village_dimension"));
-        return registered != null ? registered : Biomes.PLAINS;
+        Biome registered = registry.get(new ResourceLocation("chaospersists", "village_dimension"));
+        return registered != null ? registered : registry.getOrThrow(Biomes.PLAINS);
     }
 
-    @Override
-    public void init() {
-        super.init();
-        this.hasSkyLight = true;
-        if (this.villageBiomeProvider == null) {
-            this.villageBiomeProvider = new BiomeProviderSingle(this.resolveVillageBiome());
-        }
-        this.biomeProvider = this.villageBiomeProvider;
+    public static SingleBiomeProvider createBiomeSource(Registry<Biome> registry) {
+        return new SingleBiomeProvider(resolveVillageBiome(registry));
     }
 
-    @Override
-    public BiomeProvider getBiomeProvider() {
-        if (this.villageBiomeProvider == null) {
-            this.villageBiomeProvider = new BiomeProviderSingle(this.resolveVillageBiome());
-        }
-        return this.villageBiomeProvider;
-    }
-
-    @Override
-    public boolean isSurfaceWorld() {
-        return true;
-    }
-
-    @Override
-    public net.minecraft.world.DimensionType getDimensionType() {
-        return DimensionManager.getProviderType(this.getDimension());
-    }
-
-    public String getDimensionName() {
+    public static String getDimensionName() {
         return "Dimension-VillageMania";
     }
 
-    @Override
-    public boolean canRespawnHere() {
+    public static boolean canRespawnHere() {
         return true;
     }
 
-    @Override
-    public void setWorldTime(long time) {
-        WorldServer ws = DimensionManager.getWorld(this.getDimension());
-        if (ws != null) {
-            WorldInfo w = ws.getWorldInfo();
-            if (w != null) {
-                if (time % 24000L > 12000L && ws.areAllPlayersAsleep()) {
-                    long i = time + 24000L;
-                    i -= i % 24000L;
-                    for (Integer dimId : DimensionManager.getIDs()) {
-                        WorldServer worldServer = DimensionManager.getWorld(dimId);
-                        if (worldServer != null) {
-                            worldServer.setWorldTime(i);
-                        }
-                    }
-                } else {
-                    super.setWorldTime(time);
-                }
-            } else {
-                super.setWorldTime(time);
-            }
-        } else {
-            super.setWorldTime(time);
-        }
+    public static boolean isSurfaceWorld() {
+        return true;
     }
 
-    @Override
-    public net.minecraft.world.gen.IChunkGenerator createChunkGenerator() {
-        return new ChunkProviderChaos3(this.world, this.world.getSeed(), true);
+    public static void setWorldTime(long time) {
+        ServerWorld ws = ChaosPersists.getServerWorldForDimensionIndex(ServerLifecycleHooks.getCurrentServer(), 3);
+        if (ws != null) {
+            boolean allPlayersAsleep = !ws.players().isEmpty();
+            for (ServerPlayerEntity player : ws.players()) {
+                if (!player.isSleeping()) {
+                    allPlayersAsleep = false;
+                    break;
+                }
+            }
+            if (time % 24000L > 12000L && allPlayersAsleep) {
+                long newTime = time + 24000L;
+                newTime -= newTime % 24000L;
+                for (int dimId : ChaosPersists.getRegisteredChaosDimensionIds()) {
+                    ServerWorld worldServer = ChaosPersists.getServerWorldByDimensionId(dimId);
+                    if (worldServer != null) {
+                        worldServer.setDayTime(newTime);
+                    }
+                }
+            } else {
+                ws.setDayTime(time);
+            }
+        }
     }
 }

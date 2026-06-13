@@ -1,121 +1,108 @@
-/*
- * Decompiled with CFR 0_125.
- * 
- * Could not load the following classes:
- *  net.minecraftforge.fml.relauncher.Side
- *  net.minecraftforge.fml.relauncher.SideOnly
- *  com.astryxion.chaospersists.Bertha
- *  com.astryxion.chaospersists.BerthaHit
- *  com.astryxion.chaospersists.Boyfriend
- *  com.astryxion.chaospersists.Girlfriend
- *  com.astryxion.chaospersists.ChaosPersists
- *  net.minecraft.client.renderer.texture.IIconRegister
- *  net.minecraft.creativetab.CreativeTabs
- *  net.minecraft.enchantment.Enchantment
- *  net.minecraft.enchantment.EnchantmentHelper
- *  net.minecraft.entity.Entity
- *  net.minecraft.entity.EntityLiving
- *  net.minecraft.entity.EntityLivingBase
- *  net.minecraft.entity.passive.EntityTameable
- *  net.minecraft.entity.player.EntityPlayer
- *  net.minecraft.item.Item
- *  net.minecraft.item.Item$ToolMaterial
- *  net.minecraft.item.ItemStack
- *  net.minecraft.item.ItemSword
- *  net.minecraft.util.IIcon
- *  net.minecraft.world.World
- */
 package com.astryxion.chaospersists.entity;
 
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
-import com.astryxion.chaospersists.entity.BerthaHit;
-import com.astryxion.chaospersists.entity.Boyfriend;
-import com.astryxion.chaospersists.entity.Girlfriend;
 import com.astryxion.chaospersists.core.ChaosPersists;
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.passive.EntityTameable;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.passive.TameableEntity;
+import net.minecraft.inventory.EquipmentSlotType;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemGroup;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemSword;
+import net.minecraft.item.SwordItem;
+import net.minecraft.item.IItemTier;
+import net.minecraft.enchantment.Enchantment;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.world.World;
+import net.minecraft.util.math.vector.Vector3d;
 
-public class Bertha
-extends ItemSword {
-    public Bertha(Item.ToolMaterial par2EnumToolMaterial) {
-        super(par2EnumToolMaterial);
-        this.maxStackSize = 1;
-        this.setMaxDamage(9000);
-        this.setCreativeTab(CreativeTabs.COMBAT);
+public class Bertha extends SwordItem {
+    public Bertha(IItemTier par2EnumToolMaterial) {
+        super(par2EnumToolMaterial, 3, -2.4F, new Item.Properties().stacksTo(1).durability(9000));
     }
 
-    public void onCreated(ItemStack par1ItemStack, World par2World, EntityPlayer par3EntityPlayer) {
+    @Override
+    public void onCraftedBy(ItemStack par1ItemStack, World par2World, PlayerEntity par3PlayerEntity) {
         if (this == ChaosPersists.MyRoyal) {
-            par1ItemStack.addEnchantment(Enchantment.getEnchantmentByID(34), 5);
+            this.applyRoyalEnchant(par1ItemStack);
         } else if (this != ChaosPersists.MyHammy) {
-            par1ItemStack.addEnchantment(Enchantment.getEnchantmentByID(19), 5);
-            par1ItemStack.addEnchantment(Enchantment.getEnchantmentByID(18), 1);
-            par1ItemStack.addEnchantment(Enchantment.getEnchantmentByID(20), 1);
+            this.applyBerthaEnchant(par1ItemStack);
         }
     }
 
-    public void onUsingTick(ItemStack stack, EntityPlayer player, int count) {
-        int lvl = EnchantmentHelper.getEnchantmentLevel(Enchantment.getEnchantmentByID(19), stack);
+    @Override
+    public void onUseTick(World world, LivingEntity player, ItemStack stack, int count) {
+        int lvl = EnchantmentHelper.getItemEnchantmentLevel(Enchantment.byId(19), stack);
         if (lvl == 0) {
-            lvl = EnchantmentHelper.getEnchantmentLevel(Enchantment.getEnchantmentByID(34), stack);
+            lvl = EnchantmentHelper.getItemEnchantmentLevel(Enchantment.byId(34), stack);
         }
         if (lvl <= 0) {
             if (this == ChaosPersists.MyRoyal) {
-                stack.addEnchantment(Enchantment.getEnchantmentByID(34), 5);
+                this.applyRoyalEnchant(stack);
             } else if (this != ChaosPersists.MyHammy) {
-                stack.addEnchantment(Enchantment.getEnchantmentByID(19), 5);
-                stack.addEnchantment(Enchantment.getEnchantmentByID(18), 1);
-                stack.addEnchantment(Enchantment.getEnchantmentByID(20), 1);
+                this.applyBerthaEnchant(stack);
             }
         }
     }
 
-    public void onUpdate(ItemStack stack, World par2World, Entity par3Entity, int par4, boolean par5) {
-        this.onUsingTick(stack, (EntityPlayer)null, 0);
+    private void applyRoyalEnchant(ItemStack stack) {
+        Enchantment e = Enchantment.byId(34);
+        if (e != null) {
+            stack.enchant(e, 5);
+        }
     }
 
-    public boolean onLeftClickEntity(ItemStack stack, EntityPlayer player, Entity entity) {
+    private void applyBerthaEnchant(ItemStack stack) {
+        Enchantment e19 = Enchantment.byId(19);
+        Enchantment e18 = Enchantment.byId(18);
+        Enchantment e20 = Enchantment.byId(20);
+        if (e19 != null) {
+            stack.enchant(e19, 5);
+        }
+        if (e18 != null) {
+            stack.enchant(e18, 1);
+        }
+        if (e20 != null) {
+            stack.enchant(e20, 1);
+        }
+    }
+
+    @Override
+    public void inventoryTick(ItemStack stack, World par2World, Entity par3Entity, int par4, boolean par5) {
+        this.onUseTick(par2World, null, stack, 0);
+    }
+
+    public boolean onLeftClickEntity(ItemStack stack, PlayerEntity player, Entity entity) {
         if (entity != null && ChaosPersists.big_bertha_pvp == 0) {
-            EntityTameable t;
-            if (entity instanceof EntityPlayer || entity instanceof Girlfriend || entity instanceof Boyfriend) {
+            TameableEntity t;
+            if (entity instanceof PlayerEntity || entity instanceof Girlfriend || entity instanceof Boyfriend) {
                 return true;
             }
-            if (entity instanceof EntityTameable && (t = (EntityTameable)entity).isTamed()) {
+            if (entity instanceof TameableEntity && (t = (TameableEntity) entity).isTame()) {
                 return true;
             }
         }
         return false;
     }
 
-    public boolean onEntitySwing(EntityLivingBase entityLiving, ItemStack stack) {
-        if (entityLiving != null && entityLiving instanceof EntityPlayer && !entityLiving.world.isRemote) {
-            EntityPlayer p = (EntityPlayer)entityLiving;
+    public boolean onEntitySwing(LivingEntity entityLiving, ItemStack stack) {
+        if (entityLiving != null && entityLiving instanceof PlayerEntity && !entityLiving.level.isClientSide) {
+            PlayerEntity p = (PlayerEntity) entityLiving;
             double xzoff = 2.0;
             double yoff = 1.55;
-            BerthaHit lb = new BerthaHit(p.world, (EntityLivingBase)p);
-            lb.setLocationAndAngles(p.posX - xzoff * Math.sin(Math.toRadians(p.rotationYawHead)), p.posY + yoff, p.posZ + xzoff * Math.cos(Math.toRadians(p.rotationYawHead)), p.rotationYawHead, p.rotationPitch);
-            lb.motionX *= 2.0;
-            lb.motionY *= 2.0;
-            lb.motionZ *= 2.0;
+            BerthaHit lb = new BerthaHit(p.level, p);
+            lb.moveTo(p.getX() - xzoff * MathHelper.sin((float) Math.toRadians(p.yHeadRot)), p.getY() + yoff, p.getZ() + xzoff * MathHelper.cos((float) Math.toRadians(p.yHeadRot)), p.yHeadRot, p.xRot);
+            net.minecraft.util.math.vector.Vector3d motion = lb.getDeltaMovement();
+            lb.setDeltaMovement(motion.x * 2.0, motion.y * 2.0, motion.z * 2.0);
             if (this == ChaosPersists.MyRoyal) {
                 lb.setHitType(2);
             }
             if (this == ChaosPersists.MyHammy) {
                 lb.setHitType(3);
             }
-            p.world.spawnEntity((Entity)lb);
-            stack.damageItem(1, (EntityLivingBase)p);
+            p.level.addFreshEntity(lb);
+            stack.hurtAndBreak(1, p, (e) -> e.broadcastBreakEvent(EquipmentSlotType.MAINHAND));
         }
         return false;
     }
@@ -124,12 +111,14 @@ extends ItemSword {
         return "Uranium/Titanium";
     }
 
-    public boolean hitEntity(ItemStack par1ItemStack, EntityLiving par2EntityLiving, EntityLiving par3EntityLiving) {
-        par1ItemStack.damageItem(1, (EntityLivingBase)par3EntityLiving);
+    @Override
+    public boolean hurtEnemy(ItemStack par1ItemStack, LivingEntity par2LivingEntity, LivingEntity par3LivingEntity) {
+        par1ItemStack.hurtAndBreak(1, par3LivingEntity, (e) -> e.broadcastBreakEvent(EquipmentSlotType.MAINHAND));
         return true;
     }
 
-    public int getMaxItemUseDuration(ItemStack par1ItemStack) {
+    @Override
+    public int getUseDuration(ItemStack par1ItemStack) {
         return 9000;
-    }}
-
+    }
+}

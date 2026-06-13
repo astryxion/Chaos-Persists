@@ -7,13 +7,13 @@
  *  com.astryxion.chaospersists.ItemPizza
  *  net.minecraft.block.Block
  *  net.minecraft.block.Block$SoundType
- *  net.minecraft.block.BlockDeadBush
- *  net.minecraft.block.BlockTallGrass
+ *  net.minecraft.block.DeadBushBlock
+ *  net.minecraft.block.TallGrassBlock
  *  net.minecraft.client.renderer.texture.IIconRegister
  *  net.minecraft.entity.Entity
- *  net.minecraft.entity.EntityLivingBase
- *  net.minecraft.entity.player.EntityPlayer
- *  net.minecraft.init.Blocks
+ *  net.minecraft.entity.LivingEntity
+ *  net.minecraft.entity.player.PlayerEntity
+ *  net.minecraft.block.Blocks
  *  net.minecraft.item.Item
  *  net.minecraft.item.ItemStack
  *  net.minecraft.util.IIcon
@@ -21,21 +21,23 @@
  */
 package com.astryxion.chaospersists.item;
 
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockDeadBush;
-import net.minecraft.block.BlockTallGrass;
+import net.minecraft.block.DeadBushBlock;
+import net.minecraft.block.TallGrassBlock;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.block.Blocks;
 import net.minecraft.item.Item;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.item.BlockItemUseContext;
+import net.minecraft.item.ItemUseContext;
+import net.minecraft.block.BlockState;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumActionResult;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
+import net.minecraft.util.ActionResultType;
+import net.minecraft.util.Direction;
+import net.minecraft.util.Hand;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -45,42 +47,55 @@ extends Item {
     private Block spawnID;
 
     public ItemPizza(Block par2Block) {
+        super(new Item.Properties());
         this.spawnID = par2Block;
     }
 
     @Override
-    public EnumActionResult onItemUse(EntityPlayer player, World world, BlockPos pos, EnumHand hand,
-                                      EnumFacing facing, float hitX, float hitY, float hitZ) {
-        ItemStack stack = player.getHeldItem(hand);
+    public ActionResultType useOn(ItemUseContext context) {
+        PlayerEntity player = context.getPlayer();
+        if (player == null) {
+            return ActionResultType.FAIL;
+        }
+        World world = context.getLevel();
+        BlockPos pos = context.getClickedPos();
+        Hand hand = context.getHand();
+        Direction facing = context.getClickedFace();
+        ItemStack stack = player.getItemInHand(hand);
         if (stack.isEmpty()) {
-            return EnumActionResult.PASS;
+            return ActionResultType.PASS;
         }
-        if (facing != EnumFacing.UP) {
-            return EnumActionResult.FAIL;
+        if (facing != Direction.UP) {
+            return ActionResultType.FAIL;
         }
-        BlockPos placePos = pos.up();
-        if (!player.canPlayerEdit(placePos, facing, stack)) {
-            return EnumActionResult.FAIL;
+        BlockPos placePos = pos.above();
+        if (!world.mayInteract(player, placePos)) {
+            return ActionResultType.FAIL;
         }
-        if (!this.spawnID.canPlaceBlockAt(world, placePos)) {
-            return EnumActionResult.FAIL;
+        BlockState existing = world.getBlockState(placePos);
+        BlockItemUseContext replaceCheck = new BlockItemUseContext(context);
+        if (!existing.isAir() && !existing.canBeReplaced(replaceCheck)) {
+            return ActionResultType.FAIL;
         }
-        IBlockState state = this.spawnID.getStateForPlacement(world, placePos, facing, hitX, hitY, hitZ, 0, player);
-        if (state == null || !world.mayPlace(this.spawnID, placePos, false, facing, (Entity) null)) {
-            return EnumActionResult.FAIL;
+        BlockItemUseContext blockContext = new BlockItemUseContext(context);
+        BlockState state = this.spawnID.getStateForPlacement(blockContext);
+        if (state == null) {
+            state = this.spawnID.defaultBlockState();
         }
-        if (!world.setBlockState(placePos, state, 3)) {
-            return EnumActionResult.FAIL;
+        if (!state.canSurvive(world, placePos)) {
+            return ActionResultType.FAIL;
+        }
+        if (!world.setBlock(placePos, state, 3)) {
+            return ActionResultType.FAIL;
         }
         if (world.getBlockState(placePos).getBlock() == this.spawnID) {
-            this.spawnID.onBlockPlacedBy(world, placePos, state, player, stack);
+            this.spawnID.setPlacedBy(world, placePos, state, player, stack);
         }
         SoundCategory sc = SoundCategory.BLOCKS;
         world.playSound(null, placePos, this.spawnID.getSoundType(state, world, placePos, player).getPlaceSound(), sc,
                 (this.spawnID.getSoundType(state, world, placePos, player).getVolume() + 1.0F) / 2.0F,
                 this.spawnID.getSoundType(state, world, placePos, player).getPitch() * 0.8F);
         stack.shrink(1);
-        return EnumActionResult.SUCCESS;
+        return ActionResultType.SUCCESS;
     }
 }
-

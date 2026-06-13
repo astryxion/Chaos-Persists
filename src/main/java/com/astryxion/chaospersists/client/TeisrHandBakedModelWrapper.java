@@ -1,25 +1,24 @@
 package com.astryxion.chaospersists.client;
 
-import java.util.List;
+import com.mojang.blaze3d.matrix.MatrixStack;
+import net.minecraft.block.BlockState;
+import net.minecraft.client.renderer.model.BakedQuad;
+import net.minecraft.client.renderer.model.IBakedModel;
+import net.minecraft.client.renderer.model.ItemCameraTransforms;
+import net.minecraft.client.renderer.model.ItemOverrideList;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.util.Direction;
+import net.minecraftforge.client.extensions.IForgeBakedModel;
 
 import javax.annotation.Nullable;
-import javax.vecmath.Matrix4f;
-
-import org.apache.commons.lang3.tuple.Pair;
-
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.block.model.IBakedModel;
-import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
-import net.minecraft.client.renderer.block.model.ItemOverrideList;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.util.EnumFacing;
+import java.util.List;
+import java.util.Random;
 
 /**
  * Marks an item as using a TEISR and records the hand {@link ItemCameraTransforms.TransformType}
  * so rendering can use 3D in-hand and the flat JSON model elsewhere.
  */
-public class TeisrHandBakedModelWrapper implements IBakedModel {
+public class TeisrHandBakedModelWrapper implements IBakedModel, IForgeBakedModel {
 
     private final IBakedModel inner;
 
@@ -32,13 +31,13 @@ public class TeisrHandBakedModelWrapper implements IBakedModel {
     }
 
     @Override
-    public List<BakedQuad> getQuads(@Nullable IBlockState state, @Nullable EnumFacing side, long rand) {
+    public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, Random rand) {
         return inner.getQuads(state, side, rand);
     }
 
     @Override
-    public boolean isAmbientOcclusion() {
-        return inner.isAmbientOcclusion();
+    public boolean useAmbientOcclusion() {
+        return inner.useAmbientOcclusion();
     }
 
     @Override
@@ -47,18 +46,18 @@ public class TeisrHandBakedModelWrapper implements IBakedModel {
     }
 
     @Override
-    public boolean isBuiltInRenderer() {
+    public boolean isCustomRenderer() {
         return true;
     }
 
     @Override
-    public TextureAtlasSprite getParticleTexture() {
-        return inner.getParticleTexture();
+    public boolean usesBlockLight() {
+        return inner.usesBlockLight();
     }
 
     @Override
-    public ItemCameraTransforms getItemCameraTransforms() {
-        return inner.getItemCameraTransforms();
+    public TextureAtlasSprite getParticleIcon() {
+        return inner.getParticleIcon();
     }
 
     @Override
@@ -67,23 +66,16 @@ public class TeisrHandBakedModelWrapper implements IBakedModel {
     }
 
     @Override
-    public Pair<? extends IBakedModel, Matrix4f> handlePerspective(ItemCameraTransforms.TransformType cameraTransformType) {
+    public IBakedModel handlePerspective(ItemCameraTransforms.TransformType cameraTransformType, MatrixStack mat) {
         switch (cameraTransformType) {
             case FIRST_PERSON_LEFT_HAND:
             case FIRST_PERSON_RIGHT_HAND:
             case THIRD_PERSON_LEFT_HAND:
-            case THIRD_PERSON_RIGHT_HAND: {
+            case THIRD_PERSON_RIGHT_HAND:
                 TeisrHandTransformHolder.set(cameraTransformType);
-                Pair<? extends IBakedModel, Matrix4f> innerPerspective = inner.handlePerspective(cameraTransformType);
-                Matrix4f mat = innerPerspective != null ? innerPerspective.getRight() : null;
-                if (mat == null) {
-                    mat = new Matrix4f();
-                    mat.setIdentity();
-                }
-                return Pair.of(this, mat);
-            }
+                return this;
             default:
-                return inner.handlePerspective(cameraTransformType);
+                return inner.handlePerspective(cameraTransformType, mat);
         }
     }
 }

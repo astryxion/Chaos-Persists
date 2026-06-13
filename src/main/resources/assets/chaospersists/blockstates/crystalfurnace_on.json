@@ -1,6 +1,5 @@
 {
   "variants": {
-    "": { "model": "chaospersists:crystalfurnace_front_on" },
-    "normal": { "model": "chaospersists:crystalfurnace_front_on" }
+    "": { "model": "chaospersists:block/crystalfurnace_front_on" }
   }
 }

@@ -1,22 +1,7 @@
 {
   "variants": {
-    "facing=east": {
-      "model": "chaospersists:krakenrepellent_wall"
-    },
-    "facing=south": {
-      "y": 90,
-      "model": "chaospersists:krakenrepellent_wall"
-    },
-    "facing=north": {
-      "y": 270,
-      "model": "chaospersists:krakenrepellent_wall"
-    },
-    "facing=up": {
-      "model": "chaospersists:krakenrepellent"
-    },
-    "facing=west": {
-      "y": 180,
-      "model": "chaospersists:krakenrepellent_wall"
+    "": {
+      "model": "chaospersists:block/krakenrepellent"
     }
   }
 }

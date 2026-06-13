@@ -1,28 +1,29 @@
 package com.astryxion.chaospersists.world.dimension.teleporter;
 
+import java.util.function.Function;
 import net.minecraft.entity.Entity;
-import net.minecraft.world.Teleporter;
-import net.minecraft.world.WorldServer;
+import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.world.server.ServerWorld;
+import net.minecraftforge.common.util.ITeleporter;
 
 /**
  * Minimal teleporter for /mining command. Places the entity at (targetX, 120, targetZ) in the target dimension.
  */
-public class TeleporterMining extends Teleporter {
+public class TeleporterMining implements ITeleporter {
     private final double targetX;
     private final double targetZ;
     private static final double TARGET_Y = 120.0;
 
-    public TeleporterMining(WorldServer worldIn, double targetX, double targetZ) {
-        super(worldIn);
+    public TeleporterMining(ServerWorld worldIn, double targetX, double targetZ) {
         this.targetX = targetX;
         this.targetZ = targetZ;
     }
 
     @Override
-    public void placeInPortal(Entity entityIn, float rotationYaw) {
-        entityIn.setLocationAndAngles(this.targetX, TARGET_Y, this.targetZ, rotationYaw, entityIn.rotationPitch);
-        entityIn.motionX = 0.0;
-        entityIn.motionY = 0.0;
-        entityIn.motionZ = 0.0;
+    public Entity placeEntity(Entity entity, ServerWorld currentWorld, ServerWorld destWorld, float yaw, Function<Boolean, Entity> repositionEntity) {
+        Entity placed = repositionEntity.apply(false);
+        placed.moveTo(this.targetX, TARGET_Y, this.targetZ, yaw, placed.xRot);
+        placed.setDeltaMovement(Vector3d.ZERO);
+        return placed;
     }
 }

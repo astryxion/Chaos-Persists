@@ -1,30 +1,22 @@
-/*
- * Decompiled with CFR 0_125.
- * 
- * Could not load the following classes:
- *  net.minecraftforge.fml.relauncher.Side
- *  net.minecraftforge.fml.relauncher.SideOnly
- *  com.astryxion.chaospersists.CrystalPickaxe
- *  net.minecraft.client.renderer.texture.IIconRegister
- *  net.minecraft.creativetab.CreativeTabs
- *  net.minecraft.item.Item
- *  net.minecraft.item.Item$ToolMaterial
- *  net.minecraft.item.ItemPickaxe
- *  net.minecraft.util.IIcon
- */
 package com.astryxion.chaospersists.item;
 
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
-import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.item.ItemGroup;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemPickaxe;
+import net.minecraft.item.PickaxeItem;
+import net.minecraft.item.IItemTier;
 
-public class CrystalPickaxe
-extends ItemPickaxe {
-    public CrystalPickaxe(Item.ToolMaterial par2) {
-        super(par2);
-        this.maxStackSize = 1;
-        this.setCreativeTab(CreativeTabs.TOOLS);
-    }}
+public class CrystalPickaxe extends PickaxeItem {
+    private final int weaponDamage = 10;
 
+    public CrystalPickaxe(IItemTier tier) {
+        this(tier, new Item.Properties().stacksTo(1).durability(1000));
+    }
+
+    public CrystalPickaxe(IItemTier tier, Item.Properties properties) {
+        super(tier, (int)(10 - tier.getAttackDamageBonus()), -2.8F, properties);
+    }
+
+    public String getMaterialName() {
+        return "Crystal";
+    }
+}

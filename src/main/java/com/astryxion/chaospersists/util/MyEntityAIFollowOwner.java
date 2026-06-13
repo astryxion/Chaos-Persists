@@ -1,126 +1,120 @@
-/*
- * Decompiled with CFR 0_125.
- * 
- * Could not load the following classes:
- *  com.astryxion.chaospersists.Girlfriend
- *  com.astryxion.chaospersists.MyEntityAIFollowOwner
- *  com.astryxion.chaospersists.ChaosPersists
- *  net.minecraft.block.Block
- *  net.minecraft.entity.Entity
- *  net.minecraft.entity.EntityLivingBase
- *  net.minecraft.entity.ai.EntityAIBase
- *  net.minecraft.entity.ai.EntityLookHelper
- *  net.minecraft.entity.passive.EntityTameable
- *  net.minecraft.pathfinding.PathNavigate
- *  net.minecraft.util.math.AxisAlignedBB
- *  net.minecraft.util.MathHelper
- *  net.minecraft.world.IBlockAccess
- *  net.minecraft.world.World
- */
 package com.astryxion.chaospersists.util;
 
 import com.astryxion.chaospersists.entity.Girlfriend;
 import com.astryxion.chaospersists.core.ChaosPersists;
-import net.minecraft.block.Block;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.ai.EntityAIBase;
-import net.minecraft.entity.ai.EntityLookHelper;
-import net.minecraft.entity.passive.EntityTameable;
-import net.minecraft.pathfinding.PathNavigate;
-import net.minecraft.util.math.AxisAlignedBB;
+import java.util.EnumSet;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.Direction;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.IBlockAccess;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.passive.TameableEntity;
+import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.world.World;
+import net.minecraft.block.BlockState;
+import net.minecraft.pathfinding.PathNavigator;
 
-public class MyEntityAIFollowOwner
-extends EntityAIBase {
-    private EntityTameable thePet;
-    private EntityLivingBase theOwner;
-    World theWorld;
-    private float field_75336_f;
-    private PathNavigate petPathfinder;
+public class MyEntityAIFollowOwner extends Goal {
+    private final TameableEntity thePet;
+    private LivingEntity theOwner;
+    private final World theWorld;
+    private final float field_75336_f;
+    private final PathNavigator petPathfinder;
     private int field_75343_h;
-    float maxDist;
-    float minDist;
-    private boolean field_75344_i;
+    private final float maxDist;
+    private final float minDist;
 
-    public MyEntityAIFollowOwner(EntityTameable par1EntityTameable, float par2, float par3, float par4) {
-        this.thePet = par1EntityTameable;
-        this.theWorld = par1EntityTameable.world;
+    public MyEntityAIFollowOwner(TameableEntity par1TameableEntity, float par2, float par3, float par4) {
+        this.thePet = par1TameableEntity;
+        this.theWorld = par1TameableEntity.level;
         this.field_75336_f = par2;
-        this.petPathfinder = par1EntityTameable.getNavigator();
+        this.petPathfinder = par1TameableEntity.getNavigation();
         this.minDist = par4;
         this.maxDist = par3;
-        this.setMutexBits(3);
+        this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
     }
 
     @Override
-    public boolean shouldExecute() {
-        EntityLivingBase var1 = this.thePet.getOwner();
+    public boolean canUse() {
+        LivingEntity var1 = this.thePet.getOwner();
         if (var1 == null) {
             return false;
         }
         this.theOwner = var1;
-        if (this.thePet.isSitting()) {
+        if (this.thePet.isOrderedToSit()) {
             return false;
         }
         if (this.thePet instanceof Girlfriend && ChaosPersists.valentines_day != 0) {
             return false;
         }
-        if (!(this.thePet == null || this.thePet.posY >= 60.0 && this.thePet.world.isDaytime() || this.thePet.getDistanceSq((Entity)var1) <= (double)(this.maxDist / 2.0f * (this.maxDist / 2.0f)))) {
+        if (!(this.thePet.getY() >= 60.0 && this.theWorld.isDay()
+                || this.thePet.distanceToSqr(var1) <= (double) (this.maxDist / 2.0f * (this.maxDist / 2.0f)))) {
             return true;
         }
-        if (this.thePet.getDistanceSq((Entity)var1) < (double)(this.maxDist * this.maxDist)) {
+        if (this.thePet.distanceToSqr(var1) < (double) (this.maxDist * this.maxDist)) {
             return false;
         }
         return true;
     }
 
     @Override
-    public boolean shouldContinueExecuting() {
-        EntityLivingBase var1;
-        EntityTameable gf;
-        if (this.thePet.isSitting()) {
+    public boolean canContinueToUse() {
+        if (this.thePet.isOrderedToSit()) {
             return false;
         }
-        if (this.petPathfinder.noPath()) {
+        if (this.petPathfinder.isDone()) {
             return false;
         }
-        if (this.thePet != null && this.thePet instanceof EntityTameable && (var1 = (gf = this.thePet).getOwner()) != null && (int)gf.posZ == (int)var1.posZ && (int)gf.posX == (int)var1.posX && (int)gf.posY < (int)var1.posY + 2 && (int)gf.posY > (int)var1.posY - 2) {
+        LivingEntity var1 = this.thePet.getOwner();
+        if (var1 != null
+                && (int) this.thePet.getZ() == (int) var1.getZ()
+                && (int) this.thePet.getX() == (int) var1.getX()
+                && (int) this.thePet.getY() < (int) var1.getY() + 2
+                && (int) this.thePet.getY() > (int) var1.getY() - 2) {
             return false;
         }
-        return this.thePet.getDistanceSq((Entity)this.theOwner) > (double)(this.minDist * this.minDist);
+        return this.thePet.distanceToSqr(this.theOwner) > (double) (this.minDist * this.minDist);
     }
 
     @Override
-    public void startExecuting() {
+    public void start() {
         this.field_75343_h = 0;
-        this.field_75344_i = false;
     }
 
     @Override
-    public void resetTask() {
+    public void stop() {
         this.theOwner = null;
-        this.petPathfinder.clearPath();
+        this.petPathfinder.stop();
     }
 
     @Override
-    public void updateTask() {
-        this.thePet.getLookHelper().setLookPositionWithEntity((Entity)this.theOwner, 10.0f, (float)this.thePet.getVerticalFaceSpeed());
-        if (!this.thePet.isSitting() && --this.field_75343_h <= 0) {
+    public void tick() {
+        this.thePet.getLookControl().setLookAt(this.theOwner, 10.0F, (float) this.thePet.getMaxHeadXRot());
+        if (!this.thePet.isOrderedToSit() && --this.field_75343_h <= 0) {
             this.field_75343_h = 10;
-            if (!this.petPathfinder.tryMoveToEntityLiving((Entity)this.theOwner, (double)this.field_75336_f) && this.thePet.getDistanceSq((Entity)this.theOwner) >= 144.0) {
-                int var1 = MathHelper.floor(this.theOwner.posX) - 2;
-                int var2 = MathHelper.floor(this.theOwner.posZ) - 2;
-                int var3 = MathHelper.floor(this.theOwner.getEntityBoundingBox().minY);
+            if (!this.petPathfinder.moveTo(this.theOwner, this.field_75336_f)
+                    && this.thePet.distanceToSqr(this.theOwner) >= 144.0) {
+                int var1 = MathHelper.floor(this.theOwner.getX()) - 2;
+                int var2 = MathHelper.floor(this.theOwner.getZ()) - 2;
+                int var3 = MathHelper.floor(this.theOwner.getBoundingBox().minY);
                 for (int var4 = 0; var4 <= 4; ++var4) {
                     for (int var5 = 0; var5 <= 4; ++var5) {
-                        net.minecraft.util.math.BlockPos bp = new net.minecraft.util.math.BlockPos(var1 + var4, var3, var2 + var5);
-                        net.minecraft.util.math.BlockPos bpDown = new net.minecraft.util.math.BlockPos(var1 + var4, var3 - 1, var2 + var5);
-                        if (var4 >= 1 && var5 >= 1 && var4 <= 3 && var5 <= 3 || !this.theWorld.getBlockState(bpDown).getBlock().isTopSolid(this.theWorld.getBlockState(bpDown)) || this.theWorld.getBlockState(bp).getBlock().isNormalCube(this.theWorld.getBlockState(bp), this.theWorld, bp) || this.theWorld.getBlockState(new net.minecraft.util.math.BlockPos(var1 + var4, var3 + 1, var2 + var5)).getBlock().isNormalCube(this.theWorld.getBlockState(new net.minecraft.util.math.BlockPos(var1 + var4, var3 + 1, var2 + var5)), this.theWorld, new net.minecraft.util.math.BlockPos(var1 + var4, var3 + 1, var2 + var5))) continue;
-                        this.thePet.setLocationAndAngles((double)((float)(var1 + var4) + 0.5f), (double)var3, (double)((float)(var2 + var5) + 0.5f), this.thePet.rotationYaw, this.thePet.rotationPitch);
-                        this.petPathfinder.clearPath();
+                        BlockPos bp = new BlockPos(var1 + var4, var3, var2 + var5);
+                        BlockPos bpDown = new BlockPos(var1 + var4, var3 - 1, var2 + var5);
+                        if (var4 >= 1 && var5 >= 1 && var4 <= 3 && var5 <= 3) {
+                            continue;
+                        }
+                        BlockState below = this.theWorld.getBlockState(bpDown);
+                        BlockState here = this.theWorld.getBlockState(bp);
+                        BlockPos above = new BlockPos(var1 + var4, var3 + 1, var2 + var5);
+                        BlockState up = this.theWorld.getBlockState(above);
+                        if (!below.isFaceSturdy(this.theWorld, bpDown, Direction.UP)
+                                || !here.isAir()
+                                || !up.isAir()) {
+                            continue;
+                        }
+                        this.thePet.moveTo((float) (var1 + var4) + 0.5F, var3, (float) (var2 + var5) + 0.5F,
+                                this.thePet.yRot, this.thePet.xRot);
+                        this.petPathfinder.stop();
                         return;
                     }
                 }
@@ -128,4 +122,3 @@ extends EntityAIBase {
         }
     }
 }
-

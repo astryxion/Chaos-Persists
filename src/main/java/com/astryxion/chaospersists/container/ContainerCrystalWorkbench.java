@@ -1,131 +1,154 @@
-/*
- * Decompiled with CFR 0_125.
- * 
- * Could not load the following classes:
- *  com.astryxion.chaospersists.ContainerCrystalWorkbench
- *  com.astryxion.chaospersists.ChaosPersists
- *  net.minecraft.block.Block
- *  net.minecraft.entity.item.EntityItem
- *  net.minecraft.entity.player.EntityPlayer
- *  net.minecraft.entity.player.InventoryPlayer
- *  net.minecraft.inventory.Container
- *  net.minecraft.inventory.IInventory
- *  net.minecraft.inventory.InventoryCraftResult
- *  net.minecraft.inventory.InventoryCrafting
- *  net.minecraft.inventory.Slot
- *  net.minecraft.inventory.SlotCrafting
- *  net.minecraft.item.ItemStack
- *  net.minecraft.item.crafting.CraftingManager
- *  net.minecraft.world.World
- */
 package com.astryxion.chaospersists.container;
 
 import com.astryxion.chaospersists.core.ChaosPersists;
-import java.util.List;
-import net.minecraft.block.Block;
-import net.minecraft.entity.item.EntityItem;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.inventory.Container;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.inventory.CraftResultInventory;
+import net.minecraft.inventory.CraftingInventory;
 import net.minecraft.inventory.IInventory;
-import net.minecraft.inventory.InventoryCraftResult;
-import net.minecraft.inventory.InventoryCrafting;
-import net.minecraft.inventory.Slot;
-import net.minecraft.inventory.SlotCrafting;
+import net.minecraft.inventory.container.Container;
+import net.minecraft.inventory.container.ContainerType;
+import net.minecraft.inventory.container.CraftingResultSlot;
+import net.minecraft.inventory.container.Slot;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.crafting.CraftingManager;
+import net.minecraft.item.crafting.IRecipe;
+import net.minecraft.item.crafting.IRecipeType;
+import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.play.server.SSetSlotPacket;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraft.world.server.ServerWorld;
+import net.minecraftforge.common.extensions.IForgeContainerType;
 
-public class ContainerCrystalWorkbench
-extends Container {
-    public InventoryCrafting craftMatrix;
+public class ContainerCrystalWorkbench extends Container {
+    public static ContainerType<ContainerCrystalWorkbench> TYPE;
+
+    public CraftingInventory craftMatrix;
     public IInventory craftResult;
     private World worldObj;
     private int posX;
     private int posY;
     private int posZ;
+    private final PlayerEntity player;
 
-    public ContainerCrystalWorkbench(InventoryPlayer par1InventoryPlayer, World par2World, int par3, int par4, int par5) {
-        int i1;
-        int l;
-        this.craftMatrix = new InventoryCrafting((Container)this, 3, 3);
-        this.craftResult = new InventoryCraftResult();
-        this.worldObj = par2World;
-        this.posX = par3;
-        this.posY = par4;
-        this.posZ = par5;
-        this.addSlotToContainer((Slot)new SlotCrafting(par1InventoryPlayer.player, this.craftMatrix, this.craftResult, 0, 124, 35));
-        for (l = 0; l < 3; ++l) {
-            for (i1 = 0; i1 < 3; ++i1) {
-                this.addSlotToContainer(new Slot((IInventory)this.craftMatrix, i1 + l * 3, 30 + i1 * 18, 17 + l * 18));
+    public ContainerCrystalWorkbench(int id, PlayerInventory playerInventory, World world, int x, int y, int z) {
+        super(TYPE, id);
+        this.player = playerInventory.player;
+        this.worldObj = world;
+        this.posX = x;
+        this.posY = y;
+        this.posZ = z;
+        this.craftMatrix = new CraftingInventory(this, 3, 3);
+        this.craftResult = new CraftResultInventory();
+        this.addSlot(new CraftingResultSlot(playerInventory.player, this.craftMatrix, this.craftResult, 0, 124, 35));
+
+        for (int row = 0; row < 3; ++row) {
+            for (int col = 0; col < 3; ++col) {
+                this.addSlot(new Slot(this.craftMatrix, col + row * 3, 30 + col * 18, 17 + row * 18));
             }
         }
-        for (l = 0; l < 3; ++l) {
-            for (i1 = 0; i1 < 9; ++i1) {
-                this.addSlotToContainer(new Slot((IInventory)par1InventoryPlayer, i1 + l * 9 + 9, 8 + i1 * 18, 84 + l * 18));
+
+        for (int row = 0; row < 3; ++row) {
+            for (int col = 0; col < 9; ++col) {
+                this.addSlot(new Slot(playerInventory, col + row * 9 + 9, 8 + col * 18, 84 + row * 18));
             }
         }
-        for (l = 0; l < 9; ++l) {
-            this.addSlotToContainer(new Slot((IInventory)par1InventoryPlayer, l, 8 + l * 18, 142));
+
+        for (int col = 0; col < 9; ++col) {
+            this.addSlot(new Slot(playerInventory, col, 8 + col * 18, 142));
         }
-        this.onCraftMatrixChanged((IInventory)this.craftMatrix);
     }
 
-    public void onCraftMatrixChanged(IInventory par1IInventory) {
-        net.minecraft.item.ItemStack result = net.minecraft.item.ItemStack.EMPTY;
-        for (net.minecraft.item.crafting.IRecipe r : net.minecraft.item.crafting.CraftingManager.REGISTRY) {
-            if (r.matches(this.craftMatrix, this.worldObj)) {
-                result = r.getCraftingResult(this.craftMatrix);
-                break;
-            }
-        }
-        this.craftResult.setInventorySlotContents(0, result);
+    public ContainerCrystalWorkbench(int windowId, PlayerInventory inv, PacketBuffer data) {
+        this(windowId, inv, inv.player.level, data.readBlockPos());
     }
 
-    public void onContainerClosed(EntityPlayer par1EntityPlayer) {
-        super.onContainerClosed(par1EntityPlayer);
-        if (!this.worldObj.isRemote) {
+    public ContainerCrystalWorkbench(int id, PlayerInventory playerInventory, World world, BlockPos pos) {
+        this(id, playerInventory, world, pos.getX(), pos.getY(), pos.getZ());
+    }
+
+    @Override
+    public void slotsChanged(IInventory inventory) {
+        if (!(this.worldObj instanceof ServerWorld)) {
+            return;
+        }
+        ServerWorld serverWorld = (ServerWorld) this.worldObj;
+        ItemStack result = ItemStack.EMPTY;
+        java.util.Optional<? extends IRecipe<CraftingInventory>> recipe = serverWorld.getRecipeManager()
+                .getRecipeFor(IRecipeType.CRAFTING, this.craftMatrix, serverWorld);
+        if (recipe.isPresent()) {
+            result = recipe.get().getResultItem();
+        }
+        this.craftResult.setItem(0, result);
+        if (this.player instanceof ServerPlayerEntity) {
+            ((ServerPlayerEntity) this.player).connection.send(new SSetSlotPacket(this.containerId, 0, result));
+        }
+    }
+
+    @Override
+    public void removed(PlayerEntity player) {
+        super.removed(player);
+        if (!this.worldObj.isClientSide) {
             for (int i = 0; i < 9; ++i) {
-                ItemStack itemstack = this.craftMatrix.removeStackFromSlot(i);
-                if (itemstack.isEmpty()) continue;
-                par1EntityPlayer.dropItem(itemstack, false);
+                ItemStack stack = this.craftMatrix.removeItemNoUpdate(i);
+                if (!stack.isEmpty()) {
+                    player.drop(stack, false);
+                }
             }
         }
     }
 
-    public boolean canInteractWith(EntityPlayer par1EntityPlayer) {
-        return this.worldObj.getBlockState(new net.minecraft.util.math.BlockPos(this.posX, this.posY, this.posZ)).getBlock() != ChaosPersists.CrystalWorkbenchBlock ? false : par1EntityPlayer.getDistanceSq((double)this.posX + 0.5, (double)this.posY + 0.5, (double)this.posZ + 0.5) <= 64.0;
+    @Override
+    public boolean stillValid(PlayerEntity player) {
+        return this.worldObj.getBlockState(new BlockPos(this.posX, this.posY, this.posZ)).getBlock() == ChaosPersists.CrystalWorkbenchBlock
+                && player.distanceToSqr((double) this.posX + 0.5D, (double) this.posY + 0.5D, (double) this.posZ + 0.5D) <= 64.0D;
     }
 
-    public ItemStack transferStackInSlot(EntityPlayer par1EntityPlayer, int par2) {
-        ItemStack itemstack = null;
-        Slot slot = (Slot)this.inventorySlots.get(par2);
-        if (slot != null && slot.getHasStack()) {
-            ItemStack itemstack1 = slot.getStack();
-            itemstack = itemstack1.copy();
-            if (par2 == 0) {
-                if (!this.mergeItemStack(itemstack1, 10, 46, true)) {
-                    return null;
+    @Override
+    public ItemStack quickMoveStack(PlayerEntity player, int index) {
+        ItemStack itemstack = ItemStack.EMPTY;
+        Slot slot = this.slots.get(index);
+        if (slot != null && slot.hasItem()) {
+            ItemStack stack = slot.getItem();
+            itemstack = stack.copy();
+            if (index == 0) {
+                if (!this.moveItemStackTo(stack, 10, 46, true)) {
+                    return ItemStack.EMPTY;
                 }
-                slot.onSlotChange(itemstack1, itemstack);
-            } else if (par2 >= 10 && par2 < 37 ? !this.mergeItemStack(itemstack1, 37, 46, false) : (par2 >= 37 && par2 < 46 ? !this.mergeItemStack(itemstack1, 10, 37, false) : !this.mergeItemStack(itemstack1, 10, 46, false))) {
-                return null;
+                slot.onQuickCraft(stack, itemstack);
+            } else if (index >= 10 && index < 37) {
+                if (!this.moveItemStackTo(stack, 37, 46, false)) {
+                    return ItemStack.EMPTY;
+                }
+            } else if (index >= 37 && index < 46) {
+                if (!this.moveItemStackTo(stack, 10, 37, false)) {
+                    return ItemStack.EMPTY;
+                }
+            } else if (!this.moveItemStackTo(stack, 10, 46, false)) {
+                return ItemStack.EMPTY;
             }
-            if (itemstack1.getCount() == 0) {
-                slot.putStack(net.minecraft.item.ItemStack.EMPTY);
+
+            if (stack.isEmpty()) {
+                slot.set(ItemStack.EMPTY);
             } else {
-                slot.onSlotChanged();
+                slot.setChanged();
             }
-            if (itemstack1.getCount() == itemstack.getCount()) {
-                return null;
+
+            if (stack.getCount() == itemstack.getCount()) {
+                return ItemStack.EMPTY;
             }
-            slot.onTake(par1EntityPlayer, itemstack1);
+            slot.onTake(player, stack);
         }
         return itemstack;
     }
 
-    public boolean func_94530_a(ItemStack par1ItemStack, Slot par2Slot) {
-        return par2Slot.inventory != this.craftResult && super.canMergeSlot(par1ItemStack, par2Slot);
+    @Override
+    public boolean canTakeItemForPickAll(ItemStack stack, Slot slot) {
+        return slot.container != this.craftResult && super.canTakeItemForPickAll(stack, slot);
+    }
+
+    public static ContainerType<ContainerCrystalWorkbench> createContainerType() {
+        return IForgeContainerType.create(ContainerCrystalWorkbench::new);
     }
 }
-

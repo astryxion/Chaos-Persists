@@ -1,6 +1,6 @@
-{
+﻿{
   "parent": "item/generated",
   "textures": {
-    "layer0": "chaospersists:items/wormtooth"
+    "layer0": "chaospersists:item/wormtooth"
   }
 }

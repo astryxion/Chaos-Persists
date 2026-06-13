@@ -1,207 +1,140 @@
-/*
- * Decompiled with CFR 0_125.
- * 
- * Could not load the following classes:
- *  com.astryxion.chaospersists.DungeonBeast
- *  com.astryxion.chaospersists.Flounder
- *  com.astryxion.chaospersists.GenericTargetSorter
- *  com.astryxion.chaospersists.Ghost
- *  com.astryxion.chaospersists.GhostSkelly
- *  com.astryxion.chaospersists.Irukandji
- *  com.astryxion.chaospersists.MobStats
- *  com.astryxion.chaospersists.MyEntityAIWanderALot
- *  com.astryxion.chaospersists.MyUtils
- *  com.astryxion.chaospersists.ChaosPersists
- *  com.astryxion.chaospersists.Rat
- *  com.astryxion.chaospersists.Skate
- *  com.astryxion.chaospersists.Whale
- *  net.minecraft.block.Block
- *  net.minecraft.entity.DataWatcher
- *  net.minecraft.entity.Entity
- *  net.minecraft.entity.EntityCreature
- *  net.minecraft.entity.EntityLiving
- *  net.minecraft.entity.EntityLivingBase
- *  net.minecraft.entity.SharedMonsterAttributes
- *  net.minecraft.entity.ai.EntityAIBase
- *  net.minecraft.entity.ai.EntityAIHurtByTarget
- *  net.minecraft.entity.ai.EntityAILookIdle
- *  net.minecraft.entity.ai.EntityAIMoveThroughVillage
- *  net.minecraft.entity.ai.EntityAIPanic
- *  net.minecraft.entity.ai.EntityAISwimming
- *  net.minecraft.entity.ai.EntityAITasks
- *  net.minecraft.entity.ai.EntityAIWatchClosest
- *  net.minecraft.entity.ai.EntitySenses
- *  net.minecraft.entity.ai.attributes.IAttribute
- *  net.minecraft.entity.ai.attributes.IAttributeInstance
- *  net.minecraft.entity.monster.EntityMob
- *  net.minecraft.entity.passive.EntityTameable
- *  net.minecraft.entity.player.EntityPlayer
- *  net.minecraft.entity.player.PlayerCapabilities
- *  net.minecraft.init.Blocks
- *  net.minecraft.init.Items
- *  net.minecraft.item.Item
- *  net.minecraft.nbt.NBTTagCompound
- *  net.minecraft.pathfinding.PathNavigate
- *  net.minecraft.tileentity.MobSpawnerBaseLogic
- *  net.minecraft.tileentity.TileEntity
- *  net.minecraft.tileentity.TileEntityMobSpawner
- *  net.minecraft.util.math.AxisAlignedBB
- *  net.minecraft.util.DamageSource
- *  net.minecraft.world.World
- *  net.minecraft.world.WorldProvider
- */
 package com.astryxion.chaospersists.entity;
 
-import com.astryxion.chaospersists.entity.DungeonBeast;
-import com.astryxion.chaospersists.entity.Flounder;
-import com.astryxion.chaospersists.util.GenericTargetSorter;
-import com.astryxion.chaospersists.entity.Ghost;
-import com.astryxion.chaospersists.entity.GhostSkelly;
-import com.astryxion.chaospersists.entity.Irukandji;
-import com.astryxion.chaospersists.util.MobStats;
-import com.astryxion.chaospersists.util.MyEntityAIWanderALot;
-import com.astryxion.chaospersists.util.CrystalDimensionSpawnHelper;
-import com.astryxion.chaospersists.util.MyUtils;
 import com.astryxion.chaospersists.core.ChaosPersists;
-import com.astryxion.chaospersists.entity.Skate;
-import com.astryxion.chaospersists.entity.Whale;
+import com.astryxion.chaospersists.core.ChaosSounds;
+import com.astryxion.chaospersists.util.CrystalDimensionSpawnHelper;
+import com.astryxion.chaospersists.util.GenericTargetSorter;
+import com.astryxion.chaospersists.util.MyEntityAIWanderALot;
+import com.astryxion.chaospersists.util.MyUtils;
+import com.astryxion.chaospersists.util.SpawnerFixHelper;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
 import java.util.UUID;
-import net.minecraft.block.Block;
-import net.minecraft.network.datasync.EntityDataManager;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityCreature;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.ai.EntityAIBase;
-import net.minecraft.entity.ai.EntityAIHurtByTarget;
-import net.minecraft.entity.ai.EntityAILookIdle;
-import net.minecraft.entity.ai.EntityAIMoveThroughVillage;
-import net.minecraft.entity.ai.EntityAIPanic;
-import net.minecraft.entity.ai.EntityAISwimming;
-import net.minecraft.entity.ai.EntityAITasks;
-import net.minecraft.entity.ai.EntityAIWatchClosest;
-import net.minecraft.entity.ai.EntitySenses;
-import net.minecraft.entity.ai.attributes.IAttribute;
-import net.minecraft.entity.ai.attributes.IAttributeInstance;
-import net.minecraft.entity.monster.EntityMob;
-import net.minecraft.entity.passive.EntityTameable;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.PlayerCapabilities;
-import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
-import net.minecraft.item.Item;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.pathfinding.PathNavigate;
-import net.minecraft.tileentity.MobSpawnerBaseLogic;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityMobSpawner;
-import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.network.datasync.EntityDataManager;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.SoundEvent;
 import net.minecraft.util.DamageSource;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.SpawnReason;
+import net.minecraft.entity.passive.TameableEntity;
+import net.minecraft.entity.ai.attributes.AttributeModifierMap;
+import net.minecraft.entity.ai.attributes.Attributes;
+import net.minecraft.entity.ai.goal.SwimGoal;
+import net.minecraft.entity.ai.goal.LookAtGoal;
+import net.minecraft.entity.ai.goal.MoveThroughVillageGoal;
+import net.minecraft.entity.ai.goal.PanicGoal;
+import net.minecraft.entity.ai.goal.LookRandomlyGoal;
+import net.minecraft.entity.ai.goal.HurtByTargetGoal;
+import net.minecraft.entity.monster.MonsterEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
+import net.minecraft.item.Items;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldProvider;
+import net.minecraft.world.IWorldReader;
+import net.minecraft.block.Block;
+import net.minecraft.block.Blocks;
+import net.minecraft.tileentity.MobSpawnerTileEntity;
 
-public class Rat
-extends EntityMob {
-    private static final DataParameter<Byte> ATTACKING = EntityDataManager.createKey(Rat.class, DataSerializers.BYTE);
+public class Rat extends MonsterEntity {
+    private static final DataParameter<Byte> ATTACKING = EntityDataManager.defineId(Rat.class, DataSerializers.BYTE);
     private GenericTargetSorter TargetSorter = null;
     private float moveSpeed = 0.25f;
     private String myowner = null;
 
-    public Rat(World par1World) {
-        super(par1World);
-        this.setSize(0.25f, 0.5f);
-                this.experienceValue = 5;
-                this.tasks.addTask(0, (EntityAIBase)new EntityAISwimming((EntityLiving)this));
-        this.tasks.addTask(1, (EntityAIBase)new EntityAIPanic((EntityCreature)this, 1.350000023841858));
-        this.tasks.addTask(2, (EntityAIBase)new EntityAIMoveThroughVillage((EntityCreature)this, 1.0, false));
-        this.tasks.addTask(3, (EntityAIBase)new MyEntityAIWanderALot((EntityCreature)this, 10, 1.0));
-        this.tasks.addTask(4, (EntityAIBase)new EntityAIWatchClosest((EntityLiving)this, EntityPlayer.class, 8.0f));
-        this.tasks.addTask(5, (EntityAIBase)new EntityAILookIdle((EntityLiving)this));
-        this.targetTasks.addTask(1, (EntityAIBase)new EntityAIHurtByTarget((EntityCreature)this, false));
-        this.TargetSorter = new GenericTargetSorter((Entity)this);
+    public Rat(EntityType<? extends Rat> type, World par1World) {
+        super(type, par1World);
+        this.xpReward = 5;
+        this.goalSelector.addGoal(0, new SwimGoal(this));
+        this.goalSelector.addGoal(1, new PanicGoal(this, 1.350000023841858));
+        this.goalSelector.addGoal(2, new MoveThroughVillageGoal(this, 1.0, false, 512, () -> true));
+        this.goalSelector.addGoal(3, new MyEntityAIWanderALot(this, 10, 1.0));
+        this.goalSelector.addGoal(4, new LookAtGoal(this, PlayerEntity.class, 8.0f));
+        this.goalSelector.addGoal(5, new LookRandomlyGoal(this));
+        this.targetSelector.addGoal(1, new HurtByTargetGoal(this));
+        this.TargetSorter = new GenericTargetSorter(this);
     }
 
-    protected void applyEntityAttributes() {
-        super.applyEntityAttributes();
-        this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue((double)this.mygetMaxHealth());
-        this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue((double)this.moveSpeed);
-        this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue((double)ChaosPersists.Rat_stats.attack);
+    public static AttributeModifierMap createAttributes() {
+        return MonsterEntity.createMonsterAttributes()
+                .add(Attributes.MAX_HEALTH, ChaosPersists.Rat_stats.health)
+                .add(Attributes.MOVEMENT_SPEED, 0.25)
+                .add(Attributes.ATTACK_DAMAGE, ChaosPersists.Rat_stats.attack)
+                .build();
     }
 
-    protected void entityInit() {
-        super.entityInit();
-        this.getDataManager().register(ATTACKING, (byte)0);
+    @Override
+    protected void defineSynchedData() {
+        super.defineSynchedData();
+        this.entityData.define(ATTACKING, (byte) 0);
     }
-
-    protected boolean canDespawn() {
-        if (this.isNoDespawnRequired()) {
+    protected boolean canDespawn(double distanceToClosestPlayerEntity) {
+        if (this.isPersistenceRequired()) {
             return false;
         }
-        if (this.myowner != null) {
+        if (this.hasOwner()) {
             return false;
         }
         return true;
     }
 
     public final int getAttacking() {
-        return this.getDataManager().get(ATTACKING).intValue();
+        return this.entityData.get(ATTACKING);
     }
 
     public final void setAttacking(int par1) {
-        this.getDataManager().set(ATTACKING, (byte)par1);
+        this.entityData.set(ATTACKING, (byte) par1);
     }
 
     public int mygetMaxHealth() {
         return ChaosPersists.Rat_stats.health;
     }
 
-    public int getTotalArmorValue() {
+    public int getArmorValue() {
         return ChaosPersists.Rat_stats.defense;
     }
 
-    protected boolean isAIEnabled() {
-        return true;
+    @Override
+    public void tick() {
+        this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(this.moveSpeed);
+        super.tick();
     }
 
-    public void onLivingUpdate() {
-        super.onLivingUpdate();
+    @Override
+    protected void jumpFromGround() {
+        super.jumpFromGround();
+        this.setDeltaMovement(this.getDeltaMovement().x, this.getDeltaMovement().y + 0.25, this.getDeltaMovement().z);
+        this.setPos(this.getX(), this.getY() + 0.25, this.getZ());
     }
 
-    public void onUpdate() {
-        this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue((double)this.moveSpeed);
-        super.onUpdate();
+    @Override
+    protected SoundEvent getAmbientSound() {
+        return ChaosSounds.RATLIVE;
     }
 
-    protected void jump() {
-        super.jump();
-        this.motionY += 0.25;
-        this.posY += 0.25;
+    @Override
+    protected SoundEvent getHurtSound(DamageSource damageSource) {
+        return ChaosSounds.RATHIT;
     }
 
-    protected net.minecraft.util.SoundEvent getAmbientSound() {
-        return com.astryxion.chaospersists.core.ChaosSounds.RATLIVE;
+    @Override
+    protected SoundEvent getDeathSound() {
+        return ChaosSounds.RATDEAD;
     }
 
-    protected net.minecraft.util.SoundEvent getHurtSound(net.minecraft.util.DamageSource damageSource) {
-        return com.astryxion.chaospersists.core.ChaosSounds.RATHIT;
-    }
-
-    protected net.minecraft.util.SoundEvent getDeathSound() {
-        return net.minecraft.util.SoundEvent.REGISTRY.getObject(new net.minecraft.util.ResourceLocation("chaospersists", "ratdead"));
-    }
-
+    @Override
     protected float getSoundVolume() {
         return 0.45f;
     }
 
-    protected float getSoundPitch() {
+    @Override
+    protected float getVoicePitch() {
         return 1.0f;
     }
 
@@ -209,104 +142,102 @@ extends EntityMob {
         return Items.ROTTEN_FLESH;
     }
 
-    public void initCreature() {
-    }
-
-    public boolean interact(EntityPlayer par1EntityPlayer) {
+    public boolean interact(PlayerEntity par1PlayerEntityEntity) {
         return false;
     }
 
-    protected void updateAITasks() {
-        if (this.isDead) {
+    @Override
+    protected void customServerAiStep() {
+        if (this.removed) {
             return;
         }
-        super.updateAITasks();
-        if (this.world.rand.nextInt(200) == 1) {
-            this.setRevengeTarget(null);
+        super.customServerAiStep();
+        if (this.level.random.nextInt(200) == 1) {
+            this.setLastHurtByMob(null);
         }
-        if (this.world.rand.nextInt(5) == 1) {
-            EntityLivingBase e = this.getAttackTarget();
-            if (e != null && !e.isEntityAlive()) {
-                this.setAttackTarget(null);
+        if (this.level.random.nextInt(5) == 1) {
+            LivingEntity e = this.getTarget();
+            if (e != null && !e.isAlive()) {
+                this.setTarget(null);
                 e = null;
             }
             if (e == null) {
                 e = this.findSomethingToAttack();
                 if (e != null) {
-                    this.setAttackTarget(e);
+                    this.setTarget(e);
                 }
             }
             if (e != null) {
                 this.setAttacking(1);
-                this.getNavigator().tryMoveToEntityLiving((Entity)e, 1.25);
-                if (this.getDistanceSq((Entity)e) < 4.0 && (this.rand.nextInt(8) == 0 || this.rand.nextInt(7) == 1)) {
-                    this.attackEntityAsMob((Entity)e);
+                this.getNavigation().moveTo(e, 1.25);
+                if (this.distanceToSqr(e) < 4.0 && (this.random.nextInt(8) == 0 || this.random.nextInt(7) == 1)) {
+                    this.doHurtTarget(e);
                 }
             } else {
-                EntityPlayer p;
                 this.setAttacking(0);
-                if (this.myowner != null && (p = this.world.getPlayerEntityByName(this.myowner)) != null) {
-                    if (this.getDistanceSq((Entity)p) > 64.0) {
-                        this.getNavigator().tryMoveToEntityLiving((Entity)p, 1.75);
+                PlayerEntity p = this.getOwnerPlayer();
+                if (p != null) {
+                    if (this.distanceToSqr(p) > 64.0) {
+                        this.getNavigation().moveTo(p, 1.75);
                     }
-                    if (this.getDistanceSq((Entity)p) > 256.0) {
-                        this.setPosition(p.posX + (double)this.world.rand.nextFloat() - (double)this.world.rand.nextFloat(), p.posY, p.posZ + (double)this.world.rand.nextFloat() - (double)this.world.rand.nextFloat());
+                    if (this.distanceToSqr(p) > 256.0) {
+                        this.setPos(p.getX() + (double) this.level.random.nextFloat() - (double) this.level.random.nextFloat(), p.getY(), p.getZ() + (double) this.level.random.nextFloat() - (double) this.level.random.nextFloat());
                     }
                 }
             }
         }
-        if (this.world.rand.nextInt(250) == 1) {
+        if (this.level.random.nextInt(250) == 1) {
             this.heal(1.0f);
         }
     }
 
-    private boolean isSuitableTarget(EntityLivingBase par1EntityLiving, boolean par2) {
-        if (par1EntityLiving == null) {
+    private boolean isSuitableTarget(LivingEntity par1LivingEntity, boolean par2) {
+        if (par1LivingEntity == null) {
             return false;
         }
-        if (par1EntityLiving == this) {
+        if (par1LivingEntity == this) {
             return false;
         }
-        if (!par1EntityLiving.isEntityAlive()) {
+        if (!par1LivingEntity.isAlive()) {
             return false;
         }
-        if (MyUtils.isIgnoreable((EntityLivingBase)par1EntityLiving)) {
+        if (MyUtils.isIgnoreable(par1LivingEntity)) {
             return false;
         }
-        if (!this.getEntitySenses().canSee((Entity)par1EntityLiving)) {
+        if (!this.getSensing().canSee(par1LivingEntity)) {
             return false;
         }
-        if (par1EntityLiving instanceof Irukandji) {
+        if (par1LivingEntity instanceof Irukandji) {
             return false;
         }
-        if (par1EntityLiving instanceof Skate) {
+        if (par1LivingEntity instanceof Skate) {
             return false;
         }
-        if (par1EntityLiving instanceof Whale) {
+        if (par1LivingEntity instanceof Whale) {
             return false;
         }
-        if (par1EntityLiving instanceof Flounder) {
+        if (par1LivingEntity instanceof Flounder) {
             return false;
         }
-        if (par1EntityLiving instanceof Rat) {
+        if (par1LivingEntity instanceof Rat) {
             return false;
         }
-        if (par1EntityLiving instanceof Ghost) {
+        if (par1LivingEntity instanceof Ghost) {
             return false;
         }
-        if (par1EntityLiving instanceof GhostSkelly) {
+        if (par1LivingEntity instanceof GhostSkelly) {
             return false;
         }
-        if (par1EntityLiving instanceof DungeonBeast) {
+        if (par1LivingEntity instanceof DungeonBeast) {
             return false;
         }
-        if (par1EntityLiving instanceof EntityPlayer) {
-            EntityPlayer p = (EntityPlayer)par1EntityLiving;
-            if (p.capabilities.isCreativeMode) {
+        if (par1LivingEntity instanceof PlayerEntity) {
+            PlayerEntity p = (PlayerEntity) par1LivingEntity;
+            if (p.isCreative()) {
                 return false;
             }
-            if (this.myowner != null) {
-                if (this.myowner.equals(p.getUniqueID().toString())) {
+            if (this.hasOwner()) {
+                if (this.myowner.equals(p.getUUID().toString())) {
                     return false;
                 }
                 if (ChaosPersists.RatPlayerFriendly != 0) {
@@ -314,108 +245,131 @@ extends EntityMob {
                 }
             }
         }
-        if (this.myowner != null && par1EntityLiving instanceof EntityTameable) {
-            EntityTameable e = (EntityTameable)par1EntityLiving;
-            if (ChaosPersists.RatPetFriendly != 0 && e.isTamed()) {
+        if (this.hasOwner() && par1LivingEntity instanceof TameableEntity) {
+            TameableEntity e = (TameableEntity) par1LivingEntity;
+            if (ChaosPersists.RatPetFriendly != 0 && e.isTame()) {
                 return false;
             }
-            if (e.getOwnerId() != null && this.myowner.equals(e.getOwnerId().toString())) {
+            if (e.getOwnerUUID() != null && this.myowner.equals(e.getOwnerUUID().toString())) {
                 return false;
             }
         }
         return true;
     }
 
-    private EntityLivingBase findSomethingToAttack() {
+    private LivingEntity findSomethingToAttack() {
         if (ChaosPersists.PlayNicely != 0) {
             return null;
         }
-        List var5 = this.world.getEntitiesWithinAABB(EntityLivingBase.class, this.getEntityBoundingBox().expand(9.0, 2.0, 9.0));
+        List<LivingEntity> var5 = this.level.getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(9.0, 2.0, 9.0));
         Collections.sort(var5, this.TargetSorter);
-        Iterator var2 = var5.iterator();
-        Entity var3 = null;
-        EntityLivingBase var4 = null;
+        Iterator<LivingEntity> var2 = var5.iterator();
         while (var2.hasNext()) {
-            var3 = (Entity)var2.next();
-            var4 = (EntityLivingBase)var3;
-            if (!this.isSuitableTarget(var4, false)) continue;
-            return var4;
+            LivingEntity var4 = var2.next();
+            if (this.isSuitableTarget(var4, false)) {
+                return var4;
+            }
         }
         return null;
     }
 
-    public void setOwner(EntityLivingBase e) {
-        String s;
-        EntityPlayer p = null;
-        if (e != null && e instanceof EntityPlayer && (s = (p = (EntityPlayer)e).getUniqueID().toString()) != null) {
-            this.myowner = s;
+    public void setOwner(LivingEntity e) {
+        if (e instanceof PlayerEntity) {
+            this.myowner = ((PlayerEntity) e).getUUID().toString();
         }
     }
 
-    public void writeEntityToNBT(NBTTagCompound par1NBTTagCompound) {
-        super.writeEntityToNBT(par1NBTTagCompound);
-        if (this.myowner == null) {
-            this.myowner = "null";
+    private PlayerEntity getOwnerPlayer() {
+        UUID ownerId = this.getOwnerUuid();
+        if (ownerId == null || !(this.level instanceof net.minecraft.world.server.ServerWorld)) {
+            return null;
         }
-        par1NBTTagCompound.setString("MyOwner", this.myowner);
+        return ((net.minecraft.world.server.ServerWorld) this.level).getServer().getPlayerList().getPlayer(ownerId);
     }
 
-    public void readEntityFromNBT(NBTTagCompound par1NBTTagCompound) {
-        super.readEntityFromNBT(par1NBTTagCompound);
-        this.myowner = par1NBTTagCompound.getString("MyOwner");
-        if (this.myowner != null && this.myowner.equals("null")) {
+    private UUID getOwnerUuid() {
+        if (this.myowner == null || this.myowner.isEmpty() || "null".equals(this.myowner)) {
+            return null;
+        }
+        try {
+            return UUID.fromString(this.myowner);
+        } catch (IllegalArgumentException ignored) {
+            this.myowner = null;
+            return null;
+        }
+    }
+
+    private boolean hasOwner() {
+        return this.getOwnerUuid() != null;
+    }
+
+    @Override
+    public void addAdditionalSaveData(CompoundNBT par1CompoundNBT) {
+        super.addAdditionalSaveData(par1CompoundNBT);
+        if (this.myowner != null && !this.myowner.isEmpty() && !"null".equals(this.myowner)) {
+            par1CompoundNBT.putString("MyOwner", this.myowner);
+        }
+    }
+
+    @Override
+    public void readAdditionalSaveData(CompoundNBT par1CompoundNBT) {
+        super.readAdditionalSaveData(par1CompoundNBT);
+        if (par1CompoundNBT.contains("MyOwner", 8)) {
+            this.myowner = par1CompoundNBT.getString("MyOwner");
+            if (this.myowner == null || this.myowner.isEmpty() || "null".equals(this.myowner)) {
+                this.myowner = null;
+            }
+        } else {
             this.myowner = null;
         }
     }
 
-    public boolean attackEntityFrom(DamageSource par1DamageSource, float par2) {
-        boolean ret = false;
-        if (par1DamageSource.getDamageType().equals("inWall")) {
-            return ret;
+    @Override
+    public boolean hurt(DamageSource par1DamageSource, float par2) {
+        if (par1DamageSource.getMsgId().equals("inWall")) {
+            return false;
         }
-        ret = super.attackEntityFrom(par1DamageSource, par2);
-        return ret;
+        return super.hurt(par1DamageSource, par2);
     }
 
-    @Override
     protected boolean isValidLightLevel() {
-        if (CrystalDimensionSpawnHelper.isCrystalDimension(this.world)) {
+        if (CrystalDimensionSpawnHelper.isCrystalDimension(this.level)) {
             return true;
         }
-        return super.isValidLightLevel();
+        return MonsterEntity.isDarkEnoughToSpawn((net.minecraft.world.IServerWorld)this.level, this.blockPosition(), this.random);
     }
 
-    public boolean getCanSpawnHere() {
-        Block bid;
-        int j;
-        int k;
-        for (k = -2; k < 2; ++k) {
-            for (j = -2; j < 2; ++j) {
+    public boolean checkSpawnRules(IWorldReader level, SpawnReason reason) {
+        for (int k = -2; k < 2; ++k) {
+            for (int j = -2; j < 2; ++j) {
                 for (int i = 0; i < 5; ++i) {
-                    bid = this.world.getBlockState(new net.minecraft.util.math.BlockPos((int)this.posX + j, (int)this.posY + i, (int)this.posZ + k)).getBlock();
-                    if (bid != Blocks.MOB_SPAWNER) continue;
-                    TileEntityMobSpawner tileentitymobspawner = null;
-                    tileentitymobspawner = (TileEntityMobSpawner)this.world.getTileEntity(new net.minecraft.util.math.BlockPos((int)this.posX + j, (int)this.posY + i, (int)this.posZ + k));
-                                        String s = null;
-                    net.minecraft.util.ResourceLocation id = com.astryxion.chaospersists.util.SpawnerFixHelper.getMobSpawnerEntityId(tileentitymobspawner.getSpawnerBaseLogic());
-                    if (id != null) s = id.getPath();
-                    if (s == null || !s.equals("Rat")) continue;
-                    return true;
+                    BlockPos pos = new BlockPos((int) this.getX() + j, (int) this.getY() + i, (int) this.getZ() + k);
+                    if (level.getBlockState(pos).getBlock() != Blocks.SPAWNER) {
+                        continue;
+                    }
+                    if (!(level.getBlockEntity(pos) instanceof MobSpawnerTileEntity)) {
+                        continue;
+                    }
+                    MobSpawnerTileEntity tileentitymobspawner = (MobSpawnerTileEntity) level.getBlockEntity(pos);
+                    String s = null;
+                    ResourceLocation id = SpawnerFixHelper.getMobSpawnerEntityId(tileentitymobspawner.getSpawner());
+                    if (id != null) {
+                        s = id.getPath();
+                    }
+                    if (s != null && s.equals("Rat")) {
+                        return true;
+                    }
                 }
             }
         }
         if (!this.isValidLightLevel()) {
             return false;
         }
-        if (this.findBuddies() > 8) {
-            return false;
-        }
-        return true;
+        return this.findBuddies() <= 8;
     }
 
     private int findBuddies() {
-        List var5 = this.world.getEntitiesWithinAABB(Rat.class, this.getEntityBoundingBox().expand(20.0, 10.0, 20.0));
+        List<Rat> var5 = this.level.getEntitiesOfClass(Rat.class, this.getBoundingBox().inflate(20.0, 10.0, 20.0));
         return var5.size();
     }
 }
-

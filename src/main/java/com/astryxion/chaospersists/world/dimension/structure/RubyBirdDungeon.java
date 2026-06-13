@@ -6,14 +6,14 @@
  *  com.astryxion.chaospersists.ChaosPersists
  *  com.astryxion.chaospersists.RubyBirdDungeon
  *  net.minecraft.block.Block
- *  net.minecraft.block.BlockChest
- *  net.minecraft.init.Blocks
+ *  net.minecraft.block.ChestBlock
+ *  net.minecraft.block.Blocks
  *  net.minecraft.inventory.IInventory
  *  net.minecraft.item.Item
  *  net.minecraft.tileentity.MobSpawnerBaseLogic
  *  net.minecraft.tileentity.TileEntity
- *  net.minecraft.tileentity.TileEntityChest
- *  net.minecraft.tileentity.TileEntityMobSpawner
+ *  net.minecraft.tileentity.ChestTileEntity
+ *  net.minecraft.tileentity.MobSpawnerTileEntity
  *  net.minecraft.util.WeightedRandomChestContent
  *  net.minecraft.world.World
  */
@@ -24,14 +24,13 @@ import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.util.WeightedRandomChestContent;
 import java.util.Random;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockChest;
-import net.minecraft.init.Blocks;
+import net.minecraft.block.ChestBlock;
+import net.minecraft.block.Blocks;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.Item;
-import net.minecraft.tileentity.MobSpawnerBaseLogic;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityChest;
-import net.minecraft.tileentity.TileEntityMobSpawner;
+import net.minecraft.tileentity.ChestTileEntity;
+import net.minecraft.tileentity.MobSpawnerTileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -39,9 +38,9 @@ public class RubyBirdDungeon {
     private final WeightedRandomChestContent[] chestContentsList = new WeightedRandomChestContent[]{new WeightedRandomChestContent(ChaosPersists.CageEmpty, 0, 3, 10, 20), new WeightedRandomChestContent(ChaosPersists.MyRuby, 0, 2, 8, 15), new WeightedRandomChestContent(ChaosPersists.MyBacon, 0, 6, 12, 20), new WeightedRandomChestContent(ChaosPersists.MyButterCandy, 0, 6, 12, 20), new WeightedRandomChestContent(ChaosPersists.MyRubyPickaxe, 0, 1, 1, 15), new WeightedRandomChestContent(ChaosPersists.MyRubyShovel, 0, 1, 1, 15), new WeightedRandomChestContent(ChaosPersists.MyRubyHoe, 0, 1, 1, 15), new WeightedRandomChestContent(ChaosPersists.MyRubyAxe, 0, 1, 1, 15), new WeightedRandomChestContent(ChaosPersists.MyRubySword, 0, 1, 1, 15), new WeightedRandomChestContent((Item)ChaosPersists.RubyBody, 0, 1, 1, 15), new WeightedRandomChestContent((Item)ChaosPersists.RubyLegs, 0, 1, 1, 15), new WeightedRandomChestContent((Item)ChaosPersists.RubyHelmet, 0, 1, 1, 15), new WeightedRandomChestContent((Item)ChaosPersists.RubyBoots, 0, 1, 1, 15), new WeightedRandomChestContent(ChaosPersists.MyThunderStaff, 0, 1, 1, 5)};
 
     private void setThisBlock(World world, int cposx, int cposy, int cposz) {
-        if (world.rand.nextInt(20) == 1) {
+        if (world.random.nextInt(20) == 1) {
             this.FastSetBlock(world, cposx, cposy, cposz, ChaosPersists.MyOreRubyBlock);
-        } else if (world.rand.nextInt(2) == 1) {
+        } else if (world.random.nextInt(2) == 1) {
             this.FastSetBlock(world, cposx, cposy, cposz, Blocks.MOSSY_COBBLESTONE);
         } else {
             this.FastSetBlock(world, cposx, cposy, cposz, Blocks.COBBLESTONE);
@@ -90,17 +89,17 @@ public class RubyBirdDungeon {
             }
         }
         BlockPos spawnerPos = new BlockPos(cposx + width / 2, cposy + 1, cposz + width / 2);
-        world.setBlockState(spawnerPos, Blocks.MOB_SPAWNER.getDefaultState(), 2);
-        TileEntityMobSpawner tileentitymobspawner = (TileEntityMobSpawner)world.getTileEntity(spawnerPos);
+        world.setBlock(spawnerPos, Blocks.SPAWNER.defaultBlockState(), 2);
+        MobSpawnerTileEntity tileentitymobspawner = (MobSpawnerTileEntity)world.getBlockEntity(spawnerPos);
         if (tileentitymobspawner != null) {
-            tileentitymobspawner.getSpawnerBaseLogic().setEntityId(new net.minecraft.util.ResourceLocation("chaospersists", "ruby_bird"));
+            com.astryxion.chaospersists.util.SpawnerFixHelper.setSpawnerEntityId(tileentitymobspawner.getSpawner(), new net.minecraft.util.ResourceLocation("chaospersists", "ruby_bird"));
         }
-        TileEntityChest chest = null;
+        ChestTileEntity chest = null;
         BlockPos chestPos = new BlockPos(cposx + width / 2, cposy + 1, cposz + 1);
-        world.setBlockState(chestPos, Blocks.CHEST.getDefaultState(), 2);
-        chest = (TileEntityChest)world.getTileEntity(chestPos);
+        world.setBlock(chestPos, Blocks.CHEST.defaultBlockState(), 2);
+        chest = (ChestTileEntity)world.getBlockEntity(chestPos);
         if (chest != null) {
-            WeightedRandomChestContent.generateChestContents((Random)world.rand, (WeightedRandomChestContent[])this.chestContentsList, (IInventory)chest, (int)(4 + world.rand.nextInt(7)));
+            WeightedRandomChestContent.generateChestContents((Random)world.random, (WeightedRandomChestContent[])this.chestContentsList, (IInventory)chest, (int)(4 + world.random.nextInt(7)));
         }
     }
 

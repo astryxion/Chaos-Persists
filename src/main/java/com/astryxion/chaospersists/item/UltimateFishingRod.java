@@ -1,57 +1,54 @@
 package com.astryxion.chaospersists.item;
 
-import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.item.ItemGroup;
 import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Enchantments;
-import net.minecraft.init.SoundEvents;
-import net.minecraft.item.ItemFishingRod;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.enchantment.Enchantments;
+import net.minecraft.util.SoundEvents;
+import net.minecraft.item.FishingRodItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ActionResult;
-import net.minecraft.util.EnumActionResult;
-import net.minecraft.util.EnumHand;
+import net.minecraft.util.Hand;
 import net.minecraft.world.World;
 
-public class UltimateFishingRod extends ItemFishingRod {
+public class UltimateFishingRod extends FishingRodItem {
 
     public UltimateFishingRod(int par1) {
-        super();
-        this.setMaxDamage(3000);
-        this.setMaxStackSize(1);
-        this.setCreativeTab(CreativeTabs.TOOLS);
+        super(new net.minecraft.item.Item.Properties().stacksTo(1).durability(64).tab(ItemGroup.TAB_TOOLS));
     }
 
     @Override
-    public void onCreated(ItemStack par1ItemStack, World par2World, EntityPlayer par3EntityPlayer) {
-        par1ItemStack.addEnchantment(Enchantments.UNBREAKING, 2);
+    public void onCraftedBy(ItemStack par1ItemStack, World par2World, PlayerEntity par3PlayerEntity) {
+        par1ItemStack.enchant(Enchantments.UNBREAKING, 2);
     }
 
     @Override
-    public void onUsingTick(ItemStack stack, EntityLivingBase player, int count) {
-        int lvl = EnchantmentHelper.getEnchantmentLevel(Enchantments.UNBREAKING, stack);
+    public void onUseTick(World world, LivingEntity player, ItemStack stack, int count) {
+        int lvl = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.UNBREAKING, stack);
         if (lvl <= 0) {
-            stack.addEnchantment(Enchantments.UNBREAKING, 2);
+            stack.enchant(Enchantments.UNBREAKING, 2);
         }
     }
 
     @Override
-    public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, EnumHand hand) {
-        ItemStack stack = player.getHeldItem(hand);
+    public ActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
+        ItemStack stack = player.getItemInHand(hand);
 
-        if (player.fishEntity != null) {
-            int dmg = player.fishEntity.handleHookRetraction();
-            stack.damageItem(dmg, (EntityLivingBase) player);
-            player.swingArm(hand);
+        UltimateFishHook hook = UltimateFishHook.getHookForPlayer(player);
+        if (hook != null) {
+            int dmg = hook.handleHookRetraction();
+            stack.hurtAndBreak(dmg, player, (e) -> e.broadcastBreakEvent(hand));
+            player.swing(hand);
         } else {
-            world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.ENTITY_ARROW_SHOOT,
-                    player.getSoundCategory(), 0.5f, 0.4f / (itemRand.nextFloat() * 0.4f + 0.8f));
-            if (!world.isRemote) {
-                world.spawnEntity(new UltimateFishHook(world, player));
+            world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ARROW_SHOOT,
+                    player.getSoundSource(), 0.5f, 0.4f / (player.getRandom().nextFloat() * 0.4f + 0.8f));
+            if (!world.isClientSide) {
+                world.addFreshEntity(new UltimateFishHook(world, player));
             }
-            player.swingArm(hand);
+            player.swing(hand);
         }
-        return new ActionResult<>(EnumActionResult.SUCCESS, stack);
+        return ActionResult.success(stack);
     }
 }
 

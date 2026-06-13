@@ -1,64 +1,55 @@
 package com.astryxion.chaospersists.command;
 
-import net.minecraft.command.CommandBase;
-import net.minecraft.command.CommandException;
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextComponentString;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.WorldServer;
-import net.minecraftforge.common.DimensionManager;
-
 import com.astryxion.chaospersists.core.ChaosPersists;
-import com.astryxion.chaospersists.world.dimension.teleporter.TeleporterMining;
-import java.util.Collections;
-import java.util.List;
+import com.astryxion.chaospersists.world.dimension.teleporter.TeleporterUtopia;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.context.CommandContext;
+import net.minecraft.command.CommandSource;
+import net.minecraft.command.Commands;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.TextFormatting;
+import net.minecraft.world.server.ServerWorld;
 
-public class CommandMining extends CommandBase {
+public class CommandMining {
+    public static final String NAME = "mining";
+    private static final int DIMENSION_INDEX = 2;
 
-    @Override
-    public String getName() {
-        return "mining";
+    public LiteralArgumentBuilder<CommandSource> register() {
+        return build(Commands.literal(NAME));
     }
 
-    @Override
-    public String getUsage(ICommandSender sender) {
-        return "commands.mining.usage";
+    public static LiteralArgumentBuilder<CommandSource> build(LiteralArgumentBuilder<CommandSource> builder) {
+        return builder.requires(source -> source.hasPermission(2)).executes(CommandMining::execute);
     }
 
-    @Override
-    public int getRequiredPermissionLevel() {
-        return 2;
-    }
-
-    @Override
-    public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
-        if (!(sender.getCommandSenderEntity() instanceof EntityPlayerMP)) {
-            sender.sendMessage(new TextComponentString(TextFormatting.RED + "This command can only be used by a player."));
-            return;
+    private static int execute(CommandContext<CommandSource> context) {
+        CommandSource source = context.getSource();
+        if (!(source.getEntity() instanceof ServerPlayerEntity)) {
+            source.sendFailure(new StringTextComponent(TextFormatting.RED + "This command can only be used by a player."));
+            return 0;
         }
-        EntityPlayerMP player = (EntityPlayerMP) sender.getCommandSenderEntity();
-        int dimId = ChaosPersists.getDimension(2);
-        if (player.dimension == dimId) {
-            player.sendMessage(new TextComponentString(TextFormatting.YELLOW + "You are already in the Mining dimension."));
-            return;
+        ServerPlayerEntity player = (ServerPlayerEntity) source.getEntity();
+        MinecraftServer server = source.getServer();
+        if (server == null) {
+            source.sendFailure(new StringTextComponent(TextFormatting.RED + "Server not available."));
+            return 0;
         }
-        WorldServer world = DimensionManager.getWorld(dimId);
+        ServerWorld world = ChaosPersists.getServerWorldForDimensionIndex(server, DIMENSION_INDEX);
         if (world == null) {
-            player.sendMessage(new TextComponentString(TextFormatting.RED + "Mining dimension is not available."));
-            return;
+            player.sendMessage(new StringTextComponent(TextFormatting.RED + "Mining dimension is not available."), player.getUUID());
+            return 0;
         }
-        double x = player.posX;
-        double z = player.posZ;
-        TeleporterMining teleporter = new TeleporterMining(world, x, z);
-        player.getServer().getPlayerList().transferPlayerToDimension(player, dimId, teleporter);
-        player.sendMessage(new TextComponentString(TextFormatting.GREEN + "Teleported to Mining."));
-    }
-
-    @Override
-    public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos targetPos) {
-        return Collections.emptyList();
+        if (player.getLevel().dimension() == world.dimension()) {
+            player.sendMessage(new StringTextComponent(TextFormatting.YELLOW + "You are already in the Mining dimension."), player.getUUID());
+            return 0;
+        }
+        double x = player.getX();
+        double z = player.getZ();
+        TeleporterUtopia teleporter = new TeleporterUtopia(world, x, z);
+        player.changeDimension(world, teleporter);
+        player.sendMessage(new StringTextComponent(TextFormatting.GREEN + "Teleported to Mining."), player.getUUID());
+        return 1;
     }
 }

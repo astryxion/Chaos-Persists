@@ -1,35 +1,22 @@
-/*
- * Decompiled with CFR 0_125.
- * 
- * Could not load the following classes:
- *  net.minecraftforge.fml.relauncher.Side
- *  net.minecraftforge.fml.relauncher.SideOnly
- *  com.astryxion.chaospersists.EntityThrownRock
- *  com.astryxion.chaospersists.RenderThrownRock
- *  net.minecraft.client.renderer.Tessellator
- *  net.minecraft.client.renderer.entity.Render
- *  net.minecraft.client.renderer.entity.RenderManager
- *  net.minecraft.entity.Entity
- *  net.minecraft.util.ResourceLocation
- *  org.lwjgl.opengl.GL11
- */
 package com.astryxion.chaospersists.render;
 
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 import com.astryxion.chaospersists.entity.EntityThrownRock;
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.entity.Render;
-import net.minecraft.client.renderer.entity.RenderManager;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.entity.Entity;
+import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.IVertexBuilder;
+import net.minecraft.client.renderer.IRenderTypeBuffer;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.entity.EntityRenderer;
+import net.minecraft.client.renderer.entity.EntityRendererManager;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.util.ResourceLocation;
-import org.lwjgl.opengl.GL11;
+import net.minecraft.util.math.vector.Matrix3f;
+import net.minecraft.util.math.vector.Matrix4f;
+import net.minecraft.util.math.vector.Vector3f;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
-@SideOnly(value=Side.CLIENT)
-public class RenderThrownRock
-extends Render {
+@OnlyIn(Dist.CLIENT)
+public class RenderThrownRock extends EntityRenderer<EntityThrownRock> {
     private static final ResourceLocation texture1 = new ResourceLocation("chaospersists", "textures/items/rocksmall.png");
     private static final ResourceLocation texture2 = new ResourceLocation("chaospersists", "textures/items/rock.png");
     private static final ResourceLocation texture3 = new ResourceLocation("chaospersists", "textures/items/rockred.png");
@@ -43,80 +30,89 @@ extends Render {
     private static final ResourceLocation texture11 = new ResourceLocation("chaospersists", "textures/items/rockcrystalblue.png");
     private static final ResourceLocation texture12 = new ResourceLocation("chaospersists", "textures/items/rockcrystaltnt.png");
 
-    public RenderThrownRock(RenderManager manager) {
+    public RenderThrownRock(EntityRendererManager manager) {
         super(manager);
     }
 
-    public void doRender(Entity par1Entity, double par2, double par4, double par6, float par8, float par9) {
-        this.bindTexture(this.getEntityTexture(par1Entity));
-        GL11.glPushMatrix();
-        GL11.glTranslatef((float)((float)par2), (float)((float)par4), (float)((float)par6));
-        GL11.glEnable((int)32826);
-        GL11.glScalef((float)0.5f, (float)0.5f, (float)0.5f);
-        this.func_77026_a(0, par1Entity.rotationPitch);
-        GL11.glDisable((int)32826);
-        GL11.glPopMatrix();
+    @Override
+    public void render(EntityThrownRock entity, float entityYaw, float partialTicks, MatrixStack matrixStack,
+            IRenderTypeBuffer buffer, int packedLight) {
+        matrixStack.pushPose();
+        matrixStack.scale(0.5F, 0.5F, 0.5F);
+        float spin = entity.xRotO + (entity.xRot - entity.xRotO) * partialTicks;
+        drawBillboardQuad(matrixStack, buffer, packedLight, this.getTextureLocation(entity), 0, spin);
+        matrixStack.popPose();
+        super.render(entity, entityYaw, partialTicks, matrixStack, buffer, packedLight);
     }
 
-    private void func_77026_a(int par2, float par3) {
-        float var3 = (float)(par2 % 16 * 16 + 0) / 16.0f;
-        float var4 = (float)(par2 % 16 * 16 + 16) / 16.0f;
-        float var5 = (float)(par2 / 16 * 16 + 0) / 16.0f;
-        float var6 = (float)(par2 / 16 * 16 + 16) / 16.0f;
-        float var7 = 1.0f;
-        float var8 = 0.5f;
-        float var9 = 0.25f;
-        GL11.glRotatef((float)(180.0f - this.renderManager.playerViewY), (float)0.0f, (float)1.0f, (float)0.0f);
-        GL11.glRotatef((float)(- this.renderManager.playerViewX), (float)1.0f, (float)0.0f, (float)0.0f);
-        GL11.glRotatef((float)par3, (float)0.0f, (float)0.0f, (float)1.0f);
-        BufferBuilder buf = Tessellator.getInstance().getBuffer();
-        buf.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_NORMAL);
-        buf.pos((double)(0.0f - var8), (double)(0.0f - var9), 0.0).tex((double)var3, (double)var6).normal(0.0f, 1.0f, 0.0f).endVertex();
-        buf.pos((double)(var7 - var8), (double)(0.0f - var9), 0.0).tex((double)var4, (double)var6).normal(0.0f, 1.0f, 0.0f).endVertex();
-        buf.pos((double)(var7 - var8), (double)(var7 - var9), 0.0).tex((double)var4, (double)var5).normal(0.0f, 1.0f, 0.0f).endVertex();
-        buf.pos((double)(0.0f - var8), (double)(var7 - var9), 0.0).tex((double)var3, (double)var5).normal(0.0f, 1.0f, 0.0f).endVertex();
-        Tessellator.getInstance().draw();
+    private void drawBillboardQuad(MatrixStack matrixStack, IRenderTypeBuffer buffer, int packedLight,
+            ResourceLocation texture, int spriteIndex, float spinDegrees) {
+        float u0 = (float)(spriteIndex % 16 * 16 + 0) / 16.0F;
+        float u1 = (float)(spriteIndex % 16 * 16 + 16) / 16.0F;
+        float v0 = (float)(spriteIndex / 16 * 16 + 0) / 16.0F;
+        float v1 = (float)(spriteIndex / 16 * 16 + 16) / 16.0F;
+        float size = 1.0F;
+        float hx = 0.5F;
+        float hy = 0.25F;
+        matrixStack.pushPose();
+        matrixStack.mulPose(Vector3f.YP.rotationDegrees(180.0F - this.entityRenderDispatcher.camera.getYRot()));
+        matrixStack.mulPose(Vector3f.XP.rotationDegrees(-this.entityRenderDispatcher.camera.getXRot()));
+        matrixStack.mulPose(Vector3f.ZP.rotationDegrees(spinDegrees));
+        MatrixStack.Entry entry = matrixStack.last();
+        Matrix4f matrix4f = entry.pose();
+        Matrix3f matrix3f = entry.normal();
+        IVertexBuilder vertexBuilder = buffer.getBuffer(RenderType.entityCutout(texture));
+        billboardVertex(vertexBuilder, matrix4f, matrix3f, packedLight, 0.0F - hx, 0.0F - hy, u0, v1);
+        billboardVertex(vertexBuilder, matrix4f, matrix3f, packedLight, size - hx, 0.0F - hy, u1, v1);
+        billboardVertex(vertexBuilder, matrix4f, matrix3f, packedLight, size - hx, size - hy, u1, v0);
+        billboardVertex(vertexBuilder, matrix4f, matrix3f, packedLight, 0.0F - hx, size - hy, u0, v0);
+        matrixStack.popPose();
     }
 
-    protected ResourceLocation getEntityTexture(Entity entity) {
-        EntityThrownRock r = (EntityThrownRock)entity;
-        if (r.getRockType() == 1) {
+    private static void billboardVertex(IVertexBuilder builder, Matrix4f pose, Matrix3f normal, int packedLight,
+            float x, float y, float u, float v) {
+        builder.vertex(pose, x, y, 0.0F).color(255, 255, 255, 255).uv(u, v).overlayCoords(OverlayTexture.NO_OVERLAY)
+                .uv2(packedLight).normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
+    }
+
+    @Override
+    public ResourceLocation getTextureLocation(EntityThrownRock entity) {
+        if (entity.getRockType() == 1) {
             return texture1;
         }
-        if (r.getRockType() == 2) {
+        if (entity.getRockType() == 2) {
             return texture2;
         }
-        if (r.getRockType() == 3) {
+        if (entity.getRockType() == 3) {
             return texture3;
         }
-        if (r.getRockType() == 4) {
+        if (entity.getRockType() == 4) {
             return texture4;
         }
-        if (r.getRockType() == 5) {
+        if (entity.getRockType() == 5) {
             return texture5;
         }
-        if (r.getRockType() == 6) {
+        if (entity.getRockType() == 6) {
             return texture6;
         }
-        if (r.getRockType() == 7) {
+        if (entity.getRockType() == 7) {
             return texture7;
         }
-        if (r.getRockType() == 8) {
+        if (entity.getRockType() == 8) {
             return texture8;
         }
-        if (r.getRockType() == 9) {
+        if (entity.getRockType() == 9) {
             return texture9;
         }
-        if (r.getRockType() == 10) {
+        if (entity.getRockType() == 10) {
             return texture10;
         }
-        if (r.getRockType() == 11) {
+        if (entity.getRockType() == 11) {
             return texture11;
         }
-        if (r.getRockType() == 12) {
+        if (entity.getRockType() == 12) {
             return texture12;
         }
         return texture1;
     }
 }
-

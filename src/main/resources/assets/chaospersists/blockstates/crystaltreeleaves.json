@@ -1,1 +1,9 @@
-{"variants":{"check_decay=false,decayable=false":{"model":"chaospersists:crystaltreeleaves"},"check_decay=false,decayable=true":{"model":"chaospersists:crystaltreeleaves"},"check_decay=true,decayable=false":{"model":"chaospersists:crystaltreeleaves"},"check_decay=true,decayable=true":{"model":"chaospersists:crystaltreeleaves"},"inventory":{"model":"chaospersists:crystaltreeleaves"}}}
+{
+  "multipart": [
+    {
+      "apply": {
+        "model": "chaospersists:block/crystaltreeleaves"
+      }
+    }
+  ]
+}

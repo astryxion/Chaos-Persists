@@ -1,6 +1,3 @@
-{
-  "parent": "item/generated",
-  "textures": {
-    "layer0": "chaospersists:items/tigerseye_block"
-  }
+﻿{
+  "parent": "chaospersists:block/tigerseye_block"
 }

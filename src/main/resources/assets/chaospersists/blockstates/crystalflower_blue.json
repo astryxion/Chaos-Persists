@@ -1,6 +1,5 @@
 {
   "variants": {
-    "": { "model": "chaospersists:crystalflower_blue" },
-    "normal": { "model": "chaospersists:crystalflower_blue" }
+    "": { "model": "chaospersists:block/crystalflower_blue" }
   }
 }

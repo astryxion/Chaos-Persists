@@ -1,22 +1,22 @@
 {
   "variants": {
     "facing=east": {
-      "model": "chaospersists:crystaltorch_wall"
+      "model": "chaospersists:block/crystaltorch_wall"
     },
     "facing=south": {
       "y": 90,
-      "model": "chaospersists:crystaltorch_wall"
+      "model": "chaospersists:block/crystaltorch_wall"
     },
     "facing=north": {
       "y": 270,
-      "model": "chaospersists:crystaltorch_wall"
+      "model": "chaospersists:block/crystaltorch_wall"
     },
     "facing=up": {
-      "model": "chaospersists:crystaltorch"
+      "model": "chaospersists:block/crystaltorch"
     },
     "facing=west": {
       "y": 180,
-      "model": "chaospersists:crystaltorch_wall"
+      "model": "chaospersists:block/crystaltorch_wall"
     }
   }
 }

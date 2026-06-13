@@ -1,82 +1,74 @@
-/*
- * Decompiled with CFR 0_125.
- * 
- * Could not load the following classes:
- *  net.minecraftforge.fml.relauncher.Side
- *  net.minecraftforge.fml.relauncher.SideOnly
- *  com.astryxion.chaospersists.BlockDuplicatorLog
- *  com.astryxion.chaospersists.ChaosPersists
- *  com.astryxion.chaospersists.Trees
- *  net.minecraft.block.Block
- *  net.minecraft.block.material.Material
- *  net.minecraft.client.renderer.texture.IIconRegister
- *  net.minecraft.creativetab.CreativeTabs
- *  net.minecraft.item.Item
- *  net.minecraft.item.ItemStack
- *  net.minecraft.util.IIcon
- *  net.minecraft.world.IBlockAccess
- *  net.minecraft.world.World
- */
 package com.astryxion.chaospersists.block;
 
 import com.astryxion.chaospersists.core.ChaosPersists;
-import java.util.Random;
 import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.material.Material;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.item.Item;
+import net.minecraft.item.ItemGroup;
+import net.minecraft.block.Blocks;
 import net.minecraft.item.ItemStack;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.IBlockReader;
 
 public class BlockDuplicatorLog extends Block {
+
     public BlockDuplicatorLog() {
-        this(0);
+        this(0.2F);
     }
 
-    protected BlockDuplicatorLog(int par1) {
-        super(Material.WOOD);
-        this.setSoundType(SoundType.WOOD);
-        this.setCreativeTab(CreativeTabs.BUILDING_BLOCKS);
-        this.setTickRandomly(true);
+    public BlockDuplicatorLog(float hardness) {
+        super(AbstractBlock.Properties.of(Material.WOOD)
+                .sound(SoundType.WOOD)
+                .strength(hardness));
+    }
+
+    protected BlockDuplicatorLog(int par1, int par2) {
+        this(0.2F);
     }
 
     @Override
-    public int tickRate(World worldIn) {
-        return 1;
+    public ItemStack getCloneItemStack(IBlockReader world, BlockPos pos, BlockState state) {
+        return new ItemStack(ChaosPersists.MyDT);
     }
 
-    @Override
-    public void updateTick(World worldIn, BlockPos pos, IBlockState state, Random rand) {
-        if (worldIn.isRemote) {
+    public void breakRecursor(World world, int x, int y, int z, int xf, int yf, int zf, int recursion) {
+        int var7 = 1;
+        if (recursion > 1000) {
             return;
         }
-        if (ChaosPersists.enableduplicatortree != 0) {
-            ChaosPersists.chaospersistsTrees.DuplicatorTree(worldIn, pos.getX(), pos.getY(), pos.getZ());
+        for (int var9 = -var7; var9 <= var7; ++var9) {
+            for (int var10 = -var7; var10 <= var7; ++var10) {
+                for (int var11 = -var7; var11 <= var7; ++var11) {
+                    if (var9 == 0 && var10 == 0 && var11 == 0
+                            || x + var9 == xf && y + var10 == yf && z + var11 == zf
+                            || recursion > 0 && x + var9 >= xf - var7 && x + var9 <= xf + var7
+                            && y + var10 >= yf - var7 && y + var10 <= yf + var7
+                            && z + var11 >= zf - var7 && z + var11 <= zf + var7) {
+                        continue;
+                    }
+                    BlockPos p = new BlockPos(x + var9, y + var10, z + var11);
+                    if (world.getBlockState(p).getBlock() != this) {
+                        continue;
+                    }
+                    BlockState oldState = world.getBlockState(p);
+                    world.setBlock(p, Blocks.AIR.defaultBlockState(), 2);
+                    popResource((ServerWorld) world, p, new ItemStack(ChaosPersists.MyDT));
+                    breakRecursor(world, x + var9, y + var10, z + var11, x, y, z, recursion + 1);
+                }
+            }
         }
     }
 
     @Override
-    public Item getItemDropped(IBlockState state, Random rand, int fortune) {
-        return Item.getItemFromBlock(this);
-    }
-
-    @Override
-    public boolean canSustainLeaves(IBlockState state, IBlockAccess world, BlockPos pos) {
-        return true;
-    }
-
-    @Override
-    public boolean isWood(IBlockAccess world, BlockPos pos) {
-        return true;
-    }
-
-    @Override
-    public int quantityDropped(Random par1Random) {
-        return 1;
+    public void playerWillDestroy(World world, BlockPos pos, BlockState state, PlayerEntity player) {
+        if (!world.isClientSide) {
+            breakRecursor(world, pos.getX(), pos.getY(), pos.getZ(), pos.getX(), pos.getY(), pos.getZ(), 0);
+        }
+        super.playerWillDestroy(world, pos, state, player);
     }
 }
-

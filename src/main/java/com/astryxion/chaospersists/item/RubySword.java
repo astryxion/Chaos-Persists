@@ -1,61 +1,39 @@
-/*
- * Decompiled with CFR 0_125.
- * 
- * Could not load the following classes:
- *  net.minecraftforge.fml.relauncher.Side
- *  net.minecraftforge.fml.relauncher.SideOnly
- *  com.astryxion.chaospersists.RubySword
- *  net.minecraft.client.renderer.texture.IIconRegister
- *  net.minecraft.creativetab.CreativeTabs
- *  net.minecraft.entity.Entity
- *  net.minecraft.entity.EntityLiving
- *  net.minecraft.entity.EntityLivingBase
- *  net.minecraft.item.Item
- *  net.minecraft.item.Item$ToolMaterial
- *  net.minecraft.item.ItemStack
- *  net.minecraft.item.ItemSword
- *  net.minecraft.util.IIcon
- */
 package com.astryxion.chaospersists.item;
 
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.item.ItemGroup;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemSword;
+import net.minecraft.item.SwordItem;
+import net.minecraft.item.IItemTier;
+import net.minecraft.inventory.EquipmentSlotType;
 
-public class RubySword
-extends ItemSword {
-    private int weaponDamage;
-    private final Item.ToolMaterial toolMaterial;
+public class RubySword extends SwordItem {
+    private final int weaponDamage;
+    private final IItemTier toolMaterial;
 
-    public RubySword(Item.ToolMaterial par2EnumToolMaterial) {
-        super(par2EnumToolMaterial);
-        this.toolMaterial = par2EnumToolMaterial;
-        this.weaponDamage = 18;
-        this.maxStackSize = 1;
-        this.setMaxDamage(1500);
-        this.setCreativeTab(CreativeTabs.COMBAT);
+    public RubySword(IItemTier tier) {
+        this(tier, new Item.Properties().stacksTo(1).durability(1500));
     }
 
-    public int getDamageVsEntity(Entity par1Entity) {
-        return this.weaponDamage;
+    public RubySword(IItemTier tier, Item.Properties properties) {
+        super(tier, (int)(18 - tier.getAttackDamageBonus()), -2.4F, properties);
+        this.toolMaterial = tier;
+        this.weaponDamage = 18;
     }
 
     public String getMaterialName() {
         return "Ruby";
     }
 
-    public boolean hitEntity(ItemStack par1ItemStack, EntityLiving par2EntityLiving, EntityLiving par3EntityLiving) {
-        par1ItemStack.damageItem(1, (EntityLivingBase)par3EntityLiving);
+    @Override
+    public boolean hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
+        stack.hurtAndBreak(1, attacker, (e) -> e.broadcastBreakEvent(EquipmentSlotType.MAINHAND));
         return true;
     }
 
-    public int getMaxItemUseDuration(ItemStack par1ItemStack) {
+    @Override
+    public int getUseDuration(ItemStack stack) {
         return 4000;
-    }}
-
+    }
+}

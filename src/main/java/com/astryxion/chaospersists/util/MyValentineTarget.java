@@ -1,107 +1,82 @@
-/*
- * Decompiled with CFR 0_125.
- * 
- * Could not load the following classes:
- *  com.astryxion.chaospersists.Girlfriend
- *  com.astryxion.chaospersists.MyEntityAITarget
- *  com.astryxion.chaospersists.MyValentineTarget
- *  com.astryxion.chaospersists.MyValentineTargetSorter
- *  com.astryxion.chaospersists.ChaosPersists
- *  net.minecraft.command.IEntitySelector
- *  net.minecraft.entity.Entity
- *  net.minecraft.entity.EntityLiving
- *  net.minecraft.entity.EntityLivingBase
- *  net.minecraft.util.math.AxisAlignedBB
- *  net.minecraft.world.World
- */
 package com.astryxion.chaospersists.util;
 
 import com.astryxion.chaospersists.entity.Girlfriend;
-import java.util.Iterator;
-import com.astryxion.chaospersists.util.MyEntityAITarget;
-import com.astryxion.chaospersists.util.MyValentineTargetSorter;
 import com.astryxion.chaospersists.core.ChaosPersists;
+import java.util.function.Predicate;
 import java.util.Collections;
+import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.world.World;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.MobEntity;
+import net.minecraft.entity.ai.goal.Goal;
 
-public class MyValentineTarget
-extends MyEntityAITarget {
-    EntityLivingBase targetEntity;
-    EntityLivingBase Me;
-    Class targetClass;
+public class MyValentineTarget extends MyEntityAITarget {
+    LivingEntity targetEntity;
+    LivingEntity Me;
+    Class<? extends Entity> targetClass;
     int targetChance;
     private final Predicate<Entity> targetEntitySelector;
-    private MyValentineTargetSorter theNearestAttackableTargetSorter;
+    private final MyValentineTargetSorter theNearestAttackableTargetSorter;
 
-    public MyValentineTarget(EntityLiving par1EntityLiving, Class par2Class, float par3, int par4, boolean par5) {
-        this(par1EntityLiving, par2Class, par3, par4, par5, false);
-        this.Me = par1EntityLiving;
+    public MyValentineTarget(MobEntity par1LivingEntity, Class<?> par2Class, float par3, int par4, boolean par5) {
+        this(par1LivingEntity, par2Class, par3, par4, par5, false);
     }
 
-    public MyValentineTarget(EntityLiving par1EntityLiving, Class par2Class, float par3, int par4, boolean par5, boolean par6) {
-        this(par1EntityLiving, par2Class, par3, par4, par5, par6, (Predicate<Entity>)null);
-        this.Me = par1EntityLiving;
+    public MyValentineTarget(MobEntity par1LivingEntity, Class<?> par2Class, float par3, int par4, boolean par5, boolean par6) {
+        this(par1LivingEntity, par2Class, par3, par4, par5, par6, null);
     }
 
-    public MyValentineTarget(EntityLiving par1, Class par2, float par3, int par4, boolean par5, boolean par6, Predicate<Entity> par7IEntitySelector) {
+    @SuppressWarnings("unchecked")
+    public MyValentineTarget(MobEntity par1, Class<?> par2, float par3, int par4, boolean par5, boolean par6, Predicate<Entity> par7IEntitySelector) {
         super(par1, par3, par5, par6);
-        this.targetClass = par2;
+        this.targetClass = (Class<? extends Entity>) par2;
         this.targetDistance = par3;
         this.targetChance = par4;
-        this.theNearestAttackableTargetSorter = new MyValentineTargetSorter(this, (Entity)par1);
-        this.targetEntitySelector = par7IEntitySelector != null ? par7IEntitySelector : Predicates.alwaysTrue();
-        this.setMutexBits(1);
+        this.theNearestAttackableTargetSorter = new MyValentineTargetSorter(this, par1);
+        this.targetEntitySelector = par7IEntitySelector != null ? par7IEntitySelector : (e -> true);
+        this.setFlags(EnumSet.of(Goal.Flag.TARGET));
         this.Me = par1;
     }
 
-    public boolean shouldExecute()
-    {
-      if (ChaosPersists.valentines_day == 0) return false;
-      if ((this.Me != null) && ((this.Me instanceof Girlfriend))) {
-        Girlfriend gf = (Girlfriend)this.Me;
-        if (gf.feelingBetter != 0) return false;
-
-      }
-
-      if ((this.targetChance > 0) && (this.taskOwner.getRNG().nextInt(100) > this.targetChance))
-      {
-        return false;
-      }
-
-      List var5 = this.taskOwner.world.getEntitiesWithinAABB(this.targetClass, this.taskOwner.getEntityBoundingBox().expand(this.targetDistance, 4.0D, this.targetDistance), this.targetEntitySelector);
-      Collections.sort(var5, this.theNearestAttackableTargetSorter);
-      Iterator var2 = var5.iterator();
-
-      while (var2.hasNext())
-      {
-        Entity var3 = (Entity)var2.next();
-        if ((var3 instanceof EntityLivingBase)) {
-          EntityLivingBase var4 = (EntityLivingBase)var3;
-
-          if (isSuitableTarget(var4, false))
-          {
-            this.targetEntity = var4;
-            return true;
-          }
+    @Override
+    public boolean canUse() {
+        if (ChaosPersists.valentines_day == 0) {
+            return false;
         }
-      }
-
-      this.targetEntity = null;
-      return false;
+        if (this.Me instanceof Girlfriend) {
+            Girlfriend gf = (Girlfriend) this.Me;
+            if (gf.feelingBetter != 0) {
+                return false;
+            }
+        }
+        if (this.targetChance > 0 && this.taskOwner.getRandom().nextInt(100) > this.targetChance) {
+            return false;
+        }
+        List<? extends Entity> var5 = this.taskOwner.level.getEntitiesOfClass(
+                this.targetClass,
+                this.taskOwner.getBoundingBox().inflate(this.targetDistance, 4.0D, this.targetDistance),
+                (java.util.function.Predicate<? super Entity>) this.targetEntitySelector::test);
+        Collections.sort(var5, this.theNearestAttackableTargetSorter);
+        Iterator<? extends Entity> var2 = var5.iterator();
+        while (var2.hasNext()) {
+            Entity var3 = var2.next();
+            if (var3 instanceof LivingEntity) {
+                LivingEntity var4 = (LivingEntity) var3;
+                if (isSuitableTarget(var4, false)) {
+                    this.targetEntity = var4;
+                    return true;
+                }
+            }
+        }
+        this.targetEntity = null;
+        return false;
     }
 
-
-    public void startExecuting() {
-        this.taskOwner.setAttackTarget(this.targetEntity);
-        super.startExecuting();
+    @Override
+    public void start() {
+        this.taskOwner.setTarget(this.targetEntity);
+        super.start();
     }
 }
-

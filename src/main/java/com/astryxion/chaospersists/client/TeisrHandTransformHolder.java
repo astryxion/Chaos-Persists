@@ -1,6 +1,6 @@
 package com.astryxion.chaospersists.client;
 
-import net.minecraft.client.renderer.block.model.ItemCameraTransforms.TransformType;
+import net.minecraft.client.renderer.model.ItemCameraTransforms.TransformType;
 
 /**
  * Holds the current {@link TransformType} between {@link TeisrHandBakedModelWrapper#handlePerspective}

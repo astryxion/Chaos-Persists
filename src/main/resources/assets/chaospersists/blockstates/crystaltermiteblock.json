@@ -1,6 +1,5 @@
 {
   "variants": {
-    "normal": { "model": "chaospersists:crystaltermiteblock" },
-    "inventory": { "model": "chaospersists:crystaltermiteblock" }
+    "" : { "model": "chaospersists:block/crystaltermiteblock" }
   }
 }

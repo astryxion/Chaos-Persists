@@ -8,95 +8,86 @@ import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.passive.EntityTameable;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.entity.projectile.EntityArrow;
-import net.minecraft.init.Items;
-import net.minecraft.init.SoundEvents;
-import net.minecraft.network.play.server.SPacketChangeGameState;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.MobEntity;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.passive.TameableEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.entity.projectile.ArrowEntity;
+import net.minecraft.item.Items;
+import net.minecraft.util.SoundEvents;
+import net.minecraft.network.play.server.SChangeGameStatePacket;
 import net.minecraft.util.DamageSource;
-import net.minecraft.util.EnumParticleTypes;
+import net.minecraft.particles.ParticleTypes;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
+import net.minecraftforge.registries.ForgeRegistries;
 
-public class UltimateArrow extends EntityArrow {
+public class UltimateArrow extends ArrowEntity {
 
     private static final DataParameter<Byte> CRIT =
-            EntityDataManager.createKey(UltimateArrow.class, DataSerializers.BYTE);
+            EntityDataManager.defineId(UltimateArrow.class, DataSerializers.BYTE);
 
     private int knockbackStrength;
 
-    // Basic constructors
-    public UltimateArrow(World world) {
-        super(world);
+    public UltimateArrow(EntityType<? extends UltimateArrow> type, World world) {
+        super(type, world);
     }
 
     public UltimateArrow(World world, double x, double y, double z) {
-        super(world, x, y, z);
+        super(resolveEntityType(), world);
+        this.setPos(x, y, z);
     }
 
-    // 🔥 Player instant shot constructor
-    public UltimateArrow(World world, EntityPlayer player, float velocity) {
-        super(world, player);
-
-        this.shoot(
-                player,
-                player.rotationPitch,
-                player.rotationYaw,
-                0.0F,
-                velocity,
-                1.0F
-        );
+    public UltimateArrow(World world, PlayerEntity player, float velocity) {
+        super(resolveEntityType(), world);
+        this.setOwner(player);
+        this.shootFromRotation(player, player.xRot, player.yRot, 0.0F, velocity, 1.0F);
     }
 
-    // 🔥 Restored mob constructor (fixes compile errors)
     public UltimateArrow(World world,
-                         EntityLiving shooter,
-                         EntityLivingBase target,
+                         MobEntity shooter,
+                         LivingEntity target,
                          float velocity,
                          float inaccuracy) {
-        super(world, shooter);
+        super(resolveEntityType(), world);
+        this.setOwner(shooter);
+        this.shootFromRotation(shooter, shooter.xRot, shooter.yRot, 0.0F, velocity, inaccuracy);
+    }
 
-        this.shoot(
-                shooter,
-                shooter.rotationPitch,
-                shooter.rotationYaw,
-                0.0F,
-                velocity,
-                inaccuracy
-        );
+    private static EntityType<? extends UltimateArrow> resolveEntityType() {
+        return (EntityType<? extends UltimateArrow>) ForgeRegistries.ENTITIES.getValue(new ResourceLocation("chaospersists", "ultimate_arrow"));
     }
 
     @Override
-    protected void entityInit() {
-        super.entityInit(); // REQUIRED to prevent DataManager crash
-        this.getDataManager().register(CRIT, (byte) 0);
+    protected void defineSynchedData() {
+        super.defineSynchedData();
+        this.entityData.define(CRIT, (byte) 0);
     }
 
     @Override
-    protected ItemStack getArrowStack() {
+    protected ItemStack getPickupItem() {
         return new ItemStack(Items.ARROW);
     }
 
     @Override
-    public void onUpdate() {
-        super.onUpdate();
+    public void tick() {
+        super.tick();
 
-        if (!this.inGround && this.getIsCritical()) {
+        if (!this.inGround && this.isCritArrow()) {
             for (int i = 0; i < 4; ++i) {
-                this.world.spawnParticle(
-                        EnumParticleTypes.CRIT,
-                        this.posX + this.motionX * i / 4.0,
-                        this.posY + this.motionY * i / 4.0,
-                        this.posZ + this.motionZ * i / 4.0,
-                        -this.motionX,
-                        -this.motionY + 0.2,
-                        -this.motionZ
+                this.level.addParticle(
+                        ParticleTypes.CRIT,
+                        this.getX() + this.getDeltaMovement().x * i / 4.0,
+                        this.getY() + this.getDeltaMovement().y * i / 4.0,
+                        this.getZ() + this.getDeltaMovement().z * i / 4.0,
+                        -this.getDeltaMovement().x,
+                        -this.getDeltaMovement().y + 0.2,
+                        -this.getDeltaMovement().z
                 );
             }
         }
@@ -104,79 +95,79 @@ public class UltimateArrow extends EntityArrow {
 
     @Override
     protected void onHit(RayTraceResult result) {
-        if (result.entityHit == null) {
+        if (result.getType() != net.minecraft.util.math.RayTraceResult.Type.ENTITY) {
             super.onHit(result);
             return;
         }
 
-        Entity hit = result.entityHit;
+        Entity hit = ((net.minecraft.util.math.EntityRayTraceResult) result).getEntity();
 
         if (ChaosPersists.ultimate_sword_pvp == 0) {
-            if (hit instanceof EntityPlayer || hit instanceof Girlfriend || hit instanceof Boyfriend) {
-                this.playSound(SoundEvents.ENTITY_ARROW_HIT, 1.0F, 1.2F / (this.rand.nextFloat() * 0.2F + 0.9F));
-                if (hit instanceof EntityLivingBase) {
-                    ((EntityLivingBase) hit).heal(1.0F);
+            if (hit instanceof PlayerEntity || hit instanceof Girlfriend || hit instanceof Boyfriend) {
+                this.playSound(SoundEvents.ARROW_HIT, 1.0F, 1.2F / (this.random.nextFloat() * 0.2F + 0.9F));
+                if (hit instanceof LivingEntity) {
+                    ((LivingEntity) hit).heal(1.0F);
                 }
-                this.setDead();
+                this.remove();
                 return;
             }
-            if (hit instanceof EntityTameable && ((EntityTameable) hit).isTamed()) {
-                this.playSound(SoundEvents.ENTITY_ARROW_HIT, 1.0F, 1.2F / (this.rand.nextFloat() * 0.2F + 0.9F));
-                ((EntityTameable) hit).heal(1.0F);
-                this.setDead();
+            if (hit instanceof TameableEntity && ((TameableEntity) hit).isTame()) {
+                this.playSound(SoundEvents.ARROW_HIT, 1.0F, 1.2F / (this.random.nextFloat() * 0.2F + 0.9F));
+                ((TameableEntity) hit).heal(1.0F);
+                this.remove();
                 return;
             }
         }
 
-        float velocity = MathHelper.sqrt(this.motionX * this.motionX + this.motionY * this.motionY + this.motionZ * this.motionZ);
+        float velocity = MathHelper.sqrt(this.getDeltaMovement().x * this.getDeltaMovement().x + this.getDeltaMovement().y * this.getDeltaMovement().y + this.getDeltaMovement().z * this.getDeltaMovement().z);
         int damage = MathHelper.ceil(velocity * (float) ChaosPersists.UltimateBowDamage);
 
-        if (this.getIsCritical()) {
-            damage += this.rand.nextInt(damage / 2 + 2);
+        if (this.isCritArrow()) {
+            damage += this.random.nextInt(damage / 2 + 2);
         }
 
-        DamageSource source = this.shootingEntity == null
-                ? DamageSource.causeArrowDamage(this, this)
-                : DamageSource.causeArrowDamage(this, this.shootingEntity);
+        Entity ownerEntity = this.getOwner();
+        LivingEntity owner = ownerEntity instanceof LivingEntity ? (LivingEntity) ownerEntity : null;
+        DamageSource source = owner == null
+                ? DamageSource.arrow(this, this)
+                : DamageSource.arrow(this, owner);
 
-        if (this.isBurning()) {
-            hit.setFire(5);
+        if (this.isOnFire()) {
+            hit.setSecondsOnFire(5);
         }
 
-        if (hit.attackEntityFrom(source, damage)) {
-            if (hit instanceof EntityLiving) {
-                EntityLiving living = (EntityLiving) hit;
-                if (!this.world.isRemote) {
-                    living.setArrowCountInEntity(living.getArrowCountInEntity() + 1);
+        if (hit.hurt(source, damage)) {
+            if (hit instanceof MobEntity) {
+                MobEntity living = (MobEntity) hit;
+                if (!this.level.isClientSide) {
+                    living.setArrowCount(living.getArrowCount() + 1);
                 }
             }
 
             applyKnockback(hit);
 
-            if (this.shootingEntity instanceof EntityPlayerMP && hit instanceof EntityPlayer && hit != this.shootingEntity) {
-                ((EntityPlayerMP) this.shootingEntity).connection.sendPacket(new SPacketChangeGameState(6, 0.0F));
+            if (owner instanceof ServerPlayerEntity && hit instanceof PlayerEntity && hit != owner) {
+                ((ServerPlayerEntity) owner).connection.send(new SChangeGameStatePacket(SChangeGameStatePacket.ARROW_HIT_PLAYER, 0.0F));
             }
 
-            this.playSound(SoundEvents.ENTITY_ARROW_HIT, 1.0F, 1.2F / (this.rand.nextFloat() * 0.2F + 0.9F));
-            this.setDead();
+            this.playSound(SoundEvents.ARROW_HIT, 1.0F, 1.2F / (this.random.nextFloat() * 0.2F + 0.9F));
+            this.remove();
         } else {
-            this.motionX *= -0.10000000149D;
-            this.motionY *= -0.10000000149D;
-            this.motionZ *= -0.10000000149D;
-            this.rotationYaw += 180.0F;
-            this.prevRotationYaw += 180.0F;
+            com.astryxion.chaospersists.util.MyUtils.mulDeltaMovement(this, -0.10000000149D, -0.10000000149D, -0.10000000149D);
+            this.yRot += 180.0F;
+            this.yRotO += 180.0F;
         }
     }
 
     private void applyKnockback(Entity target) {
         if (this.knockbackStrength > 0) {
-            float f = MathHelper.sqrt(this.motionX * this.motionX + this.motionZ * this.motionZ);
+            float f = MathHelper.sqrt(this.getDeltaMovement().x * this.getDeltaMovement().x + this.getDeltaMovement().z * this.getDeltaMovement().z);
             if (f > 0.0F) {
-                target.addVelocity(
-                        this.motionX * this.knockbackStrength * 0.6D / f,
+                target.setDeltaMovement(target.getDeltaMovement().add(
+                        this.getDeltaMovement().x * this.knockbackStrength * 0.6D / f,
                         0.1D,
-                        this.motionZ * this.knockbackStrength * 0.6D / f
-                );
+                        this.getDeltaMovement().z * this.knockbackStrength * 0.6D / f
+                ));
             }
         }
     }
@@ -186,7 +177,7 @@ public class UltimateArrow extends EntityArrow {
     }
 
     @Override
-    public double getDamage() {
+    public double getBaseDamage() {
         return ChaosPersists.UltimateBowDamage;
     }
 }

@@ -1,146 +1,124 @@
-/*
- * Decompiled with CFR 0_125.
- * 
- * Could not load the following classes:
- *  net.minecraftforge.fml.relauncher.Side
- *  net.minecraftforge.fml.relauncher.SideOnly
- *  com.astryxion.chaospersists.BlockQuinoa
- *  com.astryxion.chaospersists.ChaosPersists
- *  net.minecraft.block.Block
- *  net.minecraft.block.BlockGrass
- *  net.minecraft.block.BlockReed
- *  net.minecraft.client.renderer.texture.IIconRegister
- *  net.minecraft.init.Blocks
- *  net.minecraft.item.Item
- *  net.minecraft.util.IIcon
- *  net.minecraft.world.World
- */
 package com.astryxion.chaospersists.block;
 
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 import com.astryxion.chaospersists.core.ChaosPersists;
-import java.util.Random;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockGrass;
-import net.minecraft.block.BlockReed;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Blocks;
-import net.minecraft.item.Item;
-import net.minecraft.util.BlockRenderLayer;
-import net.minecraft.util.EnumBlockRenderType;
-import net.minecraft.world.World;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
-public class BlockQuinoa
-extends BlockReed {
+import java.util.Collections;
+import java.util.List;
+import java.util.Random;
+
+import net.minecraft.block.Block;
+import net.minecraft.loot.LootContext;
+import net.minecraft.loot.LootParameterSets;
+import net.minecraft.loot.LootParameters;
+import net.minecraft.block.SugarCaneBlock;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.AbstractBlock;
+import net.minecraft.block.Blocks;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
+import net.minecraft.world.IWorldReader;
+import net.minecraft.world.server.ServerWorld;
+
+public class BlockQuinoa extends SugarCaneBlock {
+
     private int myMaxHeight = 0;
 
-    public BlockQuinoa() { this(0); }
+    public BlockQuinoa() {
+        this(0);
+    }
+
     protected BlockQuinoa(int par1) {
-        this.setTickRandomly(true);
+        super(AbstractBlock.Properties.copy(Blocks.SUGAR_CANE).randomTicks().noCollission());
     }
 
-    /** Same as {@link BlockCorn}: {@link BlockReed} AGE is 0–15; clamp meta so blockstates always match. */
-    @Override
-    public IBlockState getStateFromMeta(int meta) {
-        return super.getStateFromMeta(meta & 15);
-    }
-
-    @Override
-    public int getMetaFromState(IBlockState state) {
-        return state.getValue(BlockReed.AGE).intValue();
+    @OnlyIn(Dist.CLIENT)
+public RenderType getRenderType(BlockState state) {
+        return RenderType.cutout();
     }
 
     @Override
-    public EnumBlockRenderType getRenderType(IBlockState state) {
-        return EnumBlockRenderType.MODEL;
-    }
-
-    @SideOnly(Side.CLIENT)
-    @Override
-    public BlockRenderLayer getRenderLayer() {
-        return BlockRenderLayer.CUTOUT;
-    }
-
-    public boolean canPlaceBlockAt(World par1World, int par2, int par3, int par4) {
-        Block bid = par1World.getBlockState(new net.minecraft.util.math.BlockPos(par2, par3 - 1, par4)).getBlock();
+    public boolean canSurvive(BlockState state, IWorldReader world, BlockPos pos) {
+        Block bid = world.getBlockState(pos.below()).getBlock();
         if (bid == Blocks.AIR) {
             return false;
         }
-        if (bid == ChaosPersists.MyQuinoaPlant1 || bid == ChaosPersists.MyQuinoaPlant2 || bid == ChaosPersists.MyQuinoaPlant3 || bid == ChaosPersists.MyQuinoaPlant4 || bid == Blocks.GRASS || bid == Blocks.DIRT || bid == Blocks.FARMLAND || bid == ChaosPersists.CrystalGrass) {
-            return true;
-        }
-        return false;
+        return bid == ChaosPersists.MyQuinoaPlant1 || bid == ChaosPersists.MyQuinoaPlant2
+                || bid == ChaosPersists.MyQuinoaPlant3 || bid == ChaosPersists.MyQuinoaPlant4
+                || bid == Blocks.GRASS_BLOCK || bid == Blocks.DIRT || bid == Blocks.FARMLAND;
     }
 
-    public void updateTick(World par1World, net.minecraft.util.math.BlockPos pos, net.minecraft.block.state.IBlockState state, Random par5Random) {
+    @Override
+    public void randomTick(BlockState state, ServerWorld world, BlockPos pos, Random rand) {
+        int par2 = pos.getX();
+        int par3 = pos.getY();
+        int par4 = pos.getZ();
         Block bid;
-        int Height = 1;
+        int height = 1;
         boolean dontGrow = false;
-        if (par1World.isRemote) {
+        if (this != ChaosPersists.MyQuinoaPlant1 && this != ChaosPersists.MyQuinoaPlant2) {
             return;
         }
-        if (this != ChaosPersists.MyQuinoaPlant1 && this != ChaosPersists.MyQuinoaPlant3) {
-            return;
-        }
-        int par2 = pos.getX(), par3 = pos.getY(), par4 = pos.getZ();
-        int var7 = this.getMetaFromState(state);
+        int var7 = state.getValue(AGE);
         this.myMaxHeight = var7 >> 8;
         var7 &= 255;
         if (this.myMaxHeight == 0) {
-            this.myMaxHeight = 2 + ChaosPersists.ChaosRand.nextInt(3);
+            this.myMaxHeight = 4 + ChaosPersists.ChaosRand.nextInt(4);
         }
-        if ((bid = par1World.getBlockState(pos.up()).getBlock()) == Blocks.AIR) {
-            for (int var6 = 1; var6 < 10 && ((bid = par1World.getBlockState(pos.down(var6)).getBlock()) == ChaosPersists.MyQuinoaPlant1 || bid == ChaosPersists.MyQuinoaPlant2 || bid == ChaosPersists.MyQuinoaPlant3 || bid == ChaosPersists.MyQuinoaPlant4); ++var6) {
-                ++Height;
-                if (bid != ChaosPersists.MyQuinoaPlant3 && bid != ChaosPersists.MyQuinoaPlant4) continue;
+        if (world.getBlockState(new BlockPos(par2, par3 + 1, par4)).getBlock() == Blocks.AIR) {
+            for (int var6 = 1; var6 < 10 && ((bid = world.getBlockState(new BlockPos(par2, par3 - var6, par4)).getBlock()) == ChaosPersists.MyQuinoaPlant1 || bid == ChaosPersists.MyQuinoaPlant2 || bid == ChaosPersists.MyQuinoaPlant3 || bid == ChaosPersists.MyQuinoaPlant4); ++var6) {
+                ++height;
+                if (bid != ChaosPersists.MyQuinoaPlant3 && bid != ChaosPersists.MyQuinoaPlant4) {
+                    continue;
+                }
                 dontGrow = true;
             }
             if (dontGrow) {
-                this.myMaxHeight = Height;
+                this.myMaxHeight = height;
             }
-            int metaVal = this.myMaxHeight << 8;
-            if (var7 >= 5 - this.myMaxHeight / 3) {
-                if (Height < this.myMaxHeight) {
-                    par1World.setBlockState(pos.up(), ChaosPersists.MyQuinoaPlant1.getDefaultState(), 2);
-                    par1World.setBlockState(pos, ChaosPersists.MyQuinoaPlant2.getDefaultState(), 2);
+            if (var7 >= 6 - this.myMaxHeight / 3) {
+                if (height < this.myMaxHeight) {
+                    world.setBlock(new BlockPos(par2, par3 + 1, par4), ChaosPersists.MyQuinoaPlant1.defaultBlockState(), 2);
+                    world.setBlock(new BlockPos(par2, par3, par4), ChaosPersists.MyQuinoaPlant2.defaultBlockState(), 2);
                 } else {
-                    bid = par1World.getBlockState(pos).getBlock();
-                    if (bid == ChaosPersists.MyQuinoaPlant1) {
-                        par1World.setBlockState(pos, ChaosPersists.MyQuinoaPlant3.getDefaultState(), 2);
-                    } else if (bid == ChaosPersists.MyQuinoaPlant3) {
-                        par1World.setBlockState(pos, ChaosPersists.MyQuinoaPlant4.getDefaultState(), 2);
+                    for (int i = 1; i < this.myMaxHeight - 1; ++i) {
+                        bid = world.getBlockState(new BlockPos(par2, par3 - i, par4)).getBlock();
+                        if (bid == ChaosPersists.MyQuinoaPlant2) {
+                            world.setBlock(new BlockPos(par2, par3 - i, par4), ChaosPersists.MyQuinoaPlant3.defaultBlockState(), 2);
+                            continue;
+                        }
+                        if (bid != ChaosPersists.MyQuinoaPlant3) {
+                            continue;
+                        }
+                        world.setBlock(new BlockPos(par2, par3 - i, par4), ChaosPersists.MyQuinoaPlant4.defaultBlockState(), 2);
                     }
-                    par1World.setBlockState(pos, par1World.getBlockState(pos).getBlock().getDefaultState(), 2);
+                    bid = world.getBlockState(new BlockPos(par2, par3, par4)).getBlock();
+                    world.setBlock(new BlockPos(par2, par3, par4), bid.defaultBlockState(), 2);
                 }
             } else {
-                bid = par1World.getBlockState(pos).getBlock();
-                par1World.setBlockState(pos, bid.getDefaultState(), 2);
+                bid = world.getBlockState(new BlockPos(par2, par3, par4)).getBlock();
+                world.setBlock(new BlockPos(par2, par3, par4),
+                        bid.defaultBlockState().setValue(AGE, Math.min(15, var7 + 1)), 2);
             }
         }
     }
 
     @Override
-    public Item getItemDropped(IBlockState state, Random rand, int fortune) {
-        return ChaosPersists.MyQuinoa;
+    public ItemStack getCloneItemStack(net.minecraft.world.IBlockReader world, BlockPos pos, BlockState state) {
+        return new ItemStack(ChaosPersists.MyQuinoa);
     }
 
-    public int quantityDropped(Random par1Random) {
+    @Override
+    public List<ItemStack> getDrops(BlockState state, LootContext.Builder builder) {
+        LootContext ctx = builder.withParameter(LootParameters.BLOCK_STATE, state).create(LootParameterSets.BLOCK);
         if (this == ChaosPersists.MyQuinoaPlant4) {
-            return 3 + par1Random.nextInt(3);
+            Random rand = ctx.getRandom();
+            return Collections.singletonList(new ItemStack(ChaosPersists.MyQuinoa, 1 + rand.nextInt(2)));
         }
-        return 0;
+        return Collections.emptyList();
     }
-
-    public Item itemPicked(World par1World, int par2, int par3, int par4) {
-        return ChaosPersists.MyQuinoa;
-    }
-
-    protected Item getSeedItem() {
-        return ChaosPersists.MyQuinoa;
-    }
-
-    protected Item getCropItem() {
-        return ChaosPersists.MyQuinoa;
-    }}
-
+}

@@ -1,60 +1,56 @@
-/*
- * Decompiled with CFR 0_125.
- * 
- * Could not load the following classes:
- *  net.minecraftforge.fml.relauncher.Side
- *  net.minecraftforge.fml.relauncher.SideOnly
- *  com.astryxion.chaospersists.BlockStrawberry
- *  com.astryxion.chaospersists.ChaosPersists
- *  net.minecraft.block.BlockCrops
- *  net.minecraft.client.renderer.texture.IIconRegister
- *  net.minecraft.item.Item
- *  net.minecraft.util.IIcon
- */
 package com.astryxion.chaospersists.block;
 
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 import com.astryxion.chaospersists.core.ChaosPersists;
-import java.util.Random;
-import net.minecraft.block.BlockCrops;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.item.Item;
-import net.minecraft.util.BlockRenderLayer;
-import net.minecraft.util.EnumBlockRenderType;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
-public class BlockStrawberry extends BlockCrops {
+import java.util.Collections;
+import java.util.List;
+import java.util.Random;
+
+import net.minecraft.block.BlockState;
+import net.minecraft.block.CropsBlock;
+import net.minecraft.block.AbstractBlock;
+import net.minecraft.block.Blocks;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.loot.LootContext;
+import net.minecraft.loot.LootParameterSets;
+import net.minecraft.loot.LootParameters;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.IBlockReader;
+
+public class BlockStrawberry extends CropsBlock {
 
     public BlockStrawberry() {
         this(0);
     }
 
     public BlockStrawberry(int par1) {
-        setDefaultState(blockState.getBaseState().withProperty(BlockCrops.AGE, Integer.valueOf(0)));
+        super(AbstractBlock.Properties.copy(Blocks.WHEAT).randomTicks().noCollission());
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public RenderType getRenderType(BlockState state) {
+        return RenderType.cutout();
     }
 
     @Override
-    public EnumBlockRenderType getRenderType(IBlockState state) {
-        return EnumBlockRenderType.MODEL;
-    }
-
-    @SideOnly(Side.CLIENT)
-    @Override
-    public BlockRenderLayer getRenderLayer() {
-        return BlockRenderLayer.CUTOUT;
-    }
-
-    public int quantityDropped(Random par1Random) {
-        return 1 + par1Random.nextInt(5);
-    }
-
-    protected Item func_149866_i() {
+    protected Item getBaseSeedId() {
         return ChaosPersists.MyStrawberrySeed;
     }
 
-    protected Item func_149865_P() {
-        return ChaosPersists.MyStrawberry;
+    @Override
+    public ItemStack getCloneItemStack(IBlockReader world, BlockPos pos, BlockState state) {
+        return new ItemStack(ChaosPersists.MyStrawberrySeed);
     }
 
+    @Override
+    public List<ItemStack> getDrops(BlockState state, LootContext.Builder builder) {
+        LootContext ctx = builder.withParameter(LootParameters.BLOCK_STATE, state).create(LootParameterSets.BLOCK);
+        Random rand = ctx.getRandom();
+        int count = 1 + rand.nextInt(5);
+        return Collections.singletonList(new ItemStack(ChaosPersists.MyStrawberry, count));
+    }
 }
-

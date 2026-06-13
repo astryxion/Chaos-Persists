@@ -1,24 +1,22 @@
 package com.astryxion.chaospersists.item;
 
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.SoundEvents;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ActionResult;
-import net.minecraft.util.EnumActionResult;
-import net.minecraft.util.EnumHand;
+import net.minecraft.util.Hand;
 import net.minecraft.util.SoundCategory;
+import net.minecraft.util.SoundEvents;
 import net.minecraft.world.World;
 
 public class ItemShoes extends Item {
     private int my_id = 0;
 
     public ItemShoes(int i, int j) {
+        super(new Item.Properties().tab(ItemGroup.TAB_MISC));
         this.my_id = j;
-        this.maxStackSize = 64;
-        this.setCreativeTab(CreativeTabs.DECORATIONS);
     }
 
     public ItemShoes(int type) {
@@ -26,19 +24,19 @@ public class ItemShoes extends Item {
     }
 
     @Override
-    public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, EnumHand hand) {
-        ItemStack stack = player.getHeldItem(hand);
-        if (!player.capabilities.isCreativeMode) {
+    public ActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
+        ItemStack stack = player.getItemInHand(hand);
+        if (!player.isCreative()) {
             stack.shrink(1);
         }
-        world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.ENTITY_SNOWBALL_THROW,
-                SoundCategory.PLAYERS, 0.5f, 0.4f / (itemRand.nextFloat() * 0.4f + 0.8f));
-        if (!world.isRemote) {
-            Shoes entity = new Shoes(world, (EntityLivingBase) player, this.my_id);
-            entity.shoot(player, player.rotationPitch, player.rotationYaw, 0.0F, 1.5F, 1.0F);
-            world.spawnEntity(entity);
+        world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.SNOWBALL_THROW,
+                SoundCategory.PLAYERS, 0.5f, 0.4f / (world.random.nextFloat() * 0.4f + 0.8f));
+        if (!world.isClientSide) {
+            Shoes entity = new Shoes(world, (LivingEntity) player, this.my_id);
+            entity.shootFromRotation(player, player.xRot, player.yRot, 0.0F, 1.5F, 1.0F);
+            world.addFreshEntity(entity);
         }
-        player.swingArm(hand);
-        return new ActionResult<>(EnumActionResult.SUCCESS, stack);
+        player.swing(hand);
+        return ActionResult.success(stack);
     }
 }

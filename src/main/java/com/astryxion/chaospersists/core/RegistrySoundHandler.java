@@ -3,7 +3,7 @@ package com.astryxion.chaospersists.core;
 import net.minecraft.util.SoundEvent;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 /**
  * Registers mod sounds in 1.12.2. Uses static EventBusSubscriber so we are on the

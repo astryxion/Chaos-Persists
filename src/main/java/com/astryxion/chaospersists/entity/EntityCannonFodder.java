@@ -10,27 +10,30 @@
  *  com.astryxion.chaospersists.VelocityRaptor
  *  net.minecraft.entity.DataWatcher
  *  net.minecraft.entity.Entity
- *  net.minecraft.entity.EntityAgeable
- *  net.minecraft.entity.EntityList
- *  net.minecraft.entity.EntityLiving
- *  net.minecraft.entity.EntityLivingBase
+ *  net.minecraft.entity.AgeableEntity
+ *  net.minecraftforge.registries.ForgeRegistries.ENTITIES
+ *  net.minecraft.entity.Mob
+ *  net.minecraft.entity.LivingEntity
  *  net.minecraft.entity.ai.EntitySenses
- *  net.minecraft.entity.monster.EntityMob
- *  net.minecraft.entity.passive.EntityTameable
- *  net.minecraft.entity.player.EntityPlayer
- *  net.minecraft.entity.player.InventoryPlayer
- *  net.minecraft.entity.player.PlayerCapabilities
- *  net.minecraft.init.Items
+ *  net.minecraft.entity.monster.Monster
+ *  net.minecraft.entity.passive.TameableEntity
+ *  net.minecraft.entity.player.PlayerEntity
+ *  net.minecraft.entity.player.Inventory
+ *  net.minecraft.entity.player.PlayerEntityCapabilities
+ *  net.minecraft.item.Items
  *  net.minecraft.item.Item
  *  net.minecraft.item.ItemStack
- *  net.minecraft.nbt.NBTTagCompound
- *  net.minecraft.pathfinding.PathNavigate
+ *  net.minecraft.nbt.CompoundNBT
+ *  net.minecraft.pathfinding.PathNavigator
  *  net.minecraft.util.math.AxisAlignedBB
  *  net.minecraft.util.DamageSource
- *  net.minecraft.world.EnumDifficulty
+ *  net.minecraft.world.Difficulty
  *  net.minecraft.world.World
  */
 package com.astryxion.chaospersists.entity;
+import net.minecraft.entity.MobEntity;
+import net.minecraft.entity.EntityType;
+import net.minecraft.world.World;
 
 import com.astryxion.chaospersists.entity.Chipmunk;
 import com.astryxion.chaospersists.util.GenericTargetSorter;
@@ -46,33 +49,41 @@ import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityAgeable;
-import net.minecraft.entity.EntityList;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.AgeableEntity;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.entity.MobEntity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.EntitySenses;
-import net.minecraft.entity.monster.EntityMob;
-import net.minecraft.entity.passive.EntityTameable;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.entity.player.PlayerCapabilities;
-import net.minecraft.init.Items;
+import net.minecraft.entity.monster.MonsterEntity;
+import net.minecraft.entity.passive.TameableEntity;
+import net.minecraft.entity.ai.attributes.AttributeModifierMap;
+import net.minecraft.entity.ai.attributes.Attributes;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.entity.player.PlayerAbilities;
+import net.minecraft.item.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.pathfinding.PathNavigate;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.pathfinding.PathNavigator;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.DamageSource;
-import net.minecraft.world.EnumDifficulty;
+import net.minecraft.world.Difficulty;
 import net.minecraft.world.World;
+import net.minecraft.world.server.ServerWorld;
+import net.minecraft.util.Hand;
+import net.minecraft.util.ActionResultType;
+import net.minecraft.util.SoundEvents;
+import net.minecraft.util.SoundCategory;
+import javax.annotation.Nullable;
 
 /*
  * Exception performing whole class analysis ignored.
  */
 public class EntityCannonFodder
-extends EntityTameable {
-    private static final DataParameter<Integer> IS_ACTIVATED = EntityDataManager.createKey(EntityCannonFodder.class, DataSerializers.VARINT);
-    private static final DataParameter<Integer> HAT_COLOR = EntityDataManager.createKey(EntityCannonFodder.class, DataSerializers.VARINT);
+extends TameableEntity {
+    private static final DataParameter<Integer> IS_ACTIVATED = EntityDataManager.defineId(EntityCannonFodder.class, DataSerializers.INT);
+    private static final DataParameter<Integer> HAT_COLOR = EntityDataManager.defineId(EntityCannonFodder.class, DataSerializers.INT);
     String name_one = null;
     String name_two = null;
     private int is_activated = 0;
@@ -83,31 +94,37 @@ extends EntityTameable {
     private int py = 0;
     private GenericTargetSorter LocalTargetSorter = null;
 
-    public EntityCannonFodder(World par1World) {
-        super(par1World);
+    public EntityCannonFodder(EntityType<? extends EntityCannonFodder> type, World par1World) {
+        super(type, par1World);
         this.LocalTargetSorter = new GenericTargetSorter((Entity)this);
     }
 
-    protected void applyEntityAttributes() {
-        super.applyEntityAttributes();
+    public static AttributeModifierMap createAttributes() {
+        return TameableEntity.createMobAttributes().build();
     }
 
-    protected void entityInit() {
-        super.entityInit();
-        this.getDataManager().register(IS_ACTIVATED, 0);
-        this.getDataManager().register(HAT_COLOR, 0);
+    @Nullable
+    @Override
+    public AgeableEntity getBreedOffspring(ServerWorld level, AgeableEntity mate) {
+        return null;
     }
 
-    public void onUpdate() {
-        super.onUpdate();
+    protected void defineSynchedData() {
+        super.defineSynchedData();
+        this.entityData.define(IS_ACTIVATED, 0);
+        this.entityData.define(HAT_COLOR, 0);
+    }
+
+    public void tick() {
+        super.tick();
         ++this.syncer;
         if (this.syncer > 5) {
-            if (this.world.isRemote) {
-                this.is_activated = this.getDataManager().get(IS_ACTIVATED).intValue();
-                this.hat_color = this.getDataManager().get(HAT_COLOR).intValue();
+            if (this.level.isClientSide) {
+                this.is_activated = this.entityData.get(IS_ACTIVATED).intValue();
+                this.hat_color = this.entityData.get(HAT_COLOR).intValue();
             } else {
-                this.getDataManager().set(IS_ACTIVATED, this.is_activated);
-                this.getDataManager().set(HAT_COLOR, this.hat_color);
+                this.entityData.set(IS_ACTIVATED, this.is_activated);
+                this.entityData.set(HAT_COLOR, this.hat_color);
             }
             this.syncer = 0;
         }
@@ -117,94 +134,96 @@ extends EntityTameable {
      * Enabled force condition propagation
      * Lifted jumps to return sites
      */
-    public boolean processInteract(EntityPlayer par1EntityPlayer, net.minecraft.util.EnumHand hand) {
-        ItemStack var2 = par1EntityPlayer.getHeldItem(hand);
+    @Override
+    public ActionResultType mobInteract(PlayerEntity par1PlayerEntityEntity, Hand hand) {
+        ItemStack var2 = par1PlayerEntityEntity.getItemInHand(hand);
         if (var2 != null && !var2.isEmpty() && var2.getCount() <= 0) {
-            par1EntityPlayer.setHeldItem(hand, ItemStack.EMPTY);
+            par1PlayerEntityEntity.setItemInHand(hand, ItemStack.EMPTY);
             var2 = ItemStack.EMPTY;
         }
-        if (super.processInteract(par1EntityPlayer, hand)) {
-            return true;
+        ActionResultType superResult = super.mobInteract(par1PlayerEntityEntity, hand);
+        if (superResult.consumesAction()) {
+            return superResult;
         }
-        if (this.name_one != null && this.isTamed()) {
-            if (this.name_one.equals(par1EntityPlayer.getUniqueID().toString())) {
+        if (this.name_one != null && this.isTame()) {
+            if (this.name_one.equals(par1PlayerEntityEntity.getUUID().toString())) {
                 if (this.name_two == null) {
                     this.name_two = this.name_one;
-                    this.name_one = par1EntityPlayer.getUniqueID().toString();
-                    this.setOwnerId(this.name_one != null && !this.name_one.isEmpty() ? java.util.UUID.fromString(this.name_one) : null);
+                    this.name_one = par1PlayerEntityEntity.getUUID().toString();
+                    this.setOwnerUUID(this.name_one != null && !this.name_one.isEmpty() ? java.util.UUID.fromString(this.name_one) : null);
                     this.is_activated = 2;
                 }
             } else if (this.name_two != null) {
-                if (!this.name_two.equals(par1EntityPlayer.getUniqueID().toString())) return true;
+                if (!this.name_two.equals(par1PlayerEntityEntity.getUUID().toString())) return ActionResultType.SUCCESS;
                 this.name_two = this.name_one;
-                this.name_one = par1EntityPlayer.getUniqueID().toString();
-                this.setOwnerId(this.name_one != null && !this.name_one.isEmpty() ? java.util.UUID.fromString(this.name_one) : null);
+                this.name_one = par1PlayerEntityEntity.getUUID().toString();
+                this.setOwnerUUID(this.name_one != null && !this.name_one.isEmpty() ? java.util.UUID.fromString(this.name_one) : null);
                 this.is_activated = 2;
             } else {
                 this.name_two = this.name_one;
-                this.name_one = par1EntityPlayer.getUniqueID().toString();
-                this.setOwnerId(this.name_one != null && !this.name_one.isEmpty() ? java.util.UUID.fromString(this.name_one) : null);
+                this.name_one = par1PlayerEntityEntity.getUUID().toString();
+                this.setOwnerUUID(this.name_one != null && !this.name_one.isEmpty() ? java.util.UUID.fromString(this.name_one) : null);
                 this.is_activated = 2;
             }
         }
-        if (var2 != null && !var2.isEmpty() && var2.getItem() == Items.CARROT && par1EntityPlayer.getDistanceSq((Entity)this) < 16.0) {
+        if (var2 != null && !var2.isEmpty() && var2.getItem() == Items.CARROT && par1PlayerEntityEntity.distanceToSqr((Entity)this) < 16.0) {
             this.hat_color = 1;
             if (this.name_one == null) {
-                this.name_one = par1EntityPlayer.getUniqueID().toString();
+                this.name_one = par1PlayerEntityEntity.getUUID().toString();
             }
             if (this.is_activated == 0) {
                 this.is_activated = 1;
             }
-            this.setTamed(true);
-            this.setOwnerId(this.name_one != null && !this.name_one.isEmpty() ? java.util.UUID.fromString(this.name_one) : null);
-            this.playTameEffect(true);
+            this.setTame(true);
+            this.setOwnerUUID(this.name_one != null && !this.name_one.isEmpty() ? java.util.UUID.fromString(this.name_one) : null);
+            this.level.broadcastEntityEvent(this, (byte)7);
             this.heal(this.getMaxHealth() - this.getHealth());
-            this.setGrowingAge(-24000);
-            if (par1EntityPlayer.capabilities.isCreativeMode) return true;
+            this.setAge(-24000);
+            if (par1PlayerEntityEntity.isCreative()) return ActionResultType.SUCCESS;
             var2.shrink(1);
-            if (var2.getCount() > 0) return true;
-            par1EntityPlayer.setHeldItem(hand, ItemStack.EMPTY);
-            return true;
+            if (var2.getCount() > 0) return ActionResultType.SUCCESS;
+            par1PlayerEntityEntity.setItemInHand(hand, ItemStack.EMPTY);
+            return ActionResultType.SUCCESS;
         }
-        if (var2 != null && !var2.isEmpty() && var2.getItem() == Items.POTATO && par1EntityPlayer.getDistanceSq((Entity)this) < 16.0) {
+        if (var2 != null && !var2.isEmpty() && var2.getItem() == Items.POTATO && par1PlayerEntityEntity.distanceToSqr((Entity)this) < 16.0) {
             this.hat_color = 3;
             if (this.name_one == null) {
-                this.name_one = par1EntityPlayer.getUniqueID().toString();
+                this.name_one = par1PlayerEntityEntity.getUUID().toString();
             }
             if (this.is_activated == 0) {
                 this.is_activated = 1;
             }
-            this.setTamed(true);
-            this.setOwnerId(this.name_one != null && !this.name_one.isEmpty() ? java.util.UUID.fromString(this.name_one) : null);
-            this.playTameEffect(true);
+            this.setTame(true);
+            this.setOwnerUUID(this.name_one != null && !this.name_one.isEmpty() ? java.util.UUID.fromString(this.name_one) : null);
+            this.level.broadcastEntityEvent(this, (byte)7);
             this.heal(this.getMaxHealth() - this.getHealth());
-            this.setGrowingAge(-24000);
-            if (par1EntityPlayer.capabilities.isCreativeMode) return true;
+            this.setAge(-24000);
+            if (par1PlayerEntityEntity.isCreative()) return ActionResultType.SUCCESS;
             var2.shrink(1);
-            if (var2.getCount() > 0) return true;
-            par1EntityPlayer.setHeldItem(net.minecraft.util.EnumHand.MAIN_HAND, ItemStack.EMPTY);
-            return true;
+            if (var2.getCount() > 0) return ActionResultType.SUCCESS;
+            par1PlayerEntityEntity.setItemInHand(net.minecraft.util.Hand.MAIN_HAND, ItemStack.EMPTY);
+            return ActionResultType.SUCCESS;
         }
-        if (var2 != null && !var2.isEmpty() && var2.getItem() == ChaosPersists.MyQuinoa && par1EntityPlayer.getDistanceSq((Entity)this) < 16.0) {
+        if (var2 != null && !var2.isEmpty() && var2.getItem() == ChaosPersists.MyQuinoa && par1PlayerEntityEntity.distanceToSqr((Entity)this) < 16.0) {
             this.hat_color = 2;
             if (this.name_one == null) {
-                this.name_one = par1EntityPlayer.getUniqueID().toString();
+                this.name_one = par1PlayerEntityEntity.getUUID().toString();
             }
             if (this.is_activated == 0) {
                 this.is_activated = 1;
             }
-            this.setTamed(true);
-            this.setOwnerId(this.name_one != null && !this.name_one.isEmpty() ? java.util.UUID.fromString(this.name_one) : null);
-            this.playTameEffect(true);
+            this.setTame(true);
+            this.setOwnerUUID(this.name_one != null && !this.name_one.isEmpty() ? java.util.UUID.fromString(this.name_one) : null);
+            this.level.broadcastEntityEvent(this, (byte)7);
             this.heal(this.getMaxHealth() - this.getHealth());
-            this.setGrowingAge(-24000);
-            if (par1EntityPlayer.capabilities.isCreativeMode) return true;
+            this.setAge(-24000);
+            if (par1PlayerEntityEntity.isCreative()) return ActionResultType.SUCCESS;
             var2.shrink(1);
-            if (var2.getCount() > 0) return true;
-            par1EntityPlayer.setHeldItem(net.minecraft.util.EnumHand.MAIN_HAND, ItemStack.EMPTY);
-            return true;
+            if (var2.getCount() > 0) return ActionResultType.SUCCESS;
+            par1PlayerEntityEntity.setItemInHand(net.minecraft.util.Hand.MAIN_HAND, ItemStack.EMPTY);
+            return ActionResultType.SUCCESS;
         }
-        if (var2 != null && !var2.isEmpty() && this.is_activated == 2 && var2.getItem() == ChaosPersists.MyCornCob && par1EntityPlayer.getDistanceSq((Entity)this) < 16.0) {
+        if (var2 != null && !var2.isEmpty() && this.is_activated == 2 && var2.getItem() == ChaosPersists.MyCornCob && par1PlayerEntityEntity.distanceToSqr((Entity)this) < 16.0) {
             Entity newent;
             String myname = "Ostrich";
             if (this instanceof Lizard) {
@@ -216,43 +235,58 @@ extends EntityTameable {
             if (this instanceof VelocityRaptor) {
                 myname = "Velocity Raptor";
             }
-            if (!this.world.isRemote && (newent = EntityCannonFodder.spawnCreature((World)this.world, (String)myname, (double)(this.posX + (double)this.world.rand.nextFloat()), (double)(this.posY + 0.01), (double)(this.posZ + (double)this.world.rand.nextFloat()))) != null) {
+            if (!this.level.isClientSide && (newent = EntityCannonFodder.spawnCreature((World)this.level, (String)myname, (double)(this.getX() + (double)this.level.random.nextFloat()), (double)(this.getY() + 0.01), (double)(this.getZ() + (double)this.level.random.nextFloat()))) != null) {
                 EntityCannonFodder cf = (EntityCannonFodder)newent;
-                cf.setOwnerId(this.getOwnerId());
-                cf.setTamed(true);
+                cf.setOwnerUUID(this.getOwnerUUID());
+                cf.setTame(true);
                 cf.setStuff(this.hat_color, this.is_activated, this.name_one, this.name_two);
             }
-            this.playTameEffect(true);
-            par1EntityPlayer.playSound(net.minecraft.util.SoundEvent.REGISTRY.getObject(new net.minecraft.util.ResourceLocation("entity.generic.explode")), 0.75f, 2.0f);
-            if (par1EntityPlayer.capabilities.isCreativeMode) return true;
+            this.level.broadcastEntityEvent(this, (byte)7);
+            par1PlayerEntityEntity.playSound(SoundEvents.GENERIC_EXPLODE, 0.75f, 2.0f);
+            if (par1PlayerEntityEntity.isCreative()) return ActionResultType.SUCCESS;
             var2.shrink(1);
-            if (var2.getCount() > 0) return true;
-            par1EntityPlayer.setHeldItem(net.minecraft.util.EnumHand.MAIN_HAND, ItemStack.EMPTY);
-            return true;
+            if (var2.getCount() > 0) return ActionResultType.SUCCESS;
+            par1PlayerEntityEntity.setItemInHand(net.minecraft.util.Hand.MAIN_HAND, ItemStack.EMPTY);
+            return ActionResultType.SUCCESS;
         }
-        if (this.is_activated != 2 || par1EntityPlayer.getDistanceSq((Entity)this) >= 16.0) return false;
-        if (this.isSitting()) {
-            this.setSitting(false);
-            this.playTameEffect(true);
-            return true;
+        if (this.is_activated != 2 || par1PlayerEntityEntity.distanceToSqr((Entity)this) >= 16.0) return ActionResultType.PASS;
+        if (this.isOrderedToSit()) {
+            this.setOrderedToSit(false);
+            this.level.broadcastEntityEvent(this, (byte)7);
+            return ActionResultType.SUCCESS;
         } else {
-            this.setSitting(true);
-            this.playTameEffect(false);
-            this.px = (int)this.posX;
-            this.py = (int)this.posY;
-            this.pz = (int)this.posZ;
+            this.setOrderedToSit(true);
+            this.level.broadcastEntityEvent(this, (byte)6);
+            this.px = (int)this.getX();
+            this.py = (int)this.getY();
+            this.pz = (int)this.getZ();
         }
-        return true;
+        return ActionResultType.SUCCESS;
     }
 
     public static Entity spawnCreature(World par0World, String par1, double par2, double par4, double par6) {
         Entity var8 = null;
-        net.minecraft.util.ResourceLocation key = par1.indexOf(':') >= 0 ? new net.minecraft.util.ResourceLocation(par1) : new net.minecraft.util.ResourceLocation("chaospersists", par1);
-        var8 = EntityList.createEntityByIDFromName(key, par0World);
+        String registryName = par1;
+        if ("Ostrich".equals(par1)) {
+            registryName = "ostrich";
+        } else if ("Lizard".equals(par1)) {
+            registryName = "lizard";
+        } else if ("Chipmunk".equals(par1)) {
+            registryName = "chipmunk";
+        } else if ("Velocity Raptor".equals(par1)) {
+            registryName = "velocity_raptor";
+        }
+        net.minecraft.util.ResourceLocation key = registryName.indexOf(':') >= 0 ? new net.minecraft.util.ResourceLocation(registryName) : new net.minecraft.util.ResourceLocation("chaospersists", registryName);
+        net.minecraft.entity.EntityType<?> entityType = ForgeRegistries.ENTITIES.getValue(key);
+        if (entityType != null) {
+            var8 = entityType.create(par0World);
+        }
         if (var8 != null) {
-            var8.setLocationAndAngles(par2, par4, par6, par0World.rand.nextFloat() * 360.0f, 0.0f);
-            par0World.spawnEntity(var8);
-            ((EntityLiving)var8).playLivingSound();
+            var8.moveTo(par2, par4, par6, par0World.random.nextFloat() * 360.0f, 0.0f);
+            par0World.addFreshEntity(var8);
+            if (var8 instanceof MobEntity) {
+                com.astryxion.chaospersists.entity.RockBase.playSpawnAmbientSound((LivingEntity) var8);
+            }
         }
         return var8;
     }
@@ -262,7 +296,7 @@ extends EntityTameable {
         this.is_activated = ia;
         this.name_one = s1;
         this.name_two = s2;
-        this.setGrowingAge(-24000);
+        this.setAge(-24000);
     }
 
     public int getHatColor() {
@@ -273,88 +307,88 @@ extends EntityTameable {
         return this.is_activated;
     }
 
-    public void writeEntityToNBT(NBTTagCompound par1NBTTagCompound) {
-        super.writeEntityToNBT(par1NBTTagCompound);
+    public void addAdditionalSaveData(CompoundNBT par1CompoundNBT) {
+        super.addAdditionalSaveData(par1CompoundNBT);
         if (this.name_one == null) {
-            par1NBTTagCompound.setString("NameOne", "");
+            par1CompoundNBT.putString("NameOne", "");
         } else {
-            par1NBTTagCompound.setString("NameOne", this.name_one);
+            par1CompoundNBT.putString("NameOne", this.name_one);
         }
         if (this.name_two == null) {
-            par1NBTTagCompound.setString("NameTwo", "");
+            par1CompoundNBT.putString("NameTwo", "");
         } else {
-            par1NBTTagCompound.setString("NameTwo", this.name_two);
+            par1CompoundNBT.putString("NameTwo", this.name_two);
         }
-        par1NBTTagCompound.setInteger("IsActivated", this.is_activated);
-        par1NBTTagCompound.setInteger("HatColor", this.hat_color);
-        par1NBTTagCompound.setInteger("PatrolX", this.px);
-        par1NBTTagCompound.setInteger("PatrolY", this.py);
-        par1NBTTagCompound.setInteger("PatrolZ", this.pz);
+        par1CompoundNBT.putInt("IsActivated", this.is_activated);
+        par1CompoundNBT.putInt("HatColor", this.hat_color);
+        par1CompoundNBT.putInt("PatrolX", this.px);
+        par1CompoundNBT.putInt("PatrolY", this.py);
+        par1CompoundNBT.putInt("PatrolZ", this.pz);
     }
 
-    public void readEntityFromNBT(NBTTagCompound par1NBTTagCompound) {
-        super.readEntityFromNBT(par1NBTTagCompound);
-        this.name_one = par1NBTTagCompound.getString("NameOne");
+    public void readAdditionalSaveData(CompoundNBT par1CompoundNBT) {
+        super.readAdditionalSaveData(par1CompoundNBT);
+        this.name_one = par1CompoundNBT.getString("NameOne");
         if (this.name_one != null && this.name_one.equals("")) {
             this.name_one = null;
         }
-        this.name_two = par1NBTTagCompound.getString("NameTwo");
+        this.name_two = par1CompoundNBT.getString("NameTwo");
         if (this.name_two != null && this.name_two.equals("")) {
             this.name_two = null;
         }
-        this.is_activated = par1NBTTagCompound.getInteger("IsActivated");
-        this.hat_color = par1NBTTagCompound.getInteger("HatColor");
-        this.px = par1NBTTagCompound.getInteger("PatrolX");
-        this.py = par1NBTTagCompound.getInteger("PatrolY");
-        this.pz = par1NBTTagCompound.getInteger("PatrolZ");
+        this.is_activated = par1CompoundNBT.getInt("IsActivated");
+        this.hat_color = par1CompoundNBT.getInt("HatColor");
+        this.px = par1CompoundNBT.getInt("PatrolX");
+        this.py = par1CompoundNBT.getInt("PatrolY");
+        this.pz = par1CompoundNBT.getInt("PatrolZ");
         if (this.name_one != null) {
-            this.setTamed(true);
-            this.setOwnerId(this.name_one != null && !this.name_one.isEmpty() ? java.util.UUID.fromString(this.name_one) : null);
+            this.setTame(true);
+            this.setOwnerUUID(this.name_one != null && !this.name_one.isEmpty() ? java.util.UUID.fromString(this.name_one) : null);
         }
     }
 
-    private boolean isSuitableTarget(EntityLivingBase par1EntityLiving, boolean par2) {
+    private boolean isSuitableTarget(LivingEntity par1Mob, boolean par2) {
         double dx;
         double dy;
         double dz;
-        if (this.world.getDifficulty() == EnumDifficulty.PEACEFUL) {
+        if (this.level.getDifficulty() == Difficulty.PEACEFUL) {
             return false;
         }
-        if (par1EntityLiving == null) {
+        if (par1Mob == null) {
             return false;
         }
-        if (par1EntityLiving == this) {
+        if (par1Mob == this) {
             return false;
         }
-        if (!par1EntityLiving.isEntityAlive()) {
+        if (!par1Mob.isAlive()) {
             return false;
         }
-        if (!this.getEntitySenses().canSee((Entity)par1EntityLiving)) {
+        if (!this.getSensing().canSee((Entity)par1Mob)) {
             return false;
         }
-        if (this.isSitting() && (dx = (double)this.px - par1EntityLiving.posX) * dx + (dy = (double)this.py - par1EntityLiving.posY) * dy + (dz = (double)this.pz - par1EntityLiving.posZ) * dz > 144.0) {
+        if (this.isOrderedToSit() && (dx = (double)this.px - par1Mob.getX()) * dx + (dy = (double)this.py - par1Mob.getY()) * dy + (dz = (double)this.pz - par1Mob.getZ()) * dz > 144.0) {
             return false;
         }
-        if (par1EntityLiving instanceof EntityMob) {
+        if (par1Mob instanceof MonsterEntity) {
             return true;
         }
-        if (par1EntityLiving instanceof EntityCannonFodder) {
-            EntityCannonFodder cf = (EntityCannonFodder)par1EntityLiving;
+        if (par1Mob instanceof EntityCannonFodder) {
+            EntityCannonFodder cf = (EntityCannonFodder)par1Mob;
             int i = cf.getHatColor();
             if (i != 0 && i != this.hat_color) {
                 return true;
             }
             return false;
         }
-        if (par1EntityLiving instanceof EntityPlayer) {
-            EntityPlayer p = (EntityPlayer)par1EntityLiving;
-            if (p.capabilities.isCreativeMode) {
+        if (par1Mob instanceof PlayerEntity) {
+            PlayerEntity p = (PlayerEntity)par1Mob;
+            if (p.isCreative()) {
                 return false;
             }
-            if (this.name_one != null && this.name_one.equals(p.getUniqueID().toString())) {
+            if (this.name_one != null && this.name_one.equals(p.getUUID().toString())) {
                 return false;
             }
-            if (this.name_two != null && this.name_two.equals(p.getUniqueID().toString())) {
+            if (this.name_two != null && this.name_two.equals(p.getUUID().toString())) {
                 return false;
             }
             return true;
@@ -362,22 +396,22 @@ extends EntityTameable {
         return false;
     }
 
-    private EntityLivingBase findSomethingToAttack() {
-        List var5 = this.world.getEntitiesWithinAABB(EntityLivingBase.class, this.getEntityBoundingBox().expand(10.0, 4.0, 10.0));
+    private LivingEntity findSomethingToAttack() {
+        List var5 = this.level.getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(10.0, 4.0, 10.0));
         Collections.sort(var5, this.LocalTargetSorter);
         Iterator var2 = var5.iterator();
         Entity var3 = null;
-        EntityLivingBase var4 = null;
+        LivingEntity var4 = null;
         while (var2.hasNext()) {
             var3 = (Entity)var2.next();
-            var4 = (EntityLivingBase)var3;
+            var4 = (LivingEntity)var3;
             if (!this.isSuitableTarget(var4, false)) continue;
             return var4;
         }
         return null;
     }
 
-    public int getTotalArmorValue() {
+    public int getArmorValue() {
         if (this.is_activated == 2) {
             return 3;
         }
@@ -385,16 +419,16 @@ extends EntityTameable {
     }
 
     public void attackEntityAsFodder(Entity par1Entity, float f) {
-        par1Entity.attackEntityFrom(DamageSource.causeMobDamage((EntityLivingBase)this), f);
+        par1Entity.hurt(DamageSource.mobAttack((LivingEntity)this), f);
     }
 
-    protected void updateAITasks() {
-        if (this.isDead) {
+    protected void customServerAiStep() {
+        if (!this.isAlive()) {
             return;
         }
-        super.updateAITasks();
-        if (this.world.rand.nextInt(200) == 1) {
-            this.setRevengeTarget(null);
+        super.customServerAiStep();
+        if (this.level.random.nextInt(200) == 1) {
+            this.setLastHurtByMob(null);
         }
         if (this.is_activated != 2) {
             return;
@@ -414,24 +448,21 @@ extends EntityTameable {
             sfreq = 6;
             pfreq = 4;
         }
-        if (this.world.getDifficulty() != EnumDifficulty.PEACEFUL && this.world.rand.nextInt(pfreq) == 1) {
-            EntityLivingBase e = this.findSomethingToAttack();
+        if (this.level.getDifficulty() != Difficulty.PEACEFUL && this.level.random.nextInt(pfreq) == 1) {
+            LivingEntity e = this.findSomethingToAttack();
             if (e != null) {
-                this.getNavigator().tryMoveToEntityLiving((Entity)e, 1.25);
-                if (this.getDistanceSq((Entity)e) < 9.0 && (this.rand.nextInt(sfreq + 1) == 0 || this.rand.nextInt(sfreq) == 1)) {
+                this.getNavigation().moveTo((Entity)e, 1.25);
+                if (this.distanceToSqr((Entity)e) < 9.0 && (this.random.nextInt(sfreq + 1) == 0 || this.random.nextInt(sfreq) == 1)) {
                     this.attackEntityAsFodder((Entity)e, dm);
                 }
-            } else if (this.isSitting()) {
-                this.getNavigator().tryMoveToXYZ((double)this.px, (double)this.py, (double)this.pz, 0.6499999761581421);
+            } else if (this.isOrderedToSit()) {
+                this.getNavigation().moveTo((double)this.px, (double)this.py, (double)this.pz, 0.6499999761581421);
             }
         }
-        if (this.world.rand.nextInt(250) == 1) {
+        if (this.level.random.nextInt(250) == 1) {
             this.heal(1.0f);
         }
     }
 
-    public EntityAgeable createChild(EntityAgeable entityageable) {
-        return null;
-    }
 }
 

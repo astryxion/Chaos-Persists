@@ -1,6 +1,6 @@
-{
+﻿{
   "parent": "item/handheld",
   "textures": {
-    "layer0": "chaospersists:items/tigerseye_sword"
+    "layer0": "chaospersists:item/tigerseye_sword"
   }
 }

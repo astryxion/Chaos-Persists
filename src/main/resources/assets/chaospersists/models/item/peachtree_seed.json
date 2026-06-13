@@ -1,6 +1,6 @@
-{
+﻿{
   "parent": "item/generated",
   "textures": {
-    "layer0": "chaospersists:items/peachtree_seed"
+    "layer0": "chaospersists:item/peachtree_seed"
   }
 }

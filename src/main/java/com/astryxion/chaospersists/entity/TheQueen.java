@@ -17,18 +17,18 @@
  *  com.astryxion.chaospersists.TheQueen
  *  com.astryxion.chaospersists.ThunderBolt
  *  net.minecraft.block.Block
- *  net.minecraft.block.BlockFlower
- *  net.minecraft.block.BlockGrass
- *  net.minecraft.block.BlockLiquid
+ *  net.minecraft.block.FlowerBlock
+ *  net.minecraft.block.GrassBlock
+ *  net.minecraft.block.FlowingFluidBlock
  *  net.minecraft.block.BlockSand
  *  net.minecraft.entity.DataWatcher
  *  net.minecraft.entity.Entity
- *  net.minecraft.entity.EntityCreature
- *  net.minecraft.entity.EntityList
- *  net.minecraft.entity.EntityLiving
- *  net.minecraft.entity.EntityLivingBase
- *  net.minecraft.entity.SharedMonsterAttributes
- *  net.minecraft.entity.ai.EntityAIBase
+ *  net.minecraft.entity.CreatureEntity
+ *  net.minecraftforge.registries.ForgeRegistries.ENTITIES
+ *  net.minecraft.entity.Mob
+ *  net.minecraft.entity.LivingEntity
+ *  net.minecraft.entity.ai.attributes.Attributes
+ *  net.minecraft.entity.ai.goal.Goal
  *  net.minecraft.entity.ai.EntityAIHurtByTarget
  *  net.minecraft.entity.ai.EntityAILookIdle
  *  net.minecraft.entity.ai.EntityAISwimming
@@ -36,34 +36,36 @@
  *  net.minecraft.entity.ai.EntitySenses
  *  net.minecraft.entity.ai.attributes.IAttribute
  *  net.minecraft.entity.ai.attributes.IAttributeInstance
- *  net.minecraft.entity.boss.EntityDragon
- *  net.minecraft.entity.boss.EntityDragonPart
- *  net.minecraft.entity.effect.EntityLightningBolt
- *  net.minecraft.entity.item.EntityItem
- *  net.minecraft.entity.monster.EntityMob
- *  net.minecraft.entity.passive.EntityHorse
- *  net.minecraft.entity.player.EntityPlayer
- *  net.minecraft.entity.player.PlayerCapabilities
- *  net.minecraft.init.Blocks
- *  net.minecraft.init.Items
+ *  net.minecraft.entity.boss.EnderDragonEntity
+ *  net.minecraft.entity.boss.EnderDragonPartEntity
+ *  net.minecraft.entity.effect.LightningBoltEntity
+ *  net.minecraft.entity.item.ItemEntity
+ *  net.minecraft.entity.monster.Monster
+ *  net.minecraft.entity.passive.HorseEntity
+ *  net.minecraft.entity.player.PlayerEntity
+ *  net.minecraft.entity.player.PlayerEntityCapabilities
+ *  net.minecraft.block.Blocks
+ *  net.minecraft.item.Items
  *  net.minecraft.item.Item
  *  net.minecraft.item.ItemStack
- *  net.minecraft.nbt.NBTTagCompound
- *  net.minecraft.pathfinding.PathNavigate
+ *  net.minecraft.nbt.CompoundNBT
+ *  net.minecraft.pathfinding.PathNavigator
  *  net.minecraft.util.math.AxisAlignedBB
  *  net.minecraft.util.ChunkCoordinates
  *  net.minecraft.util.DamageSource
- *  net.minecraft.util.MathHelper
+ *  net.minecraft.util.math.MathHelper
  *  net.minecraft.util.math.RayTraceResult
- *  net.minecraft.util.math.Vec3d
+ *  net.minecraft.util.math.Vector3d
  *  net.minecraft.world.Explosion
  *  net.minecraft.world.GameRules
  *  net.minecraft.world.World
  */
 package com.astryxion.chaospersists.entity;
+import net.minecraft.entity.EntityType;
+import net.minecraft.world.World;
 
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import com.astryxion.chaospersists.item.BetterFireball;
 import com.astryxion.chaospersists.util.GenericTargetSorter;
 import com.astryxion.chaospersists.entity.Ghost;
@@ -80,46 +82,47 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockFlower;
-import net.minecraft.block.BlockGrass;
-import net.minecraft.block.BlockLiquid;
-import net.minecraft.block.BlockSand;
+import net.minecraft.block.FlowerBlock;
+import net.minecraft.block.GrassBlock;
+import net.minecraft.block.FlowingFluidBlock;
+import net.minecraft.block.SandBlock;
 import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityCreature;
-import net.minecraft.entity.EntityList;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.ai.EntityAIBase;
-import net.minecraft.entity.ai.EntityAIHurtByTarget;
-import net.minecraft.entity.ai.EntityAILookIdle;
-import net.minecraft.entity.ai.EntityAISwimming;
-import net.minecraft.entity.ai.EntityAITasks;
-import net.minecraft.entity.ai.EntitySenses;
-import net.minecraft.entity.ai.attributes.IAttribute;
-import net.minecraft.entity.ai.attributes.IAttributeInstance;
-import net.minecraft.entity.boss.EntityDragon;
-import net.minecraft.entity.effect.EntityLightningBolt;
-import net.minecraft.entity.item.EntityItem;
-import net.minecraft.entity.monster.EntityMob;
-import net.minecraft.entity.passive.EntityHorse;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.PlayerCapabilities;
-import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
+import net.minecraft.entity.CreatureEntity;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.entity.MobEntity;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.ai.attributes.Attributes;
+import net.minecraft.entity.ai.goal.Goal;
+import net.minecraft.entity.ai.goal.HurtByTargetGoal;
+import net.minecraft.entity.ai.goal.LookRandomlyGoal;
+import net.minecraft.entity.ai.goal.SwimGoal;
+
+import net.minecraft.util.math.RayTraceContext;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.entity.ai.attributes.Attribute;
+import net.minecraft.entity.ai.attributes.ModifiableAttributeInstance;
+import net.minecraft.entity.boss.dragon.EnderDragonEntity;
+import net.minecraft.entity.effect.LightningBoltEntity;
+import net.minecraft.entity.item.ItemEntity;
+import net.minecraft.entity.monster.MonsterEntity;
+import net.minecraft.entity.passive.horse.HorseEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerAbilities;
+import net.minecraft.block.Blocks;
+import net.minecraft.item.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.pathfinding.PathNavigate;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.pathfinding.PathNavigator;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.Explosion;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
@@ -128,14 +131,14 @@ import net.minecraft.world.World;
  * Exception performing whole class analysis ignored.
  */
 public class TheQueen
-extends EntityMob {
-    private static final DataParameter<Integer> ATTACKING = EntityDataManager.createKey(TheQueen.class, DataSerializers.VARINT);
-    private static final DataParameter<Integer> PLAY_NICELY = EntityDataManager.createKey(TheQueen.class, DataSerializers.VARINT);
-    private static final DataParameter<Integer> MOOD = EntityDataManager.createKey(TheQueen.class, DataSerializers.VARINT);
-    private static final DataParameter<Integer> ATTACK_LEVEL = EntityDataManager.createKey(TheQueen.class, DataSerializers.VARINT);
+extends MonsterEntity {
+    private static final DataParameter<Integer> ATTACKING = EntityDataManager.defineId(TheQueen.class, DataSerializers.INT);
+    private static final DataParameter<Integer> PLAY_NICELY = EntityDataManager.defineId(TheQueen.class, DataSerializers.INT);
+    private static final DataParameter<Integer> MOOD = EntityDataManager.defineId(TheQueen.class, DataSerializers.INT);
+    private static final DataParameter<Integer> ATTACK_LEVEL = EntityDataManager.defineId(TheQueen.class, DataSerializers.INT);
     private BlockPos currentFlightTarget = null;
     private GenericTargetSorter TargetSorter = null;
-    private EntityLivingBase rt = null;
+    private LivingEntity rt = null;
     private double attdam = 250.0;
     private int hurt_timer = 0;
     private int homex = 0;
@@ -149,88 +152,90 @@ extends EntityMob {
     private volatile int head_found = 0;
     private int wing_sound = 0;
     private int attack_level = 1;
-    private EntityLivingBase ev = null;
+    private LivingEntity ev = null;
     private float evh = 0.0f;
     private int mood = 0;
     private int always_mad = 0;
 
-    public TheQueen(World par1World) {
-        super(par1World);
+    public TheQueen(EntityType<? extends TheQueen> type, World par1World) {
+        super(type, par1World);
         if (ChaosPersists.PlayNicely == 0) {
-            this.setSize(22.0f, 24.0f);
         } else {
-            this.setSize(5.5f, 6.0f);
         }
-                this.experienceValue = 25000;
-        this.isImmuneToFire = true;
-                this.noClip = true;
+        this.xpReward = 25000;
+        this.noPhysics = true;
         this.TargetSorter = new GenericTargetSorter((Entity)this);
-        this.setRenderDistanceWeight(12.0);
-        this.tasks.addTask(0, (EntityAIBase)new EntityAISwimming((EntityLiving)this));
-        this.tasks.addTask(1, (EntityAIBase)new EntityAILookIdle((EntityLiving)this));
-        this.targetTasks.addTask(1, (EntityAIBase)new EntityAIHurtByTarget((EntityCreature)this, false));
+        // renderDistanceWeight: EntityType tracking range set in ChaosPersists registration
+        this.goalSelector.addGoal(0, new SwimGoal(this));
+        this.goalSelector.addGoal(1, new LookRandomlyGoal(this));
+        this.targetSelector.addGoal(1, new HurtByTargetGoal(this));
     }
 
-    protected void applyEntityAttributes() {
-        super.applyEntityAttributes();
-        this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue((double)this.mygetMaxHealth());
-        this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.6200000047683716);
-        this.attdam = ChaosPersists.TheQueen_stats.attack;
-        this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(this.attdam);
+    @Override
+    public boolean fireImmune() {
+        return true;
     }
 
-    protected void entityInit() {
+    public static net.minecraft.entity.ai.attributes.AttributeModifierMap createAttributes() {
+        return MonsterEntity.createMonsterAttributes()
+                .add(Attributes.MAX_HEALTH, ChaosPersists.TheQueen_stats.health)
+                .add(Attributes.MOVEMENT_SPEED, 0.6200000047683716)
+                .add(Attributes.ATTACK_DAMAGE, ChaosPersists.TheQueen_stats.attack)
+                .build();
+    }
+
+    protected void defineSynchedData() {
         int i = 0;
-        super.entityInit();
-        this.getDataManager().register(ATTACKING, i);
-        this.getDataManager().register(PLAY_NICELY, ChaosPersists.PlayNicely);
-        this.getDataManager().register(MOOD, this.mood);
-        this.getDataManager().register(ATTACK_LEVEL, this.attack_level);
+        super.defineSynchedData();
+        this.entityData.define(ATTACKING, i);
+        this.entityData.define(PLAY_NICELY, ChaosPersists.PlayNicely);
+        this.entityData.define(MOOD, this.mood);
+        this.entityData.define(ATTACK_LEVEL, this.attack_level);
     }
 
     public int getPlayNicely() {
-        return this.getDataManager().get(PLAY_NICELY).intValue();
+        return this.entityData.get(PLAY_NICELY).intValue();
     }
 
     public int getIsHappy() {
-        return this.getDataManager().get(MOOD).intValue();
+        return this.entityData.get(MOOD).intValue();
     }
 
-    @SideOnly(value=Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public boolean isInRangeToRenderDist(double par1) {
         return true;
     }
 
-    @SideOnly(value=Side.CLIENT)
-    public boolean isInRangeToRenderVec3D(Vec3d par1Vec3) {
+    @OnlyIn(Dist.CLIENT)
+    public boolean isInRangeToRenderVec3D(net.minecraft.util.math.vector.Vector3d par1Vec3) {
         return true;
     }
 
-    protected boolean canDespawn() {
+    protected boolean canDespawn(double distanceToClosestPlayerEntity) {
         return false;
     }
 
     public int getAttacking() {
-        return this.getDataManager().get(ATTACKING).intValue();
+        return this.entityData.get(ATTACKING).intValue();
     }
 
     public void setAttacking(int par1) {
-        this.getDataManager().set(ATTACKING, par1);
+        this.entityData.set(ATTACKING, par1);
     }
 
     public int getPower() {
-        return this.getDataManager().get(ATTACK_LEVEL).intValue();
+        return this.entityData.get(ATTACK_LEVEL).intValue();
     }
 
     public void setPower(int par1) {
-        this.getDataManager().set(ATTACK_LEVEL, par1);
+        this.entityData.set(ATTACK_LEVEL, par1);
     }
 
     protected float getSoundVolume() {
         return 1.35f;
     }
 
-    protected float getSoundPitch() {
+    protected float getVoicePitch() {
         return 1.0f;
     }
 
@@ -258,18 +263,18 @@ extends EntityMob {
     }
 
     protected Item getDropItem() {
-        return Item.getItemFromBlock((Block)Blocks.YELLOW_FLOWER);
+        return Blocks.DANDELION.asItem();
     }
 
     private void dropItemRand(Item index, int par1) {
-        EntityItem var3 = new EntityItem(this.world, this.posX + (double)ChaosPersists.ChaosRand.nextInt(20) - (double)ChaosPersists.ChaosRand.nextInt(20), this.posY + 12.0, this.posZ + (double)ChaosPersists.ChaosRand.nextInt(20) - (double)ChaosPersists.ChaosRand.nextInt(20), new ItemStack(index, par1, 0));
-        this.world.spawnEntity((Entity)var3);
+        ItemEntity var3 = new ItemEntity(this.level, this.getX() + (double)ChaosPersists.ChaosRand.nextInt(20) - (double)ChaosPersists.ChaosRand.nextInt(20), this.getY() + 12.0, this.getZ() + (double)ChaosPersists.ChaosRand.nextInt(20) - (double)ChaosPersists.ChaosRand.nextInt(20), new ItemStack(index, par1));
+        this.level.addFreshEntity((Entity)var3);
     }
 
-    protected void dropFewItems(boolean par1, int par2) {
+    protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
         this.dropItemRand(ChaosPersists.MyRoyal, 1);
         this.dropItemRand(ChaosPersists.ThePrinceEgg, 1);
-        TheQueen.spawnCreature((World)this.world, (String)"The Princess", (double)this.posX, (double)(this.posY + 10.0), (double)this.posZ);
+        TheQueen.spawnCreature((World)this.level, (String)"The Princess", (double)this.getX(), (double)(this.getY() + 10.0), (double)this.getZ());
         for (int i = 0; i < 56; ++i) {
             this.dropItemRand(ChaosPersists.MyQueenScale, 1);
             this.dropItemRand(Items.BEEF, 1);
@@ -289,17 +294,17 @@ extends EntityMob {
         return false;
     }
 
-    public void onUpdate() {
-        super.onUpdate();
+    public void tick() {
+        super.tick();
         ++this.wing_sound;
         if (this.wing_sound > 30) {
-            if (!this.world.isRemote) {
-                this.world.playSound(null, this.posX, this.posY, this.posZ, com.astryxion.chaospersists.core.ChaosSounds.MOTHRA_WINGS, this.getSoundCategory(), 1.75f, 0.75f);
+            if (!this.level.isClientSide) {
+                this.level.playSound(null, this.getX(), this.getY(), this.getZ(), com.astryxion.chaospersists.core.ChaosSounds.MOTHRA_WINGS, this.getSoundSource(), 1.75f, 0.75f);
             }
             this.wing_sound = 0;
         }
-        this.noClip = true;
-        this.motionY *= 0.6;
+        this.noPhysics = true;
+        com.astryxion.chaospersists.util.MyUtils.mulDeltaMovement(this, 1.0, 0.6, 1.0);
         if (this.player_hit_count < 10 && this.getHealth() < (float)(this.mygetMaxHealth() * 3 / 4)) {
             this.attdam = ChaosPersists.TheQueen_stats.attack * 20;
         }
@@ -312,21 +317,21 @@ extends EntityMob {
         if (this.player_hit_count < 10 && this.getHealth() < (float)(this.mygetMaxHealth() / 4)) {
             this.attdam = ChaosPersists.TheQueen_stats.attack * 1000;
         }
-        if (this.world.isRemote && this.getPower() > 800) {
+        if (this.level.isClientSide && this.getPower() > 800) {
             float f = 7.0f;
-            if (this.world.rand.nextInt(4) == 1) {
+            if (this.level.random.nextInt(4) == 1) {
                 for (int i = 0; i < 10; ++i) {
-                    this.world.spawnParticle(net.minecraft.util.EnumParticleTypes.FIREWORKS_SPARK, this.posX - (double)f * Math.sin(Math.toRadians(this.rotationYaw)), this.posY + 14.0, this.posZ + (double)f * Math.cos(Math.toRadians(this.rotationYaw)), (this.world.rand.nextGaussian() - this.world.rand.nextGaussian()) / 5.0 + this.motionX * 3.0, (this.world.rand.nextGaussian() - this.world.rand.nextGaussian()) / 5.0, (this.world.rand.nextGaussian() - this.world.rand.nextGaussian()) / 5.0 + this.motionZ * 3.0, 0);
+                    this.level.addParticle(net.minecraft.particles.ParticleTypes.FIREWORK, this.getX() - (double)f * Math.sin(Math.toRadians(this.yRot)), this.getY() + 14.0, this.getZ() + (double)f * Math.cos(Math.toRadians(this.yRot)), (this.level.random.nextGaussian() - this.level.random.nextGaussian()) / 5.0 + this.getDeltaMovement().x * 3.0, (this.level.random.nextGaussian() - this.level.random.nextGaussian()) / 5.0, (this.level.random.nextGaussian() - this.level.random.nextGaussian()) / 5.0 + this.getDeltaMovement().z * 3.0);
                 }
             }
         }
     }
 
-    public boolean attackEntityAsMob(Entity par1Entity) {
+    public boolean doHurtTarget(LivingEntity par1Entity) {
         boolean var4;
-        if (par1Entity != null && par1Entity instanceof EntityLivingBase && !this.world.isRemote) {
-            EntityLivingBase e = (EntityLivingBase)par1Entity;
-            if (!e.isDead) {
+        if (par1Entity != null && par1Entity instanceof LivingEntity && !this.level.isClientSide) {
+            LivingEntity e = (LivingEntity)par1Entity;
+            if (!e.removed) {
                 if (this.ev == e) {
                     if (this.evh < e.getHealth()) {
                         e.setHealth(this.evh);
@@ -334,56 +339,52 @@ extends EntityMob {
                 } else {
                     this.ev = e;
                 }
-                if (e.width * e.height > 30.0f) {
+                if (e.getBbWidth() * e.getBbHeight() > 30.0f) {
                     e.setHealth(e.getHealth() * 3.0f / 4.0f);
-                    e.attackEntityFrom(DamageSource.causeMobDamage((EntityLivingBase)this), (float)this.attdam);
+                    e.hurt(DamageSource.mobAttack((LivingEntity)this), (float)this.attdam);
                 }
                 this.evh = e.getHealth();
                 if (this.evh <= 0.0f) {
-                    this.ev.setDead();
+                    this.ev.remove();
                 }
             } else {
                 this.ev = null;
                 this.evh = 0.0f;
             }
         }
-        if (par1Entity != null && par1Entity instanceof EntityDragon) {
-            EntityDragon dr = (EntityDragon)par1Entity;
+        if (par1Entity != null && par1Entity instanceof EnderDragonEntity) {
+            EnderDragonEntity dr = (EnderDragonEntity)par1Entity;
             DamageSource var21 = null;
-            var21 = DamageSource.causeExplosionDamage(this);
-            if (this.world.rand.nextInt(6) == 1) {
-                dr.attackEntityFromPart(dr.dragonPartHead, var21, (float)this.attdam);
-            } else {
-                dr.attackEntityFromPart(dr.dragonPartBody, var21, (float)this.attdam);
-            }
+            var21 = DamageSource.explosion((Explosion)null);
+            dr.hurt(var21, (float)this.attdam);
         }
-        if (var4 = par1Entity.attackEntityFrom(DamageSource.causeMobDamage((EntityLivingBase)this), (float)this.attdam)) {
+        if (var4 = par1Entity.hurt(DamageSource.mobAttack((LivingEntity)this), (float)this.attdam)) {
             double ks = 2.75;
             double inair = 0.2;
-            float f3 = (float)Math.atan2(par1Entity.posZ - this.posZ, par1Entity.posX - this.posX);
-            inair += (double)(this.world.rand.nextFloat() * 0.25f);
-            if (par1Entity.isDead || par1Entity instanceof EntityPlayer) {
+            float f3 = (float)Math.atan2(par1Entity.getZ() - this.getZ(), par1Entity.getX() - this.getX());
+            inair += (double)(this.level.random.nextFloat() * 0.25f);
+            if (par1Entity.isAlive() == false || par1Entity instanceof PlayerEntity) {
                 inair *= 1.5;
             }
-            par1Entity.addVelocity(Math.cos(f3) * ks, inair, Math.sin(f3) * ks);
+            par1Entity.push(Math.cos(f3) * ks, inair, Math.sin(f3) * ks);
         }
         return var4;
     }
 
     public boolean canSeeTarget(double pX, double pY, double pZ) {
-        return this.world.rayTraceBlocks(new Vec3d((double)this.posX, (double)(this.posY + 8.75), (double)this.posZ), new Vec3d((double)pX, (double)pY, (double)pZ), false) == null;
+        return this.level.clip(new RayTraceContext(new Vector3d((double)this.getX(), (double)(this.getY() + 8.75), (double)this.getZ()), new Vector3d((double)pX, (double)pY, (double)pZ), RayTraceContext.BlockMode.COLLIDER, RayTraceContext.FluidMode.NONE, this)).getType() == RayTraceResult.Type.MISS;
     }
 
     private boolean tooFarFromHome() {
-        float d1 = (float)(this.posX - (double)this.homex);
-        float d2 = (float)(this.posZ - (double)this.homez);
+        float d1 = (float)(this.getX() - (double)this.homex);
+        float d2 = (float)(this.getZ() - (double)this.homez);
         if ((d1 = (float)Math.sqrt(d1 * d1 + d2 * d2)) > 120.0f) {
             return true;
         }
         return false;
     }
 
-    protected void updateAITasks() {
+    protected void customServerAiStep() {
         Block bid;
         int k;
         int i;
@@ -393,8 +394,8 @@ extends EntityMob {
         int attrand = 5;
         boolean updown = false;
         int which = 0;
-        EntityLivingBase e = null;
-        EntityLivingBase f = null;
+        LivingEntity e = null;
+        LivingEntity f = null;
         double rr = 0.0;
         double rhdir = 0.0;
         double rdd = 0.0;
@@ -404,25 +405,25 @@ extends EntityMob {
         double var5 = 0.0;
         float var7 = 0.0f;
         float var8 = 0.0f;
-        EntityLiving newent = null;
+        MobEntity newent = null;
         double xzoff = 8.0;
         double yoff = 14.0;
         List kinglist = null;
         Iterator var2 = null;
         TheKing var4 = null;
-        if (this.isDead) {
+        if (!this.isAlive()) {
             return;
         }
-        super.updateAITasks();
+        super.customServerAiStep();
         if (this.ev != null) {
-            if (this.getDistanceSq((Entity)this.ev) < 2000.0 && !this.ev.isDead) {
+            if (this.distanceToSqr((Entity)this.ev) < 2000.0 && !this.ev.removed) {
                 if (this.evh < this.ev.getHealth()) {
                     this.ev.setHealth(this.evh);
                 } else {
                     this.evh = this.ev.getHealth();
                 }
                 if (this.evh <= 0.0f) {
-                    this.ev.setDead();
+                    this.ev.remove();
                 }
             } else {
                 this.ev = null;
@@ -436,69 +437,65 @@ extends EntityMob {
                     j = 45;
                 }
                 for (i = 0; i < j; ++i) {
-                    Entity ppwr = TheQueen.spawnCreature((World)this.world, (String)"chaospersists:purple_power", (double)(this.posX - xzoff * Math.sin(Math.toRadians(this.rotationYaw))), (double)(this.posY + yoff), (double)(this.posZ + xzoff * Math.cos(Math.toRadians(this.rotationYaw))));
+                    Entity ppwr = TheQueen.spawnCreature((World)this.level, (String)"chaospersists:purple_power", (double)(this.getX() - xzoff * Math.sin(Math.toRadians(this.yRot))), (double)(this.getY() + yoff), (double)(this.getZ() + xzoff * Math.cos(Math.toRadians(this.yRot))));
                     if (ppwr == null) continue;
-                    ppwr.motionX = this.motionX * 3.0;
-                    ppwr.motionZ = this.motionZ * 3.0;
+                    ppwr.setDeltaMovement(this.getDeltaMovement().x * 3.0, ppwr.getDeltaMovement().y, ppwr.getDeltaMovement().z);
+                    ppwr.setDeltaMovement(ppwr.getDeltaMovement().x, ppwr.getDeltaMovement().y, this.getDeltaMovement().z * 3.0);
                 }
             } else {
                 int m;
-                if (this.world.getGameRules().getBoolean("mobGriefing")) {
+                if (this.level.getGameRules().getRule(GameRules.RULE_MOBGRIEFING).get()) {
                     block1 : for (m = 0; m < 25; ++m) {
-                        i = this.world.rand.nextInt(25) - this.world.rand.nextInt(25);
-                        k = this.world.rand.nextInt(25) - this.world.rand.nextInt(25);
+                        i = this.level.random.nextInt(25) - this.level.random.nextInt(25);
+                        k = this.level.random.nextInt(25) - this.level.random.nextInt(25);
                         for (j = -20; j < 20; ++j) {
-                            bid = this.world.getBlockState(new net.minecraft.util.math.BlockPos((int)this.posX + i, (int)this.posY + j, (int)this.posZ + k)).getBlock();
-                            if (bid == Blocks.GRASS) {
-                                if (this.world.getBlockState(new net.minecraft.util.math.BlockPos((int)this.posX + i, (int)this.posY + j + 1, (int)this.posZ + k)).getBlock() != Blocks.AIR) continue block1;
-                                which = this.world.rand.nextInt(8);
+                            bid = this.level.getBlockState(new net.minecraft.util.math.BlockPos((int)this.getX() + i, (int)this.getY() + j, (int)this.getZ() + k)).getBlock();
+                            if (bid == Blocks.GRASS_BLOCK) {
+                                if (this.level.getBlockState(new net.minecraft.util.math.BlockPos((int)this.getX() + i, (int)this.getY() + j + 1, (int)this.getZ() + k)).getBlock() != Blocks.AIR) continue block1;
+                                which = this.level.random.nextInt(8);
                                 if (which == 0) {
-                                    this.world.setBlockState(new net.minecraft.util.math.BlockPos((int)this.posX + i, (int)this.posY + j + 1, (int)this.posZ + k), Blocks.RED_FLOWER.getDefaultState());
+                                    this.level.setBlock(new net.minecraft.util.math.BlockPos((int)this.getX() + i, (int)this.getY() + j + 1, (int)this.getZ() + k), Blocks.POPPY.defaultBlockState(), 3);
                                 }
                                 if (which == 1) {
-                                    this.world.setBlockState(new net.minecraft.util.math.BlockPos((int)this.posX + i, (int)this.posY + j + 1, (int)this.posZ + k), Blocks.YELLOW_FLOWER.getDefaultState());
+                                    this.level.setBlock(new net.minecraft.util.math.BlockPos((int)this.getX() + i, (int)this.getY() + j + 1, (int)this.getZ() + k), Blocks.DANDELION.defaultBlockState(), 3);
                                 }
                                 if (which == 2) {
-                                    this.world.setBlockState(new net.minecraft.util.math.BlockPos((int)this.posX + i, (int)this.posY + j + 1, (int)this.posZ + k), ChaosPersists.MyFlowerBlueBlock.getDefaultState());
+                                    this.level.setBlock(new net.minecraft.util.math.BlockPos((int)this.getX() + i, (int)this.getY() + j + 1, (int)this.getZ() + k), ChaosPersists.MyFlowerBlueBlock.defaultBlockState(), 3);
                                 }
                                 if (which == 3) {
-                                    this.world.setBlockState(new net.minecraft.util.math.BlockPos((int)this.posX + i, (int)this.posY + j + 1, (int)this.posZ + k), ChaosPersists.MyFlowerPinkBlock.getDefaultState());
+                                    this.level.setBlock(new net.minecraft.util.math.BlockPos((int)this.getX() + i, (int)this.getY() + j + 1, (int)this.getZ() + k), ChaosPersists.MyFlowerPinkBlock.defaultBlockState(), 3);
                                 }
                                 if (which == 4) {
-                                    this.world.setBlockState(new net.minecraft.util.math.BlockPos((int)this.posX + i, (int)this.posY + j + 1, (int)this.posZ + k), ChaosPersists.CrystalFlowerRedBlock.getDefaultState());
+                                    this.level.setBlock(new net.minecraft.util.math.BlockPos((int)this.getX() + i, (int)this.getY() + j + 1, (int)this.getZ() + k), ChaosPersists.CrystalFlowerRedBlock.defaultBlockState(), 3);
                                 }
                                 if (which == 5) {
-                                    this.world.setBlockState(new net.minecraft.util.math.BlockPos((int)this.posX + i, (int)this.posY + j + 1, (int)this.posZ + k), ChaosPersists.CrystalFlowerGreenBlock.getDefaultState());
+                                    this.level.setBlock(new net.minecraft.util.math.BlockPos((int)this.getX() + i, (int)this.getY() + j + 1, (int)this.getZ() + k), ChaosPersists.CrystalFlowerGreenBlock.defaultBlockState(), 3);
                                 }
                                 if (which == 6) {
-                                    this.world.setBlockState(new net.minecraft.util.math.BlockPos((int)this.posX + i, (int)this.posY + j + 1, (int)this.posZ + k), ChaosPersists.CrystalFlowerBlueBlock.getDefaultState());
+                                    this.level.setBlock(new net.minecraft.util.math.BlockPos((int)this.getX() + i, (int)this.getY() + j + 1, (int)this.getZ() + k), ChaosPersists.CrystalFlowerBlueBlock.defaultBlockState(), 3);
                                 }
                                 if (which != 7) continue block1;
-                                this.world.setBlockState(new net.minecraft.util.math.BlockPos((int)this.posX + i, (int)this.posY + j + 1, (int)this.posZ + k), ChaosPersists.CrystalFlowerYellowBlock.getDefaultState());
+                                this.level.setBlock(new net.minecraft.util.math.BlockPos((int)this.getX() + i, (int)this.getY() + j + 1, (int)this.getZ() + k), ChaosPersists.CrystalFlowerYellowBlock.defaultBlockState(), 3);
                                 continue block1;
                             }
-                            if (bid == Blocks.DIRT && this.world.getBlockState(new net.minecraft.util.math.BlockPos((int)this.posX + i, (int)this.posY + j + 1, (int)this.posZ + k)).getBlock() == Blocks.AIR) {
-                                this.world.setBlockState(new net.minecraft.util.math.BlockPos((int)this.posX + i, (int)this.posY + j, (int)this.posZ + k), Blocks.GRASS.getDefaultState());
+                            if (bid == Blocks.DIRT && this.level.getBlockState(new net.minecraft.util.math.BlockPos((int)this.getX() + i, (int)this.getY() + j + 1, (int)this.getZ() + k)).getBlock() == Blocks.AIR) {
+                                this.level.setBlock(new net.minecraft.util.math.BlockPos((int)this.getX() + i, (int)this.getY() + j, (int)this.getZ() + k), Blocks.GRASS_BLOCK.defaultBlockState(), 3);
                                 continue block1;
                             }
-                            if (bid == Blocks.STONE && this.world.getBlockState(new net.minecraft.util.math.BlockPos((int)this.posX + i, (int)this.posY + j + 1, (int)this.posZ + k)).getBlock() == Blocks.AIR) {
-                                this.world.setBlockState(new net.minecraft.util.math.BlockPos((int)this.posX + i, (int)this.posY + j + 1, (int)this.posZ + k), Blocks.DIRT.getDefaultState());
+                            if (bid == Blocks.STONE && this.level.getBlockState(new net.minecraft.util.math.BlockPos((int)this.getX() + i, (int)this.getY() + j + 1, (int)this.getZ() + k)).getBlock() == Blocks.AIR) {
+                                this.level.setBlock(new net.minecraft.util.math.BlockPos((int)this.getX() + i, (int)this.getY() + j + 1, (int)this.getZ() + k), Blocks.DIRT.defaultBlockState(), 3);
                                 continue block1;
                             }
-                            if (bid == Blocks.SAND && this.world.getBlockState(new net.minecraft.util.math.BlockPos((int)this.posX + i, (int)this.posY + j + 1, (int)this.posZ + k)).getBlock() == Blocks.AIR) {
-                                if (this.world.rand.nextInt(2) == 0) {
-                                    this.world.setBlockState(new net.minecraft.util.math.BlockPos((int)this.posX + i, (int)this.posY + j + 1, (int)this.posZ + k), Blocks.CACTUS.getDefaultState());
+                            if (bid == Blocks.SAND && this.level.getBlockState(new net.minecraft.util.math.BlockPos((int)this.getX() + i, (int)this.getY() + j + 1, (int)this.getZ() + k)).getBlock() == Blocks.AIR) {
+                                if (this.level.random.nextInt(2) == 0) {
+                                    this.level.setBlock(new net.minecraft.util.math.BlockPos((int)this.getX() + i, (int)this.getY() + j + 1, (int)this.getZ() + k), Blocks.CACTUS.defaultBlockState(), 3);
                                     continue block1;
                                 }
-                                this.world.setBlockState(new net.minecraft.util.math.BlockPos((int)this.posX + i, (int)this.posY + j, (int)this.posZ + k), Blocks.DIRT.getDefaultState());
+                                this.level.setBlock(new net.minecraft.util.math.BlockPos((int)this.getX() + i, (int)this.getY() + j, (int)this.getZ() + k), Blocks.DIRT.defaultBlockState(), 3);
                                 continue block1;
                             }
-                            if (bid == Blocks.LAVA && this.world.getBlockState(new net.minecraft.util.math.BlockPos((int)this.posX + i, (int)this.posY + j + 1, (int)this.posZ + k)).getBlock() == Blocks.AIR) {
-                                this.world.setBlockState(new net.minecraft.util.math.BlockPos((int)this.posX + i, (int)this.posY + j, (int)this.posZ + k), Blocks.WATER.getDefaultState());
-                                continue block1;
-                            }
-                            if (bid == Blocks.FLOWING_LAVA && this.world.getBlockState(new net.minecraft.util.math.BlockPos((int)this.posX + i, (int)this.posY + j + 1, (int)this.posZ + k)).getBlock() == Blocks.AIR) {
-                                this.world.setBlockState(new net.minecraft.util.math.BlockPos((int)this.posX + i, (int)this.posY + j, (int)this.posZ + k), Blocks.FLOWING_WATER.getDefaultState());
+                            if (bid == Blocks.LAVA && this.level.getBlockState(new net.minecraft.util.math.BlockPos((int)this.getX() + i, (int)this.getY() + j + 1, (int)this.getZ() + k)).getBlock() == Blocks.AIR) {
+                                this.level.setBlock(new net.minecraft.util.math.BlockPos((int)this.getX() + i, (int)this.getY() + j, (int)this.getZ() + k), Blocks.WATER.defaultBlockState(), 3);
                                 continue block1;
                             }
                             if (bid == Blocks.AIR && j > 0) continue block1;
@@ -506,12 +503,12 @@ extends EntityMob {
                     }
                 }
                 for (m = 0; m < 10; ++m) {
-                    i = this.world.rand.nextInt(15) - this.world.rand.nextInt(15);
-                    k = this.world.rand.nextInt(15) - this.world.rand.nextInt(15);
-                    j = this.world.rand.nextInt(20);
-                    bid = this.world.getBlockState(new net.minecraft.util.math.BlockPos((int)this.posX + i, (int)this.posY + j, (int)this.posZ + k)).getBlock();
+                    i = this.level.random.nextInt(15) - this.level.random.nextInt(15);
+                    k = this.level.random.nextInt(15) - this.level.random.nextInt(15);
+                    j = this.level.random.nextInt(20);
+                    bid = this.level.getBlockState(new net.minecraft.util.math.BlockPos((int)this.getX() + i, (int)this.getY() + j, (int)this.getZ() + k)).getBlock();
                     if (bid != Blocks.AIR) continue;
-                    newent = this.world.rand.nextInt(2) == 0 ? (EntityLiving)TheQueen.spawnCreature((World)this.world, (String)"Butterfly", (double)(this.posX + (double)i), (double)(this.posY + (double)j), (double)(this.posZ + (double)k)) : (EntityLiving)TheQueen.spawnCreature((World)this.world, (String)"Bird", (double)(this.posX + (double)i), (double)(this.posY + (double)j), (double)(this.posZ + (double)k));
+                    newent = this.level.random.nextInt(2) == 0 ? (MobEntity)TheQueen.spawnCreature((World)this.level, (String)"Butterfly", (double)(this.getX() + (double)i), (double)(this.getY() + (double)j), (double)(this.getZ() + (double)k)) : (MobEntity)TheQueen.spawnCreature((World)this.level, (String)"Bird", (double)(this.getX() + (double)i), (double)(this.getY() + (double)j), (double)(this.getZ() + (double)k));
                 }
             }
             this.attack_level = 1;
@@ -523,10 +520,10 @@ extends EntityMob {
             --this.hurt_timer;
         }
         if (this.homex == 0 && this.homez == 0 || this.guard_mode == 0) {
-            this.homex = (int)this.posX;
-            this.homez = (int)this.posZ;
+            this.homex = (int)this.getX();
+            this.homez = (int)this.getZ();
         }
-        if (this.getHealth() > (float)(this.mygetMaxHealth() - 2) && this.world.rand.nextInt(500) == 1) {
+        if (this.getHealth() > (float)(this.mygetMaxHealth() - 2) && this.level.random.nextInt(500) == 1) {
             this.mood = 0;
         }
         if (this.always_mad != 0) {
@@ -546,8 +543,8 @@ extends EntityMob {
             this.stream_count_l = 6;
         }
         if (this.ticker % 10 == 0) {
-            this.getDataManager().set(PLAY_NICELY, ChaosPersists.PlayNicely);
-            this.getDataManager().set(MOOD, this.mood);
+            this.entityData.set(PLAY_NICELY, ChaosPersists.PlayNicely);
+            this.entityData.set(MOOD, this.mood);
             this.setPower(this.attack_level);
         }
         if (this.backoff_timer > 0) {
@@ -556,61 +553,61 @@ extends EntityMob {
         if (this.player_hit_count < 10 && this.getHealth() < (float)(this.mygetMaxHealth() / 2)) {
             attrand = 3;
         }
-        this.noClip = true;
+        this.noPhysics = true;
         if (this.currentFlightTarget == null) {
-            this.currentFlightTarget = new BlockPos((int)this.posX, (int)this.posY, (int)this.posZ);
+            this.currentFlightTarget = new BlockPos((int)this.getX(), (int)this.getY(), (int)this.getZ());
         }
-        if (this.tooFarFromHome() || this.world.rand.nextInt(200) == 0 || this.currentFlightTarget.distanceSq(this.posX, this.posY, this.posZ) < 9.1f) {
-            zdir = this.world.rand.nextInt(120);
-            xdir = this.world.rand.nextInt(120);
-            if (this.world.rand.nextInt(2) == 0) {
+        if (this.tooFarFromHome() || this.level.random.nextInt(200) == 0 || this.currentFlightTarget.distSqr(this.getX(), this.getY(), this.getZ(), false) < 9.1f) {
+            zdir = this.level.random.nextInt(120);
+            xdir = this.level.random.nextInt(120);
+            if (this.level.random.nextInt(2) == 0) {
                 zdir = - zdir;
             }
-            if (this.world.rand.nextInt(2) == 0) {
+            if (this.level.random.nextInt(2) == 0) {
                 xdir = - xdir;
             }
             int dist = 0;
             for (i = -5; i <= 5; i += 5) {
                 block5 : for (j = -5; j <= 5; j += 5) {
-                    bid = this.world.getBlockState(new net.minecraft.util.math.BlockPos(this.homex + j, (int)this.posY, this.homez + i)).getBlock();
+                    bid = this.level.getBlockState(new net.minecraft.util.math.BlockPos(this.homex + j, (int)this.getY(), this.homez + i)).getBlock();
                     if (bid != Blocks.AIR) {
                         for (k = 1; k < 20; ++k) {
-                            bid = this.world.getBlockState(new net.minecraft.util.math.BlockPos(this.homex + j, (int)this.posY + k, this.homez + i)).getBlock();
+                            bid = this.level.getBlockState(new net.minecraft.util.math.BlockPos(this.homex + j, (int)this.getY() + k, this.homez + i)).getBlock();
                             ++dist;
                             if (bid == Blocks.AIR) continue block5;
                         }
                         continue;
                     }
                     for (k = 1; k < 20; ++k) {
-                        bid = this.world.getBlockState(new net.minecraft.util.math.BlockPos(this.homex + j, (int)this.posY - k, this.homez + i)).getBlock();
+                        bid = this.level.getBlockState(new net.minecraft.util.math.BlockPos(this.homex + j, (int)this.getY() - k, this.homez + i)).getBlock();
                         --dist;
                         if (bid != Blocks.AIR) continue block5;
                     }
                 }
             }
-            if ((int)(this.posY + (double)(dist = dist / 9 + 2)) > 230) {
-                dist = 230 - (int)this.posY;
+            if ((int)(this.getY() + (double)(dist = dist / 9 + 2)) > 230) {
+                dist = 230 - (int)this.getY();
             }
-            this.currentFlightTarget = new net.minecraft.util.math.BlockPos(this.homex + xdir, (int)(this.posY + (double)dist), this.homez + zdir);
-            if (this.mood == 0 && (kinglist = this.world.getEntitiesWithinAABB(TheKing.class, this.getEntityBoundingBox().expand(64.0, 32.0, 64.0))) != null) {
+            this.currentFlightTarget = new net.minecraft.util.math.BlockPos(this.homex + xdir, (int)(this.getY() + (double)dist), this.homez + zdir);
+            if (this.mood == 0 && (kinglist = this.level.getEntitiesOfClass(TheKing.class, this.getBoundingBox().inflate(64.0, 32.0, 64.0))) != null) {
                 Collections.sort(kinglist, this.TargetSorter);
                 var2 = kinglist.iterator();
                 if (var2.hasNext()) {
                     var4 = null;
                     var4 = (TheKing)var2.next();
                     this.guard_mode = 0;
-                    zdir = this.world.rand.nextInt(16);
-                    xdir = this.world.rand.nextInt(16);
-                    if (this.world.rand.nextInt(2) == 0) {
+                    zdir = this.level.random.nextInt(16);
+                    xdir = this.level.random.nextInt(16);
+                    if (this.level.random.nextInt(2) == 0) {
                         zdir = - zdir;
                     }
-                    if (this.world.rand.nextInt(2) == 0) {
+                    if (this.level.random.nextInt(2) == 0) {
                         xdir = - xdir;
                     }
-                    this.currentFlightTarget = new net.minecraft.util.math.BlockPos((int)var4.posX + xdir, (int)(var4.posY + (double)(this.world.rand.nextInt(8) - this.world.rand.nextInt(8))), (int)var4.posZ + zdir);
+                    this.currentFlightTarget = new net.minecraft.util.math.BlockPos((int)var4.getX() + xdir, (int)(var4.getY() + (double)(this.level.random.nextInt(8) - this.level.random.nextInt(8))), (int)var4.getZ() + zdir);
                 }
             }
-        } else if (this.world.rand.nextInt(attrand) == 0) {
+        } else if (this.level.random.nextInt(attrand) == 0) {
             float d1;
             e = this.rt;
             if (ChaosPersists.PlayNicely != 0 || this.isHappy()) {
@@ -621,10 +618,10 @@ extends EntityMob {
                 e = null;
             }
             if (e != null) {
-                d1 = (float)(e.posX - (double)this.homex);
-                float d2 = (float)(e.posZ - (double)this.homez);
+                d1 = (float)(e.getX() - (double)this.homex);
+                float d2 = (float)(e.getZ() - (double)this.homez);
                 d1 = (float)Math.sqrt(d1 * d1 + d2 * d2);
-                if (e.isDead || this.world.rand.nextInt(450) == 1 || d1 > 128.0f && this.guard_mode == 1) {
+                if (e.isAlive() == false || this.level.random.nextInt(450) == 1 || d1 > 128.0f && this.guard_mode == 1) {
                     e = null;
                     this.rt = null;
                 }
@@ -634,13 +631,13 @@ extends EntityMob {
             }
             f = this.findSomethingToAttack();
             if (this.head_found == 0 && this.mood == 1) {
-                newent = (EntityLiving)TheQueen.spawnCreature((World)this.world, (String)"QueenHead", (double)this.posX, (double)(this.posY + 20.0), (double)this.posZ);
+                newent = (MobEntity)TheQueen.spawnCreature((World)this.level, (String)"QueenHead", (double)this.getX(), (double)(this.getY() + 20.0), (double)this.getZ());
             }
             if (e == null) {
                 e = f;
             }
             if (e != null) {
-                d1 = e.width * e.height;
+                d1 = e.getBbWidth() * e.getBbHeight();
                 if (this.attack_level < 1000) {
                     this.attack_level += 15;
                     if (this.getHealth() < (float)(this.mygetMaxHealth() / 2)) {
@@ -658,65 +655,65 @@ extends EntityMob {
                 }
                 this.setAttacking(1);
                 if (this.backoff_timer == 0) {
-                    int dist = (int)(e.posY + (double)(e.height / 2.0f) + 1.0);
+                    int dist = (int)(e.getY() + (double)(e.getBbHeight() / 2.0f) + 1.0);
                     if (dist > 230) {
                         dist = 230;
                     }
-                    this.currentFlightTarget = new net.minecraft.util.math.BlockPos((int)e.posX, dist, (int)e.posZ);
-                    if (this.world.rand.nextInt(50) == 1) {
-                        this.backoff_timer = 90 + this.world.rand.nextInt(90);
+                    this.currentFlightTarget = new net.minecraft.util.math.BlockPos((int)e.getX(), dist, (int)e.getZ());
+                    if (this.level.random.nextInt(50) == 1) {
+                        this.backoff_timer = 90 + this.level.random.nextInt(90);
                     }
-                } else if (this.currentFlightTarget.distanceSq(this.posX, this.posY, this.posZ) < 9.1f) {
-                    zdir = this.world.rand.nextInt(20) + 30;
-                    xdir = this.world.rand.nextInt(20) + 30;
-                    if (this.world.rand.nextInt(2) == 0) {
+                } else if (this.currentFlightTarget.distSqr(this.getX(), this.getY(), this.getZ(), false) < 9.1f) {
+                    zdir = this.level.random.nextInt(20) + 30;
+                    xdir = this.level.random.nextInt(20) + 30;
+                    if (this.level.random.nextInt(2) == 0) {
                         zdir = - zdir;
                     }
-                    if (this.world.rand.nextInt(2) == 0) {
+                    if (this.level.random.nextInt(2) == 0) {
                         xdir = - xdir;
                     }
                     int dist = 0;
                     for (i = -5; i <= 5; i += 5) {
                         block9 : for (j = -5; j <= 5; j += 5) {
-                            bid = this.world.getBlockState(new net.minecraft.util.math.BlockPos((int)e.posX + j, (int)this.posY, (int)e.posZ + i)).getBlock();
+                            bid = this.level.getBlockState(new net.minecraft.util.math.BlockPos((int)e.getX() + j, (int)this.getY(), (int)e.getZ() + i)).getBlock();
                             if (bid != Blocks.AIR) {
                                 for (k = 1; k < 20; ++k) {
-                                    bid = this.world.getBlockState(new net.minecraft.util.math.BlockPos((int)e.posX + j, (int)this.posY + k, (int)e.posZ + i)).getBlock();
+                                    bid = this.level.getBlockState(new net.minecraft.util.math.BlockPos((int)e.getX() + j, (int)this.getY() + k, (int)e.getZ() + i)).getBlock();
                                     ++dist;
                                     if (bid == Blocks.AIR) continue block9;
                                 }
                                 continue;
                             }
                             for (k = 1; k < 20; ++k) {
-                                bid = this.world.getBlockState(new net.minecraft.util.math.BlockPos((int)e.posX + j, (int)this.posY - k, (int)e.posZ + i)).getBlock();
+                                bid = this.level.getBlockState(new net.minecraft.util.math.BlockPos((int)e.getX() + j, (int)this.getY() - k, (int)e.getZ() + i)).getBlock();
                                 --dist;
                                 if (bid != Blocks.AIR) continue block9;
                             }
                         }
                     }
-                    if ((int)(this.posY + (double)(dist = dist / 9 + 2)) > 230) {
-                        dist = 230 - (int)this.posY;
+                    if ((int)(this.getY() + (double)(dist = dist / 9 + 2)) > 230) {
+                        dist = 230 - (int)this.getY();
                     }
-                    this.currentFlightTarget = new net.minecraft.util.math.BlockPos((int)e.posX + xdir, (int)(this.posY + (double)dist), (int)e.posZ + zdir);
+                    this.currentFlightTarget = new net.minecraft.util.math.BlockPos((int)e.getX() + xdir, (int)(this.getY() + (double)dist), (int)e.getZ() + zdir);
                 }
-                if (this.getDistanceSq((Entity)e) < 900.0) {
-                    if (this.world.rand.nextInt(2) == 1) {
-                        this.doJumpDamage(this.posX, this.posY, this.posZ, 15.0, (double)(ChaosPersists.TheQueen_stats.attack / 4), 0);
+                if (this.distanceToSqr((Entity)e) < 900.0) {
+                    if (this.level.random.nextInt(2) == 1) {
+                        this.doJumpDamage(this.getX(), this.getY(), this.getZ(), 15.0, (double)(ChaosPersists.TheQueen_stats.attack / 4), 0);
                     }
-                    this.attackEntityAsMob((Entity)e);
+                    this.doHurtTarget((LivingEntity)e);
                 }
-                double dx = this.posX + 20.0 * Math.sin(Math.toRadians(this.rotationYaw));
-                double dz = this.posZ - 20.0 * Math.cos(Math.toRadians(this.rotationYaw));
-                if (this.world.rand.nextInt(3) == 1) {
-                    this.doJumpDamage(dx, this.posY + 10.0, dz, 15.0, (double)(ChaosPersists.TheQueen_stats.attack / 2), 1);
+                double dx = this.getX() + 20.0 * Math.sin(Math.toRadians(this.yRot));
+                double dz = this.getZ() - 20.0 * Math.cos(Math.toRadians(this.yRot));
+                if (this.level.random.nextInt(3) == 1) {
+                    this.doJumpDamage(dx, this.getY() + 10.0, dz, 15.0, (double)(ChaosPersists.TheQueen_stats.attack / 2), 1);
                 }
                 if (this.getHorizontalDistanceSqToEntity((Entity)e) > 900.0) {
-                    which = this.world.rand.nextInt(2);
+                    which = this.level.random.nextInt(2);
                     if (which == 0) {
                         if (this.stream_count > 0) {
                             this.setAttacking(1);
-                            rr = Math.atan2(e.posZ - this.posZ, e.posX - this.posX);
-                            rhdir = Math.toRadians((this.rotationYaw + 90.0f) % 360.0f);
+                            rr = Math.atan2(e.getZ() - this.getZ(), e.getX() - this.getX());
+                            rhdir = Math.toRadians((this.yRot + 90.0f) % 360.0f);
                             rdd = Math.abs(rr - rhdir) % (pi * 2.0);
                             if (rdd > pi) {
                                 rdd -= pi * 2.0;
@@ -727,8 +724,8 @@ extends EntityMob {
                         }
                     } else if (this.stream_count_l > 0) {
                         this.setAttacking(1);
-                        rr = Math.atan2(e.posZ - this.posZ, e.posX - this.posX);
-                        rhdir = Math.toRadians((this.rotationYaw + 90.0f) % 360.0f);
+                        rr = Math.atan2(e.getZ() - this.getZ(), e.getX() - this.getX());
+                        rhdir = Math.toRadians((this.yRot + 90.0f) % 360.0f);
                         rdd = Math.abs(rr - rhdir) % (pi * 2.0);
                         if (rdd > pi) {
                             rdd -= pi * 2.0;
@@ -744,17 +741,15 @@ extends EntityMob {
                 this.stream_count_l = 6;
             }
         }
-        var1 = (double)this.currentFlightTarget.getX() + 0.5 - this.posX;
-        var3 = (double)this.currentFlightTarget.getY() + 0.1 - this.posY;
-        var5 = (double)this.currentFlightTarget.getZ() + 0.5 - this.posZ;
-        this.motionX += (Math.signum(var1) * 0.65 - this.motionX) * 0.35;
-        this.motionY += (Math.signum(var3) * 0.69999 - this.motionY) * 0.3;
-        this.motionZ += (Math.signum(var5) * 0.65 - this.motionZ) * 0.35;
-        var7 = (float)(Math.atan2(this.motionZ, this.motionX) * 180.0 / 3.141592653589793) - 90.0f;
-        var8 = MathHelper.wrapDegrees((float)(var7 - this.rotationYaw));
-        this.moveForward = 0.75f;
-        this.rotationYaw += var8 / 8.0f;
-        if (this.world.rand.nextInt(32) == 1 && this.getHealth() < (float)this.mygetMaxHealth()) {
+        var1 = (double)this.currentFlightTarget.getX() + 0.5 - this.getX();
+        var3 = (double)this.currentFlightTarget.getY() + 0.1 - this.getY();
+        var5 = (double)this.currentFlightTarget.getZ() + 0.5 - this.getZ();
+com.astryxion.chaospersists.util.MyUtils.addDeltaMovement(this, (Math.signum(var1) * 0.65 - this.getDeltaMovement().x) * 0.35, (Math.signum(var3) * 0.69999 - this.getDeltaMovement().y) * 0.3, (Math.signum(var5) * 0.65 - this.getDeltaMovement().z) * 0.35);
+        var7 = (float)(Math.atan2(this.getDeltaMovement().z, this.getDeltaMovement().x) * 180.0 / 3.141592653589793) - 90.0f;
+        var8 = MathHelper.wrapDegrees((float)(var7 - this.yRot));
+        this.yya = 0.75f;
+        this.yRot += var8 / 8.0f;
+        if (this.level.random.nextInt(32) == 1 && this.getHealth() < (float)this.mygetMaxHealth()) {
             this.heal(5.0f);
             if (this.player_hit_count < 10) {
                 this.heal(50.0f);
@@ -766,65 +761,63 @@ extends EntityMob {
     }
 
     private double getHorizontalDistanceSqToEntity(Entity e) {
-        double d1 = e.posZ - this.posZ;
-        double d2 = e.posX - this.posX;
+        double d1 = e.getZ() - this.getZ();
+        double d2 = e.getX() - this.getX();
         return d1 * d1 + d2 * d2;
     }
 
-    private void firecanon(EntityLivingBase e) {
+    private void firecanon(LivingEntity e) {
         double yoff = 14.0;
         double xzoff = 32.0;
         BetterFireball bf = null;
-        double cx = this.posX - xzoff * Math.sin(Math.toRadians(this.rotationYaw));
-        double cz = this.posZ + xzoff * Math.cos(Math.toRadians(this.rotationYaw));
+        double cx = this.getX() - xzoff * Math.sin(Math.toRadians(this.yRot));
+        double cz = this.getZ() + xzoff * Math.cos(Math.toRadians(this.yRot));
         if (this.stream_count > 0) {
-            bf = new BetterFireball(this.world, (EntityLivingBase)this, e.posX - cx, e.posY + (double)(e.height / 2.0f) - (this.posY + yoff), e.posZ - cz);
-            bf.setLocationAndAngles(cx, this.posY + yoff, cz, this.rotationYaw, 0.0f);
-            bf.setPosition(cx, this.posY + yoff, cz);
+            bf = new BetterFireball(this.level, (LivingEntity)this, e.getX() - cx, e.getY() + (double)(e.getBbHeight() / 2.0f) - (this.getY() + yoff), e.getZ() - cz);
+            bf.moveTo(cx, this.getY() + yoff, cz, this.yRot, 0.0f);
+            bf.setPos(cx, this.getY() + yoff, cz);
             bf.setReallyBig();
-            this.world.playSound(null, this.posX, this.posY, this.posZ, net.minecraft.init.SoundEvents.ENTITY_TNT_PRIMED, this.getSoundCategory(), 1.0f, 1.0f / (this.getRNG().nextFloat() * 0.4f + 0.8f));
-            this.world.spawnEntity((Entity)bf);
+            this.level.playSound(null, this.getX(), this.getY(), this.getZ(), net.minecraft.util.SoundEvents.TNT_PRIMED, this.getSoundSource(), 1.0f, 1.0f / (this.getRandom().nextFloat() * 0.4f + 0.8f));
+            this.level.addFreshEntity((Entity)bf);
             for (int i = 0; i < 6; ++i) {
-                float r1 = 5.0f * (this.world.rand.nextFloat() - this.world.rand.nextFloat());
-                float r2 = 3.0f * (this.world.rand.nextFloat() - this.world.rand.nextFloat());
-                float r3 = 5.0f * (this.world.rand.nextFloat() - this.world.rand.nextFloat());
-                bf = new BetterFireball(this.world, (EntityLivingBase)this, e.posX - cx + (double)r1, e.posY + (double)(e.height / 2.0f) - (this.posY + yoff) + (double)r2, e.posZ - cz + (double)r3);
-                bf.setLocationAndAngles(cx, this.posY + yoff, cz, this.rotationYaw, 0.0f);
-                bf.setPosition(cx, this.posY + yoff, cz);
+                float r1 = 5.0f * (this.level.random.nextFloat() - this.level.random.nextFloat());
+                float r2 = 3.0f * (this.level.random.nextFloat() - this.level.random.nextFloat());
+                float r3 = 5.0f * (this.level.random.nextFloat() - this.level.random.nextFloat());
+                bf = new BetterFireball(this.level, (LivingEntity)this, e.getX() - cx + (double)r1, e.getY() + (double)(e.getBbHeight() / 2.0f) - (this.getY() + yoff) + (double)r2, e.getZ() - cz + (double)r3);
+                bf.moveTo(cx, this.getY() + yoff, cz, this.yRot, 0.0f);
+                bf.setPos(cx, this.getY() + yoff, cz);
                 bf.setBig();
-                if (this.world.rand.nextInt(2) == 1) {
+                if (this.level.random.nextInt(2) == 1) {
                     bf.setSmall();
                 }
-                this.world.playSound(null, this.posX, this.posY, this.posZ, net.minecraft.init.SoundEvents.ENTITY_ARROW_SHOOT, this.getSoundCategory(), 1.0f, 1.0f / (this.getRNG().nextFloat() * 0.4f + 0.8f));
-                this.world.spawnEntity((Entity)bf);
+                this.level.playSound(null, this.getX(), this.getY(), this.getZ(), net.minecraft.util.SoundEvents.ARROW_SHOOT, this.getSoundSource(), 1.0f, 1.0f / (this.getRandom().nextFloat() * 0.4f + 0.8f));
+                this.level.addFreshEntity((Entity)bf);
             }
             --this.stream_count;
         }
     }
 
-    private void firecanonl(EntityLivingBase e) {
+    private void firecanonl(LivingEntity e) {
         double yoff = 14.0;
         double xzoff = 32.0;
         double var3 = 0.0;
         double var5 = 0.0;
         double var7 = 0.0;
         float var9 = 0.0f;
-        double cx = this.posX - xzoff * Math.sin(Math.toRadians(this.rotationYaw));
-        double cz = this.posZ + xzoff * Math.cos(Math.toRadians(this.rotationYaw));
+        double cx = this.getX() - xzoff * Math.sin(Math.toRadians(this.yRot));
+        double cz = this.getZ() + xzoff * Math.cos(Math.toRadians(this.yRot));
         if (this.stream_count_l > 0) {
-            this.world.playSound(null, this.posX, this.posY, this.posZ, net.minecraft.init.SoundEvents.ENTITY_ARROW_SHOOT, this.getSoundCategory(), 1.0f, 1.0f / (this.getRNG().nextFloat() * 0.4f + 0.8f));
+            this.level.playSound(null, this.getX(), this.getY(), this.getZ(), net.minecraft.util.SoundEvents.ARROW_SHOOT, this.getSoundSource(), 1.0f, 1.0f / (this.getRandom().nextFloat() * 0.4f + 0.8f));
             for (int i = 0; i < 3; ++i) {
-                ThunderBolt lb = new ThunderBolt(this.world, cx, this.posY + yoff, cz);
-                lb.setLocationAndAngles(cx, this.posY + yoff, cz, 0.0f, 0.0f);
-                var3 = e.posX - lb.posX;
-                var5 = e.posY + 0.25 - lb.posY;
-                var7 = e.posZ - lb.posZ;
+                ThunderBolt lb = new ThunderBolt(this.level, cx, this.getY() + yoff, cz);
+                lb.moveTo(cx, this.getY() + yoff, cz, 0.0f, 0.0f);
+                var3 = e.getX() - lb.getX();
+                var5 = e.getY() + 0.25 - lb.getY();
+                var7 = e.getZ() - lb.getZ();
                 var9 = MathHelper.sqrt((double)(var3 * var3 + var7 * var7)) * 0.2f;
                 lb.shoot(var3, var5 + (double)var9, var7, 1.4f, 4.0f);
-                lb.motionX *= 3.0;
-                lb.motionY *= 3.0;
-                lb.motionZ *= 3.0;
-                this.world.spawnEntity((Entity)lb);
+                com.astryxion.chaospersists.util.MyUtils.mulDeltaMovement(lb, 3.0, 3.0, 3.0);
+                this.level.addFreshEntity((Entity)lb);
             }
             --this.stream_count_l;
         }
@@ -837,7 +830,7 @@ extends EntityMob {
     public void fall(float distance, float damageMultiplier) {
     }
 
-    protected void updateFallState(double y, boolean onGroundIn, net.minecraft.block.state.IBlockState state, net.minecraft.util.math.BlockPos pos) {
+    protected void updateFallState(double y, boolean onGroundIn, net.minecraft.block.BlockState state, net.minecraft.util.math.BlockPos pos) {
         fallDistance = 0.0f;
     }
 
@@ -845,7 +838,8 @@ extends EntityMob {
         return false;
     }
 
-    public boolean attackEntityFrom(DamageSource par1DamageSource, float par2) {
+    @Override
+    public boolean hurt(DamageSource par1DamageSource, float par2) {
         boolean ret = false;
         float dm = par2;
         if (this.hurt_timer > 0) {
@@ -854,7 +848,7 @@ extends EntityMob {
         if (dm > 750.0f) {
             dm = 750.0f;
         }
-        if (par1DamageSource.getDamageType().equals("inWall")) {
+        if (par1DamageSource.getMsgId().equals("inWall")) {
             return false;
         }
         this.mood = 1;
@@ -866,40 +860,40 @@ extends EntityMob {
             this.setHealth(s);
             return false;
         }
-        Entity e = par1DamageSource.getTrueSource();
-        if (e != null && e instanceof EntityLivingBase) {
+        Entity e = par1DamageSource.getEntity();
+        if (e != null && e instanceof LivingEntity) {
             if (e instanceof PurplePower) {
                 return false;
             }
-            float s = e.height * e.width;
-            if (e instanceof EntityMob && s < 3.0f) {
-                e.setDead();
+            float s = e.getBbHeight() * e.getBbWidth();
+            if (e instanceof MonsterEntity && s < 3.0f) {
+                e.remove();
                 return false;
             }
         }
-        if (!par1DamageSource.getDamageType().equals("cactus")) {
+        if (!par1DamageSource.getMsgId().equals("cactus")) {
             this.hurt_timer = 20;
-            ret = super.attackEntityFrom(par1DamageSource, dm);
-            if (e != null && e instanceof EntityPlayer) {
+            ret = super.hurt(par1DamageSource, dm);
+            if (e != null && e instanceof PlayerEntity) {
                 ++this.player_hit_count;
             }
-            if (e != null && e instanceof EntityLivingBase && this.currentFlightTarget != null && !MyUtils.isRoyalty((Entity)e)) {
-                this.rt = (EntityLivingBase)e;
-                int dist = (int)e.posY;
+            if (e != null && e instanceof LivingEntity && this.currentFlightTarget != null && !MyUtils.isRoyalty((Entity)e)) {
+                this.rt = (LivingEntity)e;
+                int dist = (int)e.getY();
                 if (dist > 230) {
                     dist = 230;
                 }
-                this.currentFlightTarget = new net.minecraft.util.math.BlockPos((int)e.posX, dist, (int)e.posZ);
+                this.currentFlightTarget = new net.minecraft.util.math.BlockPos((int)e.getX(), dist, (int)e.getZ());
             }
         }
         return ret;
     }
 
-    public boolean getCanSpawnHere() {
+    public boolean checkSpawnRules(net.minecraft.world.IWorldReader level, net.minecraft.entity.SpawnReason reason) {
         return true;
     }
 
-    public int getTotalArmorValue() {
+    public int getArmorValue() {
         if (this.player_hit_count < 10 && this.getHealth() < (float)(this.mygetMaxHealth() * 2 / 3)) {
             return ChaosPersists.TheQueen_stats.defense + 2;
         }
@@ -912,23 +906,23 @@ extends EntityMob {
         return ChaosPersists.TheQueen_stats.defense;
     }
 
-    public void onStruckByLightning(EntityLightningBolt par1EntityLightningBolt) {
+    public void onStruckByLightning(LightningBoltEntity par1LightningBoltEntity) {
     }
 
     public void initCreature() {
     }
 
-    public boolean MyCanSee(EntityLivingBase e) {
+    public boolean MyCanSee(LivingEntity e) {
         double xzoff = 10.0;
         int nblks = 20;
-        double cx = this.posX - xzoff * Math.sin(Math.toRadians(this.rotationYaw));
-        double cz = this.posZ + xzoff * Math.cos(Math.toRadians(this.rotationYaw));
+        double cx = this.getX() - xzoff * Math.sin(Math.toRadians(this.yRot));
+        double cz = this.getZ() + xzoff * Math.cos(Math.toRadians(this.yRot));
         float startx = (float)cx;
-        float starty = (float)(this.posY + 14.0);
+        float starty = (float)(this.getY() + 14.0);
         float startz = (float)cz;
-        float dx = (float)((e.posX - (double)startx) / 20.0);
-        float dy = (float)((e.posY + (double)(e.height / 2.0f) - (double)starty) / 20.0);
-        float dz = (float)((e.posZ - (double)startz) / 20.0);
+        float dx = (float)((e.getX() - (double)startx) / 20.0);
+        float dy = (float)((e.getY() + (double)(e.getBbHeight() / 2.0f) - (double)starty) / 20.0);
+        float dz = (float)((e.getZ() - (double)startz) / 20.0);
         if ((double)Math.abs(dx) > 1.0) {
             dy /= Math.abs(dx);
             dz /= Math.abs(dx);
@@ -963,78 +957,78 @@ extends EntityMob {
             }
         }
         for (int i = 0; i < nblks; ++i) {
-            Block bid = this.world.getBlockState(new net.minecraft.util.math.BlockPos((int)(startx += dx), (int)(starty += dy), (int)(startz += dz))).getBlock();
+            Block bid = this.level.getBlockState(new net.minecraft.util.math.BlockPos((int)(startx += dx), (int)(starty += dy), (int)(startz += dz))).getBlock();
             if (bid == Blocks.AIR) continue;
             return false;
         }
         return true;
     }
 
-    private boolean isSuitableTarget(EntityLivingBase par1EntityLiving, boolean par2) {
-        if (par1EntityLiving == null) {
+    private boolean isSuitableTarget(LivingEntity par1Mob, boolean par2) {
+        if (par1Mob == null) {
             return false;
         }
-        if (par1EntityLiving == this) {
+        if (par1Mob == this) {
             return false;
         }
-        if (!par1EntityLiving.isEntityAlive()) {
+        if (!par1Mob.isAlive()) {
             return false;
         }
-        if (par1EntityLiving instanceof QueenHead) {
+        if (par1Mob instanceof QueenHead) {
             this.head_found = 1;
             return false;
         }
-        if (MyUtils.isRoyalty((Entity)par1EntityLiving)) {
+        if (MyUtils.isRoyalty((Entity)par1Mob)) {
             return false;
         }
-        float d1 = (float)(par1EntityLiving.posX - (double)this.homex);
-        float d2 = (float)(par1EntityLiving.posZ - (double)this.homez);
+        float d1 = (float)(par1Mob.getX() - (double)this.homex);
+        float d2 = (float)(par1Mob.getZ() - (double)this.homez);
         if ((d1 = (float)Math.sqrt(d1 * d1 + d2 * d2)) > 144.0f) {
             return false;
         }
-        if (MyUtils.isIgnoreable((EntityLivingBase)par1EntityLiving)) {
+        if (MyUtils.isIgnoreable((LivingEntity)par1Mob)) {
             return false;
         }
-        if (!this.getEntitySenses().canSee((Entity)par1EntityLiving)) {
+        if (!this.getSensing().canSee((Entity)par1Mob)) {
             return false;
         }
-        if (par1EntityLiving instanceof EntityPlayer) {
-            EntityPlayer p = (EntityPlayer)par1EntityLiving;
-            if (p.capabilities.isCreativeMode) {
+        if (par1Mob instanceof PlayerEntity) {
+            PlayerEntity p = (PlayerEntity)par1Mob;
+            if (p.isCreative()) {
                 return false;
             }
             return true;
         }
-        if (par1EntityLiving instanceof EntityHorse) {
+        if (par1Mob instanceof HorseEntity) {
             return true;
         }
-        if (par1EntityLiving instanceof EntityMob) {
+        if (par1Mob instanceof MonsterEntity) {
             return true;
         }
-        if (par1EntityLiving instanceof EntityDragon) {
+        if (par1Mob instanceof EnderDragonEntity) {
             return true;
         }
-        if (MyUtils.isAttackableNonMob((EntityLivingBase)par1EntityLiving)) {
+        if (MyUtils.isAttackableNonMob((LivingEntity)par1Mob)) {
             return true;
         }
         return false;
     }
 
-    private EntityLivingBase findSomethingToAttack() {
+    private LivingEntity findSomethingToAttack() {
         if (ChaosPersists.PlayNicely != 0 || this.isHappy()) {
             this.head_found = 1;
             return null;
         }
-        List var5 = this.world.getEntitiesWithinAABB(EntityLivingBase.class, this.getEntityBoundingBox().expand(80.0, 60.0, 80.0));
+        List var5 = this.level.getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(80.0, 60.0, 80.0));
         Collections.sort(var5, this.TargetSorter);
         Iterator var2 = var5.iterator();
         Entity var3 = null;
-        EntityLivingBase var4 = null;
-        EntityLivingBase ret = null;
+        LivingEntity var4 = null;
+        LivingEntity ret = null;
         this.head_found = 0;
         while (var2.hasNext()) {
             var3 = (Entity)var2.next();
-            var4 = (EntityLivingBase)var3;
+            var4 = (LivingEntity)var3;
             if (this.isSuitableTarget(var4, false) && ret == null) {
                 ret = var4;
             }
@@ -1051,56 +1045,49 @@ extends EntityMob {
         this.always_mad = i;
     }
 
-    public void writeEntityToNBT(NBTTagCompound par1NBTTagCompound) {
-        super.writeEntityToNBT(par1NBTTagCompound);
-        par1NBTTagCompound.setInteger("KingHomeX", this.homex);
-        par1NBTTagCompound.setInteger("KingHomeZ", this.homez);
-        par1NBTTagCompound.setInteger("GuardMode", this.guard_mode);
-        par1NBTTagCompound.setInteger("PlayerHits", this.player_hit_count);
-        par1NBTTagCompound.setInteger("MeanMode", this.always_mad);
+    public void addAdditionalSaveData(CompoundNBT par1CompoundNBT) {
+        super.addAdditionalSaveData(par1CompoundNBT);
+        par1CompoundNBT.putInt("KingHomeX", this.homex);
+        par1CompoundNBT.putInt("KingHomeZ", this.homez);
+        par1CompoundNBT.putInt("GuardMode", this.guard_mode);
+        par1CompoundNBT.putInt("PlayerEntityHits", this.player_hit_count);
+        par1CompoundNBT.putInt("MeanMode", this.always_mad);
     }
 
-    public void readEntityFromNBT(NBTTagCompound par1NBTTagCompound) {
-        super.readEntityFromNBT(par1NBTTagCompound);
-        this.homex = par1NBTTagCompound.getInteger("KingHomeX");
-        this.homez = par1NBTTagCompound.getInteger("KingHomeZ");
-        this.guard_mode = par1NBTTagCompound.getInteger("GuardMode");
-        this.player_hit_count = par1NBTTagCompound.getInteger("PlayerHits");
-        this.always_mad = par1NBTTagCompound.getInteger("MeanMode");
+    public void readAdditionalSaveData(CompoundNBT par1CompoundNBT) {
+        super.readAdditionalSaveData(par1CompoundNBT);
+        this.homex = par1CompoundNBT.getInt("KingHomeX");
+        this.homez = par1CompoundNBT.getInt("KingHomeZ");
+        this.guard_mode = par1CompoundNBT.getInt("GuardMode");
+        this.player_hit_count = par1CompoundNBT.getInt("PlayerEntityHits");
+        this.always_mad = par1CompoundNBT.getInt("MeanMode");
     }
 
     public static Entity spawnCreature(World par0World, String par1, double par2, double par4, double par6) {
-        Entity var8 = null;
-        net.minecraft.util.ResourceLocation res = par1.contains(":") ? new net.minecraft.util.ResourceLocation(par1) : new net.minecraft.util.ResourceLocation("chaospersists", par1);
-        var8 = EntityList.createEntityByIDFromName(res, par0World);
-        if (var8 != null) {
-            var8.setLocationAndAngles(par2, par4, par6, par0World.rand.nextFloat() * 360.0f, 0.0f);
-            par0World.spawnEntity(var8);
-        }
-        return var8;
+        return com.astryxion.chaospersists.util.EntitySpawnHelper.spawn(par0World, par1, par2, par4, par6);
     }
 
-    private EntityLivingBase doJumpDamage(double X, double Y, double Z, double dist, double damage, int knock) {
+    private LivingEntity doJumpDamage(double X, double Y, double Z, double dist, double damage, int knock) {
         AxisAlignedBB bb = new AxisAlignedBB((double)(X - dist), (double)(Y - 10.0), (double)(Z - dist), (double)(X + dist), (double)(Y + 10.0), (double)(Z + dist));
-        List var5 = this.world.getEntitiesWithinAABB(EntityLivingBase.class, bb);
+        List var5 = this.level.getEntitiesOfClass(LivingEntity.class, bb);
         Collections.sort(var5, this.TargetSorter);
         Iterator var2 = var5.iterator();
         Entity var3 = null;
-        EntityLivingBase var4 = null;
+        LivingEntity var4 = null;
         while (var2.hasNext()) {
             var3 = (Entity)var2.next();
-            var4 = (EntityLivingBase)var3;
-            if (var4 == null || var4 == this || !var4.isEntityAlive() || MyUtils.isRoyalty((Entity)var4) || var4 instanceof Ghost || var4 instanceof GhostSkelly) continue;
+            var4 = (LivingEntity)var3;
+            if (var4 == null || var4 == this || !var4.isAlive() || MyUtils.isRoyalty((Entity)var4) || var4 instanceof Ghost || var4 instanceof GhostSkelly) continue;
             DamageSource var21 = null;
-            var21 = DamageSource.causeExplosionDamage(this);
-            var4.attackEntityFrom(var21, (float)damage / 2.0f);
-            var4.attackEntityFrom(DamageSource.FALL, (float)damage / 2.0f);
-            this.world.playSound(null, var4.posX, var4.posY, var4.posZ, net.minecraft.init.SoundEvents.ENTITY_GENERIC_EXPLODE, this.getSoundCategory(), 0.65f, 1.0f + (this.rand.nextFloat() - this.rand.nextFloat()) * 0.5f);
+            var21 = DamageSource.explosion((Explosion)null);
+            var4.hurt(var21, (float)damage / 2.0f);
+            var4.hurt(DamageSource.FALL, (float)damage / 2.0f);
+            this.level.playSound(null, var4.getX(), var4.getY(), var4.getZ(), net.minecraft.util.SoundEvents.GENERIC_EXPLODE, this.getSoundSource(), 0.65f, 1.0f + (this.random.nextFloat() - this.random.nextFloat()) * 0.5f);
             if (knock == 0) continue;
             double ks = 2.75;
             double inair = 0.65;
-            float f3 = (float)Math.atan2(var4.posZ - this.posZ, var4.posX - this.posX);
-            var4.addVelocity(Math.cos(f3) * ks, inair, Math.sin(f3) * ks);
+            float f3 = (float)Math.atan2(var4.getZ() - this.getZ(), var4.getX() - this.getX());
+            var4.push(Math.cos(f3) * ks, inair, Math.sin(f3) * ks);
         }
         return null;
     }

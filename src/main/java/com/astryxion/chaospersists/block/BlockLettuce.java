@@ -1,97 +1,124 @@
-/*
- * Decompiled with CFR 0_125.
- * 
- * Could not load the following classes:
- *  net.minecraftforge.fml.relauncher.Side
- *  net.minecraftforge.fml.relauncher.SideOnly
- *  com.astryxion.chaospersists.BlockLettuce
- *  com.astryxion.chaospersists.ChaosPersists
- *  net.minecraft.block.Block
- *  net.minecraft.block.BlockGrass
- *  net.minecraft.block.BlockReed
- *  net.minecraft.client.renderer.texture.IIconRegister
- *  net.minecraft.init.Blocks
- *  net.minecraft.item.Item
- *  net.minecraft.util.IIcon
- *  net.minecraft.world.World
- */
 package com.astryxion.chaospersists.block;
 
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 import com.astryxion.chaospersists.core.ChaosPersists;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+
+import java.util.Collections;
+import java.util.List;
 import java.util.Random;
+
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockGrass;
-import net.minecraft.block.BlockReed;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Blocks;
+import net.minecraft.loot.LootContext;
+import net.minecraft.loot.LootParameterSets;
+import net.minecraft.loot.LootParameters;
+import net.minecraft.block.SugarCaneBlock;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.AbstractBlock;
+import net.minecraft.block.Blocks;
 import net.minecraft.item.Item;
-import net.minecraft.util.BlockRenderLayer;
-import net.minecraft.util.EnumBlockRenderType;
+import net.minecraft.item.ItemStack;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraft.world.IWorldReader;
+import net.minecraft.world.server.ServerWorld;
 
-public class BlockLettuce
-extends BlockReed {
-    public BlockLettuce() { this(0); }
+public class BlockLettuce extends SugarCaneBlock {
+
+    private int myMaxHeight = 0;
+
+    public BlockLettuce() {
+        this(0);
+    }
+
     protected BlockLettuce(int par1) {
-        float var3 = 0.375f;
-        this.setTickRandomly(true);
+        super(AbstractBlock.Properties.copy(Blocks.SUGAR_CANE).randomTicks().noCollission());
+    }
+
+    @OnlyIn(Dist.CLIENT)
+public RenderType getRenderType(BlockState state) {
+        return RenderType.cutout();
     }
 
     @Override
-    public EnumBlockRenderType getRenderType(IBlockState state) {
-        return EnumBlockRenderType.MODEL;
-    }
-
-    @SideOnly(Side.CLIENT)
-    @Override
-    public BlockRenderLayer getRenderLayer() {
-        return BlockRenderLayer.CUTOUT;
-    }
-
-    public boolean canPlaceBlockAt(World par1World, int par2, int par3, int par4) {
-        Block bid = par1World.getBlockState(new net.minecraft.util.math.BlockPos(par2, par3 - 1, par4)).getBlock();
+    public boolean canSurvive(BlockState state, IWorldReader world, BlockPos pos) {
+        Block bid = world.getBlockState(pos.below()).getBlock();
         if (bid == Blocks.AIR) {
             return false;
         }
-        if (bid == ChaosPersists.MyLettucePlant1 || bid == ChaosPersists.MyLettucePlant2 || bid == ChaosPersists.MyLettucePlant3 || bid == ChaosPersists.MyLettucePlant4 || bid == Blocks.GRASS || bid == Blocks.DIRT || bid == Blocks.FARMLAND) {
-            return true;
-        }
-        return false;
+        return bid == ChaosPersists.MyLettucePlant1 || bid == ChaosPersists.MyLettucePlant2
+                || bid == ChaosPersists.MyLettucePlant3 || bid == ChaosPersists.MyLettucePlant4
+                || bid == Blocks.GRASS_BLOCK || bid == Blocks.DIRT || bid == Blocks.FARMLAND;
     }
 
-    public void updateTick(World par1World, net.minecraft.util.math.BlockPos pos, net.minecraft.block.state.IBlockState state, Random par5Random) {
+    @Override
+    public void randomTick(BlockState state, ServerWorld world, BlockPos pos, Random rand) {
+        int par2 = pos.getX();
+        int par3 = pos.getY();
+        int par4 = pos.getZ();
+        Block bid;
+        int height = 1;
         boolean dontGrow = false;
-        if (par1World.isRemote) {
+        if (this != ChaosPersists.MyLettucePlant1 && this != ChaosPersists.MyLettucePlant2) {
             return;
         }
-        int par2 = pos.getX(), par3 = pos.getY(), par4 = pos.getZ();
-        int var7 = this.getMetaFromState(state);
-        if ((var7 &= 255) >= 4) {
-            Block bid = par1World.getBlockState(pos).getBlock();
-            if (bid == ChaosPersists.MyLettucePlant1) {
-                par1World.setBlockState(pos, ChaosPersists.MyLettucePlant2.getDefaultState(), 2);
-            } else if (bid == ChaosPersists.MyLettucePlant2) {
-                par1World.setBlockState(pos, ChaosPersists.MyLettucePlant3.getDefaultState(), 2);
-            } else if (bid == ChaosPersists.MyLettucePlant3) {
-                par1World.setBlockState(pos, ChaosPersists.MyLettucePlant4.getDefaultState(), 2);
+        int var7 = state.getValue(AGE);
+        this.myMaxHeight = var7 >> 8;
+        var7 &= 255;
+        if (this.myMaxHeight == 0) {
+            this.myMaxHeight = 4 + ChaosPersists.ChaosRand.nextInt(4);
+        }
+        if (world.getBlockState(new BlockPos(par2, par3 + 1, par4)).getBlock() == Blocks.AIR) {
+            for (int var6 = 1; var6 < 10 && ((bid = world.getBlockState(new BlockPos(par2, par3 - var6, par4)).getBlock()) == ChaosPersists.MyLettucePlant1 || bid == ChaosPersists.MyLettucePlant2 || bid == ChaosPersists.MyLettucePlant3 || bid == ChaosPersists.MyLettucePlant4); ++var6) {
+                ++height;
+                if (bid != ChaosPersists.MyLettucePlant3 && bid != ChaosPersists.MyLettucePlant4) {
+                    continue;
+                }
+                dontGrow = true;
             }
-        } else {
-            Block bid = par1World.getBlockState(pos).getBlock();
-            par1World.setBlockState(pos, bid.getStateFromMeta(var7 + 1), 2);
+            if (dontGrow) {
+                this.myMaxHeight = height;
+            }
+            if (var7 >= 6 - this.myMaxHeight / 3) {
+                if (height < this.myMaxHeight) {
+                    world.setBlock(new BlockPos(par2, par3 + 1, par4), ChaosPersists.MyLettucePlant1.defaultBlockState(), 2);
+                    world.setBlock(new BlockPos(par2, par3, par4), ChaosPersists.MyLettucePlant2.defaultBlockState(), 2);
+                } else {
+                    for (int i = 1; i < this.myMaxHeight - 1; ++i) {
+                        bid = world.getBlockState(new BlockPos(par2, par3 - i, par4)).getBlock();
+                        if (bid == ChaosPersists.MyLettucePlant2) {
+                            world.setBlock(new BlockPos(par2, par3 - i, par4), ChaosPersists.MyLettucePlant3.defaultBlockState(), 2);
+                            continue;
+                        }
+                        if (bid != ChaosPersists.MyLettucePlant3) {
+                            continue;
+                        }
+                        world.setBlock(new BlockPos(par2, par3 - i, par4), ChaosPersists.MyLettucePlant4.defaultBlockState(), 2);
+                    }
+                    bid = world.getBlockState(new BlockPos(par2, par3, par4)).getBlock();
+                    world.setBlock(new BlockPos(par2, par3, par4), bid.defaultBlockState(), 2);
+                }
+            } else {
+                bid = world.getBlockState(new BlockPos(par2, par3, par4)).getBlock();
+                world.setBlock(new BlockPos(par2, par3, par4),
+                        bid.defaultBlockState().setValue(AGE, Math.min(15, var7 + 1)), 2);
+            }
         }
     }
 
     @Override
-    public Item getItemDropped(IBlockState state, Random rand, int fortune) {
-        return ChaosPersists.MyLettuce;
+    public ItemStack getCloneItemStack(net.minecraft.world.IBlockReader world, BlockPos pos, BlockState state) {
+        return new ItemStack(ChaosPersists.MyLettuce);
     }
 
-    public int quantityDropped(Random par1Random) {
+    @Override
+    public List<ItemStack> getDrops(BlockState state, LootContext.Builder builder) {
+        LootContext ctx = builder.withParameter(LootParameters.BLOCK_STATE, state).create(LootParameterSets.BLOCK);
         if (this == ChaosPersists.MyLettucePlant4) {
-            return 2 + par1Random.nextInt(3);
+            Random rand = ctx.getRandom();
+            return Collections.singletonList(new ItemStack(ChaosPersists.MyLettuce, 1 + rand.nextInt(2)));
         }
-        return 0;
-    }}
-
+        return Collections.emptyList();
+    }
+}

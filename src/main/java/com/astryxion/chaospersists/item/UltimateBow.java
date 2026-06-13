@@ -1,96 +1,91 @@
 package com.astryxion.chaospersists.item;
 
 import com.astryxion.chaospersists.item.UltimateArrow;
-import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.projectile.EntityArrow;
-import net.minecraft.init.Enchantments;
-import net.minecraft.init.SoundEvents;
-import net.minecraft.item.EnumAction;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.projectile.AbstractArrowEntity;
+import net.minecraft.enchantment.Enchantments;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.UseAction;
 import net.minecraft.util.ActionResult;
-import net.minecraft.util.EnumActionResult;
-import net.minecraft.util.EnumHand;
+import net.minecraft.util.Hand;
+import net.minecraft.util.SoundCategory;
+import net.minecraft.util.SoundEvents;
 import net.minecraft.world.World;
 
 public class UltimateBow extends Item {
 
     public UltimateBow(int par1) {
-        this.maxStackSize = 1;
-        this.setMaxDamage(1000);
-        this.setCreativeTab(CreativeTabs.COMBAT);
+        super(new Item.Properties().stacksTo(1).durability(1000).tab(ItemGroup.TAB_COMBAT));
     }
 
     @Override
-    public void onCreated(ItemStack stack, World world, EntityPlayer player) {
+    public void onCraftedBy(ItemStack stack, World world, PlayerEntity player) {
         applyEnchantments(stack);
     }
 
-    @Override
-    public void onUsingTick(ItemStack stack, EntityLivingBase entity, int count) {
-        if (EnchantmentHelper.getEnchantmentLevel(Enchantments.INFINITY, stack) <= 0) {
-            applyEnchantments(stack);
-        }
-    }
-
     private void applyEnchantments(ItemStack stack) {
-        stack.addEnchantment(Enchantments.POWER, 5);
-        stack.addEnchantment(Enchantments.FLAME, 3);
-        stack.addEnchantment(Enchantments.PUNCH, 2);
-        stack.addEnchantment(Enchantments.INFINITY, 1);
-    }
-
-    @Override
-    public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, EnumHand hand) {
-        ItemStack stack = player.getHeldItem(hand);
-        player.setActiveHand(hand);
-        return new ActionResult<>(EnumActionResult.SUCCESS, stack);
-    }
-
-    @Override
-    public void onPlayerStoppedUsing(ItemStack stack, World world, EntityLivingBase entityLiving, int timeLeft) {
-        if (!(entityLiving instanceof EntityPlayer)) {
+        if (EnchantmentHelper.getItemEnchantmentLevel(com.astryxion.chaospersists.core.ChaosPersists.legacyEnchantment(51), stack) > 0) {
             return;
         }
-        EntityPlayer player = (EntityPlayer) entityLiving;
+        stack.enchant(com.astryxion.chaospersists.core.ChaosPersists.legacyEnchantment(48), 5);
+        stack.enchant(com.astryxion.chaospersists.core.ChaosPersists.legacyEnchantment(50), 3);
+        stack.enchant(com.astryxion.chaospersists.core.ChaosPersists.legacyEnchantment(49), 2);
+        stack.enchant(com.astryxion.chaospersists.core.ChaosPersists.legacyEnchantment(51), 1);
+    }
 
-        if (!world.isRemote) {
+    @Override
+    public ActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
+        ItemStack stack = player.getItemInHand(hand);
+        player.startUsingItem(hand);
+        return ActionResult.success(stack);
+    }
+
+    @Override
+    public void releaseUsing(ItemStack stack, World world, LivingEntity entityLiving, int timeLeft) {
+        if (!(entityLiving instanceof PlayerEntity)) {
+            return;
+        }
+        PlayerEntity player = (PlayerEntity) entityLiving;
+        applyEnchantments(stack);
+
+        if (!world.isClientSide) {
             UltimateArrow arrow = new UltimateArrow(world, player, 3.0f);
-            if (world.rand.nextInt(4) == 1) {
-                arrow.setIsCritical(true);
+            if (world.random.nextInt(4) == 1) {
+                arrow.setCritArrow(true);
             }
 
-            int punchLevel = EnchantmentHelper.getEnchantmentLevel(Enchantments.PUNCH, stack);
+            int punchLevel = EnchantmentHelper.getItemEnchantmentLevel(com.astryxion.chaospersists.core.ChaosPersists.legacyEnchantment(49), stack);
             if (punchLevel > 0) {
-                arrow.setKnockbackStrength(punchLevel);
+                arrow.setKnockback(punchLevel);
             }
-            if (EnchantmentHelper.getEnchantmentLevel(Enchantments.FLAME, stack) > 0) {
-                arrow.setFire(100);
+            if (EnchantmentHelper.getItemEnchantmentLevel(com.astryxion.chaospersists.core.ChaosPersists.legacyEnchantment(50), stack) > 0) {
+                arrow.setSecondsOnFire(100);
             }
 
-            arrow.pickupStatus = EntityArrow.PickupStatus.CREATIVE_ONLY;
-            world.spawnEntity(arrow);
+            arrow.pickup = AbstractArrowEntity.PickupStatus.CREATIVE_ONLY;
+            world.addFreshEntity(arrow);
         }
 
-        world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.ENTITY_ARROW_SHOOT, player.getSoundCategory(), 1.0f, 1.0f / (itemRand.nextFloat() * 0.4f + 1.2f) + 0.5f);
-        stack.damageItem(1, player);
+        world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ARROW_SHOOT, SoundCategory.PLAYERS, 1.0f, 1.0f / (world.random.nextFloat() * 0.4f + 1.2f) + 0.5f);
+        stack.hurtAndBreak(1, player, (e) -> e.broadcastBreakEvent(player.getUsedItemHand()));
     }
 
     @Override
-    public EnumAction getItemUseAction(ItemStack stack) {
-        return EnumAction.BOW;
+    public UseAction getUseAnimation(ItemStack stack) {
+        return UseAction.BOW;
     }
 
     @Override
-    public int getMaxItemUseDuration(ItemStack stack) {
+    public int getUseDuration(ItemStack stack) {
         return 9000;
     }
 
     @Override
-    public int getItemEnchantability() {
+    public int getEnchantmentValue() {
         return 50;
     }
 }

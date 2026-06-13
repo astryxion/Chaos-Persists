@@ -1,30 +1,28 @@
-/*
- * Decompiled with CFR 0_125.
- * 
- * Could not load the following classes:
- *  com.astryxion.chaospersists.MyDispenserBehaviorSunspotUrchin
- *  com.astryxion.chaospersists.SunspotUrchin
- *  net.minecraft.dispenser.BehaviorProjectileDispense
- *  net.minecraft.dispenser.IPosition
- *  net.minecraft.entity.IProjectile
- *  net.minecraft.world.World
- */
 package com.astryxion.chaospersists.util;
 
 import com.astryxion.chaospersists.entity.SunspotUrchin;
-import net.minecraft.dispenser.BehaviorProjectileDispense;
+import net.minecraft.entity.EntityType;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Direction;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.dispenser.IBlockSource;
+import net.minecraft.dispenser.IDispenseItemBehavior;
 import net.minecraft.dispenser.IPosition;
-import net.minecraft.entity.IProjectile;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
+import net.minecraft.block.DispenserBlock;
 
-public final class MyDispenserBehaviorSunspotUrchin
-extends BehaviorProjectileDispense {
-    public MyDispenserBehaviorSunspotUrchin() {
-    }
-
-    protected IProjectile getProjectileEntity(World par1World, IPosition par2IPosition, ItemStack par3ItemStack) {
-        SunspotUrchin entityarrow = new SunspotUrchin(par1World, par2IPosition.getX(), par2IPosition.getY(), par2IPosition.getZ());
-        return entityarrow;
+public final class MyDispenserBehaviorSunspotUrchin implements IDispenseItemBehavior {
+    @Override
+    public ItemStack dispense(IBlockSource source, ItemStack stack) {
+        World level = source.getLevel();
+        IPosition position = DispenserBlock.getDispensePosition(source);
+        Direction facing = source.getBlockState().getValue(DispenserBlock.FACING);
+        EntityType<? extends SunspotUrchin> type = (EntityType<? extends SunspotUrchin>) ForgeRegistries.ENTITIES.getValue(new ResourceLocation("chaospersists", "sunspot_urchin"));
+        SunspotUrchin projectile = new SunspotUrchin(type, level, position.x(), position.y(), position.z());
+        projectile.shoot(facing.getStepX(), (float) facing.getStepY() + 0.1F, facing.getStepZ(), 1.1F, 6.0F);
+        level.addFreshEntity(projectile);
+        stack.shrink(1);
+        return stack;
     }
 }

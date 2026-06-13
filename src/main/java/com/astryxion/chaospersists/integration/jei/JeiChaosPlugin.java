@@ -1,37 +1,39 @@
 package com.astryxion.chaospersists.integration.jei;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
+import com.astryxion.chaospersists.core.ChaosPersists;
 import mezz.jei.api.IModPlugin;
-import mezz.jei.api.IModRegistry;
-import mezz.jei.api.JEIPlugin;
-import mezz.jei.api.ingredients.IIngredientBlacklist;
-import mezz.jei.api.ingredients.IIngredientRegistry;
-import mezz.jei.api.ingredients.VanillaTypes;
-import net.minecraft.creativetab.CreativeTabs;
+import mezz.jei.api.JeiPlugin;
+import mezz.jei.api.constants.VanillaTypes;
+import mezz.jei.api.ingredients.IIngredientType;
+import mezz.jei.api.runtime.IIngredientManager;
+import mezz.jei.api.runtime.IJeiRuntime;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import net.minecraftforge.registries.ForgeRegistries;
 
 /**
  * Hides {@code chaospersists} stacks in JEI that do not appear on the mod's creative tabs.
  * Relies on {@code ChaosPersists.load} having already run {@code applyChaosCreativeTabs()}.
- * <p>
- * Compares against {@link IIngredientRegistry#getAllIngredients} so we blacklist the same stacks JEI
- * actually indexes (subtypes, NBT), not only what {@link Item#getSubItems(CreativeTabs, NonNullList)}
- * returns for {@link CreativeTabs#SEARCH}.
  */
-@JEIPlugin
+@JeiPlugin
 public class JeiChaosPlugin implements IModPlugin {
 
   @Override
-  public void register(IModRegistry registry) {
-    // Creative tabs are applied in ChaosPersists.load — do not call applyChaosCreativeTabs() here:
-    // a second pass saw tabChaosTools/tabChaosWeapons as "not TOOLS/COMBAT" and moved tools/weapons to Chaos Items.
-    IIngredientBlacklist blacklist = registry.getJeiHelpers().getIngredientBlacklist();
-    IIngredientRegistry ingredients = registry.getIngredientRegistry();
+  public ResourceLocation getPluginUid() {
+    return new ResourceLocation("chaospersists", "jei");
+  }
+
+  @Override
+  public void onRuntimeAvailable(IJeiRuntime jeiRuntime) {
+    IIngredientManager ingredientManager = jeiRuntime.getIngredientManager();
+    IIngredientType<ItemStack> itemType = VanillaTypes.ITEM;
 
     NonNullList<ItemStack> allowed = NonNullList.create();
     for (Item item : ForgeRegistries.ITEMS) {
@@ -42,14 +44,15 @@ public class JeiChaosPlugin implements IModPlugin {
       if (rl == null || !"chaospersists".equals(rl.getNamespace())) {
         continue;
       }
-      CreativeTabs tab = item.getCreativeTab();
+      ItemGroup tab = ChaosPersists.resolveChaosCreativeTab(item);
       if (tab == null) {
         continue;
       }
-      item.getSubItems(tab, allowed);
+      item.fillItemCategory(tab, allowed);
     }
 
-    Collection<ItemStack> allItemIngredients = ingredients.getAllIngredients(VanillaTypes.ITEM);
+    List<ItemStack> toRemove = new ArrayList<>();
+    Collection<ItemStack> allItemIngredients = ingredientManager.getAllIngredients(itemType);
     for (ItemStack stack : allItemIngredients) {
       if (stack == null || stack.isEmpty()) {
         continue;
@@ -59,13 +62,16 @@ public class JeiChaosPlugin implements IModPlugin {
       if (rl == null || !"chaospersists".equals(rl.getNamespace())) {
         continue;
       }
-      if (item.getCreativeTab() == null) {
-        blacklist.addIngredientToBlacklist(stack.copy());
+      if (ChaosPersists.resolveChaosCreativeTab(item) == null) {
+        toRemove.add(stack.copy());
         continue;
       }
       if (!stackListContains(allowed, stack)) {
-        blacklist.addIngredientToBlacklist(stack.copy());
+        toRemove.add(stack.copy());
       }
+    }
+    if (!toRemove.isEmpty()) {
+      ingredientManager.removeIngredientsAtRuntime(itemType, toRemove);
     }
   }
 
@@ -77,7 +83,7 @@ public class JeiChaosPlugin implements IModPlugin {
       if (s.isEmpty()) {
         continue;
       }
-      if (ItemStack.areItemsEqual(s, candidate) && ItemStack.areItemStackTagsEqual(s, candidate)) {
+      if (ItemStack.isSame(s, candidate) && ItemStack.tagMatches(s, candidate)) {
         return true;
       }
     }

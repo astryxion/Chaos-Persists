@@ -1,22 +1,7 @@
 {
   "variants": {
-    "facing=east": {
-      "model": "chaospersists:creeperrepellent_wall"
-    },
-    "facing=south": {
-      "y": 90,
-      "model": "chaospersists:creeperrepellent_wall"
-    },
-    "facing=north": {
-      "y": 270,
-      "model": "chaospersists:creeperrepellent_wall"
-    },
-    "facing=up": {
-      "model": "chaospersists:creeperrepellent"
-    },
-    "facing=west": {
-      "y": 180,
-      "model": "chaospersists:creeperrepellent_wall"
+    "": {
+      "model": "chaospersists:block/creeperrepellent"
     }
   }
 }

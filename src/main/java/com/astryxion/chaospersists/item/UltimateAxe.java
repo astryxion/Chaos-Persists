@@ -13,66 +13,64 @@
  *  net.minecraft.enchantment.Enchantment
  *  net.minecraft.enchantment.EnchantmentHelper
  *  net.minecraft.entity.Entity
- *  net.minecraft.entity.passive.EntityTameable
- *  net.minecraft.entity.player.EntityPlayer
+ *  net.minecraft.entity.passive.TameableEntity
+ *  net.minecraft.entity.player.PlayerEntity
  *  net.minecraft.item.Item
  *  net.minecraft.item.Item$ToolMaterial
- *  net.minecraft.item.ItemAxe
+ *  net.minecraft.item.AxeItem
  *  net.minecraft.item.ItemStack
  *  net.minecraft.util.IIcon
  *  net.minecraft.world.World
  */
 package com.astryxion.chaospersists.item;
 
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import com.astryxion.chaospersists.entity.Boyfriend;
 import com.astryxion.chaospersists.entity.Girlfriend;
 import com.astryxion.chaospersists.core.ChaosPersists;
-import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.item.ItemGroup;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.passive.EntityTameable;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.passive.TameableEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemAxe;
+import net.minecraft.item.IItemTier;
+import net.minecraft.item.AxeItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 
 public class UltimateAxe
-extends ItemAxe {
+extends AxeItem {
     private int weaponDamage = 15;
 
-    public UltimateAxe(Item.ToolMaterial par2) {
-        super(par2, 8.0F + par2.getAttackDamage(), -3.0F);
-        this.maxStackSize = 1;
-        this.setMaxDamage(3000);
-        this.setCreativeTab(CreativeTabs.TOOLS);
+    public UltimateAxe(IItemTier par2) {
+        super(par2, 8.0F + par2.getAttackDamageBonus(), -3.0F, new net.minecraft.item.Item.Properties().stacksTo(1).durability(3000).tab(net.minecraft.item.ItemGroup.TAB_TOOLS));
     }
 
-    public void onCreated(ItemStack par1ItemStack, World par2World, EntityPlayer par3EntityPlayer) {
-        par1ItemStack.addEnchantment(Enchantment.getEnchantmentByID(32), 5);
+    public void onCraftedBy(ItemStack par1ItemStack, World par2World, PlayerEntity par3PlayerEntity) {
+        par1ItemStack.enchant(com.astryxion.chaospersists.core.ChaosPersists.legacyEnchantment(32), 5);
     }
 
-    public void onUsingTick(ItemStack stack, EntityPlayer player, int count) {
-        int lvl = EnchantmentHelper.getEnchantmentLevel(Enchantment.getEnchantmentByID(32), (ItemStack)stack);
+    public void onUseTick(World world, PlayerEntity player, ItemStack stack, int count) {
+        int lvl = EnchantmentHelper.getItemEnchantmentLevel(com.astryxion.chaospersists.core.ChaosPersists.legacyEnchantment(32), (ItemStack)stack);
         if (lvl <= 0) {
-            stack.addEnchantment(Enchantment.getEnchantmentByID(32), 5);
+            stack.enchant(com.astryxion.chaospersists.core.ChaosPersists.legacyEnchantment(32), 5);
         }
     }
 
-    public void onUpdate(ItemStack stack, World par2World, Entity par3Entity, int par4, boolean par5) {
-        this.onUsingTick(stack, (EntityPlayer)null, 0);
+    public void inventoryTick(ItemStack stack, World par2World, Entity par3Entity, int par4, boolean par5) {
+        this.onUseTick(par2World, (PlayerEntity)null, stack, 0);
     }
 
-    public boolean onLeftClickEntity(ItemStack stack, EntityPlayer player, Entity entity) {
+    public boolean onLeftClickEntity(ItemStack stack, PlayerEntity player, Entity entity) {
         if (entity != null && ChaosPersists.ultimate_sword_pvp == 0) {
-            EntityTameable t;
-            if (entity instanceof EntityPlayer || entity instanceof Girlfriend || entity instanceof Boyfriend) {
+            TameableEntity t;
+            if (entity instanceof PlayerEntity || entity instanceof Girlfriend || entity instanceof Boyfriend) {
                 return true;
             }
-            if (entity instanceof EntityTameable && (t = (EntityTameable)entity).isTamed()) {
+            if (entity instanceof TameableEntity && (t = (TameableEntity)entity).isTame()) {
                 return true;
             }
         }
@@ -83,7 +81,7 @@ extends ItemAxe {
         if (par1Entity instanceof Girlfriend) {
             return 1;
         }
-        if (par1Entity instanceof EntityPlayer) {
+        if (par1Entity instanceof PlayerEntity) {
             return 1;
         }
         return this.weaponDamage;

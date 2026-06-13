@@ -1,88 +1,83 @@
-/*
- * Decompiled with CFR 0_125.
- * 
- * Could not load the following classes:
- *  net.minecraftforge.fml.relauncher.Side
- *  net.minecraftforge.fml.relauncher.SideOnly
- *  com.astryxion.chaospersists.BlockUranium
- *  net.minecraft.block.Block
- *  net.minecraft.block.material.Material
- *  net.minecraft.client.renderer.texture.IIconRegister
- *  net.minecraft.creativetab.CreativeTabs
- *  net.minecraft.util.IIcon
- *  net.minecraft.world.World
- */
 package com.astryxion.chaospersists.block;
 
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+
 import java.util.Random;
+
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.material.Material;
-import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.item.ItemGroup;
+import net.minecraft.particles.ParticleTypes;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-public class BlockUranium
-extends Block {
-    public BlockUranium() { super(Material.ROCK);
-        this.setHardness(5.0f);
-        this.setResistance(5.0f);
-        this.setCreativeTab(CreativeTabs.BUILDING_BLOCKS);
-        this.setLightLevel(0.2f);
+public class BlockUranium extends Block {
+
+    public BlockUranium() {
+        super(AbstractBlock.Properties.of(Material.STONE)
+                .strength(5.0f, 5.0f)
+                
+                .lightLevel(s -> 4)
+                .randomTicks());
     }
 
-    public int tickRate() {
-        return 100;
-    }
-
-    @SideOnly(value=Side.CLIENT)
-    public void randomDisplayTick(World par1World, int par2, int par3, int par4, Random par5Random) {
-        if (par1World.rand.nextInt(20) == 0) {
-            this.sparkle(par1World, par2, par3, par4);
+    @OnlyIn(Dist.CLIENT)
+    @Override
+    public void animateTick(BlockState state, World world, BlockPos pos, Random rand) {
+        if (world.random.nextInt(20) == 0) {
+            sparkle(world, pos, rand);
         }
     }
 
-    private void sparkle(World par1World, int par2, int par3, int par4) {
-        Random var5 = par1World.rand;
-        double var6 = 0.0625;
-        for (int var8 = 0; var8 < 6; ++var8) {
-            double var9 = (float)par2 + var5.nextFloat();
-            double var11 = (float)par3 + var5.nextFloat();
-            double var13 = (float)par4 + var5.nextFloat();
-            net.minecraft.block.state.IBlockState up = par1World.getBlockState(new net.minecraft.util.math.BlockPos(par2, par3 + 1, par4));
-            if (var8 == 0 && !up.getBlock().isFullCube(up)) {
-                var11 = (double)(par3 + 1) + var6;
+    @OnlyIn(Dist.CLIENT)
+    private void sparkle(World world, BlockPos pos, Random rand) {
+        double offset = 0.0625;
+        for (int i = 0; i < 6; ++i) {
+            double x = (double) pos.getX() + rand.nextFloat();
+            double y = (double) pos.getY() + rand.nextFloat();
+            double z = (double) pos.getZ() + rand.nextFloat();
+            BlockState up = world.getBlockState(pos.above());
+            if (i == 0 && !up.isSolidRender(world, pos.above())) {
+                y = (double) (pos.getY() + 1) + offset;
             }
-            net.minecraft.block.state.IBlockState down = par1World.getBlockState(new net.minecraft.util.math.BlockPos(par2, par3 - 1, par4));
-            if (var8 == 1 && !down.getBlock().isFullCube(down)) {
-                var11 = (double)(par3 + 0) - var6;
+            BlockState down = world.getBlockState(pos.below());
+            if (i == 1 && !down.isSolidRender(world, pos.below())) {
+                y = (double) pos.getY() - offset;
             }
-            net.minecraft.block.state.IBlockState south = par1World.getBlockState(new net.minecraft.util.math.BlockPos(par2, par3, par4 + 1));
-            if (var8 == 2 && !south.getBlock().isFullCube(south)) {
-                var13 = (double)(par4 + 1) + var6;
+            BlockState south = world.getBlockState(pos.south());
+            if (i == 2 && !south.isSolidRender(world, pos.south())) {
+                z = (double) (pos.getZ() + 1) + offset;
             }
-            net.minecraft.block.state.IBlockState north = par1World.getBlockState(new net.minecraft.util.math.BlockPos(par2, par3, par4 - 1));
-            if (var8 == 3 && !north.getBlock().isFullCube(north)) {
-                var13 = (double)(par4 + 0) - var6;
+            BlockState north = world.getBlockState(pos.north());
+            if (i == 3 && !north.isSolidRender(world, pos.north())) {
+                z = (double) pos.getZ() - offset;
             }
-            net.minecraft.block.state.IBlockState east = par1World.getBlockState(new net.minecraft.util.math.BlockPos(par2 + 1, par3, par4));
-            if (var8 == 4 && !east.getBlock().isFullCube(east)) {
-                var9 = (double)(par2 + 1) + var6;
+            BlockState east = world.getBlockState(pos.east());
+            if (i == 4 && !east.isSolidRender(world, pos.east())) {
+                x = (double) (pos.getX() + 1) + offset;
             }
-            net.minecraft.block.state.IBlockState west = par1World.getBlockState(new net.minecraft.util.math.BlockPos(par2 - 1, par3, par4));
-            if (var8 == 5 && !west.getBlock().isFullCube(west)) {
-                var9 = (double)(par2 + 0) - var6;
+            BlockState west = world.getBlockState(pos.west());
+            if (i == 5 && !west.isSolidRender(world, pos.west())) {
+                x = (double) pos.getX() - offset;
             }
-            if (var9 >= (double)par2 && var9 <= (double)(par2 + 1) && var11 >= 0.0 && var11 <= (double)(par3 + 1) && var13 >= (double)par4 && var13 <= (double)(par4 + 1)) continue;
-            int which = par1World.rand.nextInt(3);
+            if (x >= (double) pos.getX() && x <= (double) (pos.getX() + 1)
+                    && y >= 0.0 && y <= (double) (pos.getY() + 1)
+                    && z >= (double) pos.getZ() && z <= (double) (pos.getZ() + 1)) {
+                continue;
+            }
+            int which = world.random.nextInt(3);
             if (which == 0) {
-                par1World.spawnParticle(net.minecraft.util.EnumParticleTypes.FLAME, var9, var11, var13, 0.0, 0.0, 0.0);
+                world.addParticle(ParticleTypes.FLAME, x, y, z, 0.0, 0.0, 0.0);
             }
             if (which == 1) {
-                par1World.spawnParticle(net.minecraft.util.EnumParticleTypes.SMOKE_NORMAL, var9, var11, var13, 0.0, 0.0, 0.0);
+                world.addParticle(ParticleTypes.SMOKE, x, y, z, 0.0, 0.0, 0.0);
             }
-            if (which != 2) continue;
-            par1World.spawnParticle(net.minecraft.util.EnumParticleTypes.REDSTONE, var9, var11, var13, 0.0, 0.0, 0.0);
+            if (which == 2) {
+                world.addParticle(new net.minecraft.particles.RedstoneParticleData(1.0F, 0.0F, 0.0F, 1.0F), x, y, z, 0.0, 0.0, 0.0);
+            }
         }
-    }}
-
+    }
+}

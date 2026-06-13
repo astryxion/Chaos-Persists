@@ -1,41 +1,20 @@
-/*
- * Decompiled with CFR 0_125.
- * 
- * Could not load the following classes:
- *  net.minecraftforge.fml.relauncher.Side
- *  net.minecraftforge.fml.relauncher.SideOnly
- *  com.astryxion.chaospersists.EmeraldHoe
- *  net.minecraft.client.renderer.texture.IIconRegister
- *  net.minecraft.creativetab.CreativeTabs
- *  net.minecraft.entity.Entity
- *  net.minecraft.item.Item
- *  net.minecraft.item.Item$ToolMaterial
- *  net.minecraft.item.ItemHoe
- *  net.minecraft.util.IIcon
- */
 package com.astryxion.chaospersists.item;
 
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.entity.Entity;
+import net.minecraft.item.ItemGroup;
+import net.minecraft.item.HoeItem;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemHoe;
+import net.minecraft.item.IItemTier;
 
-public class EmeraldHoe
-extends ItemHoe {
-    public EmeraldHoe(Item.ToolMaterial par2) {
-        super(par2);
-        this.maxStackSize = 1;
-        this.setMaxDamage(1300);
-        this.setCreativeTab(CreativeTabs.TOOLS);
+public class EmeraldHoe extends HoeItem {
+    public EmeraldHoe(IItemTier tier) {
+        this(tier, new Item.Properties().stacksTo(1));
     }
 
-    public int getDamageVsEntity(Entity par1Entity) {
-        return 5;
+    public EmeraldHoe(IItemTier tier, Item.Properties properties) {
+        super(tier, -2, 0.0F, properties);
     }
 
     public String getMaterialName() {
         return "Emerald";
-    }}
-
+    }
+}

@@ -1,60 +1,39 @@
-/*
- * Decompiled with CFR 0_125.
- * 
- * Could not load the following classes:
- *  net.minecraftforge.fml.relauncher.Side
- *  net.minecraftforge.fml.relauncher.SideOnly
- *  com.astryxion.chaospersists.MantisClaw
- *  net.minecraft.client.renderer.texture.IIconRegister
- *  net.minecraft.creativetab.CreativeTabs
- *  net.minecraft.entity.EntityLivingBase
- *  net.minecraft.item.Item
- *  net.minecraft.item.Item$ToolMaterial
- *  net.minecraft.item.ItemStack
- *  net.minecraft.item.ItemSword
- *  net.minecraft.util.IIcon
- *  net.minecraft.world.World
- */
 package com.astryxion.chaospersists.item;
 
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.item.ItemGroup;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemSword;
-import net.minecraft.world.World;
+import net.minecraft.item.SwordItem;
+import net.minecraft.item.IItemTier;
+import net.minecraft.inventory.EquipmentSlotType;
 
-public class MantisClaw
-extends ItemSword {
-    private int weaponDamage;
-    private final Item.ToolMaterial toolMaterial;
+public class MantisClaw extends SwordItem {
+    private final int weaponDamage;
+    private final IItemTier toolMaterial;
 
-    public MantisClaw(Item.ToolMaterial par2EnumToolMaterial) {
-        super(par2EnumToolMaterial);
-        this.toolMaterial = par2EnumToolMaterial;
+    public MantisClaw(IItemTier tier) {
+        this(tier, new Item.Properties().stacksTo(1).durability(1000));
+    }
+
+    public MantisClaw(IItemTier tier, Item.Properties properties) {
+        super(tier, (int)(10 - tier.getAttackDamageBonus()), -2.4F, properties);
+        this.toolMaterial = tier;
         this.weaponDamage = 10;
-        this.maxStackSize = 1;
-        this.setMaxDamage(1000);
-        this.setCreativeTab(CreativeTabs.COMBAT);
     }
 
     public String getMaterialName() {
-        return "AMETHYST";
+        return "Mantis";
     }
 
-    public boolean hitEntity(ItemStack par1ItemStack, EntityLivingBase par2EntityLiving, EntityLivingBase par3EntityLiving) {
-        int var2 = 5;
-        if (par2EntityLiving != null && par3EntityLiving != null && !par2EntityLiving.world.isRemote) {
-            par2EntityLiving.heal(-1.0f);
-            par3EntityLiving.heal(1.0f);
-        }
-        par1ItemStack.damageItem(1, par3EntityLiving);
+    @Override
+    public boolean hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
+        stack.hurtAndBreak(1, attacker, (e) -> e.broadcastBreakEvent(EquipmentSlotType.MAINHAND));
         return true;
     }
 
-    public int getMaxItemUseDuration(ItemStack par1ItemStack) {
-        return 3000;
-    }}
-
+    @Override
+    public int getUseDuration(ItemStack stack) {
+        return 3500;
+    }
+}

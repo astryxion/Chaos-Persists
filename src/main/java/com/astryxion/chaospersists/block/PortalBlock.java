@@ -1,34 +1,16 @@
-/*
- * Decompiled with CFR 0_125.
- * 
- * Could not load the following classes:
- *  com.astryxion.chaospersists.PortalBlock
- *  net.minecraft.block.BlockPortal
- *  net.minecraft.entity.Entity
- *  net.minecraft.world.World
- */
 package com.astryxion.chaospersists.block;
 
-import java.util.Random;
-import net.minecraft.block.BlockPortal;
-import net.minecraft.entity.Entity;
-import net.minecraft.world.World;
+import net.minecraft.block.NetherPortalBlock;
+import net.minecraft.block.AbstractBlock;
+import net.minecraft.block.material.Material;
 
-public class PortalBlock
-extends BlockPortal {
+public class PortalBlock extends NetherPortalBlock {
+
     public PortalBlock(int i, int j) {
-    }
-
-    public void updateTick(World par1World, int par2, int par3, int par4, Random par5Random) {
-    }
-
-    public boolean tryToCreatePortal(World par1World, int par2, int par3, int par4) {
-        return false;
-    }
-
-    public void onNeighborBlockChange(World par1World, int par2, int par3, int par4, int par5) {
-    }
-
-    public void onEntityCollidedWithBlock(World par1World, int par2, int par3, int par4, Entity entity) {
+        super(AbstractBlock.Properties.of(Material.METAL)
+                .noCollission()
+                .strength(-1.0F)
+                .lightLevel(s -> 11)
+                .randomTicks());
     }
 }

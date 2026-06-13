@@ -1,0 +1,11 @@
+{
+  "type": "chaospersists:chaospersists_type",
+  "generator": {
+    "type": "chaospersists:chaos",
+    "seed": 0,
+    "biome_source": {
+      "type": "minecraft:fixed",
+      "biome": "chaospersists:chaos_dimension"
+    }
+  }
+}

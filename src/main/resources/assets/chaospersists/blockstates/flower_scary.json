@@ -1,6 +1,5 @@
 {
   "variants": {
-    "": { "model": "chaospersists:flower_scary" },
-    "normal": { "model": "chaospersists:flower_scary" }
+    "": { "model": "chaospersists:block/flower_scary" }
   }
 }

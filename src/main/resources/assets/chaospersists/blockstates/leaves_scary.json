@@ -1,1 +1,9 @@
-{"variants":{"check_decay=false,decayable=false":{"model":"chaospersists:leaves_scary"},"check_decay=false,decayable=true":{"model":"chaospersists:leaves_scary"},"check_decay=true,decayable=false":{"model":"chaospersists:leaves_scary"},"check_decay=true,decayable=true":{"model":"chaospersists:leaves_scary"},"inventory":{"model":"chaospersists:leaves_scary"}}}
+{
+  "multipart": [
+    {
+      "apply": {
+        "model": "chaospersists:block/leaves_scary"
+      }
+    }
+  ]
+}

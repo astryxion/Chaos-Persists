@@ -12,14 +12,12 @@
  */
 package com.astryxion.chaospersists.item;
 
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
-import net.minecraft.creativetab.CreativeTabs;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraft.item.ItemGroup;
 import net.minecraft.item.Item;
 
 public class ItemCrystalSticks
 extends Item {
-    public ItemCrystalSticks(int i) {
-        this.setCreativeTab(CreativeTabs.MISC);
-    }}
+    public ItemCrystalSticks(int i) { super(new Item.Properties()); }}
 

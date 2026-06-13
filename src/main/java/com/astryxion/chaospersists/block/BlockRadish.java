@@ -1,56 +1,56 @@
-/*
- * Decompiled with CFR 0_125.
- * 
- * Could not load the following classes:
- *  net.minecraftforge.fml.relauncher.Side
- *  net.minecraftforge.fml.relauncher.SideOnly
- *  com.astryxion.chaospersists.BlockRadish
- *  com.astryxion.chaospersists.ChaosPersists
- *  net.minecraft.block.BlockCrops
- *  net.minecraft.client.renderer.texture.IIconRegister
- *  net.minecraft.item.Item
- *  net.minecraft.util.IIcon
- */
 package com.astryxion.chaospersists.block;
 
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 import com.astryxion.chaospersists.core.ChaosPersists;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+
+import java.util.Collections;
+import java.util.List;
 import java.util.Random;
-import net.minecraft.block.BlockCrops;
-import net.minecraft.block.state.IBlockState;
+
+import net.minecraft.block.BlockState;
+import net.minecraft.block.CropsBlock;
+import net.minecraft.block.AbstractBlock;
+import net.minecraft.block.Blocks;
 import net.minecraft.item.Item;
-import net.minecraft.util.BlockRenderLayer;
-import net.minecraft.util.EnumBlockRenderType;
+import net.minecraft.item.ItemStack;
+import net.minecraft.loot.LootContext;
+import net.minecraft.loot.LootParameterSets;
+import net.minecraft.loot.LootParameters;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.IBlockReader;
 
-public class BlockRadish
-extends BlockCrops {
-    public BlockRadish() { this(0); }
+public class BlockRadish extends CropsBlock {
+
+    public BlockRadish() {
+        this(0);
+    }
+
     public BlockRadish(int par1) {
+        super(AbstractBlock.Properties.copy(Blocks.WHEAT).randomTicks().noCollission());
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public RenderType getRenderType(BlockState state) {
+        return RenderType.cutout();
     }
 
     @Override
-    public EnumBlockRenderType getRenderType(IBlockState state) {
-        return EnumBlockRenderType.MODEL;
+    protected Item getBaseSeedId() {
+        return ChaosPersists.MyRadish;
     }
 
-    @SideOnly(Side.CLIENT)
     @Override
-    public BlockRenderLayer getRenderLayer() {
-        return BlockRenderLayer.CUTOUT;
+    public ItemStack getCloneItemStack(IBlockReader world, BlockPos pos, BlockState state) {
+        return new ItemStack(ChaosPersists.MyRadish);
     }
 
-    public int quantityDropped(Random par1Random) {
-        return 2 + par1Random.nextInt(4);
+    @Override
+    public List<ItemStack> getDrops(BlockState state, LootContext.Builder builder) {
+        LootContext ctx = builder.withParameter(LootParameters.BLOCK_STATE, state).create(LootParameterSets.BLOCK);
+        Random rand = ctx.getRandom();
+        int count = 2 + rand.nextInt(4);
+        return Collections.singletonList(new ItemStack(ChaosPersists.MyRadish, count));
     }
-
-    protected Item func_149866_i() {
-        return ChaosPersists.MyRadish;
-    }
-
-    protected Item func_149865_P() {
-        return ChaosPersists.MyRadish;
-    }
-
 }
-

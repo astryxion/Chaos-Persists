@@ -1,172 +1,200 @@
 /*
  * Decompiled with CFR 0_125.
- * 
- * Could not load the following classes:
- *  com.astryxion.chaospersists.ChunkProviderChaos4
- *  com.astryxion.chaospersists.ChaosPersists
- *  net.minecraft.block.Block
- *  net.minecraft.block.BlockGrass
- *  net.minecraft.entity.EnumCreatureType
- *  net.minecraft.init.Blocks
- *  net.minecraft.util.IProgressUpdate
- *  net.minecraft.world.ChunkPosition
- *  net.minecraft.world.World
- *  net.minecraft.world.WorldProvider
- *  net.minecraft.world.biome.Biome
- *  net.minecraft.world.chunk.Chunk
- *  net.minecraft.world.chunk.IChunkProvider
- *  net.minecraft.world.chunk.storage.ExtendedBlockStorage
  */
 package com.astryxion.chaospersists.world.dimension.chunkprovider;
 
 import com.astryxion.chaospersists.core.ChaosPersists;
+import com.mojang.serialization.Codec;
 import java.util.List;
 import java.util.Random;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockGrass;
-import net.minecraft.entity.EnumCreatureType;
-import net.minecraft.init.Blocks;
-import net.minecraft.util.IProgressUpdate;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
+import net.minecraft.entity.EntityClassification;
+import net.minecraft.fluid.Fluids;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.IBlockReader;
+import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldProvider;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.world.biome.MobSpawnInfo;
+import net.minecraft.world.biome.provider.BiomeProvider;
+import net.minecraft.world.biome.provider.SingleBiomeProvider;
 import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.ChunkPrimer;
-import net.minecraft.world.chunk.IChunkProvider;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.world.chunk.IChunk;
+import net.minecraft.world.gen.ChunkGenerator;
+import net.minecraft.world.gen.DimensionSettings;
+import net.minecraft.world.gen.GenerationStage;
+import net.minecraft.world.gen.Heightmap;
+import net.minecraft.world.gen.WorldGenRegion;
+import net.minecraft.world.gen.feature.structure.StructureManager;
+import net.minecraft.world.server.ServerChunkProvider;
+import net.minecraft.world.server.ServerWorld;
 
-public class ChunkProviderChaos4
-implements IChunkProvider, net.minecraft.world.gen.IChunkGenerator {
+public class ChunkProviderChaos4 extends ChunkGenerator {
 
-    @Override
-    public boolean isChunkGeneratedAt(int x, int z) { return false; }
-    @Override
-    public boolean tick() { return false; }
-    @Override
-    public Chunk getLoadedChunk(int x, int z) { return provideChunk(x, z); }
-
+    private final long seed;
     private World worldObj;
     private Random random;
-    private Biome[] biomesForChunk;
-    private final Block[] cachedBlockIDs = new Block[256];
-    private final byte[] cachedBlockMetadata = new byte[256];
+    private final BlockState[] cachedBlockStates = new BlockState[256];
 
-    public ChunkProviderChaos4(World par1World, long par2, boolean par4) {
-        this.worldObj = par1World;
-        this.random = new Random(par2);
+    public ChunkProviderChaos4(BiomeProvider biomeProvider, long seed, boolean mapFeaturesEnabled) {
+        super(biomeProvider, DimensionSettings.bootstrap().structureSettings());
+        this.seed = seed;
+        this.random = new Random(seed);
         for (int j = 0; j < 8; ++j) {
-            this.cachedBlockIDs[j] = j == 0 ? Blocks.BEDROCK : (j == 7 ? Blocks.GRASS : Blocks.DIRT);
+            this.cachedBlockStates[j] = j == 0 ? Blocks.BEDROCK.defaultBlockState() : (j == 7 ? Blocks.GRASS_BLOCK.defaultBlockState() : Blocks.DIRT.defaultBlockState());
         }
     }
 
-    public Chunk loadChunk(int par1, int par2) {
-        return this.provideChunk(par1, par2);
+    public ChunkProviderChaos4(World par1World, long par2, boolean par4) {
+        this(resolveBiomeProvider(par1World), par2, par4);
+        this.worldObj = par1World;
+    }
+
+    private static BiomeProvider resolveBiomeProvider(World world) {
+        if (world instanceof ServerWorld) {
+            ServerChunkProvider chunkSource = (ServerChunkProvider) world.getChunkSource();
+            ChunkGenerator generator = chunkSource.getGenerator();
+            if (generator != null) {
+                return generator.getBiomeSource();
+            }
+        }
+        if (ChaosPersists.DANGER_BIOME != null) {
+            return new SingleBiomeProvider(ChaosPersists.DANGER_BIOME);
+        }
+        return new SingleBiomeProvider(world.getBiome(new BlockPos(0, 64, 0)));
     }
 
     @Override
-    public Chunk generateChunk(int x, int z) {
-        return this.provideChunk(x, z);
+    protected Codec<? extends ChunkGenerator> codec() {
+        return Codec.unit(this);
     }
 
     @Override
-    public boolean generateStructures(net.minecraft.world.chunk.Chunk chunkIn, int x, int z) {
-        return false;
+    public ChunkGenerator withSeed(long seed) {
+        ChunkProviderChaos4 provider = new ChunkProviderChaos4(this.getBiomeSource(), seed, false);
+        provider.worldObj = this.worldObj;
+        return provider;
     }
 
     @Override
-    public void populate(int x, int z) {
-        this.populate(this, x, z);
+    public IBlockReader getBaseColumn(int x, int z) {
+        final BlockState[] column = new BlockState[256];
+        for (int y = 0; y < 256; ++y) {
+            if (y < 8) {
+                column[y] = this.cachedBlockStates[y] != null ? this.cachedBlockStates[y] : Blocks.AIR.defaultBlockState();
+            } else {
+                column[y] = Blocks.AIR.defaultBlockState();
+            }
+        }
+        return new IBlockReader() {
+            @Override
+            public BlockState getBlockState(BlockPos pos) {
+                int y = pos.getY();
+                return y >= 0 && y < 256 ? column[y] : Blocks.AIR.defaultBlockState();
+            }
+
+            @Override
+            public net.minecraft.fluid.FluidState getFluidState(BlockPos pos) {
+                return Fluids.EMPTY.defaultFluidState();
+            }
+
+            @Override
+            public net.minecraft.tileentity.TileEntity getBlockEntity(BlockPos pos) {
+                return null;
+            }
+        };
     }
 
     @Override
-    public boolean isInsideStructure(net.minecraft.world.World worldIn, String structureName, net.minecraft.util.math.BlockPos pos) {
-        return false;
+    public int getBaseHeight(int x, int z, Heightmap.Type heightmapType) {
+        return 8;
     }
 
     @Override
-    public void recreateStructures(net.minecraft.world.chunk.Chunk chunkIn, int x, int z) {
-    }
-
-    @Override
-    public net.minecraft.util.math.BlockPos getNearestStructurePos(net.minecraft.world.World worldIn, String structureName, net.minecraft.util.math.BlockPos position, boolean findUnexplored) {
-        return null;
-    }
-
-    @Override
-    public java.util.List<net.minecraft.world.biome.Biome.SpawnListEntry> getPossibleCreatures(net.minecraft.entity.EnumCreatureType creatureType, net.minecraft.util.math.BlockPos pos) {
-        return this.worldObj.getBiome(pos).getSpawnableList(creatureType);
-    }
-
-    public Chunk provideChunk(int par1, int par2) {
-        ChunkPrimer primer = new ChunkPrimer();
-        for (int k = 0; k < this.cachedBlockIDs.length; ++k) {
-            Block block = this.cachedBlockIDs[k];
-            if (block == null) continue;
-            IBlockState state = block.getStateFromMeta(this.cachedBlockMetadata[k] & 15);
+    public void fillFromNoise(IWorld world, StructureManager structureManager, IChunk chunk) {
+        if (world instanceof WorldGenRegion) {
+            this.worldObj = ((WorldGenRegion) world).getLevel();
+        } else if (world instanceof World) {
+            this.worldObj = (World) world;
+        }
+        for (int k = 0; k < this.cachedBlockStates.length; ++k) {
+            BlockState state = this.cachedBlockStates[k];
+            if (state == null) {
+                continue;
+            }
             for (int i1 = 0; i1 < 16; ++i1) {
                 for (int j1 = 0; j1 < 16; ++j1) {
-                    primer.setBlockState(i1, k, j1, state);
+                    chunk.setBlockState(new BlockPos(i1, k, j1), state, false);
                 }
             }
         }
-        Chunk chunk = new Chunk(this.worldObj, primer, par1, par2);
-        this.biomesForChunk = this.worldObj.getBiomeProvider().getBiomes(this.biomesForChunk, par1 * 16, par2 * 16, 16, 16, false);
-        byte[] biomeBytes = chunk.getBiomeArray();
-        for (int i = 0; i < biomeBytes.length; ++i) {
-            biomeBytes[i] = (byte) Biome.getIdForBiome(this.biomesForChunk[i]);
+        if (chunk instanceof Chunk) {
+            Chunk chunkEntity = (Chunk) chunk;
+            int chunkX = chunk.getPos().x * 16;
+            int chunkZ = chunk.getPos().z * 16;
+            this.addScragglyTrees(this.worldObj, chunkX, chunkZ, chunkEntity);
         }
-        this.addScragglyTrees(this.worldObj, par1 * 16, par2 * 16, chunk);
-        chunk.generateSkylightMap();
-        return chunk;
     }
 
-    public boolean chunkExists(int par1, int par2) {
-        return true;
+    @Override
+    public void buildSurfaceAndBedrock(WorldGenRegion region, IChunk chunk) {
+        if (this.worldObj == null) {
+            this.worldObj = region.getLevel();
+        }
     }
 
-    public void populate(IChunkProvider par1IChunkProvider, int par2, int par3) {
+    @Override
+    public void applyCarvers(long seed, net.minecraft.world.biome.BiomeManager biomeManager, IChunk chunk, GenerationStage.Carving type) {
+        super.applyCarvers(seed, biomeManager, chunk, type);
+    }
+
+    @Override
+    public void applyBiomeDecoration(WorldGenRegion region, StructureManager structureManager) {
+        int par2 = region.getCenterX();
+        int par3 = region.getCenterZ();
         int k = par2 * 16;
         int l = par3 * 16;
-        this.random.setSeed(this.worldObj.getSeed());
+        this.random.setSeed(region.getSeed());
         long i1 = this.random.nextLong() / 2L * 2L + 1L;
         long j1 = this.random.nextLong() / 2L * 2L + 1L;
-        this.random.setSeed((long)par2 * i1 + (long)par3 * j1 ^ this.worldObj.getSeed());
+        this.random.setSeed((long) par2 * i1 + (long) par3 * j1 ^ region.getSeed());
+        super.applyBiomeDecoration(region, structureManager);
     }
 
-    public boolean saveChunks(boolean par1, IProgressUpdate par2IProgressUpdate) {
-        return true;
-    }
-
-    public void saveExtraData() {
-    }
-
-    public boolean unloadQueuedChunks() {
+    public boolean isChunkGeneratedAt(int x, int z) {
         return false;
     }
 
-    public boolean canSave() {
-        return true;
+    public boolean tick() {
+        return false;
     }
 
     public String makeString() {
         return "DangerDimension";
     }
 
-    public List getPossibleCreatures(EnumCreatureType par1EnumCreatureType, int par2, int par3, int par4) {
-        net.minecraft.world.biome.Biome biomegenbase = this.worldObj.getBiome(new net.minecraft.util.math.BlockPos(par2, 0, par4));
-        return biomegenbase.getSpawnableList(par1EnumCreatureType);
+    public List<MobSpawnInfo.Spawners> getPossibleCreatures(EntityClassification creatureType, BlockPos pos) {
+        if (this.worldObj == null) {
+            return java.util.Collections.emptyList();
+        }
+        return this.worldObj.getBiome(pos).getMobSettings().getMobs(creatureType);
     }
 
-    public net.minecraft.util.math.BlockPos func_147416_a(World p_147416_1_, String p_147416_2_, int p_147416_3_, int p_147416_4_, int p_147416_5_) {
+    public boolean isInsideStructure(World worldIn, String structureName, BlockPos pos) {
+        return false;
+    }
+
+    public void recreateStructures(Chunk chunkIn, int x, int z) {
+    }
+
+    public BlockPos getNearestStructurePos(World worldIn, String structureName, BlockPos position, boolean findUnexplored) {
         return null;
     }
 
-    public int getLoadedChunkCount() {
-        return 0;
-    }
-
-    public void recreateStructures(int par1, int par2) {
+    public BlockPos func_147416_a(World p_147416_1_, String p_147416_2_, int p_147416_3_, int p_147416_4_, int p_147416_5_) {
+        return null;
     }
 
     public void addScragglyTrees(World world, int chunkX, int chunkZ, Chunk chunk) {
@@ -184,7 +212,7 @@ implements IChunkProvider, net.minecraft.world.gen.IChunkGenerator {
             int posX = 2 + chunkX + this.random.nextInt(12);
             int posZ = 2 + chunkZ + this.random.nextInt(12);
             for (int posY = 20; posY > 2; --posY) {
-                if (ChaosPersists.getBlockIDInChunk((Chunk)chunk, (int)posX, (int)(posY - 1), (int)posZ) != Blocks.GRASS) continue;
+                if (ChaosPersists.getBlockIDInChunk((Chunk) chunk, (int) posX, (int) (posY - 1), (int) posZ) != Blocks.GRASS_BLOCK) continue;
                 this.ScragglyTreeWithBranches(world, posX, posY, posZ, chunk);
                 continue block0;
             }
@@ -209,18 +237,18 @@ implements IChunkProvider, net.minecraft.world.gen.IChunkGenerator {
             if (iz < -1) {
                 iz = -1;
             }
-            if ((bid = ChaosPersists.getBlockIDInChunk((Chunk)chunk, (int)(x += ix), (int)(y += (iy = this.random.nextInt(3) > 0 ? 1 : 0)), (int)(z += iz))) != Blocks.AIR && bid != Blocks.LOG && bid != ChaosPersists.MyAppleLeaves) {
+            if ((bid = ChaosPersists.getBlockIDInChunk((Chunk) chunk, (int) (x += ix), (int) (y += (iy = this.random.nextInt(3) > 0 ? 1 : 0)), (int) (z += iz))) != Blocks.AIR && bid != Blocks.OAK_LOG && bid != ChaosPersists.MyAppleLeaves) {
                 return;
             }
-            ChaosPersists.setBlockIDWithMetadataInChunk((Chunk)chunk, (int)x, (int)y, (int)z, (Block)Blocks.LOG, (int)0);
+            ChaosPersists.setBlockIDWithMetadataInChunk((Chunk) chunk, (int) x, (int) y, (int) z, (Block) Blocks.OAK_LOG, (int) 0);
             for (int m = -1; m < 2; ++m) {
                 for (int n = -1; n < 2; ++n) {
-                    if (this.random.nextInt(2) != 1 || (bid = ChaosPersists.getBlockIDInChunk((Chunk)chunk, (int)(x + m), (int)y, (int)(z + n))) != Blocks.AIR) continue;
-                    ChaosPersists.setBlockIDWithMetadataInChunk((Chunk)chunk, (int)(x + m), (int)y, (int)(z + n), (Block)ChaosPersists.MyAppleLeaves, (int)0);
+                    if (this.random.nextInt(2) != 1 || (bid = ChaosPersists.getBlockIDInChunk((Chunk) chunk, (int) (x + m), (int) y, (int) (z + n))) != Blocks.AIR) continue;
+                    ChaosPersists.setBlockIDWithMetadataInChunk((Chunk) chunk, (int) (x + m), (int) y, (int) (z + n), (Block) ChaosPersists.MyAppleLeaves, (int) 0);
                 }
             }
-            if (this.random.nextInt(2) != 1 || (bid = ChaosPersists.getBlockIDInChunk((Chunk)chunk, (int)x, (int)(y + 1), (int)z)) != Blocks.AIR) continue;
-            ChaosPersists.setBlockIDWithMetadataInChunk((Chunk)chunk, (int)x, (int)(y + 1), (int)z, (Block)ChaosPersists.MyAppleLeaves, (int)0);
+            if (this.random.nextInt(2) != 1 || (bid = ChaosPersists.getBlockIDInChunk((Chunk) chunk, (int) x, (int) (y + 1), (int) z)) != Blocks.AIR) continue;
+            ChaosPersists.setBlockIDWithMetadataInChunk((Chunk) chunk, (int) x, (int) (y + 1), (int) z, (Block) ChaosPersists.MyAppleLeaves, (int) 0);
         }
     }
 
@@ -230,32 +258,31 @@ implements IChunkProvider, net.minecraft.world.gen.IChunkGenerator {
         int i = 1 + this.random.nextInt(3);
         int j = i + this.random.nextInt(12);
         for (k = 0; k < i; ++k) {
-            bid = ChaosPersists.getBlockIDInChunk((Chunk)chunk, (int)x, (int)(y + k), (int)z);
-            if (k >= 1 && bid != Blocks.AIR && bid != Blocks.LOG && bid != ChaosPersists.MyAppleLeaves) {
+            bid = ChaosPersists.getBlockIDInChunk((Chunk) chunk, (int) x, (int) (y + k), (int) z);
+            if (k >= 1 && bid != Blocks.AIR && bid != Blocks.OAK_LOG && bid != ChaosPersists.MyAppleLeaves) {
                 return;
             }
-            ChaosPersists.setBlockIDWithMetadataInChunk((Chunk)chunk, (int)x, (int)(y + k), (int)z, (Block)Blocks.LOG, (int)0);
+            ChaosPersists.setBlockIDWithMetadataInChunk((Chunk) chunk, (int) x, (int) (y + k), (int) z, (Block) Blocks.OAK_LOG, (int) 0);
         }
         y += i - 1;
         for (k = i; k < j; ++k) {
             int ix = this.random.nextInt(2) - this.random.nextInt(2);
             int iz = this.random.nextInt(2) - this.random.nextInt(2);
             int iy = this.random.nextInt(4) > 0 ? 1 : 0;
-            bid = ChaosPersists.getBlockIDInChunk((Chunk)chunk, (int)(x += ix), (int)(y += iy), (int)(z += iz));
-            if (bid != Blocks.AIR && bid != Blocks.LOG && bid != ChaosPersists.MyAppleLeaves) break;
-            ChaosPersists.setBlockIDWithMetadataInChunk((Chunk)chunk, (int)x, (int)y, (int)z, (Block)Blocks.LOG, (int)0);
+            bid = ChaosPersists.getBlockIDInChunk((Chunk) chunk, (int) (x += ix), (int) (y += iy), (int) (z += iz));
+            if (bid != Blocks.AIR && bid != Blocks.OAK_LOG && bid != ChaosPersists.MyAppleLeaves) break;
+            ChaosPersists.setBlockIDWithMetadataInChunk((Chunk) chunk, (int) x, (int) y, (int) z, (Block) Blocks.OAK_LOG, (int) 0);
             if (this.random.nextInt(4) == 1) {
                 this.makeScragglyBranch(world, x, y, z, this.random.nextInt(1 + j - k), this.random.nextInt(2) - this.random.nextInt(2), this.random.nextInt(2) - this.random.nextInt(2), chunk);
             }
             for (int m = -1; m < 2; ++m) {
                 for (int n = -1; n < 2; ++n) {
-                    if (this.random.nextInt(2) != 1 || (bid = ChaosPersists.getBlockIDInChunk((Chunk)chunk, (int)(x + m), (int)y, (int)(z + n))) != Blocks.AIR) continue;
-                    ChaosPersists.setBlockIDWithMetadataInChunk((Chunk)chunk, (int)(x + m), (int)y, (int)(z + n), (Block)ChaosPersists.MyAppleLeaves, (int)0);
+                    if (this.random.nextInt(2) != 1 || (bid = ChaosPersists.getBlockIDInChunk((Chunk) chunk, (int) (x + m), (int) y, (int) (z + n))) != Blocks.AIR) continue;
+                    ChaosPersists.setBlockIDWithMetadataInChunk((Chunk) chunk, (int) (x + m), (int) y, (int) (z + n), (Block) ChaosPersists.MyAppleLeaves, (int) 0);
                 }
             }
-            if (this.random.nextInt(2) != 1 || (bid = ChaosPersists.getBlockIDInChunk((Chunk)chunk, (int)x, (int)(y + 1), (int)z)) != Blocks.AIR) continue;
-            ChaosPersists.setBlockIDWithMetadataInChunk((Chunk)chunk, (int)x, (int)(y + 1), (int)z, (Block)ChaosPersists.MyAppleLeaves, (int)0);
+            if (this.random.nextInt(2) != 1 || (bid = ChaosPersists.getBlockIDInChunk((Chunk) chunk, (int) x, (int) (y + 1), (int) z)) != Blocks.AIR) continue;
+            ChaosPersists.setBlockIDWithMetadataInChunk((Chunk) chunk, (int) x, (int) (y + 1), (int) z, (Block) ChaosPersists.MyAppleLeaves, (int) 0);
         }
     }
 }
-

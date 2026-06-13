@@ -5,60 +5,40 @@
  *  com.astryxion.chaospersists.Alosaurus
  *  com.astryxion.chaospersists.ModelAlosaurus
  *  com.astryxion.chaospersists.RenderAlosaurus
- *  net.minecraft.client.model.ModelBase
+ *  net.minecraft.client.renderer.entity.model.Model
  *  net.minecraft.client.renderer.entity.RenderLiving
  *  net.minecraft.entity.Entity
- *  net.minecraft.entity.EntityLiving
- *  net.minecraft.entity.EntityLivingBase
+ *  net.minecraft.entity.LivingEntity
+ *  net.minecraft.entity.LivingEntity
  *  net.minecraft.util.ResourceLocation
  *  org.lwjgl.opengl.GL11
  */
 package com.astryxion.chaospersists.render;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
+import net.minecraft.client.renderer.entity.LivingRenderer;
+import net.minecraft.client.renderer.entity.EntityRendererManager;
 import com.astryxion.chaospersists.entity.Alosaurus;
 import com.astryxion.chaospersists.model.ModelAlosaurus;
-import net.minecraft.client.model.ModelBase;
-import net.minecraft.client.renderer.entity.RenderLiving;
-import net.minecraft.client.renderer.entity.RenderManager;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.ResourceLocation;
-import org.lwjgl.opengl.GL11;
 
 public class RenderAlosaurus
-extends RenderLiving {
+extends LivingRenderer<Alosaurus, ModelAlosaurus> {
     protected ModelAlosaurus model;
     private float scale = 1.0f;
     private static final ResourceLocation texture = new ResourceLocation("chaospersists", "textures/entity/alosaurus.png");
 
-    public RenderAlosaurus(RenderManager manager, ModelAlosaurus par1ModelBase, float par2, float par3) {
-        super(manager, (ModelBase)par1ModelBase, par2 * par3);
-        this.model = (ModelAlosaurus)this.mainModel;
+    public RenderAlosaurus(EntityRendererManager manager, ModelAlosaurus par1Model, float par2, float par3) {
+        super(manager, par1Model, par2 * par3);
+        this.model = this.getModel();
         this.scale = par3;
     }
+protected void applyScale(MatrixStack matrixStack) { matrixStack.scale(this.scale, this.scale, this.scale); }
 
-    public void renderAlosaurus(Alosaurus par1EntityAlosaurus, double par2, double par4, double par6, float par8, float par9) {
-        super.doRender((EntityLiving)par1EntityAlosaurus, par2, par4, par6, par8, par9);
-    }
+    protected void scale(Alosaurus entity, MatrixStack matrixStack, float partialTick) { this.applyScale(matrixStack); }
 
-    public void doRender(EntityLiving par1EntityLiving, double par2, double par4, double par6, float par8, float par9) {
-        this.renderAlosaurus((Alosaurus)par1EntityLiving, par2, par4, par6, par8, par9);
-    }
-
-    public void doRender(Entity par1Entity, double par2, double par4, double par6, float par8, float par9) {
-        this.renderAlosaurus((Alosaurus)par1Entity, par2, par4, par6, par8, par9);
-    }
-
-    protected void preRenderScale(Alosaurus par1Entity, float par2) {
-        GL11.glScalef((float)this.scale, (float)this.scale, (float)this.scale);
-    }
-
-    protected void preRenderCallback(EntityLivingBase par1EntityLiving, float par2) {
-        this.preRenderScale((Alosaurus)par1EntityLiving, par2);
-    }
-
-    protected ResourceLocation getEntityTexture(Entity entity) {
+    @Override
+    public ResourceLocation getTextureLocation(Alosaurus entity) {
         return texture;
     }
 }

@@ -9,29 +9,29 @@
  *  com.astryxion.chaospersists.TheKing
  *  com.astryxion.chaospersists.TheQueen
  *  net.minecraft.block.Block
- *  net.minecraft.block.BlockChest
- *  net.minecraft.block.BlockFlower
- *  net.minecraft.block.BlockGrass
- *  net.minecraft.block.BlockLeaves
- *  net.minecraft.block.BlockTallGrass
+ *  net.minecraft.block.ChestBlock
+ *  net.minecraft.block.FlowerBlock
+ *  net.minecraft.block.GrassBlock
+ *  net.minecraft.block.LeavesBlock
+ *  net.minecraft.block.TallGrassBlock
  *  net.minecraft.client.renderer.texture.IIconRegister
  *  net.minecraft.creativetab.CreativeTabs
  *  net.minecraft.enchantment.Enchantment
  *  net.minecraft.enchantment.EnchantmentHelper
  *  net.minecraft.entity.Entity
  *  net.minecraft.entity.EntityList
- *  net.minecraft.entity.EntityLiving
- *  net.minecraft.entity.player.EntityPlayer
- *  net.minecraft.entity.player.PlayerCapabilities
- *  net.minecraft.init.Blocks
- *  net.minecraft.init.Items
+ *  net.minecraft.entity.Mob
+ *  net.minecraft.entity.player.PlayerEntity
+ *  net.minecraft.entity.player.PlayerEntityCapabilities
+ *  net.minecraft.block.Blocks
+ *  net.minecraft.item.Items
  *  net.minecraft.inventory.IInventory
  *  net.minecraft.item.Item
- *  net.minecraft.item.ItemArmor
+ *  net.minecraft.item.ArmorItem
  *  net.minecraft.item.ItemBow
  *  net.minecraft.item.ItemStack
  *  net.minecraft.tileentity.TileEntity
- *  net.minecraft.tileentity.TileEntityChest
+ *  net.minecraft.tileentity.ChestTileEntity
  *  net.minecraft.util.IIcon
  *  net.minecraft.util.WeightedRandomChestContent
  *  net.minecraft.world.World
@@ -39,43 +39,44 @@
  */
 package com.astryxion.chaospersists.item;
 
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.entity.TheKing;
 import com.astryxion.chaospersists.entity.TheQueen;
 import com.astryxion.chaospersists.util.WeightedRandomChestContent;
 import java.util.Random;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockChest;
-import net.minecraft.block.BlockFlower;
-import net.minecraft.block.BlockGrass;
-import net.minecraft.block.BlockLeaves;
-import net.minecraft.block.BlockTallGrass;
-import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.block.ChestBlock;
+import net.minecraft.block.FlowerBlock;
+import net.minecraft.block.GrassBlock;
+import net.minecraft.block.LeavesBlock;
+import net.minecraft.block.TallGrassBlock;
+import net.minecraft.item.ItemGroup;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.init.Enchantments;
+import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityList;
-import net.minecraft.util.EnumActionResult;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.particles.ParticleTypes;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.util.ActionResultType;
+import net.minecraft.util.Direction;
+import net.minecraft.util.Hand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.PlayerCapabilities;
-import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
+import net.minecraft.entity.MobEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerAbilities;
+import net.minecraft.block.Blocks;
+import net.minecraft.item.Items;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemArmor;
-import net.minecraft.item.ItemBow;
+import net.minecraft.item.ArmorItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityChest;
+import net.minecraft.tileentity.ChestTileEntity;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 
@@ -84,54 +85,56 @@ extends Item {
     public int tree_radius = 6;
     public boolean no_critters = false;
     Random rand = ChaosPersists.ChaosRand;
-    private final WeightedRandomChestContent[] chestContentsList = new WeightedRandomChestContent[]{new WeightedRandomChestContent(Items.ENDER_PEARL, 0, 1, 2, 3), new WeightedRandomChestContent(Items.DIAMOND, 0, 1, 5, 15), new WeightedRandomChestContent(Items.BLAZE_ROD, 0, 1, 3, 10), new WeightedRandomChestContent(ChaosPersists.CageEmpty, 0, 1, 10, 7), new WeightedRandomChestContent(ChaosPersists.CagedGirlfriend, 0, 1, 2, 6), new WeightedRandomChestContent(Items.IRON_INGOT, 0, 1, 10, 16), new WeightedRandomChestContent(Items.GOLD_INGOT, 0, 1, 6, 16), new WeightedRandomChestContent(ChaosPersists.UraniumNugget, 0, 1, 6, 6), new WeightedRandomChestContent(ChaosPersists.TitaniumNugget, 0, 1, 4, 6), new WeightedRandomChestContent(Items.BREAD, 0, 1, 8, 20), new WeightedRandomChestContent(Items.APPLE, 0, 1, 8, 20), new WeightedRandomChestContent(Items.COOKIE, 0, 1, 16, 20), new WeightedRandomChestContent(Items.COOKED_BEEF, 0, 1, 8, 20), new WeightedRandomChestContent(Items.COOKED_CHICKEN, 0, 1, 8, 20), new WeightedRandomChestContent(Items.COOKED_FISH, 0, 1, 8, 20), new WeightedRandomChestContent(Items.COOKED_PORKCHOP, 0, 1, 8, 20), new WeightedRandomChestContent(Items.PUMPKIN_PIE, 0, 1, 4, 20), new WeightedRandomChestContent(Items.CARROT, 0, 1, 16, 20), new WeightedRandomChestContent(Items.POTATO, 0, 1, 16, 20), new WeightedRandomChestContent(ChaosPersists.MySunFish, 0, 1, 4, 6), new WeightedRandomChestContent(ChaosPersists.MyFireFish, 0, 1, 8, 6), new WeightedRandomChestContent(ChaosPersists.MyPopcornBag, 0, 1, 4, 16), new WeightedRandomChestContent(Items.IRON_PICKAXE, 0, 1, 1, 20), new WeightedRandomChestContent(Items.IRON_SWORD, 0, 1, 1, 20), new WeightedRandomChestContent(Items.DIAMOND_PICKAXE, 0, 1, 1, 5), new WeightedRandomChestContent(Items.DIAMOND_SWORD, 0, 1, 1, 5), new WeightedRandomChestContent((Item)Items.BOW, 0, 1, 1, 20), new WeightedRandomChestContent(Items.ARROW, 0, 1, 64, 20), new WeightedRandomChestContent(ChaosPersists.MyUltimatePickaxe, 0, 1, 1, 2), new WeightedRandomChestContent(ChaosPersists.MyUltimateSword, 0, 1, 1, 1), new WeightedRandomChestContent(ChaosPersists.MyUltimateFishingRod, 0, 1, 1, 5), new WeightedRandomChestContent((Item)Items.IRON_CHESTPLATE, 0, 1, 1, 20), new WeightedRandomChestContent((Item)Items.IRON_HELMET, 0, 1, 1, 20), new WeightedRandomChestContent((Item)Items.IRON_LEGGINGS, 0, 1, 1, 20), new WeightedRandomChestContent((Item)Items.IRON_BOOTS, 0, 1, 1, 20), new WeightedRandomChestContent((Item)Items.DIAMOND_CHESTPLATE, 0, 1, 1, 5), new WeightedRandomChestContent((Item)Items.DIAMOND_HELMET, 0, 1, 1, 5), new WeightedRandomChestContent((Item)Items.DIAMOND_LEGGINGS, 0, 1, 1, 5), new WeightedRandomChestContent((Item)Items.DIAMOND_BOOTS, 0, 1, 1, 5), new WeightedRandomChestContent(Items.GOLDEN_APPLE, 0, 1, 1, 5)};
+    private final WeightedRandomChestContent[] chestContentsList = new WeightedRandomChestContent[]{new WeightedRandomChestContent(Items.ENDER_PEARL, 0, 1, 2, 3), new WeightedRandomChestContent(Items.DIAMOND, 0, 1, 5, 15), new WeightedRandomChestContent(Items.BLAZE_ROD, 0, 1, 3, 10), new WeightedRandomChestContent(ChaosPersists.CageEmpty, 0, 1, 10, 7), new WeightedRandomChestContent(ChaosPersists.CagedGirlfriend, 0, 1, 2, 6), new WeightedRandomChestContent(Items.IRON_INGOT, 0, 1, 10, 16), new WeightedRandomChestContent(Items.GOLD_INGOT, 0, 1, 6, 16), new WeightedRandomChestContent(ChaosPersists.UraniumNugget, 0, 1, 6, 6), new WeightedRandomChestContent(ChaosPersists.TitaniumNugget, 0, 1, 4, 6), new WeightedRandomChestContent(Items.BREAD, 0, 1, 8, 20), new WeightedRandomChestContent(Items.APPLE, 0, 1, 8, 20), new WeightedRandomChestContent(Items.COOKIE, 0, 1, 16, 20), new WeightedRandomChestContent(Items.COOKED_BEEF, 0, 1, 8, 20), new WeightedRandomChestContent(Items.COOKED_CHICKEN, 0, 1, 8, 20), new WeightedRandomChestContent(Items.COOKED_COD, 0, 1, 8, 20), new WeightedRandomChestContent(Items.COOKED_PORKCHOP, 0, 1, 8, 20), new WeightedRandomChestContent(Items.PUMPKIN_PIE, 0, 1, 4, 20), new WeightedRandomChestContent(Items.CARROT, 0, 1, 16, 20), new WeightedRandomChestContent(Items.POTATO, 0, 1, 16, 20), new WeightedRandomChestContent(ChaosPersists.MySunFish, 0, 1, 4, 6), new WeightedRandomChestContent(ChaosPersists.MyFireFish, 0, 1, 8, 6), new WeightedRandomChestContent(ChaosPersists.MyPopcornBag, 0, 1, 4, 16), new WeightedRandomChestContent(Items.IRON_PICKAXE, 0, 1, 1, 20), new WeightedRandomChestContent(Items.IRON_SWORD, 0, 1, 1, 20), new WeightedRandomChestContent(Items.DIAMOND_PICKAXE, 0, 1, 1, 5), new WeightedRandomChestContent(Items.DIAMOND_SWORD, 0, 1, 1, 5), new WeightedRandomChestContent((Item)Items.BOW, 0, 1, 1, 20), new WeightedRandomChestContent(Items.ARROW, 0, 1, 64, 20), new WeightedRandomChestContent(ChaosPersists.MyUltimatePickaxe, 0, 1, 1, 2), new WeightedRandomChestContent(ChaosPersists.MyUltimateSword, 0, 1, 1, 1), new WeightedRandomChestContent(ChaosPersists.MyUltimateFishingRod, 0, 1, 1, 5), new WeightedRandomChestContent((Item)Items.IRON_CHESTPLATE, 0, 1, 1, 20), new WeightedRandomChestContent((Item)Items.IRON_HELMET, 0, 1, 1, 20), new WeightedRandomChestContent((Item)Items.IRON_LEGGINGS, 0, 1, 1, 20), new WeightedRandomChestContent((Item)Items.IRON_BOOTS, 0, 1, 1, 20), new WeightedRandomChestContent((Item)Items.DIAMOND_CHESTPLATE, 0, 1, 1, 5), new WeightedRandomChestContent((Item)Items.DIAMOND_HELMET, 0, 1, 1, 5), new WeightedRandomChestContent((Item)Items.DIAMOND_LEGGINGS, 0, 1, 1, 5), new WeightedRandomChestContent((Item)Items.DIAMOND_BOOTS, 0, 1, 1, 5), new WeightedRandomChestContent(Items.GOLDEN_APPLE, 0, 1, 1, 5)};
 
     public ItemMagicApple(int i) {
-        this.maxStackSize = 1;
-        this.setCreativeTab(CreativeTabs.DECORATIONS);
+        super(new Item.Properties());
     }
 
-    public void onCreated(ItemStack par1ItemStack, World par2World, EntityPlayer par3EntityPlayer) {
-        par1ItemStack.addEnchantment(Enchantments.SILK_TOUCH, 2);
+    public void onCraftedBy(ItemStack par1ItemStack, World par2World, PlayerEntity par3PlayerEntity) {
+        par1ItemStack.enchant(Enchantments.SILK_TOUCH, 2);
     }
 
     private Entity spawnCreature(World par0World, int par1, double par2, double par4, double par6) {
         Entity var8 = null;
-        var8 = EntityList.createEntityByID((int)par1, (World)par0World);
+        net.minecraft.entity.EntityType<?> entityType = net.minecraft.util.registry.Registry.ENTITY_TYPE.byId(par1);
+        if (entityType != null) {
+            var8 = entityType.create(par0World);
+        }
         if (var8 != null) {
-            var8.setLocationAndAngles(par2, par4, par6, par0World.rand.nextFloat() * 360.0f, 0.0f);
-            par0World.spawnEntity(var8);
-            ((EntityLiving)var8).playLivingSound();
+            var8.moveTo(par2, par4, par6, par0World.random.nextFloat() * 360.0f, 0.0f);
+            par0World.addFreshEntity(var8);
+            com.astryxion.chaospersists.entity.RockBase.playSpawnAmbientSound((LivingEntity)var8);
         }
         return var8;
     }
 
-    public void onUsingTick(ItemStack stack, EntityPlayer player, int count) {
-        int lvl = EnchantmentHelper.getEnchantmentLevel(Enchantments.SILK_TOUCH, stack);
+    public void onUseTick(World world, PlayerEntity player, ItemStack stack, int count) {
+        int lvl = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.SILK_TOUCH, stack);
         if (lvl <= 0) {
-            stack.addEnchantment(Enchantments.SILK_TOUCH, 2);
+            stack.enchant(Enchantments.SILK_TOUCH, 2);
         }
     }
 
-    public void onUpdate(ItemStack stack, World par2World, Entity par3Entity, int par4, boolean par5) {
-        this.onUsingTick(stack, (EntityPlayer)null, 0);
+    public void inventoryTick(ItemStack stack, World par2World, Entity par3Entity, int par4, boolean par5) {
+        this.onUseTick(par2World, (PlayerEntity)null, stack, 0);
     }
 
     private Boolean isBoringBlock(World world, int x, int y, int z) {
         Block var1 = world.getBlockState(new net.minecraft.util.math.BlockPos(x, y, z)).getBlock();
-        if (var1 == Blocks.TALLGRASS) {
+        if (var1 == Blocks.GRASS_BLOCK) {
             return true;
         }
         if (var1 == Blocks.CACTUS) {
             return true;
         }
-        if (var1 == Blocks.RED_FLOWER) {
+        if (var1 == Blocks.POPPY) {
             return true;
         }
-        if (var1 == Blocks.YELLOW_FLOWER) {
+        if (var1 == Blocks.DANDELION) {
             return true;
         }
-        if (var1 == Blocks.LEAVES) {
+        if (var1 == Blocks.OAK_LEAVES) {
             return true;
         }
         if (var1 == Blocks.SNOW) {
@@ -143,7 +146,7 @@ extends Item {
         if (var1 == ChaosPersists.MyAppleLeaves) {
             return true;
         }
-        if (world.isAirBlock(new BlockPos(x, y, z))) {
+        if (world.isEmptyBlock(new BlockPos(x, y, z))) {
             return true;
         }
         if (var1 == null) {
@@ -153,7 +156,7 @@ extends Item {
     }
 
     private Boolean isBoringBaseBlock(World world, int x, int y, int z) {
-        if (world.isAirBlock(new BlockPos(x, y, z))) {
+        if (world.isEmptyBlock(new BlockPos(x, y, z))) {
             return true;
         }
         Block var1 = world.getBlockState(new net.minecraft.util.math.BlockPos(x, y, z)).getBlock();
@@ -188,11 +191,11 @@ extends Item {
         int leaf_width = 0;
         int xaccum = dirx;
         int zaccum = dirz;
-        if (this.rand.nextInt(2) == 0) {
+        if (this.random.nextInt(2) == 0) {
             branch_side = -1;
         }
         while (current_width >= 0) {
-            int length = this_width * 3 + this.rand.nextInt(this_width + 3);
+            int length = this_width * 3 + this.random.nextInt(this_width + 3);
             for (int i = 0; i < length; ++i) {
                 int realx;
                 int realz;
@@ -208,21 +211,21 @@ extends Item {
                         }
                     }
                     if (i <= 0 || j != 0 || current_width < 3) continue;
-                    if (tree_type >= 0 && this.rand.nextInt(75) == 0 || tree_type < 0 && this.rand.nextInt(50) == 0) {
-                        if (bad_critters || !world.isAirBlock(new BlockPos(realx, y + 1, realz))) continue;
+                    if (tree_type >= 0 && this.random.nextInt(75) == 0 || tree_type < 0 && this.random.nextInt(50) == 0) {
+                        if (bad_critters || !world.isEmptyBlock(new BlockPos(realx, y + 1, realz))) continue;
                         this.FastSetBlock(world, realx, y + 1, realz, (Block)Blocks.CHEST, 0, 2, chunk);
-                        TileEntityChest chest = (TileEntityChest)world.getTileEntity(new BlockPos(realx, y + 1, realz));
+                        ChestTileEntity chest = (ChestTileEntity)world.getBlockEntity(new BlockPos(realx, y + 1, realz));
                         if (chest == null) continue;
-                        WeightedRandomChestContent.generateChestContents((Random)this.rand, (WeightedRandomChestContent[])this.chestContentsList, (IInventory)chest, (int)(1 + this.rand.nextInt(8)));
+                        WeightedRandomChestContent.generateChestContents((Random)this.random, (WeightedRandomChestContent[])this.chestContentsList, (IInventory)chest, (int)(1 + this.random.nextInt(8)));
                         continue;
                     }
-                    if (this.rand.nextInt(50) != 0 || bad_critters || !world.isAirBlock(new BlockPos(realx, y + 1, realz)) || !world.isAirBlock(new BlockPos(realx, y + 2, realz)) || !world.isAirBlock(new BlockPos(realx, y + 3, realz))) continue;
+                    if (this.random.nextInt(50) != 0 || bad_critters || !world.isEmptyBlock(new BlockPos(realx, y + 1, realz)) || !world.isEmptyBlock(new BlockPos(realx, y + 2, realz)) || !world.isEmptyBlock(new BlockPos(realx, y + 3, realz))) continue;
                     Entity ent = null;
                     ent = this.spawnCreature(world, 99, (double)realx + 0.5, (double)y + 1.01, (double)realz + 0.5);
                 }
                 if (current_width < 3 || this_width <= 1) {
-                    leaf_depth = 2 + this.rand.nextInt(2);
-                    leaf_width = 2 + this.rand.nextInt(3);
+                    leaf_depth = 2 + this.random.nextInt(2);
+                    leaf_width = 2 + this.random.nextInt(3);
                     for (int n = 0; n < leaf_depth; ++n) {
                         int lw = current_width + leaf_width - n;
                         if (current_width == 0 && length - i <= 2 && lw >= length - i) {
@@ -236,28 +239,28 @@ extends Item {
                             if (!this.isBoringBlock(world, realx, y + n, realz = z + j * Math.abs(dirx) + zaccum + dirz).booleanValue()) continue;
                             if (tree_type >= 0) {
                                 this.FastSetBlock(world, realx, y + n, realz, leafID, tree_type, 2, chunk);
-                                if (n != 0 || tree_type != 3 || lw == 0 || j != lw && j != - lw || this.rand.nextInt(5) != 0) continue;
+                                if (n != 0 || tree_type != 3 || lw == 0 || j != lw && j != - lw || this.random.nextInt(5) != 0) continue;
                                 if (dirx == 0) {
                                     if (j == lw) {
-                                        this.growVines(world, realx + 1, y, realz, 2, this.rand.nextInt(10), chunk);
+                                        this.growVines(world, realx + 1, y, realz, 2, this.random.nextInt(10), chunk);
                                         continue;
                                     }
-                                    this.growVines(world, realx - 1, y, realz, 8, this.rand.nextInt(10), chunk);
+                                    this.growVines(world, realx - 1, y, realz, 8, this.random.nextInt(10), chunk);
                                     continue;
                                 }
                                 if (j == lw) {
-                                    this.growVines(world, realx, y, realz + 1, 4, this.rand.nextInt(10), chunk);
+                                    this.growVines(world, realx, y, realz + 1, 4, this.random.nextInt(10), chunk);
                                     continue;
                                 }
-                                this.growVines(world, realx, y, realz - 1, 1, this.rand.nextInt(10), chunk);
+                                this.growVines(world, realx, y, realz - 1, 1, this.random.nextInt(10), chunk);
                                 continue;
                             }
                             Block local_leaf_type = leafID;
-                            if (this.rand.nextInt(20) == 1) {
-                                if (this.rand.nextInt(3) != 0) {
+                            if (this.random.nextInt(20) == 1) {
+                                if (this.random.nextInt(3) != 0) {
                                     local_leaf_type = Blocks.REDSTONE_BLOCK;
                                 } else {
-                                    int ilt = this.rand.nextInt(4);
+                                    int ilt = this.random.nextInt(4);
                                     if (ilt == 0) {
                                         local_leaf_type = ChaosPersists.MyBlockUraniumBlock;
                                     }
@@ -276,7 +279,7 @@ extends Item {
                         }
                     }
                 }
-                if (current_width > 0 && last_branch > current_width && current_width != this_width && this.rand.nextInt(current_width + 1) == 0) {
+                if (current_width > 0 && last_branch > current_width && current_width != this_width && this.random.nextInt(current_width + 1) == 0) {
                     int subdirx = branch_side;
                     int subdirz = 0;
                     if (dirx != 0) {
@@ -298,7 +301,7 @@ extends Item {
     public void MakeBigSquareTree(World world, int x, int y, int z, Block ID, Block leafID, Block stepID, int tree_type, int t_radius, boolean bad_critters, Chunk chunk) {
         int i;
         int j;
-        int this_height = t_radius + this.rand.nextInt(t_radius);
+        int this_height = t_radius + this.random.nextInt(t_radius);
         int this_width = t_radius;
         int base_height = t_radius * 3;
         int spiral = 0;
@@ -441,19 +444,19 @@ extends Item {
                                 } else {
                                     this.FastSetBlock(world, x + m, current_y, z + n, ID, 0, 2, chunk);
                                 }
-                                if (m != 0 || n != 0 || this.rand.nextInt(2) != 0 || bad_critters || !world.isAirBlock(new BlockPos(x, current_y + 1, z))) continue;
+                                if (m != 0 || n != 0 || this.random.nextInt(2) != 0 || bad_critters || !world.isEmptyBlock(new BlockPos(x, current_y + 1, z))) continue;
                                 this.FastSetBlock(world, x, current_y + 1, z, (Block)Blocks.CHEST, 0, 2, chunk);
-                                TileEntityChest chest = (TileEntityChest)world.getTileEntity(new BlockPos(x, current_y + 1, z));
+                                ChestTileEntity chest = (ChestTileEntity)world.getBlockEntity(new BlockPos(x, current_y + 1, z));
                                 if (chest == null) continue;
-                                WeightedRandomChestContent.generateChestContents((Random)this.rand, (WeightedRandomChestContent[])this.chestContentsList, (IInventory)chest, (int)(t_radius - this_width + this.rand.nextInt(10)));
+                                WeightedRandomChestContent.generateChestContents((Random)this.random, (WeightedRandomChestContent[])this.chestContentsList, (IInventory)chest, (int)(t_radius - this_width + this.random.nextInt(10)));
                             }
                         }
                     }
                 }
                 if (this_width != t_radius) {
-                    int next = this.rand.nextInt(4 + this_width);
+                    int next = this.random.nextInt(4 + this_width);
                     while (next == last || next == last_last) {
-                        next = this.rand.nextInt(4 + this_width);
+                        next = this.random.nextInt(4 + this_width);
                     }
                     if (next < 4) {
                         last_last = last;
@@ -488,7 +491,7 @@ extends Item {
             if (Math.abs(spiral) > --this_width) {
                 spiral = - this_width;
             }
-            this_height += this.rand.nextInt(t_radius);
+            this_height += this.random.nextInt(t_radius);
         }
         if (this.isBoringBaseBlock(world, x, current_y, z).booleanValue()) {
             Entity var8;
@@ -496,21 +499,23 @@ extends Item {
             this.FastSetBlock(world, x, current_y + 1, z, Blocks.EMERALD_BLOCK, 0, 2, chunk);
             if (stepID == Blocks.DIAMOND_BLOCK) {
                 var8 = null;
-                var8 = EntityList.createEntityByIDFromName(new ResourceLocation("chaospersists", "the_king"), world);
+                net.minecraft.entity.EntityType<?> kingType = net.minecraftforge.registries.ForgeRegistries.ENTITIES.getValue(new ResourceLocation("chaospersists", "the_king"));
+                var8 = kingType != null ? kingType.create(world) : null;
                 if (var8 != null) {
-                    var8.setLocationAndAngles((double)x, (double)(current_y + 4), (double)z, world.rand.nextFloat() * 360.0f, 0.0f);
-                    world.spawnEntity(var8);
-                    ((EntityLiving)var8).playLivingSound();
+                    var8.moveTo((double)x, (double)(current_y + 4), (double)z, world.random.nextFloat() * 360.0f, 0.0f);
+                    world.addFreshEntity(var8);
+                    com.astryxion.chaospersists.entity.RockBase.playSpawnAmbientSound((LivingEntity)var8);
                     ((TheKing)var8).setGuardMode(1);
                 }
             }
             if (stepID == ChaosPersists.MyBlockAmethystBlock) {
                 var8 = null;
-                var8 = EntityList.createEntityByIDFromName(new ResourceLocation("chaospersists", "the_queen"), world);
+                net.minecraft.entity.EntityType<?> queenType = net.minecraftforge.registries.ForgeRegistries.ENTITIES.getValue(new ResourceLocation("chaospersists", "the_queen"));
+                var8 = queenType != null ? queenType.create(world) : null;
                 if (var8 != null) {
-                    var8.setLocationAndAngles((double)x, (double)(current_y + 4), (double)z, world.rand.nextFloat() * 360.0f, 0.0f);
-                    world.spawnEntity(var8);
-                    ((EntityLiving)var8).playLivingSound();
+                    var8.moveTo((double)x, (double)(current_y + 4), (double)z, world.random.nextFloat() * 360.0f, 0.0f);
+                    world.addFreshEntity(var8);
+                    com.astryxion.chaospersists.entity.RockBase.playSpawnAmbientSound((LivingEntity)var8);
                     ((TheQueen)var8).setGuardMode(1);
                     ((TheQueen)var8).setBadMood(1);
                 }
@@ -587,7 +592,7 @@ extends Item {
         int curx = 0;
         int cury = 0;
         int curz = 0;
-        int stepindex = this.rand.nextInt(360);
+        int stepindex = this.random.nextInt(360);
         int ibranch = 0;
         cury = y;
         block0 : for (i = 0; i < 360; ++i) {
@@ -633,15 +638,15 @@ extends Item {
                 }
             }
             if (cury > (int)rad) {
-                if ((ibranch += 80 + this.rand.nextInt(80)) > 360) {
+                if ((ibranch += 80 + this.random.nextInt(80)) > 360) {
                     ibranch -= 360;
                 }
-                int ibranchlen = (int)(rad * 5.0) + this.rand.nextInt((int)rad + 2);
+                int ibranchlen = (int)(rad * 5.0) + this.random.nextInt((int)rad + 2);
                 dt = rad * Math.sin(Math.toRadians(ibranch)) + 0.5;
                 curx = (int)dt;
                 dt = rad * Math.cos(Math.toRadians(ibranch)) + 0.5;
                 curz = (int)dt;
-                this.MakeCirclularBranch(world, ibranch, ibranchlen, (int)rad + 1, x + curx, y + cury, z + curz, this.rand.nextInt(2) * (this.rand.nextInt(2) == 0 ? -1 : 1), ID, leafID, tree_type, chunk);
+                this.MakeCirclularBranch(world, ibranch, ibranchlen, (int)rad + 1, x + curx, y + cury, z + curz, this.random.nextInt(2) * (this.random.nextInt(2) == 0 ? -1 : 1), ID, leafID, tree_type, chunk);
             }
             if (cury % 6 == 0 && rad > 3.0) {
                 for (double dr = rad - 0.25; dr > 0.0; dr -= 0.25) {
@@ -658,18 +663,18 @@ extends Item {
                         this.FastSetBlock(world, x + curx, y + cury, z + curz, ID, 0, 2, chunk);
                     }
                 }
-                if (this.rand.nextInt(2) == 0 && !bad_critters && world.isAirBlock(new BlockPos(x, y + cury + 1, z))) {
+                if (this.random.nextInt(2) == 0 && !bad_critters && world.isEmptyBlock(new BlockPos(x, y + cury + 1, z))) {
                     this.FastSetBlock(world, x, y + cury + 1, z, (Block)Blocks.CHEST, 0, 2, chunk);
-                    TileEntityChest chest = (TileEntityChest)world.getTileEntity(new BlockPos(x, y + cury + 1, z));
+                    ChestTileEntity chest = (ChestTileEntity)world.getBlockEntity(new BlockPos(x, y + cury + 1, z));
                     if (chest != null) {
-                        WeightedRandomChestContent.generateChestContents((Random)this.rand, (WeightedRandomChestContent[])this.chestContentsList, (IInventory)chest, (int)(t_radius - (int)rad + this.rand.nextInt(10)));
+                        WeightedRandomChestContent.generateChestContents((Random)this.random, (WeightedRandomChestContent[])this.chestContentsList, (IInventory)chest, (int)(t_radius - (int)rad + this.random.nextInt(10)));
                     }
                 }
             }
             if ((stepindex += 15 + (int)(((double)t_radius - rad) * 3.0)) > 360) {
                 stepindex -= 360;
             }
-            if ((rad -= 0.01 * (double)this.rand.nextInt(15)) > 0.0 || !this.isBoringBaseBlock(world, x, y + ++cury, z).booleanValue()) continue;
+            if ((rad -= 0.01 * (double)this.random.nextInt(15)) > 0.0 || !this.isBoringBaseBlock(world, x, y + ++cury, z).booleanValue()) continue;
             this.FastSetBlock(world, x, y + cury, z, Blocks.DIAMOND_BLOCK, 0, 2, chunk);
         }
     }
@@ -718,10 +723,10 @@ extends Item {
                 this.FastSetBlock(world, (int)(fx + fcurx), y + cury, (int)(fz + fcurz), ID, 0, 2, chunk);
             }
             if (cury > (int)rad) {
-                if ((ibranch += 80 + world.rand.nextInt(80)) > 360) {
+                if ((ibranch += 80 + world.random.nextInt(80)) > 360) {
                     ibranch -= 360;
                 }
-                int ibranchlen = (int)(rad * 5.0) + world.rand.nextInt((int)rad + 2);
+                int ibranchlen = (int)(rad * 5.0) + world.random.nextInt((int)rad + 2);
                 dt = rad * Math.sin(Math.toRadians(ibranch));
                 fcurx = (float)dt;
                 dt = rad * Math.cos(Math.toRadians(ibranch));
@@ -744,7 +749,7 @@ extends Item {
                     }
                 }
             }
-            if ((rad -= 0.01 * (double)world.rand.nextInt(15)) > 0.0 || !this.isBoringBaseBlock(world, (int)fx, y + ++cury, (int)fz).booleanValue()) continue;
+            if ((rad -= 0.01 * (double)world.random.nextInt(15)) > 0.0 || !this.isBoringBaseBlock(world, (int)fx, y + ++cury, (int)fz).booleanValue()) continue;
             this.FastSetBlock(world, (int)fx, y + cury, (int)fz, Blocks.DIAMOND_BLOCK, 0, 2, chunk);
         }
     }
@@ -783,67 +788,74 @@ extends Item {
     }
 
     @Override
-    public EnumActionResult onItemUse(EntityPlayer par2EntityPlayer, World world, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ)
+    public ActionResultType useOn(net.minecraft.item.ItemUseContext context)
     {
-      ItemStack par1ItemStack = par2EntityPlayer.getHeldItem(hand);
+      PlayerEntity par2PlayerEntity = context.getPlayer();
+      if (par2PlayerEntity == null) {
+        return ActionResultType.FAIL;
+      }
+      World world = context.getLevel();
+      BlockPos pos = context.getClickedPos();
+      Hand hand = context.getHand();
+      Direction facing = context.getClickedFace();
+      ItemStack par1ItemStack = context.getItemInHand();
       int clickedX = pos.getX();
       int clickedY = pos.getY();
       int clickedZ = pos.getZ();
       Block var1 = world.getBlockState(new net.minecraft.util.math.BlockPos(clickedX, clickedY, clickedZ)).getBlock();
-      if ((var1 != Blocks.GRASS) && (var1 != Blocks.FARMLAND) && (var1 != Blocks.DIRT)) {
-        return EnumActionResult.FAIL;
+      if ((var1 != Blocks.GRASS_BLOCK) && (var1 != Blocks.FARMLAND) && (var1 != Blocks.DIRT)) {
+        return ActionResultType.FAIL;
       }
 
-      int tree_type = this.rand.nextInt(4);
+      int tree_type = this.random.nextInt(4);
 
-      Block leaf_type = Blocks.LEAVES;
+      Block leaf_type = Blocks.OAK_LEAVES;
 
       this.no_critters = true;
-      if (this.rand.nextInt(2) == 1) this.no_critters = false;
+      if (this.random.nextInt(2) == 1) this.no_critters = false;
 
-      if (!world.isRemote) {
-        world.setBlockState(new BlockPos(clickedX, clickedY, clickedZ), Blocks.GOLD_BLOCK.getDefaultState(), 2);
+      if (!world.isClientSide) {
+        world.setBlock(new BlockPos(clickedX, clickedY, clickedZ), Blocks.GOLD_BLOCK.defaultBlockState(), 2);
       }
       for (int var3 = 0; var3 < 6; var3++)
       {
-        par2EntityPlayer.world.spawnParticle(net.minecraft.util.EnumParticleTypes.SMOKE_LARGE, clickedX + 0.5F, clickedY + 1 + 0.25F, clickedZ + 0.5F, 0.0D, 0.0D, 0.0D);
-        par2EntityPlayer.world.spawnParticle(net.minecraft.util.EnumParticleTypes.EXPLOSION_LARGE, clickedX + 0.5F, clickedY + 1 + 0.25F, clickedZ + 0.5F, 0.0D, 0.0D, 0.0D);
-        par2EntityPlayer.world.spawnParticle(net.minecraft.util.EnumParticleTypes.REDSTONE, clickedX + 0.5F, clickedY + 1 + 0.25F, clickedZ + 0.5F, 0.0D, 0.0D, 0.0D);
+        par2PlayerEntity.level.addParticle(ParticleTypes.SMOKE, clickedX + 0.5F, clickedY + 1 + 0.25F, clickedZ + 0.5F, 0.0D, 0.0D, 0.0D);
+        par2PlayerEntity.level.addParticle(net.minecraft.particles.ParticleTypes.EXPLOSION, clickedX + 0.5F, clickedY + 1 + 0.25F, clickedZ + 0.5F, 0.0D, 0.0D, 0.0D);
+        par2PlayerEntity.level.addParticle(new net.minecraft.particles.RedstoneParticleData(1.0F, 0.0F, 0.0F, 1.0F), clickedX + 0.5F, clickedY + 1 + 0.25F, clickedZ + 0.5F, 0.0D, 0.0D, 0.0D);
       }
 
-      par2EntityPlayer.world.playSound(par2EntityPlayer.posX, par2EntityPlayer.posY, par2EntityPlayer.posZ, net.minecraft.init.SoundEvents.ENTITY_GENERIC_EXPLODE, SoundCategory.PLAYERS, 2.8F, 1.5F, false);
-
-      if (!world.isRemote)
+      par2PlayerEntity.level.playSound(null, par2PlayerEntity.getX(), par2PlayerEntity.getY(), par2PlayerEntity.getZ(), net.minecraft.util.SoundEvents.GENERIC_EXPLODE, SoundCategory.PLAYERS, 2.8F, 1.5F);
+      if (!world.isClientSide)
       {
-        int rand_treetype = this.rand.nextInt(100);
+        int rand_treetype = this.random.nextInt(100);
 
         if (rand_treetype >= 20) {
           if (rand_treetype >= 40) {
-            if ((tree_type != 3) && (this.rand.nextInt(10) == 1)) leaf_type = ChaosPersists.MyAppleLeaves;
-            MakeBigSquareTree(world, clickedX, clickedY, clickedZ, Blocks.LOG, leaf_type, Blocks.MOSSY_COBBLESTONE, tree_type, this.tree_radius, this.no_critters, null);
+            if ((tree_type != 3) && (this.random.nextInt(10) == 1)) leaf_type = ChaosPersists.MyAppleLeaves;
+            MakeBigSquareTree(world, clickedX, clickedY, clickedZ, Blocks.OAK_LOG, leaf_type, Blocks.MOSSY_COBBLESTONE, tree_type, this.tree_radius, this.no_critters, null);
           } else {
-            MakeBigRoundTree(world, clickedX, clickedY, clickedZ, Blocks.LOG, leaf_type, Blocks.MOSSY_COBBLESTONE, tree_type, this.tree_radius, null);
+            MakeBigRoundTree(world, clickedX, clickedY, clickedZ, Blocks.OAK_LOG, leaf_type, Blocks.MOSSY_COBBLESTONE, tree_type, this.tree_radius, null);
           }
         } else if (rand_treetype == 1) {
           if (ChaosPersists.GinormousEmeraldTreeEnable != 0) {
-            if (this.rand.nextInt(2) == 0)
+            if (this.random.nextInt(2) == 0)
               MakeBigSquareTree(world, clickedX, clickedY, clickedZ, Blocks.GOLD_BLOCK, Blocks.EMERALD_BLOCK, Blocks.DIAMOND_BLOCK, -1, this.tree_radius, true, null);
             else
               MakeBigSquareTree(world, clickedX, clickedY, clickedZ, Blocks.OBSIDIAN, ChaosPersists.MyBlockRubyBlock, ChaosPersists.MyBlockAmethystBlock, -1, this.tree_radius, true, null);
           }
           else
-            MakeBigSquareTree(world, clickedX, clickedY, clickedZ, Blocks.LOG, leaf_type, Blocks.IRON_ORE, tree_type, this.tree_radius, this.no_critters, null);
+            MakeBigSquareTree(world, clickedX, clickedY, clickedZ, Blocks.OAK_LOG, leaf_type, Blocks.IRON_ORE, tree_type, this.tree_radius, this.no_critters, null);
         }
         else {
-          MakeBigCircularTree(world, clickedX, clickedY, clickedZ, Blocks.LOG, leaf_type, Blocks.MOSSY_COBBLESTONE, tree_type, this.tree_radius, this.no_critters, null);
+          MakeBigCircularTree(world, clickedX, clickedY, clickedZ, Blocks.OAK_LOG, leaf_type, Blocks.MOSSY_COBBLESTONE, tree_type, this.tree_radius, this.no_critters, null);
         }
       }
 
-      if (!par2EntityPlayer.capabilities.isCreativeMode)
+      if (!par2PlayerEntity.isCreative())
       {
         par1ItemStack.shrink(1);
       }
 
-      return EnumActionResult.SUCCESS;
+      return ActionResultType.SUCCESS;
     }}
 

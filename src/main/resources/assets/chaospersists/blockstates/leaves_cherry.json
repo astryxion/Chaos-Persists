@@ -1,1 +1,9 @@
-{"variants":{"check_decay=false,decayable=false":{"model":"chaospersists:leaves_cherry"},"check_decay=false,decayable=true":{"model":"chaospersists:leaves_cherry"},"check_decay=true,decayable=false":{"model":"chaospersists:leaves_cherry"},"check_decay=true,decayable=true":{"model":"chaospersists:leaves_cherry"},"inventory":{"model":"chaospersists:leaves_cherry"}}}
+{
+  "multipart": [
+    {
+      "apply": {
+        "model": "chaospersists:block/leaves_cherry"
+      }
+    }
+  ]
+}

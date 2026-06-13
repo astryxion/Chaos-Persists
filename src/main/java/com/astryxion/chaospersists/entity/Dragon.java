@@ -1,7 +1,10 @@
 package com.astryxion.chaospersists.entity;
+import net.minecraft.entity.MobEntity;
+import net.minecraft.entity.EntityType;
+import net.minecraft.world.World;
 
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import com.astryxion.chaospersists.item.BetterFireball;
 import com.astryxion.chaospersists.entity.CreepingHorror;
 import com.astryxion.chaospersists.entity.EnderReaper;
@@ -26,63 +29,74 @@ import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockDeadBush;
-import net.minecraft.block.BlockLiquid;
+import net.minecraft.block.DeadBushBlock;
+import net.minecraft.block.FlowingFluidBlock;
 import com.google.common.base.Predicate;
 import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityAgeable;
-import net.minecraft.entity.EntityCreature;
-import net.minecraft.entity.EntityList;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.AgeableEntity;
+import net.minecraft.entity.CreatureEntity;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.entity.MobEntity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.MoverType;
-import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.ai.EntityAIBase;
-import net.minecraft.entity.ai.EntityAIHurtByTarget;
-import net.minecraft.entity.ai.EntityAILookIdle;
-import net.minecraft.entity.ai.EntityAIMoveIndoors;
-import net.minecraft.entity.ai.EntityAINearestAttackableTarget;
-import net.minecraft.entity.ai.EntityAISwimming;
-import net.minecraft.entity.ai.EntityAITasks;
-import net.minecraft.entity.ai.EntityAITempt;
-import net.minecraft.entity.ai.EntityAIWatchClosest;
+import net.minecraft.entity.ai.attributes.Attributes;
+import net.minecraft.entity.ai.attributes.AttributeModifierMap;
+import net.minecraft.entity.ai.goal.SwimGoal;
+import net.minecraft.entity.ai.goal.TemptGoal;
+import net.minecraft.entity.ai.goal.LookAtGoal;
+import net.minecraft.entity.ai.goal.LookRandomlyGoal;
+import net.minecraft.entity.ai.goal.RestrictSunGoal;
+import net.minecraft.entity.ai.goal.HurtByTargetGoal;
+import net.minecraft.entity.ai.goal.NearestAttackableTargetGoal;
+import net.minecraft.entity.ai.goal.Goal;
+import net.minecraft.entity.ai.goal.HurtByTargetGoal;
+import net.minecraft.entity.ai.goal.LookRandomlyGoal;
+import net.minecraft.entity.ai.goal.NearestAttackableTargetGoal;
+import net.minecraft.entity.ai.goal.SwimGoal;
+
+import net.minecraft.entity.ai.goal.TemptGoal;
+import net.minecraft.entity.ai.goal.LookAtGoal;
 import net.minecraft.entity.ai.EntitySenses;
-import net.minecraft.entity.ai.attributes.AbstractAttributeMap;
-import net.minecraft.entity.ai.attributes.IAttribute;
-import net.minecraft.entity.ai.attributes.IAttributeInstance;
-import net.minecraft.entity.item.EntityItem;
-import net.minecraft.entity.monster.EntityMob;
+import net.minecraft.entity.ai.attributes.AttributeModifierMap;
+import net.minecraft.entity.ai.attributes.Attribute;
+import net.minecraft.entity.ai.attributes.ModifiableAttributeInstance;
+import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.monster.IMob;
-import net.minecraft.util.EntitySelectors;
-import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.entity.passive.EntityTameable;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.PlayerCapabilities;
-import net.minecraft.network.play.client.CPacketInput;
-import net.minecraft.network.play.client.CPacketPlayer;
-import net.minecraft.entity.projectile.EntitySmallFireball;
-import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
+import net.minecraft.entity.monster.MonsterEntity;
+import net.minecraft.world.server.ServerWorld;
+import net.minecraft.client.entity.player.ClientPlayerEntity;
+import net.minecraft.entity.passive.TameableEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerAbilities;
+import net.minecraft.network.play.client.CInputPacket;
+import net.minecraft.network.play.client.CPlayerPacket;
+import net.minecraft.entity.projectile.SmallFireballEntity;
+import net.minecraft.block.Blocks;
+import net.minecraft.item.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.pathfinding.PathNavigate;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.pathfinding.PathNavigator;
 import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.DamageSource;
-import net.minecraft.util.EnumHand;
+import net.minecraft.util.Hand;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.ActionResultType;
 import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.EnumDifficulty;
+import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.world.Difficulty;
+import net.minecraft.util.math.RayTraceContext;
+import net.minecraft.entity.EntityPredicate;
+import net.minecraft.entity.EntityType;
+import net.minecraft.particles.ParticleTypes;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldProvider;
-import net.minecraftforge.fml.relauncher.ReflectionHelper;
+import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 
 import javax.annotation.Nullable;
 
@@ -90,11 +104,11 @@ import javax.annotation.Nullable;
  * Exception performing whole class analysis ignored.
  */
 public class Dragon
-extends EntityTameable {
-    private static final DataParameter<Byte> ATTACKING = EntityDataManager.createKey(Dragon.class, DataSerializers.BYTE);
-    private static final DataParameter<Byte> STATE2 = EntityDataManager.createKey(Dragon.class, DataSerializers.BYTE);
-    private static final DataParameter<Integer> INT22 = EntityDataManager.createKey(Dragon.class, DataSerializers.VARINT);
-    private static final DataParameter<Integer> INT24 = EntityDataManager.createKey(Dragon.class, DataSerializers.VARINT);
+extends TameableEntity {
+    private static final DataParameter<Byte> ATTACKING = EntityDataManager.defineId(Dragon.class, DataSerializers.BYTE);
+    private static final DataParameter<Byte> STATE2 = EntityDataManager.defineId(Dragon.class, DataSerializers.BYTE);
+    private static final DataParameter<Integer> INT22 = EntityDataManager.defineId(Dragon.class, DataSerializers.INT);
+    private static final DataParameter<Integer> INT24 = EntityDataManager.defineId(Dragon.class, DataSerializers.INT);
     private int boatPosRotationIncrements;
     private double boatX;
     private double boatY;
@@ -126,44 +140,51 @@ extends EntityTameable {
     private int ty = 0;
     private int tz = 0;
 
-    public Dragon(World par1World) {
-        super(par1World);
-        this.setSize(1.5f, 1.25f);
-                this.experienceValue = 100;
-                this.isImmuneToFire = true;
-        this.setSitting(false);
-        this.tasks.addTask(0, (EntityAIBase)new EntityAISwimming((EntityLiving)this));
-        this.tasks.addTask(1, (EntityAIBase)new MyEntityAIFollowOwner((EntityTameable)this, 1.1f, 12.0f, 2.0f));
-        this.tasks.addTask(2, (EntityAIBase)new EntityAITempt((EntityCreature)this, 1.25, Items.BEEF, false));
-        this.tasks.addTask(3, (EntityAIBase)new MyEntityAIWander((EntityCreature)this, 0.75f));
-        this.tasks.addTask(4, (EntityAIBase)new EntityAIWatchClosest((EntityLiving)this, EntityPlayer.class, 9.0f));
-        this.tasks.addTask(5, (EntityAIBase)new EntityAILookIdle((EntityLiving)this));
-        this.tasks.addTask(6, (EntityAIBase)new EntityAIMoveIndoors((EntityCreature)this));
+    public Dragon(EntityType<? extends Dragon> type, World par1World) {
+        super(type, par1World);
+        this.xpReward = 100;
+        this.setOrderedToSit(false);
+        this.goalSelector.addGoal(0, new SwimGoal(this));
+        this.goalSelector.addGoal(1, new MyEntityAIFollowOwner((TameableEntity)this, 1.1f, 12.0f, 2.0f));
+        this.goalSelector.addGoal(2, new TemptGoal(this, 1.25, net.minecraft.item.crafting.Ingredient.of(Items.BEEF), false));
+        this.goalSelector.addGoal(3, new MyEntityAIWander(this, 0.75f));
+        this.goalSelector.addGoal(4, new LookAtGoal(this, PlayerEntity.class, 9.0f));
+        this.goalSelector.addGoal(5, new LookRandomlyGoal(this));
+        this.goalSelector.addGoal(6, new RestrictSunGoal(this));
         if (ChaosPersists.PlayNicely == 0) {
-            this.targetTasks.addTask(1, (EntityAIBase)new EntityAINearestAttackableTarget((EntityCreature)this, EntityLiving.class, 0, true, false, new Predicate<EntityLivingBase>() { @Override public boolean apply(EntityLivingBase e) { return e instanceof IMob; } }));
+            this.targetSelector.addGoal(1, new NearestAttackableTargetGoal((CreatureEntity)this, LivingEntity.class, 0, true, false, new Predicate<LivingEntity>() { @Override public boolean apply(LivingEntity e) { return e instanceof IMob; } }));
         }
-        this.targetTasks.addTask(2, (EntityAIBase)new EntityAIHurtByTarget((EntityCreature)this, false));
+        this.targetSelector.addGoal(2, new HurtByTargetGoal(this));
         this.TargetSorter = new GenericTargetSorter((Entity)this);
         this.renderdata = new RenderInfo();
     }
 
     public Dragon(World par1World, double par2, double par4, double par6) {
-        this(par1World);
-        this.setPosition(par2, par4 + (double)this.getYOffset(), par6);
-        this.motionX = 0.0;
-        this.motionY = 0.0;
-        this.motionZ = 0.0;
-        this.prevPosX = par2;
-        this.prevPosY = par4;
-        this.prevPosZ = par6;
+        this((EntityType<? extends Dragon>)net.minecraftforge.registries.ForgeRegistries.ENTITIES.getValue(new net.minecraft.util.ResourceLocation("chaospersists", "dragon")), par1World);
+        this.setPos(par2, par4, par6);
+        this.setDeltaMovement(0.0, 0.0, 0.0);
+        this.xo = par2;
+        this.yo = par4;
+        this.zo = par6;
     }
 
-    protected void applyEntityAttributes() {
-        super.applyEntityAttributes();
-        this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue((double)this.mygetMaxHealth());
-        this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue((double)this.moveSpeed);
-        this.getAttributeMap().registerAttribute(SharedMonsterAttributes.ATTACK_DAMAGE);
-        this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(35.0);
+    public static AttributeModifierMap createAttributes() {
+        return TameableEntity.createMobAttributes()
+                .add(Attributes.MAX_HEALTH, 200.0)
+                .add(Attributes.MOVEMENT_SPEED, 0.32)
+                .add(Attributes.ATTACK_DAMAGE, 35.0)
+                .build();
+    }
+
+    @Nullable
+    @Override
+    public AgeableEntity getBreedOffspring(ServerWorld level, AgeableEntity mate) {
+        return null;
+    }
+
+    @Override
+    public boolean fireImmune() {
+        return true;
     }
 
     public boolean shouldRiderSit() {
@@ -188,12 +209,10 @@ extends EntityTameable {
         return this.getPassengers().isEmpty() ? null : this.getPassengers().get(0);
     }
 
-    @Override
     public boolean canBeSteered() {
         return true;
     }
 
-    @Override
     public boolean canPassengerSteer() {
         return true;
     }
@@ -204,13 +223,16 @@ extends EntityTameable {
      * or {@code moveForward} stays zero on the server and the mount cannot fly.
      */
     @Override
-    public void travel(float strafe, float vertical, float forward) {
-        if (this.isBeingRidden() && this.getControllingPassenger() instanceof EntityPlayer && this.getActivity() != 0) {
-            EntityPlayer pp = (EntityPlayer)this.getControllingPassenger();
-            if (pp.isDead) {
-                this.removePassengers();
+    public void travel(Vector3d travelVector) {
+        float strafe = (float) travelVector.x;
+        float vertical = (float) travelVector.y;
+        float forward = (float) travelVector.z;
+        if (!this.getPassengers().isEmpty() && this.getControllingPassenger() instanceof PlayerEntity && this.getActivity() != 0) {
+            PlayerEntity pp = (PlayerEntity)this.getControllingPassenger();
+            if (pp.removed) {
+                this.ejectPassengers();
                 this.setNoGravity(false);
-                super.travel(strafe, vertical, forward);
+                super.travel(travelVector);
                 return;
             }
             this.setNoGravity(true);
@@ -229,19 +251,19 @@ extends EntityTameable {
                 --this.fireballticker;
             }
 
-            if (this.motionX < -2.0D) this.motionX = -2.0D;
-            if (this.motionX > 2.0D) this.motionX = 2.0D;
-            if (this.motionZ < -2.0D) this.motionZ = -2.0D;
-            if (this.motionZ > 2.0D) this.motionZ = 2.0D;
-            double velocity = Math.sqrt(this.motionX * this.motionX + this.motionZ * this.motionZ);
+            if (this.getDeltaMovement().x < -2.0D) this.setDeltaMovement(-2.0D, this.getDeltaMovement().y, this.getDeltaMovement().z);
+            if (this.getDeltaMovement().x > 2.0D) this.setDeltaMovement(2.0D, this.getDeltaMovement().y, this.getDeltaMovement().z);
+            if (this.getDeltaMovement().z < -2.0D) this.setDeltaMovement(this.getDeltaMovement().x, this.getDeltaMovement().y, -2.0D);
+            if (this.getDeltaMovement().z > 2.0D) this.setDeltaMovement(this.getDeltaMovement().x, this.getDeltaMovement().y, 2.0D);
+            double velocity = Math.sqrt(this.getDeltaMovement().x * this.getDeltaMovement().x + this.getDeltaMovement().z * this.getDeltaMovement().z);
 
             gh = 1.25D;
-            bid = this.world.getBlockState(new net.minecraft.util.math.BlockPos((int)this.posX, (int)((float)this.posY - (float)gh), (int)this.posZ)).getBlock();
+            bid = this.level.getBlockState(new net.minecraft.util.math.BlockPos((int)this.getX(), (int)((float)this.getY() - (float)gh), (int)this.getZ())).getBlock();
             if (bid != Blocks.AIR) {
-                this.motionY += 0.03D;
-                this.posY += 0.1D;
+                com.astryxion.chaospersists.util.MyUtils.addDeltaMovement(this, 0.0, 0.03D, 0.0);
+                com.astryxion.chaospersists.util.MyUtils.addEntityY(this, 0.1D);
             } else {
-                this.motionY -= 0.018D;
+                com.astryxion.chaospersists.util.MyUtils.addDeltaMovement(this, 0.0, -(0.018D), 0.0);
             }
 
             obstruction_factor = 0.0D;
@@ -255,23 +277,23 @@ extends EntityTameable {
             int iMax = Math.min(distLimit * 2, 48);
             for (int k = 1; k < distLimit; k++) {
                 for (int i = 1; i < iMax; i++) {
-                    double dx = i * Math.cos(Math.toRadians(this.rotationYaw + 90.0F));
-                    double dz = i * Math.sin(Math.toRadians(this.rotationYaw + 90.0F));
-                    bid = this.world.getBlockState(new net.minecraft.util.math.BlockPos((int)(this.posX + dx), (int)this.posY - k, (int)(this.posZ + dz))).getBlock();
+                    double dx = i * Math.cos(Math.toRadians(this.yRot + 90.0F));
+                    double dz = i * Math.sin(Math.toRadians(this.yRot + 90.0F));
+                    bid = this.level.getBlockState(new net.minecraft.util.math.BlockPos((int)(this.getX() + dx), (int)this.getY() - k, (int)(this.getZ() + dz))).getBlock();
                     if (bid != Blocks.AIR) {
                         obstruction_factor += 0.05D;
                     }
                 }
             }
 
-            this.motionY += obstruction_factor * 0.07000000000000001D;
-            this.posY += obstruction_factor * 0.07000000000000001D;
-            if (this.motionY > 2.0D) this.motionY = 2.0D;
+            com.astryxion.chaospersists.util.MyUtils.addDeltaMovement(this, 0.0, obstruction_factor * 0.07000000000000001D, 0.0);
+            com.astryxion.chaospersists.util.MyUtils.addEntityY(this, obstruction_factor * 0.07000000000000001D);
+            if (this.getDeltaMovement().y > 2.0D) this.setDeltaMovement(this.getDeltaMovement().x, 2.0D, this.getDeltaMovement().z);
 
-            double d4 = pp.rotationYaw;
+            double d4 = pp.yRot;
             d4 %= 360.0D;
             while (d4 < 0.0D) d4 += 360.0D;
-            double d5 = this.rotationYaw;
+            double d5 = this.yRot;
             d5 %= 360.0D;
             while (d5 < 0.0D) d5 += 360.0D;
             relative_g = (d4 - d5) % 180.0D;
@@ -283,32 +305,29 @@ extends EntityTameable {
                 d4 = Math.abs(d4);
                 if (d4 < 0.01D) d4 = 0.01D;
                 if (d4 > 0.9D) d4 = 0.9D;
-                this.rotationYaw = pp.rotationYaw + (float)(relative_g * d4);
+                this.yRot = pp.yRot + (float)(relative_g * d4);
             } else {
-                this.rotationYaw = pp.rotationYaw;
+                this.yRot = pp.yRot;
             }
             relative_g = Math.abs(relative_g) * velocity;
             if (relative_g > 50.0D) relative_g = 0.0D;
 
-            this.rotationPitch = (2.0F * (float)velocity);
-            this.setRotation(this.rotationYaw, this.rotationPitch);
+            this.xRot = (2.0F * (float)velocity);
+            this.yHeadRot = this.yRot;
 
-            double newvelocity = Math.sqrt(this.motionX * this.motionX + this.motionZ * this.motionZ);
-            double rhm = Math.atan2(this.motionZ, this.motionX);
-            double rhdir = Math.toRadians(((pp.rotationYaw + 90.0F) % 360.0F));
-            float im = pp.moveForward;
+            double newvelocity = Math.sqrt(this.getDeltaMovement().x * this.getDeltaMovement().x + this.getDeltaMovement().z * this.getDeltaMovement().z);
+            double rhm = Math.atan2(this.getDeltaMovement().z, this.getDeltaMovement().x);
+            double rhdir = Math.toRadians(((pp.yRot + 90.0F) % 360.0F));
+            float im = pp.yya;
 
             boolean riderJumping = false;
             try {
-                Boolean b = ReflectionHelper.getPrivateValue(EntityLivingBase.class, pp, "isJumping", "field_70703_bu");
-                if (b != null) {
-                    riderJumping = b;
-                }
+                riderJumping = ObfuscationReflectionHelper.getPrivateValue(LivingEntity.class, pp, "jumping");
             } catch (Exception ignored) {
             }
             if (riderJumping || ChaosPersists.flyup_keystate != 0) {
-                this.motionY += 0.03D;
-                this.motionY += velocity * 0.036D;
+                com.astryxion.chaospersists.util.MyUtils.addDeltaMovement(this, 0.0, 0.03D, 0.0);
+                com.astryxion.chaospersists.util.MyUtils.addDeltaMovement(this, 0.0, velocity * 0.036D, 0.0);
             }
 
             double rdv = Math.abs(rhm - rhdir) % (pi * 2.0D);
@@ -336,21 +355,21 @@ extends EntityTameable {
                 newvelocity += this.deltasmooth;
                 if (newvelocity >= 0.0D) {
                     if (newvelocity > max_speed) newvelocity = max_speed;
-                    this.motionX = (Math.cos(Math.toRadians(this.rotationYaw + 90.0F)) * newvelocity);
-                    this.motionZ = (Math.sin(Math.toRadians(this.rotationYaw + 90.0F)) * newvelocity);
+                    this.setDeltaMovement((Math.cos(Math.toRadians(this.yRot + 90.0F)) * newvelocity), this.getDeltaMovement().y, this.getDeltaMovement().z);
+                    this.setDeltaMovement(this.getDeltaMovement().x, this.getDeltaMovement().y, (Math.sin(Math.toRadians(this.yRot + 90.0F)) * newvelocity));
                 } else {
                     if (newvelocity < -max_speed) newvelocity = -max_speed;
                     newvelocity = -newvelocity;
-                    this.motionX = (Math.cos(Math.toRadians(this.rotationYaw + 270.0F)) * newvelocity);
-                    this.motionZ = (Math.sin(Math.toRadians(this.rotationYaw + 270.0F)) * newvelocity);
+                    this.setDeltaMovement((Math.cos(Math.toRadians(this.yRot + 270.0F)) * newvelocity), this.getDeltaMovement().y, this.getDeltaMovement().z);
+                    this.setDeltaMovement(this.getDeltaMovement().x, this.getDeltaMovement().y, (Math.sin(Math.toRadians(this.yRot + 270.0F)) * newvelocity));
                 }
 
             } else if (newvelocity >= 0.0D) {
-                this.motionX = (Math.cos(Math.toRadians(this.rotationYaw + 90.0F)) * newvelocity);
-                this.motionZ = (Math.sin(Math.toRadians(this.rotationYaw + 90.0F)) * newvelocity);
+                this.setDeltaMovement((Math.cos(Math.toRadians(this.yRot + 90.0F)) * newvelocity), this.getDeltaMovement().y, this.getDeltaMovement().z);
+                this.setDeltaMovement(this.getDeltaMovement().x, this.getDeltaMovement().y, (Math.sin(Math.toRadians(this.yRot + 90.0F)) * newvelocity));
             } else {
-                this.motionX = (Math.cos(Math.toRadians(this.rotationYaw + 270.0F)) * (newvelocity * -1.0D));
-                this.motionZ = (Math.sin(Math.toRadians(this.rotationYaw + 270.0F)) * (newvelocity * -1.0D));
+                this.setDeltaMovement((Math.cos(Math.toRadians(this.yRot + 270.0F)) * (newvelocity * -1.0D)), this.getDeltaMovement().y, this.getDeltaMovement().z);
+                this.setDeltaMovement(this.getDeltaMovement().x, this.getDeltaMovement().y, (Math.sin(Math.toRadians(this.yRot + 270.0F)) * (newvelocity * -1.0D)));
             }
 
             if (this.fireballticker == 0) {
@@ -358,131 +377,127 @@ extends EntityTameable {
                 double yoff = -0.25D;
 
                 if (getDragonType() == 0) {
-                    if (pp.moveStrafing > 0.001F) {
-                        bf = new BetterFireball(this.world, this, 0.0D, 0.0D, 0.0D);
+                    if (pp.xxa > 0.001F) {
+                        bf = new BetterFireball(this.level, this, 0.0D, 0.0D, 0.0D);
                         bf.setNotMe();
                         bf.setSmall();
-                        double cx = this.posX - xzoff * Math.sin(Math.toRadians(this.rotationYaw));
-                        double cz = this.posZ + xzoff * Math.cos(Math.toRadians(this.rotationYaw));
-                        bf.setPosition(cx, this.posY + yoff, cz);
-                        cx = Math.cos(Math.toRadians(pp.rotationYawHead + 90.0F));
-                        cz = Math.sin(Math.toRadians(pp.rotationYawHead + 90.0F));
-                        double cy = -Math.sin(Math.toRadians(pp.rotationPitch));
+                        double cx = this.getX() - xzoff * Math.sin(Math.toRadians(this.yRot));
+                        double cz = this.getZ() + xzoff * Math.cos(Math.toRadians(this.yRot));
+                        bf.setPos(cx, this.getY() + yoff, cz);
+                        cx = Math.cos(Math.toRadians(pp.yHeadRot + 90.0F));
+                        cz = Math.sin(Math.toRadians(pp.yHeadRot + 90.0F));
+                        double cy = -Math.sin(Math.toRadians(pp.xRot));
 
                         double d3 = MathHelper.sqrt(cx * cx + cy * cy + cz * cz);
                         bf.accelerationX = (cx / d3 * 0.15D);
                         bf.accelerationY = (cy / d3 * 0.15D);
                         bf.accelerationZ = (cz / d3 * 0.15D);
-                        bf.motionX = this.motionX;
-                        bf.motionY = this.motionY;
-                        bf.motionZ = this.motionZ;
-                        bf.posX -= this.motionX * 9.0D;
-                        bf.posY -= this.motionY * 9.0D;
-                        bf.posZ -= this.motionZ * 9.0D;
-                        this.world.playSound(null, this.posX, this.posY, this.posZ, net.minecraft.util.SoundEvent.REGISTRY.getObject(new net.minecraft.util.ResourceLocation("random.bow")), net.minecraft.util.SoundCategory.NEUTRAL, 0.75F, 1.0F / (getRNG().nextFloat() * 0.4F + 0.8F));
-                        this.world.spawnEntity(bf);
+                        bf.setDeltaMovement(this.getDeltaMovement().x, bf.getDeltaMovement().y, bf.getDeltaMovement().z);
+                        bf.setDeltaMovement(bf.getDeltaMovement().x, this.getDeltaMovement().y, bf.getDeltaMovement().z);
+                        bf.setDeltaMovement(bf.getDeltaMovement().x, bf.getDeltaMovement().y, this.getDeltaMovement().z);
+                        com.astryxion.chaospersists.util.MyUtils.addEntityX(bf, -(this.getDeltaMovement().x * 9.0D));
+                        com.astryxion.chaospersists.util.MyUtils.addEntityY(bf, -(this.getDeltaMovement().y * 9.0D));
+                        com.astryxion.chaospersists.util.MyUtils.addEntityZ(bf, -(this.getDeltaMovement().z * 9.0D));
+                        this.level.playSound(null, this.getX(), this.getY(), this.getZ(), net.minecraft.util.registry.Registry.SOUND_EVENT.get(new net.minecraft.util.ResourceLocation("random.bow")), net.minecraft.util.SoundCategory.NEUTRAL, 0.75F, 1.0F / (getRandom().nextFloat() * 0.4F + 0.8F));
+                        this.level.addFreshEntity(bf);
                         this.fireballticker = 10;
                     }
-                    if (pp.moveStrafing < -0.001F) {
-                        bf = new BetterFireball(this.world, this, 0.0D, 0.0D, 0.0D);
+                    if (pp.xxa < -0.001F) {
+                        bf = new BetterFireball(this.level, this, 0.0D, 0.0D, 0.0D);
                         bf.setNotMe();
-                        double cx = this.posX - xzoff * Math.sin(Math.toRadians(this.rotationYaw));
-                        double cz = this.posZ + xzoff * Math.cos(Math.toRadians(this.rotationYaw));
-                        bf.setPosition(cx, this.posY + yoff, cz);
-                        cx = Math.cos(Math.toRadians(pp.rotationYawHead + 90.0F));
-                        cz = Math.sin(Math.toRadians(pp.rotationYawHead + 90.0F));
-                        double cy = -Math.sin(Math.toRadians(pp.rotationPitch));
+                        double cx = this.getX() - xzoff * Math.sin(Math.toRadians(this.yRot));
+                        double cz = this.getZ() + xzoff * Math.cos(Math.toRadians(this.yRot));
+                        bf.setPos(cx, this.getY() + yoff, cz);
+                        cx = Math.cos(Math.toRadians(pp.yHeadRot + 90.0F));
+                        cz = Math.sin(Math.toRadians(pp.yHeadRot + 90.0F));
+                        double cy = -Math.sin(Math.toRadians(pp.xRot));
 
                         double d3 = MathHelper.sqrt(cx * cx + cy * cy + cz * cz);
                         bf.accelerationX = (cx / d3 * 0.1D);
                         bf.accelerationY = (cy / d3 * 0.1D);
                         bf.accelerationZ = (cz / d3 * 0.1D);
-                        bf.motionX = this.motionX;
-                        bf.motionY = this.motionY;
-                        bf.motionZ = this.motionZ;
-                        bf.posX -= this.motionX * 9.0D;
-                        bf.posY -= this.motionY * 9.0D;
-                        bf.posZ -= this.motionZ * 9.0D;
-                        this.world.playSound(null, this.posX, this.posY, this.posZ, net.minecraft.util.SoundEvent.REGISTRY.getObject(new net.minecraft.util.ResourceLocation("random.fuse")), net.minecraft.util.SoundCategory.NEUTRAL, 1.0F, 1.0F / (getRNG().nextFloat() * 0.4F + 0.8F));
-                        this.world.spawnEntity(bf);
+                        bf.setDeltaMovement(this.getDeltaMovement().x, bf.getDeltaMovement().y, bf.getDeltaMovement().z);
+                        bf.setDeltaMovement(bf.getDeltaMovement().x, this.getDeltaMovement().y, bf.getDeltaMovement().z);
+                        bf.setDeltaMovement(bf.getDeltaMovement().x, bf.getDeltaMovement().y, this.getDeltaMovement().z);
+                        com.astryxion.chaospersists.util.MyUtils.addEntityX(bf, -(this.getDeltaMovement().x * 9.0D));
+                        com.astryxion.chaospersists.util.MyUtils.addEntityY(bf, -(this.getDeltaMovement().y * 9.0D));
+                        com.astryxion.chaospersists.util.MyUtils.addEntityZ(bf, -(this.getDeltaMovement().z * 9.0D));
+                        this.level.playSound(null, this.getX(), this.getY(), this.getZ(), net.minecraft.util.registry.Registry.SOUND_EVENT.get(new net.minecraft.util.ResourceLocation("random.fuse")), net.minecraft.util.SoundCategory.NEUTRAL, 1.0F, 1.0F / (getRandom().nextFloat() * 0.4F + 0.8F));
+                        this.level.addFreshEntity(bf);
                         this.fireballticker = 20;
                     }
                 } else {
-                    if (pp.moveStrafing > 0.001F) {
-                        double cx = this.posX - xzoff * Math.sin(Math.toRadians(this.rotationYaw));
-                        double cz = this.posZ + xzoff * Math.cos(Math.toRadians(this.rotationYaw));
-                        WaterBall var2 = new WaterBall(this.world, cx, this.posY + yoff, cz);
-                        var2.setLocationAndAngles(cx, this.posY + yoff, cz, pp.rotationYaw + 90.0F, pp.rotationPitch);
-                        double var3 = Math.cos(Math.toRadians(pp.rotationYawHead + 90.0F));
-                        double var5 = -Math.sin(Math.toRadians(pp.rotationPitch));
-                        double var77 = Math.sin(Math.toRadians(pp.rotationYawHead + 90.0F));
+                    if (pp.xxa > 0.001F) {
+                        double cx = this.getX() - xzoff * Math.sin(Math.toRadians(this.yRot));
+                        double cz = this.getZ() + xzoff * Math.cos(Math.toRadians(this.yRot));
+                        WaterBall var2 = new WaterBall(this.level, cx, this.getY() + yoff, cz);
+                        var2.moveTo(cx, this.getY() + yoff, cz, pp.yRot + 90.0F, pp.xRot);
+                        double var3 = Math.cos(Math.toRadians(pp.yHeadRot + 90.0F));
+                        double var5 = -Math.sin(Math.toRadians(pp.xRot));
+                        double var77 = Math.sin(Math.toRadians(pp.yHeadRot + 90.0F));
                         float var9 = MathHelper.sqrt(var3 * var3 + var77 * var77) * 0.2F;
                         var2.shoot(var3, var5 + var9, var77, 1.4F, 5.0F);
-                        var2.posX -= this.motionX * 7.0D;
-                        var2.posY -= this.motionY * 7.0D;
-                        var2.posZ -= this.motionZ * 7.0D;
-                        this.world.playSound(null, this.posX, this.posY, this.posZ, net.minecraft.util.SoundEvent.REGISTRY.getObject(new net.minecraft.util.ResourceLocation("random.bow")), net.minecraft.util.SoundCategory.NEUTRAL, 0.75F, 1.0F / (getRNG().nextFloat() * 0.4F + 0.8F));
-                        this.world.spawnEntity(var2);
+                        com.astryxion.chaospersists.util.MyUtils.addEntityX(var2, -(this.getDeltaMovement().x * 7.0D));
+                        com.astryxion.chaospersists.util.MyUtils.addEntityY(var2, -(this.getDeltaMovement().y * 7.0D));
+                        com.astryxion.chaospersists.util.MyUtils.addEntityZ(var2, -(this.getDeltaMovement().z * 7.0D));
+                        this.level.playSound(null, this.getX(), this.getY(), this.getZ(), net.minecraft.util.registry.Registry.SOUND_EVENT.get(new net.minecraft.util.ResourceLocation("random.bow")), net.minecraft.util.SoundCategory.NEUTRAL, 0.75F, 1.0F / (getRandom().nextFloat() * 0.4F + 0.8F));
+                        this.level.addFreshEntity(var2);
                         this.fireballticker = 5;
                     }
-                    if (pp.moveStrafing < -0.001F) {
-                        double cx = this.posX - xzoff * Math.sin(Math.toRadians(this.rotationYaw));
-                        double cz = this.posZ + xzoff * Math.cos(Math.toRadians(this.rotationYaw));
-                        IceBall var2 = new IceBall(this.world, cx, this.posY + yoff, cz);
-                        var2.setLocationAndAngles(cx, this.posY + yoff, cz, pp.rotationYaw + 90.0F, pp.rotationPitch);
+                    if (pp.xxa < -0.001F) {
+                        double cx = this.getX() - xzoff * Math.sin(Math.toRadians(this.yRot));
+                        double cz = this.getZ() + xzoff * Math.cos(Math.toRadians(this.yRot));
+                        IceBall var2 = new IceBall(this.level, cx, this.getY() + yoff, cz);
+                        var2.moveTo(cx, this.getY() + yoff, cz, pp.yRot + 90.0F, pp.xRot);
                         var2.setSpecial();
                         var2.setIceBall();
-                        double var3 = Math.cos(Math.toRadians(pp.rotationYaw + 90.0F));
-                        double var5 = -Math.sin(Math.toRadians(pp.rotationPitch));
-                        double var77 = Math.sin(Math.toRadians(pp.rotationYaw + 90.0F));
+                        double var3 = Math.cos(Math.toRadians(pp.yRot + 90.0F));
+                        double var5 = -Math.sin(Math.toRadians(pp.xRot));
+                        double var77 = Math.sin(Math.toRadians(pp.yRot + 90.0F));
                         float var9 = MathHelper.sqrt(var3 * var3 + var77 * var77) * 0.2F;
                         var2.shoot(var3, var5 + var9, var77, 1.4F, 5.0F);
-                        var2.posX -= this.motionX * 7.0D;
-                        var2.posY -= this.motionY * 7.0D;
-                        var2.posZ -= this.motionZ * 7.0D;
-                        var2.motionX *= 2.0D;
-                        var2.motionY *= 2.0D;
-                        var2.motionZ *= 2.0D;
-                        this.world.playSound(null, this.posX, this.posY, this.posZ, net.minecraft.util.SoundEvent.REGISTRY.getObject(new net.minecraft.util.ResourceLocation("fireworks.launch")), net.minecraft.util.SoundCategory.NEUTRAL, 0.75F, 1.0F / (getRNG().nextFloat() * 0.4F + 0.8F));
-                        this.world.spawnEntity(var2);
+                        com.astryxion.chaospersists.util.MyUtils.addEntityX(var2, -(this.getDeltaMovement().x * 7.0D));
+                        com.astryxion.chaospersists.util.MyUtils.addEntityY(var2, -(this.getDeltaMovement().y * 7.0D));
+                        com.astryxion.chaospersists.util.MyUtils.addEntityZ(var2, -(this.getDeltaMovement().z * 7.0D));
+                        com.astryxion.chaospersists.util.MyUtils.mulDeltaMovement(var2, 2.0D, 2.0D, 2.0D);
+                        this.level.playSound(null, this.getX(), this.getY(), this.getZ(), net.minecraft.util.registry.Registry.SOUND_EVENT.get(new net.minecraft.util.ResourceLocation("fireworks.launch")), net.minecraft.util.SoundCategory.NEUTRAL, 0.75F, 1.0F / (getRandom().nextFloat() * 0.4F + 0.8F));
+                        this.level.addFreshEntity(var2);
                         this.fireballticker = 15;
                     }
                 }
             }
 
-            this.move(MoverType.SELF, this.motionX, this.motionY, this.motionZ);
+            this.move(MoverType.SELF, this.getDeltaMovement());
 
-            this.motionX *= 0.985D;
-            this.motionY *= 0.94D;
-            this.motionZ *= 0.985D;
+            com.astryxion.chaospersists.util.MyUtils.mulDeltaMovement(this, 0.985D, 0.94D, 0.985D);
 
-            if (!this.world.isRemote) {
-                list = this.world.getEntitiesWithinAABBExcludingEntity(this, this.getEntityBoundingBox().expand(2.25D, 2.0D, 2.25D));
+            if (!this.level.isClientSide) {
+                list = this.level.getEntities(this, this.getBoundingBox().inflate(2.25D, 2.0D, 2.25D));
 
                 if ((list != null) && (!list.isEmpty())) {
                     for (int l = 0; l < list.size(); l++) {
                         listEntity = (Entity)list.get(l);
 
-                        if ((listEntity == pp) || (listEntity.isDead) || (!listEntity.canBePushed()))
+                        if ((listEntity == pp) || (listEntity.removed) || (!listEntity.isPushable()))
                             continue;
-                        listEntity.applyEntityCollision(this);
+                        listEntity.push(this);
                     }
                 }
             }
             return;
         }
         this.setNoGravity(false);
-        super.travel(strafe, vertical, forward);
+        super.travel(travelVector);
     }
 
     @Override
     protected void removePassenger(Entity passenger) {
         super.removePassenger(passenger);
-        if (!this.world.isRemote && this.getPassengers().isEmpty()) {
+        if (!this.level.isClientSide && this.getPassengers().isEmpty()) {
             this.setNoGravity(false);
-            this.noClip = false;
-            this.motionY = 0.0;
-            this.pushOutOfBlocks(this.posX, this.posY, this.posZ);
+            this.noPhysics = false;
+            this.setDeltaMovement(this.getDeltaMovement().x, 0.0, this.getDeltaMovement().z);
+            this.moveTowardsClosestSpace(this.getX(), this.getY(), this.getZ());
             MyUtils.enforceDragonMountGroundSafety(this);
         }
     }
@@ -490,7 +505,7 @@ extends EntityTameable {
     public void fall(float distance, float damageMultiplier) {
     }
 
-    protected void updateFallState(double y, boolean onGroundIn, net.minecraft.block.state.IBlockState state, net.minecraft.util.math.BlockPos pos) {
+    protected void updateFallState(double y, boolean onGroundIn, net.minecraft.block.BlockState state, net.minecraft.util.math.BlockPos pos) {
         fallDistance = 0.0f;
     }
 
@@ -498,15 +513,15 @@ extends EntityTameable {
         return true;
     }
 
-    protected void entityInit() {
-        super.entityInit();
-        this.getDataManager().register(ATTACKING, (byte)0);
-        this.getDataManager().register(STATE2, (byte)0);
-        this.getDataManager().register(INT22, 0);
-        this.getDataManager().register(INT24, 1);
+    protected void defineSynchedData() {
+        super.defineSynchedData();
+        this.entityData.define(ATTACKING, (byte)0);
+        this.entityData.define(STATE2, (byte)0);
+        this.entityData.define(INT22, 0);
+        this.entityData.define(INT24, 1);
         this.setActivity(0);
         this.setAttacking(0);
-        this.setTamed(false);
+        this.setTame(false);
         if (this.renderdata == null) {
             this.renderdata = new RenderInfo();
         }
@@ -543,13 +558,13 @@ extends EntityTameable {
         this.renderdata.ri4 = r.ri4;
     }
 
-    public int getTotalArmorValue() {
+    public int getArmorValue() {
         return 14;
     }
 
-    protected void jump() {
-        super.jump();
-        this.motionY += 0.25;
+    protected void jumpFromGround() {
+        super.jumpFromGround();
+        com.astryxion.chaospersists.util.MyUtils.addDeltaMovement(this, 0.0, 0.25, 0.0);
     }
 
     public boolean isAIEnabled() {
@@ -564,15 +579,15 @@ extends EntityTameable {
         int found = 0;
         for (i = - dy; i <= dy; ++i) {
             for (j = - dz; j <= dz; ++j) {
-                bid = this.world.getBlockState(new net.minecraft.util.math.BlockPos(x + dx, y + i, z + j)).getBlock();
-                if ((bid == Blocks.LAVA || bid == Blocks.FLOWING_LAVA) && (d = dx * dx + j * j + i * i) < this.closest) {
+                bid = this.level.getBlockState(new net.minecraft.util.math.BlockPos(x + dx, y + i, z + j)).getBlock();
+                if ((bid == Blocks.LAVA || bid == Blocks.LAVA) && (d = dx * dx + j * j + i * i) < this.closest) {
                     this.closest = d;
                     this.tx = x + dx;
                     this.ty = y + i;
                     this.tz = z + j;
                     ++found;
                 }
-                if ((bid = this.world.getBlockState(new net.minecraft.util.math.BlockPos(x - dx, y + i, z + j)).getBlock()) != Blocks.LAVA && bid != Blocks.FLOWING_LAVA || (d = dx * dx + j * j + i * i) >= this.closest) continue;
+                if ((bid = this.level.getBlockState(new net.minecraft.util.math.BlockPos(x - dx, y + i, z + j)).getBlock()) != Blocks.LAVA && bid != Blocks.LAVA || (d = dx * dx + j * j + i * i) >= this.closest) continue;
                 this.closest = d;
                 this.tx = x - dx;
                 this.ty = y + i;
@@ -582,15 +597,15 @@ extends EntityTameable {
         }
         for (i = - dx; i <= dx; ++i) {
             for (j = - dz; j <= dz; ++j) {
-                bid = this.world.getBlockState(new net.minecraft.util.math.BlockPos(x + i, y + dy, z + j)).getBlock();
-                if ((bid == Blocks.LAVA || bid == Blocks.FLOWING_LAVA) && (d = dy * dy + j * j + i * i) < this.closest) {
+                bid = this.level.getBlockState(new net.minecraft.util.math.BlockPos(x + i, y + dy, z + j)).getBlock();
+                if ((bid == Blocks.LAVA || bid == Blocks.LAVA) && (d = dy * dy + j * j + i * i) < this.closest) {
                     this.closest = d;
                     this.tx = x + i;
                     this.ty = y + dy;
                     this.tz = z + j;
                     ++found;
                 }
-                if ((bid = this.world.getBlockState(new net.minecraft.util.math.BlockPos(x + i, y - dy, z + j)).getBlock()) != Blocks.LAVA && bid != Blocks.FLOWING_LAVA || (d = dy * dy + j * j + i * i) >= this.closest) continue;
+                if ((bid = this.level.getBlockState(new net.minecraft.util.math.BlockPos(x + i, y - dy, z + j)).getBlock()) != Blocks.LAVA && bid != Blocks.LAVA || (d = dy * dy + j * j + i * i) >= this.closest) continue;
                 this.closest = d;
                 this.tx = x + i;
                 this.ty = y - dy;
@@ -600,15 +615,15 @@ extends EntityTameable {
         }
         for (i = - dx; i <= dx; ++i) {
             for (j = - dy; j <= dy; ++j) {
-                bid = this.world.getBlockState(new net.minecraft.util.math.BlockPos(x + i, y + j, z + dz)).getBlock();
-                if ((bid == Blocks.LAVA || bid == Blocks.FLOWING_LAVA) && (d = dz * dz + j * j + i * i) < this.closest) {
+                bid = this.level.getBlockState(new net.minecraft.util.math.BlockPos(x + i, y + j, z + dz)).getBlock();
+                if ((bid == Blocks.LAVA || bid == Blocks.LAVA) && (d = dz * dz + j * j + i * i) < this.closest) {
                     this.closest = d;
                     this.tx = x + i;
                     this.ty = y + j;
                     this.tz = z + dz;
                     ++found;
                 }
-                if ((bid = this.world.getBlockState(new net.minecraft.util.math.BlockPos(x + i, y + j, z - dz)).getBlock()) != Blocks.LAVA && bid != Blocks.FLOWING_LAVA || (d = dz * dz + j * j + i * i) >= this.closest) continue;
+                if ((bid = this.level.getBlockState(new net.minecraft.util.math.BlockPos(x + i, y + j, z - dz)).getBlock()) != Blocks.LAVA && bid != Blocks.LAVA || (d = dz * dz + j * j + i * i) >= this.closest) continue;
                 this.closest = d;
                 this.tx = x + i;
                 this.ty = y + j;
@@ -627,7 +642,7 @@ extends EntityTameable {
     }
 
     protected net.minecraft.util.SoundEvent getAmbientSound() {
-        if (this.isSitting()) {
+        if (this.isOrderedToSit()) {
             return null;
         }
         if (this.getAttacking() == 1 && (this.getPassengers().isEmpty() ? null : this.getPassengers().get(0)) == null) {
@@ -648,7 +663,7 @@ extends EntityTameable {
         return 0.6f;
     }
 
-    public float getSoundPitch() {
+    public float getVoicePitch() {
         return 0.75f;
     }
 
@@ -665,36 +680,36 @@ extends EntityTameable {
     }
 
     private ItemStack dropItemRand(Item index, int par1) {
-        EntityItem var3 = null;
-        ItemStack is = new ItemStack(index, par1, 0);
-        var3 = new EntityItem(this.world, this.posX + (double)ChaosPersists.ChaosRand.nextInt(5) - (double)ChaosPersists.ChaosRand.nextInt(5), this.posY + 1.0, this.posZ + (double)ChaosPersists.ChaosRand.nextInt(5) - (double)ChaosPersists.ChaosRand.nextInt(5), is);
+        ItemEntity var3 = null;
+        ItemStack is = new ItemStack(index, par1);
+        var3 = new ItemEntity(this.level, this.getX() + (double)ChaosPersists.ChaosRand.nextInt(5) - (double)ChaosPersists.ChaosRand.nextInt(5), this.getY() + 1.0, this.getZ() + (double)ChaosPersists.ChaosRand.nextInt(5) - (double)ChaosPersists.ChaosRand.nextInt(5), is);
         if (var3 != null) {
-            this.world.spawnEntity((Entity)var3);
+            this.level.addFreshEntity((Entity)var3);
         }
         return is;
     }
 
-    protected void dropFewItems(boolean par1, int par2) {
-        int i = 1 + this.world.rand.nextInt(6);
+    protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+        int i = 1 + this.level.random.nextInt(6);
         for (int var4 = 0; var4 < i; ++var4) {
             this.dropItemRand(Items.BEEF, 1);
         }
     }
 
-    public boolean attackEntityAsMob(Entity par1Entity) {
+    public boolean doHurtTarget(LivingEntity par1Entity) {
         double ks = 1.75;
         double inair = 0.1;
         float iskraken = 1.0f;
-        if (par1Entity != null && par1Entity instanceof EntityLivingBase) {
+        if (par1Entity != null && par1Entity instanceof LivingEntity) {
             if (par1Entity instanceof Kraken) {
                 iskraken = 2.0f;
             }
-            par1Entity.attackEntityFrom(DamageSource.causeMobDamage((EntityLivingBase)this), iskraken * 35.0f);
-            float f3 = (float)Math.atan2(par1Entity.posZ - this.posZ, par1Entity.posX - this.posX);
-            if (par1Entity.isDead || par1Entity instanceof EntityPlayer) {
+            par1Entity.hurt(DamageSource.mobAttack((LivingEntity)this), iskraken * 35.0f);
+            float f3 = (float)Math.atan2(par1Entity.getZ() - this.getZ(), par1Entity.getX() - this.getX());
+            if (par1Entity.isAlive() == false || par1Entity instanceof PlayerEntity) {
                 inair *= 2.0;
             }
-            par1Entity.addVelocity(Math.cos(f3) * ks, inair, Math.sin(f3) * ks);
+            par1Entity.push(Math.cos(f3) * ks, inair, Math.sin(f3) * ks);
         }
         return true;
     }
@@ -705,38 +720,38 @@ extends EntityTameable {
         if (this.hurt_timer > 0) {
             return false;
         }
-        if (par1DamageSource.getDamageType().equals("cactus")) {
+        if (par1DamageSource.getMsgId().equals("cactus")) {
             return ret;
         }
-        if (par1DamageSource.getDamageType().equals("inFire")) {
+        if (par1DamageSource.getMsgId().equals("inFire")) {
             return ret;
         }
-        if (par1DamageSource.getDamageType().equals("onFire")) {
+        if (par1DamageSource.getMsgId().equals("onFire")) {
             return ret;
         }
-        if (par1DamageSource.getDamageType().equals("lava")) {
+        if (par1DamageSource.getMsgId().equals("lava")) {
             return ret;
         }
-        if (par1DamageSource.getDamageType().equals("inWall")) {
+        if (par1DamageSource.getMsgId().equals("inWall")) {
             return ret;
         }
-        this.setSitting(false);
+        this.setOrderedToSit(false);
         this.setActivity(1);
-        e = par1DamageSource.getTrueSource();
+        e = par1DamageSource.getEntity();
         if (e != null && e instanceof BetterFireball && this.dragontype == 0) {
-            e.setDead();
+            e.remove();
             return ret;
         }
         if (e != null && e instanceof IceBall && this.dragontype != 0) {
-            e.setDead();
+            e.remove();
             return ret;
         }
         if (e != null && e instanceof WaterBall && this.dragontype != 0) {
-            e.setDead();
+            e.remove();
             return ret;
         }
-        if (e != null && e instanceof EntitySmallFireball && this.dragontype == 0) {
-            e.setDead();
+        if (e != null && e instanceof SmallFireballEntity && this.dragontype == 0) {
+            e.remove();
             return ret;
         }
         if (e != null && e instanceof Dragon) {
@@ -745,60 +760,61 @@ extends EntityTameable {
         if (e != null && e instanceof Spyro) {
             return false;
         }
-        ret = super.attackEntityFrom(par1DamageSource, par2);
+        ret = super.hurt(par1DamageSource, par2);
         this.hurt_timer = 20;
-        if (e != null && e instanceof EntityLivingBase) {
-            if (this.isTamed() && e instanceof EntityPlayer) {
+        if (e != null && e instanceof LivingEntity) {
+            if (this.isTame() && e instanceof PlayerEntity) {
                 return false;
             }
-            this.setAttackTarget((EntityLivingBase)e);
-            this.setAttackTarget(e instanceof EntityLivingBase ? (EntityLivingBase)e : null);
-            this.getNavigator().tryMoveToEntityLiving((Entity)((EntityLivingBase)e), 1.2);
+            this.setTarget((LivingEntity)e);
+            this.setTarget(e instanceof LivingEntity ? (LivingEntity)e : null);
+            this.getNavigation().moveTo((Entity)((LivingEntity)e), 1.2);
             ret = true;
         }
         return ret;
     }
 
-    public void updateAITasks() {
-        EntityLivingBase e = null;
+    @Override
+    protected void customServerAiStep() {
+        LivingEntity e = null;
         // Same as ThePrinceTeen: while ambient-flying (activity on, no rider), skip task AI so wander/follow/
         // move-indoors do not overwrite moveForward/moveStrafing after fly_without_rider — that caused random
         // backward flight vs. Prince which never runs those tasks in that state.
         if (this.getActivity() == 0 || !this.getPassengers().isEmpty()) {
-            super.updateAITasks();
+            super.customServerAiStep();
         }
-        if (!this.isSitting() && this.getActivity() == 0 && this.getPassengers().isEmpty() && this.world.getDifficulty() != EnumDifficulty.PEACEFUL && this.world.rand.nextInt(10) == 1 && (e = this.findSomethingToAttack()) != null) {
+        if (!this.isOrderedToSit() && this.getActivity() == 0 && this.getPassengers().isEmpty() && this.level.getDifficulty() != Difficulty.PEACEFUL && this.level.random.nextInt(10) == 1 && (e = this.findSomethingToAttack()) != null) {
             this.setActivity(1);
         }
     }
 
     public void always_do() {
-        EntityPlayer p = null;
-        if (this.world.rand.nextInt(250) == 1 && this.getHealth() < (float)this.mygetMaxHealth()) {
+        PlayerEntity p = null;
+        if (this.level.random.nextInt(250) == 1 && this.getHealth() < (float)this.mygetMaxHealth()) {
             this.heal(2.0f);
         }
-        if (this.isSitting()) {
+        if (this.isOrderedToSit()) {
             return;
         }
         this.owner_flying = 0;
-        if (this.isTamed() && this.getOwner() != null && (this.getPassengers().isEmpty() ? null : this.getPassengers().get(0)) == null && !this.isSitting()) {
-            p = (EntityPlayer)this.getOwner();
-            if (p.capabilities.isFlying) {
+        if (this.isTame() && this.getOwner() != null && (this.getPassengers().isEmpty() ? null : this.getPassengers().get(0)) == null && !this.isOrderedToSit()) {
+            p = (PlayerEntity)this.getOwner();
+            if (p.abilities.flying) {
                 this.owner_flying = 1;
                 this.setActivity(1);
             }
         }
-        if (this.isTamed() && this.getOwner() != null && !this.isSitting() && this.getDistanceSq((Entity)(p = (EntityPlayer)this.getOwner())) > 400.0) {
+        if (this.isTame() && this.getOwner() != null && !this.isOrderedToSit() && this.distanceToSqr((Entity)(p = (PlayerEntity)this.getOwner())) > 400.0) {
             this.setActivity(1);
         }
-        if (this.world.rand.nextInt(50) == 1 && !this.isSitting() && !this.target_in_sight && (this.getPassengers().isEmpty() ? null : this.getPassengers().get(0)) == null) {
-            if (this.world.rand.nextInt(15) == 1) {
+        if (this.level.random.nextInt(50) == 1 && !this.isOrderedToSit() && !this.target_in_sight && (this.getPassengers().isEmpty() ? null : this.getPassengers().get(0)) == null) {
+            if (this.level.random.nextInt(15) == 1) {
                 this.setActivity(1);
             } else {
                 this.setActivity(0);
             }
         }
-        if (this.world.rand.nextInt(25) == 0 && !this.target_in_sight && (this.getPassengers().isEmpty() ? null : this.getPassengers().get(0)) == null) {
+        if (this.level.random.nextInt(25) == 0 && !this.target_in_sight && (this.getPassengers().isEmpty() ? null : this.getPassengers().get(0)) == null) {
             this.closest = 99999;
             this.tz = 0;
             this.ty = 0;
@@ -808,39 +824,39 @@ extends EntityTameable {
                 if (j > 4) {
                     j = 4;
                 }
-                if (this.scan_it((int)this.posX, (int)this.posY - 1, (int)this.posZ, i, j, i)) break;
+                if (this.scan_it((int)this.getX(), (int)this.getY() - 1, (int)this.getZ(), i, j, i)) break;
                 if (i < 6) continue;
                 ++i;
             }
             if (this.closest < 99999) {
                 this.setActivity(0);
-                this.getNavigator().tryMoveToXYZ((double)this.tx, (double)(this.ty - 1), (double)this.tz, 1.0);
+                this.getNavigation().moveTo((double)this.tx, (double)(this.ty - 1), (double)this.tz, 1.0);
                 if (this.isInLava()) {
                     this.heal(1.0f);
-                    this.playSound(net.minecraft.util.SoundEvent.REGISTRY.getObject(new net.minecraft.util.ResourceLocation("entity.generic.splash")), 1.0f, this.world.rand.nextFloat() * 0.2f + 0.9f);
+                    this.playSound(net.minecraft.util.registry.Registry.SOUND_EVENT.get(new net.minecraft.util.ResourceLocation("entity.generic.splash")), 1.0f, this.level.random.nextFloat() * 0.2f + 0.9f);
                 }
             }
         }
     }
 
     public void fly_with_rider() {
-        EntityLivingBase e = null;
+        LivingEntity e = null;
         int freq = 7;
-        if (this.isDead) {
+        if (!this.isAlive()) {
             return;
         }
-        if (this.isSitting()) {
+        if (this.isOrderedToSit()) {
             return;
         }
-        if (this.world.isRemote) {
+        if (this.level.isClientSide) {
             return;
         }
-        if (this.world.rand.nextInt(freq) == 1 && this.world.getDifficulty() != EnumDifficulty.PEACEFUL) {
-            if (this.world.rand.nextInt(250) == 0) {
-                this.setAttackTarget(null);
+        if (this.level.random.nextInt(freq) == 1 && this.level.getDifficulty() != Difficulty.PEACEFUL) {
+            if (this.level.random.nextInt(250) == 0) {
+                this.setTarget(null);
             }
-            if ((e = this.getAttackTarget()) != null && !e.isEntityAlive()) {
-                this.setAttackTarget(null);
+            if ((e = this.getTarget()) != null && !e.isAlive()) {
+                this.setTarget(null);
                 e = null;
             }
             if (e == null) {
@@ -848,8 +864,8 @@ extends EntityTameable {
             }
             if (e != null) {
                 this.setAttacking(1);
-                if (this.getDistanceSq((Entity)e) < (double)((7.0f + e.width / 2.0f) * (7.0f + e.width / 2.0f))) {
-                    this.attackEntityAsMob((Entity)e);
+                if (this.distanceToSqr((Entity)e) < (double)((7.0f + e.getBbWidth() / 2.0f) * (7.0f + e.getBbWidth() / 2.0f))) {
+                    this.doHurtTarget((LivingEntity)e);
                 }
                 return;
             }
@@ -857,79 +873,67 @@ extends EntityTameable {
         }
     }
 
-    protected void updateAITick() {
-        if (!this.getPassengers().isEmpty()) {
-            return;
-        }
-        // Must match Prince: do not run base task AI while ambient-flying. This path calls super.updateAITasks()
-        // directly (bypassing our updateAITasks override), so without this guard wander/follow still ran.
-        if (this.getActivity() != 0) {
-            return;
-        }
-        super.updateAITasks();
-    }
-
-    private boolean isSuitableTarget(EntityLivingBase par1EntityLiving, boolean par2) {
-        if (this.world.getDifficulty() == EnumDifficulty.PEACEFUL) {
+    private boolean isSuitableTarget(LivingEntity par1Mob, boolean par2) {
+        if (this.level.getDifficulty() == Difficulty.PEACEFUL) {
             return false;
         }
-        if (par1EntityLiving == null) {
+        if (par1Mob == null) {
             return false;
         }
-        if (par1EntityLiving == this) {
+        if (par1Mob == this) {
             return false;
         }
-        if (!par1EntityLiving.isEntityAlive()) {
+        if (!par1Mob.isAlive()) {
             return false;
         }
-        if (!this.getEntitySenses().canSee((Entity)par1EntityLiving)) {
+        if (!this.getSensing().canSee((Entity)par1Mob)) {
             return false;
         }
-        if (par1EntityLiving instanceof LurkingTerror) {
+        if (par1Mob instanceof LurkingTerror) {
             return false;
         }
-        if (par1EntityLiving instanceof EnderReaper) {
+        if (par1Mob instanceof EnderReaper) {
             return false;
         }
-        if (par1EntityLiving instanceof TerribleTerror) {
+        if (par1Mob instanceof TerribleTerror) {
             return false;
         }
-        if (par1EntityLiving instanceof LeafMonster) {
+        if (par1Mob instanceof LeafMonster) {
             return false;
         }
-        if (par1EntityLiving instanceof CreepingHorror) {
+        if (par1Mob instanceof CreepingHorror) {
             return false;
         }
-        if (par1EntityLiving instanceof Triffid) {
+        if (par1Mob instanceof Triffid) {
             return false;
         }
-        if (par1EntityLiving instanceof EntityMob) {
+        if (par1Mob instanceof MonsterEntity) {
             return true;
         }
-        if (par1EntityLiving instanceof Mothra) {
+        if (par1Mob instanceof Mothra) {
             return true;
         }
-        if (par1EntityLiving instanceof Kraken) {
+        if (par1Mob instanceof Kraken) {
             return true;
         }
-        if (par1EntityLiving instanceof EntityPlayer) {
+        if (par1Mob instanceof PlayerEntity) {
             return false;
         }
         return false;
     }
 
-    private EntityLivingBase findSomethingToAttack() {
+    private LivingEntity findSomethingToAttack() {
         if (ChaosPersists.PlayNicely != 0) {
             return null;
         }
-        List var5 = this.world.getEntitiesWithinAABB(EntityLivingBase.class, this.getEntityBoundingBox().expand(20.0, 20.0, 20.0));
+        List var5 = this.level.getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(20.0, 20.0, 20.0));
         Collections.sort(var5, this.TargetSorter);
         Iterator var2 = var5.iterator();
         Entity var3 = null;
-        EntityLivingBase var4 = null;
+        LivingEntity var4 = null;
         while (var2.hasNext()) {
             var3 = (Entity)var2.next();
-            var4 = (EntityLivingBase)var3;
+            var4 = (LivingEntity)var3;
             if (!this.isSuitableTarget(var4, false)) continue;
             return var4;
         }
@@ -940,31 +944,33 @@ extends EntityTameable {
         return false;
     }
 
-    public boolean getCanSpawnHere() {
+    public boolean checkSpawnRules(net.minecraft.world.IWorldReader level, net.minecraft.entity.SpawnReason reason) {
         Dragon target = null;
-        if (!this.world.isDaytime()) {
+        if (!this.level.isDay()) {
             return false;
         }
-        target = (Dragon)this.world.findNearestEntityWithinAABB(Dragon.class, this.getEntityBoundingBox().expand(16.0, 6.0, 16.0), (Entity)this);
+        target = this.level.getNearestEntity(Dragon.class, EntityPredicate.DEFAULT, this, this.getX(), this.getY(), this.getZ(), this.getBoundingBox().inflate(16.0, 6.0, 16.0));
         if (target != null) {
             return false;
         }
-        if (this.world.provider.getDimension() == ChaosPersists.getDimension(4)) {
+        if (com.astryxion.chaospersists.core.ChaosPersists.getDimensionId(this.level) == ChaosPersists.getDimension(4)) {
             return true;
         }
-        if (this.posY < 50.0) {
+        if (this.getY() < 50.0) {
             return false;
         }
         return true;
     }
 
     public boolean canSeeTarget(double pX, double pY, double pZ) {
-        return this.world.rayTraceBlocks(new Vec3d((double)this.posX, (double)(this.posY + 0.75), (double)this.posZ), new Vec3d((double)pX, (double)pY, (double)pZ), false) == null;
+        return this.level.clip(new RayTraceContext(new Vector3d((double)this.getX(), (double)(this.getY() + 0.75), (double)this.getZ()), new Vector3d((double)pX, (double)pY, (double)pZ), RayTraceContext.BlockMode.COLLIDER, RayTraceContext.FluidMode.NONE, this)).getType() == RayTraceResult.Type.MISS;
     }
 
-    @SideOnly(value=Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public void setPositionAndRotation2(double par1, double par3, double par5, float par7, float par8, int par9) {
-        super.setPositionAndRotation(par1, par3, par5, par7, par8);
+        this.setPos(par1, par3, par5);
+        this.yRot = par7;
+        this.xRot = par8;
         this.boatPosRotationIncrements = par9;
         this.boatX = par1;
         this.boatY = par3;
@@ -974,43 +980,43 @@ extends EntityTameable {
         this.boatYawHead = par7;
     }
 
-    @SideOnly(value=Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public void setVelocity(double par1, double par3, double par5) {
-        super.setVelocity(par1, par3, par5);
+        this.setDeltaMovement(par1, par3, par5);
     }
 
-    public void onUpdate() {
-        EntityLivingBase e = null;
-        this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue((double)this.moveSpeed);
-        this.noClip = false;
-        if (!this.world.isRemote && this.getActivity() != 0 && this.getPassengers().isEmpty() && !this.isSitting()) {
+    public void tick() {
+        LivingEntity e = null;
+        this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue((double)this.moveSpeed);
+        this.noPhysics = false;
+        if (!this.level.isClientSide && this.getActivity() != 0 && this.getPassengers().isEmpty() && !this.isOrderedToSit()) {
             this.fly_without_rider();
         }
-        super.onUpdate();
+        super.tick();
         if (this.hurt_timer > 0) {
             --this.hurt_timer;
         }
         if (this.getActivity() == 1) {
             ++this.wing_sound;
             if (this.wing_sound > 20) {
-                if (!this.world.isRemote) {
-                    this.world.playSound(null, this.posX, this.posY, this.posZ, com.astryxion.chaospersists.core.ChaosSounds.MOTHRA_WINGS, net.minecraft.util.SoundCategory.NEUTRAL, 0.5f, 1.0f);
+                if (!this.level.isClientSide) {
+                    this.level.playSound(null, this.getX(), this.getY(), this.getZ(), com.astryxion.chaospersists.core.ChaosSounds.MOTHRA_WINGS, net.minecraft.util.SoundCategory.NEUTRAL, 0.5f, 1.0f);
                 }
                 this.wing_sound = 0;
             }
         }
         if (this.isInWater()) {
-            this.motionY += 0.07;
+            com.astryxion.chaospersists.util.MyUtils.addDeltaMovement(this, 0.0, 0.07, 0.0);
         }
-        if (this.world.isRemote) {
+        if (this.level.isClientSide) {
             return;
         }
-        if (this.getActivity() == 0 && this.isTamed() && this.getOwner() != null && !this.isSitting() && this.getDistanceSq((Entity)(e = this.getOwner())) > 144.0) {
+        if (this.getActivity() == 0 && this.isTame() && this.getOwner() != null && !this.isOrderedToSit() && this.distanceToSqr((Entity)(e = this.getOwner())) > 144.0) {
             this.setActivity(1);
         }
         MyUtils.enforceDragonMountGroundSafety(this);
         if (this.getPassengers().isEmpty()) {
-            this.pushOutOfBlocks(this.posX, this.posY, this.posZ);
+            this.moveTowardsClosestSpace(this.getX(), this.getY(), this.getZ());
         }
     }
 
@@ -1024,7 +1030,7 @@ extends EntityTameable {
         double oy = 0.0;
         double oz = 0.0;
         boolean has_owner = false;
-        EntityLivingBase e = null;
+        LivingEntity e = null;
         double speed_factor = 0.5;
         double var1 = 0.0;
         double var3 = 0.0;
@@ -1033,16 +1039,16 @@ extends EntityTameable {
         double xzoff = 2.25;
         double gh = 1.25;
         double obstruction_factor = 0.0;
-        EntitySmallFireball sf = null;
+        SmallFireballEntity sf = null;
         BetterFireball bf = null;
         IceBall ib = null;
         WaterBall wb = null;
         boolean toofar = false;
         if (this.currentFlightTarget == null) {
             do_new = true;
-            this.currentFlightTarget = new BlockPos((int)this.posX, (int)this.posY, (int)this.posZ);
+            this.currentFlightTarget = new BlockPos((int)this.getX(), (int)this.getY(), (int)this.getZ());
         }
-        if (this.isSitting()) {
+        if (this.isOrderedToSit()) {
             return;
         }
         if ((this.getPassengers().isEmpty() ? null : this.getPassengers().get(0)) != null) {
@@ -1051,7 +1057,7 @@ extends EntityTameable {
         if (this.unstick_timer > 0) {
             --this.unstick_timer;
         }
-        if (this.lastX == (int)this.posX && this.lastZ == (int)this.posZ) {
+        if (this.lastX == (int)this.getX() && this.lastZ == (int)this.getZ()) {
             ++this.stuck_count;
             if (this.stuck_count > 50) {
                 this.stuck_count = 0;
@@ -1062,20 +1068,28 @@ extends EntityTameable {
             }
         } else {
             this.stuck_count = 0;
-            this.lastX = (int)this.posX;
-            this.lastZ = (int)this.posZ;
+            this.lastX = (int)this.getX();
+            this.lastZ = (int)this.getZ();
         }
-        this.motionY = this.posY < (double)this.currentFlightTarget.getY() + 2.0 ? (this.motionY *= 0.7) : (this.posY > (double)this.currentFlightTarget.getY() - 2.0 ? (this.motionY *= 0.5) : (this.motionY *= 0.61));
-        if (this.world.rand.nextInt(300) == 1) {
+        double flightMotionY = this.getDeltaMovement().y;
+        if (this.getY() < (double)this.currentFlightTarget.getY() + 2.0) {
+            flightMotionY *= 0.7;
+        } else if (this.getY() > (double)this.currentFlightTarget.getY() - 2.0) {
+            flightMotionY *= 0.5;
+        } else {
+            flightMotionY *= 0.61;
+        }
+        this.setDeltaMovement(this.getDeltaMovement().x, flightMotionY, this.getDeltaMovement().z);
+        if (this.level.random.nextInt(300) == 1) {
             do_new = true;
         }
-        if (this.isTamed() && this.getOwner() != null) {
+        if (this.isTame() && this.getOwner() != null) {
             e = this.getOwner();
             has_owner = true;
-            ox = e.posX;
-            oy = e.posY;
-            oz = e.posZ;
-            if (this.getDistanceSq((Entity)e) > 144.0) {
+            ox = e.getX();
+            oy = e.getY();
+            oz = e.getZ();
+            if (this.distanceToSqr((Entity)e) > 144.0) {
                 toofar = true;
                 this.target_in_sight = false;
                 this.setAttacking(0);
@@ -1086,76 +1100,76 @@ extends EntityTameable {
         if (this.flyaway > 0) {
             --this.flyaway;
         }
-        if (!toofar && this.unstick_timer == 0 && this.flyaway == 0 && this.world.getDifficulty() != EnumDifficulty.PEACEFUL && this.world.rand.nextInt(9) == 1) {
-            e = this.getAttackTarget();
-            if (e != null && !e.isEntityAlive()) {
-                this.setAttackTarget(null);
+        if (!toofar && this.unstick_timer == 0 && this.flyaway == 0 && this.level.getDifficulty() != Difficulty.PEACEFUL && this.level.random.nextInt(9) == 1) {
+            e = this.getTarget();
+            if (e != null && !e.isAlive()) {
+                this.setTarget(null);
                 e = null;
             }
             if (e == null) {
                 e = this.findSomethingToAttack();
                 if (e != null) {
-                    this.setAttackTarget(e);
+                    this.setTarget(e);
                 }
             }
             if (e != null) {
-                if (this.isTamed() && this.getHealth() / (float)this.mygetMaxHealth() < 0.25f) {
+                if (this.isTame() && this.getHealth() / (float)this.mygetMaxHealth() < 0.25f) {
                     this.setActivity(1);
                     this.setAttacking(0);
                     this.target_in_sight = false;
                     do_new = false;
-                    this.currentFlightTarget = new BlockPos((int)(this.posX + (this.posX - e.posX)), (int)(this.posY + 1.0), (int)(this.posZ + (this.posZ - e.posZ)));
+                    this.currentFlightTarget = new BlockPos((int)(this.getX() + (this.getX() - e.getX())), (int)(this.getY() + 1.0), (int)(this.getZ() + (this.getZ() - e.getZ())));
                 } else {
                     this.setActivity(1);
                     this.setAttacking(1);
                     this.target_in_sight = true;
-                    this.currentFlightTarget = new BlockPos((int)e.posX, (int)(e.posY + 1.0), (int)e.posZ);
+                    this.currentFlightTarget = new BlockPos((int)e.getX(), (int)(e.getY() + 1.0), (int)e.getZ());
                     do_new = false;
-                    if (this.getDistanceSq((Entity)e) < (double)((5.0f + e.width / 2.0f) * (5.0f + e.width / 2.0f))) {
-                        this.attackEntityAsMob((Entity)e);
-                        this.flyaway = 5 + this.world.rand.nextInt(10);
+                    if (this.distanceToSqr((Entity)e) < (double)((5.0f + e.getBbWidth() / 2.0f) * (5.0f + e.getBbWidth() / 2.0f))) {
+                        this.doHurtTarget((LivingEntity)e);
+                        this.flyaway = 5 + this.level.random.nextInt(10);
                         do_new = true;
-                    } else if (this.getDistanceSq((Entity)e) < 256.0 && !this.isInWater() && this.getDragonFire() >= 1) {
+                    } else if (this.distanceToSqr((Entity)e) < 256.0 && !this.isInWater() && this.getDragonFire() >= 1) {
                         double var7;
                         float var9;
-                        double cx = this.posX - xzoff * Math.sin(Math.toRadians(this.rotationYaw));
-                        double cz = this.posZ + xzoff * Math.cos(Math.toRadians(this.rotationYaw));
+                        double cx = this.getX() - xzoff * Math.sin(Math.toRadians(this.yRot));
+                        double cz = this.getZ() + xzoff * Math.cos(Math.toRadians(this.yRot));
                         if (this.dragontype == 0) {
                             if (this.getDragonFire() == 1) {
-                                sf = new EntitySmallFireball(this.world, (EntityLivingBase)this, e.posX - cx, e.posY + (double)(e.height / 2.0f) - (this.posY + yoff), e.posZ - cz);
-                                sf.setLocationAndAngles(cx, this.posY + yoff, cz, this.rotationYaw, 0.0f);
-                                sf.setPosition(cx, this.posY + yoff, cz);
-                                this.world.playSound(null, this.posX, this.posY, this.posZ, net.minecraft.util.SoundEvent.REGISTRY.getObject(new net.minecraft.util.ResourceLocation("random.bow")), net.minecraft.util.SoundCategory.NEUTRAL, 0.75f, 1.0f / (this.getRNG().nextFloat() * 0.4f + 0.8f));
-                                this.world.spawnEntity((Entity)sf);
+                                sf = new SmallFireballEntity(this.level, (LivingEntity)this, e.getX() - cx, e.getY() + (double)(e.getBbHeight() / 2.0f) - (this.getY() + yoff), e.getZ() - cz);
+                                sf.moveTo(cx, this.getY() + yoff, cz, this.yRot, 0.0f);
+                                sf.setPos(cx, this.getY() + yoff, cz);
+                                this.level.playSound(null, this.getX(), this.getY(), this.getZ(), net.minecraft.util.registry.Registry.SOUND_EVENT.get(new net.minecraft.util.ResourceLocation("random.bow")), net.minecraft.util.SoundCategory.NEUTRAL, 0.75f, 1.0f / (this.getRandom().nextFloat() * 0.4f + 0.8f));
+                                this.level.addFreshEntity((Entity)sf);
                             } else {
-                                bf = new BetterFireball(this.world, (EntityLivingBase)this, e.posX - cx, e.posY + (double)(e.height / 2.0f) - (this.posY + yoff), e.posZ - cz);
-                                bf.setLocationAndAngles(cx, this.posY + yoff, cz, this.rotationYaw, 0.0f);
-                                bf.setPosition(cx, this.posY + yoff, cz);
-                                this.world.playSound(null, this.posX, this.posY, this.posZ, net.minecraft.util.SoundEvent.REGISTRY.getObject(new net.minecraft.util.ResourceLocation("random.fuse")), net.minecraft.util.SoundCategory.NEUTRAL, 1.0f, 1.0f / (this.getRNG().nextFloat() * 0.4f + 0.8f));
-                                this.world.spawnEntity((Entity)bf);
+                                bf = new BetterFireball(this.level, (LivingEntity)this, e.getX() - cx, e.getY() + (double)(e.getBbHeight() / 2.0f) - (this.getY() + yoff), e.getZ() - cz);
+                                bf.moveTo(cx, this.getY() + yoff, cz, this.yRot, 0.0f);
+                                bf.setPos(cx, this.getY() + yoff, cz);
+                                this.level.playSound(null, this.getX(), this.getY(), this.getZ(), net.minecraft.util.registry.Registry.SOUND_EVENT.get(new net.minecraft.util.ResourceLocation("random.fuse")), net.minecraft.util.SoundCategory.NEUTRAL, 1.0f, 1.0f / (this.getRandom().nextFloat() * 0.4f + 0.8f));
+                                this.level.addFreshEntity((Entity)bf);
                             }
                         } else if (this.getDragonFire() == 1) {
-                            wb = new WaterBall(this.world, e.posX - this.posX, e.posY + (double)(e.height / 2.0f) - (this.posY + yoff), e.posZ - this.posZ);
-                            wb.setLocationAndAngles(this.posX - xzoff * Math.sin(Math.toRadians(this.rotationYaw)), this.posY + yoff, this.posZ + xzoff * Math.cos(Math.toRadians(this.rotationYaw)), this.rotationYawHead, this.rotationPitch);
-                            var3 = e.posX - wb.posX;
-                            var5 = e.posY + 0.25 - wb.posY;
-                            var7 = e.posZ - wb.posZ;
+                            wb = new WaterBall(this.level, e.getX() - this.getX(), e.getY() + (double)(e.getBbHeight() / 2.0f) - (this.getY() + yoff), e.getZ() - this.getZ());
+                            wb.moveTo(this.getX() - xzoff * Math.sin(Math.toRadians(this.yRot)), this.getY() + yoff, this.getZ() + xzoff * Math.cos(Math.toRadians(this.yRot)), this.yHeadRot, this.xRot);
+                            var3 = e.getX() - wb.getX();
+                            var5 = e.getY() + 0.25 - wb.getY();
+                            var7 = e.getZ() - wb.getZ();
                             var9 = MathHelper.sqrt((double)(var3 * var3 + var7 * var7)) * 0.2f;
                             wb.shoot(var3, var5 + (double)var9, var7, 1.4f, 5.0f);
-                            this.world.playSound(null, this.posX, this.posY, this.posZ, net.minecraft.util.SoundEvent.REGISTRY.getObject(new net.minecraft.util.ResourceLocation("random.bow")), net.minecraft.util.SoundCategory.NEUTRAL, 0.75f, 1.0f / (this.getRNG().nextFloat() * 0.4f + 0.8f));
-                            this.world.spawnEntity((Entity)wb);
+                            this.level.playSound(null, this.getX(), this.getY(), this.getZ(), net.minecraft.util.registry.Registry.SOUND_EVENT.get(new net.minecraft.util.ResourceLocation("random.bow")), net.minecraft.util.SoundCategory.NEUTRAL, 0.75f, 1.0f / (this.getRandom().nextFloat() * 0.4f + 0.8f));
+                            this.level.addFreshEntity((Entity)wb);
                         } else {
-                            ib = new IceBall(this.world, e.posX - this.posX, e.posY + (double)(e.height / 2.0f) - (this.posY + yoff), e.posZ - this.posZ);
-                            ib.setLocationAndAngles(this.posX - xzoff * Math.sin(Math.toRadians(this.rotationYaw)), this.posY + yoff, this.posZ + xzoff * Math.cos(Math.toRadians(this.rotationYaw)), this.rotationYawHead, this.rotationPitch);
+                            ib = new IceBall(this.level, e.getX() - this.getX(), e.getY() + (double)(e.getBbHeight() / 2.0f) - (this.getY() + yoff), e.getZ() - this.getZ());
+                            ib.moveTo(this.getX() - xzoff * Math.sin(Math.toRadians(this.yRot)), this.getY() + yoff, this.getZ() + xzoff * Math.cos(Math.toRadians(this.yRot)), this.yHeadRot, this.xRot);
                             ib.setSpecial();
                             ib.setIceBall();
-                            var3 = e.posX - ib.posX;
-                            var5 = e.posY + 0.25 - ib.posY;
-                            var7 = e.posZ - ib.posZ;
+                            var3 = e.getX() - ib.getX();
+                            var5 = e.getY() + 0.25 - ib.getY();
+                            var7 = e.getZ() - ib.getZ();
                             var9 = MathHelper.sqrt((double)(var3 * var3 + var7 * var7)) * 0.2f;
                             ib.shoot(var3, var5 + (double)var9, var7, 1.4f, 5.0f);
-                            this.world.playSound(null, this.posX, this.posY, this.posZ, net.minecraft.util.SoundEvent.REGISTRY.getObject(new net.minecraft.util.ResourceLocation("random.fuse")), net.minecraft.util.SoundCategory.NEUTRAL, 1.0f, 1.0f / (this.getRNG().nextFloat() * 0.4f + 0.8f));
-                            this.world.spawnEntity((Entity)ib);
+                            this.level.playSound(null, this.getX(), this.getY(), this.getZ(), net.minecraft.util.registry.Registry.SOUND_EVENT.get(new net.minecraft.util.ResourceLocation("random.fuse")), net.minecraft.util.SoundCategory.NEUTRAL, 1.0f, 1.0f / (this.getRandom().nextFloat() * 0.4f + 0.8f));
+                            this.level.addFreshEntity((Entity)ib);
                         }
                     }
                 }
@@ -1165,38 +1179,38 @@ extends EntityTameable {
                 this.setAttacking(0);
             }
         }
-        if (this.currentFlightTarget.distanceSq(this.posX, this.posY, this.posZ) < 2.1f) {
+        if (this.currentFlightTarget.distSqr(this.getX(), this.getY(), this.getZ(), false) < 2.1f) {
             do_new = true;
         }
         if (do_new && !this.target_in_sight || do_new && this.flyaway != 0) {
             bid = Blocks.STONE;
             while (bid != Blocks.AIR && keep_trying != 0) {
-                int gox = (int)this.posX;
-                int goy = (int)this.posY;
-                int goz = (int)this.posZ;
+                int gox = (int)this.getX();
+                int goy = (int)this.getY();
+                int goz = (int)this.getZ();
                 if (has_owner && this.unstick_timer == 0) {
                     gox = (int)ox;
                     goy = (int)oy;
                     goz = (int)oz;
                     if (this.owner_flying == 0) {
-                        zdir = this.world.rand.nextInt(10) + 4;
-                        xdir = this.world.rand.nextInt(10) + 4;
+                        zdir = this.level.random.nextInt(10) + 4;
+                        xdir = this.level.random.nextInt(10) + 4;
                     } else {
-                        zdir = this.world.rand.nextInt(6);
-                        xdir = this.world.rand.nextInt(6);
+                        zdir = this.level.random.nextInt(6);
+                        xdir = this.level.random.nextInt(6);
                     }
                 } else {
-                    zdir = this.world.rand.nextInt(10) + 16;
-                    xdir = this.world.rand.nextInt(10) + 16;
+                    zdir = this.level.random.nextInt(10) + 16;
+                    xdir = this.level.random.nextInt(10) + 16;
                 }
-                if (this.world.rand.nextInt(2) == 1) {
+                if (this.level.random.nextInt(2) == 1) {
                     zdir = - zdir;
                 }
-                if (this.world.rand.nextInt(2) == 1) {
+                if (this.level.random.nextInt(2) == 1) {
                     xdir = - xdir;
                 }
-                this.currentFlightTarget = new BlockPos(gox + xdir, goy + this.world.rand.nextInt(9 + this.owner_flying * 2) - 4, goz + zdir);
-                bid = this.world.getBlockState(this.currentFlightTarget).getBlock();
+                this.currentFlightTarget = new BlockPos(gox + xdir, goy + this.level.random.nextInt(9 + this.owner_flying * 2) - 4, goz + zdir);
+                bid = this.level.getBlockState(this.currentFlightTarget).getBlock();
                 if (bid == Blocks.AIR && !this.canSeeTarget((double)this.currentFlightTarget.getX(), (double)this.currentFlightTarget.getY(), (double)this.currentFlightTarget.getZ())) {
                     bid = Blocks.STONE;
                 }
@@ -1205,7 +1219,7 @@ extends EntityTameable {
         }
         obstruction_factor = 0.0;
         // Match ThePrinceTeen: horizontal speed for kMax after targeting/damping, not at method entry.
-        double velocity = Math.sqrt(this.motionX * this.motionX + this.motionZ * this.motionZ);
+        double velocity = Math.sqrt(this.getDeltaMovement().x * this.getDeltaMovement().x + this.getDeltaMovement().z * this.getDeltaMovement().z);
         // Match ThePrinceTeen: small inner loop only — large scanDist*2 loops stacked huge Y boosts (random "rocket up").
         int kMax = 2 + (int)(Math.max(0.0, velocity) * 4.0);
         if (kMax < 2) {
@@ -1217,41 +1231,40 @@ extends EntityTameable {
         for (int k = 1; k < kMax; ++k) {
             for (int i = 1; i < 4; ++i) {
                 double dz;
-                double dx = (double)i * Math.cos(Math.toRadians(this.rotationYaw + 90.0f));
-                bid = this.world.getBlockState(new net.minecraft.util.math.BlockPos((int)(this.posX + dx), (int)this.posY - k, (int)(this.posZ + (dz = (double)i * Math.sin(Math.toRadians(this.rotationYaw + 90.0f)))))).getBlock();
+                double dx = (double)i * Math.cos(Math.toRadians(this.yRot + 90.0f));
+                bid = this.level.getBlockState(new net.minecraft.util.math.BlockPos((int)(this.getX() + dx), (int)this.getY() - k, (int)(this.getZ() + (dz = (double)i * Math.sin(Math.toRadians(this.yRot + 90.0f)))))).getBlock();
                 if (bid == Blocks.AIR) continue;
                 obstruction_factor += 0.05;
             }
         }
-        this.motionY += obstruction_factor * 0.05;
-        this.posY += obstruction_factor * 0.05;
+        com.astryxion.chaospersists.util.MyUtils.addDeltaMovement(this, 0.0, obstruction_factor * 0.05, 0.0);
+        com.astryxion.chaospersists.util.MyUtils.addEntityY(this, obstruction_factor * 0.05);
         speed_factor = 0.5;
-        var1 = (double)this.currentFlightTarget.getX() + 0.5 - this.posX;
-        var3 = (double)this.currentFlightTarget.getY() + 0.1 - this.posY;
-        var5 = (double)this.currentFlightTarget.getZ() + 0.5 - this.posZ;
+        var1 = (double)this.currentFlightTarget.getX() + 0.5 - this.getX();
+        var3 = (double)this.currentFlightTarget.getY() + 0.1 - this.getY();
+        var5 = (double)this.currentFlightTarget.getZ() + 0.5 - this.getZ();
         if (this.owner_flying != 0) {
             speed_factor = 1.75;
-            if (this.isTamed() && this.getOwner() != null && this.getDistanceSq((Entity)(e = this.getOwner())) > 49.0) {
+            if (this.isTame() && this.getOwner() != null && this.distanceToSqr((Entity)(e = this.getOwner())) > 49.0) {
                 speed_factor = 3.5;
             }
         }
-        this.motionX += (Math.signum(var1) - this.motionX) * 0.15 * speed_factor;
-        this.motionY += (Math.signum(var3) - this.motionY) * 0.21 * speed_factor;
-        this.motionZ += (Math.signum(var5) - this.motionZ) * 0.15 * speed_factor;
-        float var7 = (float)(Math.atan2(this.motionZ, this.motionX) * 180.0 / 3.141592653589793) - 90.0f;
-        float var8 = MathHelper.wrapDegrees((float)(var7 - this.rotationYaw));
-        this.moveForward = (float)(0.75 * speed_factor);
-        this.rotationYaw += var8 / 4.0f;
+com.astryxion.chaospersists.util.MyUtils.addDeltaMovement(this, (Math.signum(var1) - this.getDeltaMovement().x) * 0.15 * speed_factor, (Math.signum(var3) - this.getDeltaMovement().y) * 0.21 * speed_factor, (Math.signum(var5) - this.getDeltaMovement().z) * 0.15 * speed_factor);
+        float var7 = (float)(Math.atan2(this.getDeltaMovement().z, this.getDeltaMovement().x) * 180.0 / 3.141592653589793) - 90.0f;
+        float var8 = MathHelper.wrapDegrees((float)(var7 - this.yRot));
+        this.yya = (float)(0.75 * speed_factor);
+        this.yRot += var8 / 4.0f;
         // Movement comes from vanilla travel() in the same tick (Prince pattern); extra move() here fought physics.
     }
 
-    public void onLivingUpdate()
+    @Override
+    public void aiStep()
     {
       List list = null;
       Entity listEntity = null;
 
-      double d6 = this.rand.nextFloat() * 2.0F - 1.0F;
-      double d7 = (this.rand.nextInt(2) * 2 - 1) * 0.7D;
+      double d6 = this.random.nextFloat() * 2.0F - 1.0F;
+      double d7 = (this.random.nextInt(2) * 2 - 1) * 0.7D;
 
       double obstruction_factor = 0.0D;
 
@@ -1269,35 +1282,35 @@ extends EntityTameable {
 
       BetterFireball bf = null;
 
-      if (this.isDead) {
-        super.onLivingUpdate();
+      if (!this.isAlive()) {
+        super.aiStep();
         return;
       }
-      super.onLivingUpdate();
+      super.aiStep();
 
-      if (this.world.isRemote)
+      if (this.level.isClientSide)
       {
         if (this.getActivity() != 0 && !this.getPassengers().isEmpty()) {
             Entity rider = this.getPassengers().get(0);
-            if (rider instanceof EntityPlayerSP) {
-                EntityPlayerSP pp = (EntityPlayerSP)rider;
-                pp.connection.sendPacket(new CPacketPlayer.Rotation(pp.rotationYaw, pp.rotationPitch, pp.onGround));
-                pp.connection.sendPacket(new CPacketInput(pp.moveStrafing, pp.moveForward, pp.movementInput.jump, pp.movementInput.sneak));
+            if (rider instanceof ClientPlayerEntity) {
+                ClientPlayerEntity pp = (ClientPlayerEntity)rider;
+                pp.connection.send(new CPlayerPacket.RotationPacket(pp.yRot, pp.xRot, pp.isOnGround()));
+                pp.connection.send(new CInputPacket(pp.xxa, pp.yya, pp.input.jumping, pp.input.shiftKeyDown));
             }
         }
         if ((this.boatPosRotationIncrements > 0) && (getActivity() != 0))
         {
-          double d4 = this.posX + (this.boatX - this.posX) / this.boatPosRotationIncrements;
-          double d5 = this.posY + (this.boatY - this.posY) / this.boatPosRotationIncrements;
-          double d11 = this.posZ + (this.boatZ - this.posZ) / this.boatPosRotationIncrements;
-          setPosition(d4, d5, d11);
+          double d4 = this.getX() + (this.boatX - this.getX()) / this.boatPosRotationIncrements;
+          double d5 = this.getY() + (this.boatY - this.getY()) / this.boatPosRotationIncrements;
+          double d11 = this.getZ() + (this.boatZ - this.getZ()) / this.boatPosRotationIncrements;
+          this.setPos(d4, d5, d11);
 
-          this.rotationPitch = (float)(this.rotationPitch + (this.boatPitch - this.rotationPitch) / this.boatPosRotationIncrements);
-          double d10 = MathHelper.wrapDegrees(this.boatYaw - this.rotationYaw);
-          if ((this.getPassengers().isEmpty() ? null : this.getPassengers().get(0)) != null) d10 = MathHelper.wrapDegrees((this.getPassengers().isEmpty() ? null : this.getPassengers().get(0)).rotationYaw - this.rotationYaw);
-          this.rotationYaw = (float)(this.rotationYaw + d10 / this.boatPosRotationIncrements);
-          setRotation(this.rotationYaw, this.rotationPitch);
-          this.rotationYawHead = this.rotationYaw;
+          this.xRot = (float)(this.xRot + (this.boatPitch - this.xRot) / this.boatPosRotationIncrements);
+          double d10 = MathHelper.wrapDegrees(this.boatYaw - this.yRot);
+          if ((this.getPassengers().isEmpty() ? null : this.getPassengers().get(0)) != null) d10 = MathHelper.wrapDegrees((this.getPassengers().isEmpty() ? null : this.getPassengers().get(0)).yRot - this.yRot);
+          this.yRot = (float)(this.yRot + d10 / this.boatPosRotationIncrements);
+            this.yHeadRot = this.yRot;
+          this.yHeadRot = this.yRot;
 
           this.boatPosRotationIncrements -= 1;
         }
@@ -1315,214 +1328,211 @@ extends EntityTameable {
     public void updateRiderPosition() {
         if ((this.getPassengers().isEmpty() ? null : this.getPassengers().get(0)) != null) {
             float f = 0.65f;
-            this.getPassengers().get(0).setPosition(this.posX - (double)f * Math.sin(Math.toRadians(this.rotationYaw)), this.posY + this.getMountedYOffset() + this.getPassengers().get(0).getYOffset(), this.posZ + (double)f * Math.cos(Math.toRadians(this.rotationYaw)));
+            this.getPassengers().get(0).setPos(this.getX() - (double)f * Math.sin(Math.toRadians(this.yRot)), this.getY() + this.getMountedYOffset() + this.getPassengers().get(0).getMyRidingOffset(), this.getZ() + (double)f * Math.cos(Math.toRadians(this.yRot)));
         }
     }
 
     protected void playTameEffect(boolean par1) {
-        String s = "heart";
-        if (!par1) {
-            s = "smoke";
-        }
+        net.minecraft.particles.BasicParticleType type = par1 ? ParticleTypes.HEART : ParticleTypes.SMOKE;
         for (int i = 0; i < 20; ++i) {
-            double d0 = this.rand.nextGaussian() * 0.08;
-            double d1 = this.rand.nextGaussian() * 0.08;
-            double d2 = this.rand.nextGaussian() * 0.08;
-            this.world.spawnParticle("smoke".equals(s) ? net.minecraft.util.EnumParticleTypes.SMOKE_NORMAL : net.minecraft.util.EnumParticleTypes.HEART, this.posX + (double)((this.rand.nextFloat() - this.rand.nextFloat()) * 2.5f), this.posY + 0.5 + (double)this.rand.nextFloat() * 1.5, this.posZ + (double)((this.rand.nextFloat() - this.rand.nextFloat()) * 2.5f), d0, d1, d2);
+            double d0 = this.random.nextGaussian() * 0.08;
+            double d1 = this.random.nextGaussian() * 0.08;
+            double d2 = this.random.nextGaussian() * 0.08;
+            this.level.addParticle(type, this.getX() + (double)((this.random.nextFloat() - this.random.nextFloat()) * 2.5f), this.getY() + 0.5 + (double)this.random.nextFloat() * 1.5, this.getZ() + (double)((this.random.nextFloat() - this.random.nextFloat()) * 2.5f), d0, d1, d2);
         }
     }
 
     @Override
-    public boolean processInteract(EntityPlayer par1EntityPlayer, EnumHand hand) {
-        ItemStack var2 = par1EntityPlayer.getHeldItem(hand);
+    public ActionResultType mobInteract(PlayerEntity par1PlayerEntityEntity, Hand hand) {
+        ItemStack var2 = par1PlayerEntityEntity.getItemInHand(hand);
         if (var2.isEmpty()) {
             var2 = null;
         } else if (var2.getCount() <= 0) {
-            par1EntityPlayer.setHeldItem(hand, ItemStack.EMPTY);
+            par1PlayerEntityEntity.setItemInHand(hand, ItemStack.EMPTY);
             var2 = null;
         }
-        if (!this.isTamed()) {
-            if (var2 != null && var2.getItem() == Items.BEEF && par1EntityPlayer.getDistanceSq((Entity)this) < 25.0) {
-                if (!this.world.isRemote) {
-                    if (this.world.rand.nextInt(5) == 1) {
-                        this.setTamed(true);
-                        this.setOwnerId(par1EntityPlayer.getUniqueID());
-                        this.playTameEffect(true);
-                        this.world.setEntityState((Entity)this, (byte)7);
+        if (!this.isTame()) {
+            if (var2 != null && var2.getItem() == Items.BEEF && par1PlayerEntityEntity.distanceToSqr((Entity)this) < 25.0) {
+                if (!this.level.isClientSide) {
+                    if (this.level.random.nextInt(5) == 1) {
+                        this.setTame(true);
+                        this.setOwnerUUID(par1PlayerEntityEntity.getUUID());
+                        this.level.broadcastEntityEvent(this, (byte)7);
+                        this.level.broadcastEntityEvent(this, (byte)7);
                         this.heal((float)this.mygetMaxHealth() - this.getHealth());
                     } else {
-                        this.playTameEffect(false);
-                        this.world.setEntityState((Entity)this, (byte)6);
+                        this.level.broadcastEntityEvent(this, (byte)6);
+                        this.level.broadcastEntityEvent(this, (byte)6);
                     }
                 }
-                if (!par1EntityPlayer.capabilities.isCreativeMode) {
+                if (!par1PlayerEntityEntity.isCreative()) {
                     var2.shrink(1);
                     if (var2.isEmpty()) {
-                        par1EntityPlayer.setHeldItem(hand, ItemStack.EMPTY);
+                        par1PlayerEntityEntity.setItemInHand(hand, ItemStack.EMPTY);
                     }
                 }
-                return true;
+                return ActionResultType.SUCCESS;
             }
         } else {
-            if (!this.isOwner((EntityLivingBase)par1EntityPlayer)) {
-                return super.processInteract(par1EntityPlayer, hand);
+            if (!this.isOwnedBy((LivingEntity)par1PlayerEntityEntity)) {
+                return super.mobInteract(par1PlayerEntityEntity, hand);
             }
-            if (var2 == null && par1EntityPlayer.getDistanceSq((Entity)this) < 16.0) {
-                if (!this.world.isRemote) {
-                    par1EntityPlayer.startRiding(this);
+            if (var2 == null && par1PlayerEntityEntity.distanceToSqr((Entity)this) < 16.0) {
+                if (!this.level.isClientSide) {
+                    par1PlayerEntityEntity.startRiding(this);
                     this.setActivity(1);
-                    this.setSitting(false);
+                    this.setOrderedToSit(false);
                 }
-                return true;
+                return ActionResultType.SUCCESS;
             }
-            if (var2 != null && var2.getItem() == Items.BEEF && par1EntityPlayer.getDistanceSq((Entity)this) < 25.0) {
-                if (this.world.isRemote) {
-                    this.playTameEffect(true);
-                    this.world.setEntityState((Entity)this, (byte)7);
+            if (var2 != null && var2.getItem() == Items.BEEF && par1PlayerEntityEntity.distanceToSqr((Entity)this) < 25.0) {
+                if (this.level.isClientSide) {
+                    this.level.broadcastEntityEvent(this, (byte)7);
+                    this.level.broadcastEntityEvent(this, (byte)7);
                 }
                 if ((float)this.mygetMaxHealth() > this.getHealth()) {
                     this.heal((float)this.mygetMaxHealth() - this.getHealth());
                 }
-                if (!par1EntityPlayer.capabilities.isCreativeMode) {
+                if (!par1PlayerEntityEntity.isCreative()) {
                     var2.shrink(1);
                     if (var2.isEmpty()) {
-                        par1EntityPlayer.setHeldItem(hand, ItemStack.EMPTY);
+                        par1PlayerEntityEntity.setItemInHand(hand, ItemStack.EMPTY);
                     }
                 }
-                return true;
+                return ActionResultType.SUCCESS;
             }
-            if (var2 != null && var2.getItem() == Item.getItemFromBlock((Block)Blocks.DEADBUSH) && par1EntityPlayer.getDistanceSq((Entity)this) < 25.0) {
-                if (!this.world.isRemote) {
-                    this.setTamed(false);
-                    this.setOwnerId((UUID)null);
-                    this.playTameEffect(false);
-                    this.world.setEntityState((Entity)this, (byte)6);
+            if (var2 != null && var2.getItem() == Blocks.DEAD_BUSH.asItem() && par1PlayerEntityEntity.distanceToSqr((Entity)this) < 25.0) {
+                if (!this.level.isClientSide) {
+                    this.setTame(false);
+                    this.setOwnerUUID((UUID)null);
+                    this.level.broadcastEntityEvent(this, (byte)6);
+                    this.level.broadcastEntityEvent(this, (byte)6);
                 }
-                if (!par1EntityPlayer.capabilities.isCreativeMode) {
+                if (!par1PlayerEntityEntity.isCreative()) {
                     var2.shrink(1);
                     if (var2.isEmpty()) {
-                        par1EntityPlayer.setHeldItem(hand, ItemStack.EMPTY);
+                        par1PlayerEntityEntity.setItemInHand(hand, ItemStack.EMPTY);
                     }
                 }
-                return true;
+                return ActionResultType.SUCCESS;
             }
-            if (var2 != null && var2.getItem() == Item.getItemFromBlock((Block)Blocks.ICE) && par1EntityPlayer.getDistanceSq((Entity)this) < 25.0 && this.isOwner((EntityLivingBase)par1EntityPlayer)) {
-                if (!this.world.isRemote) {
-                    this.playTameEffect(true);
-                    this.world.setEntityState((Entity)this, (byte)6);
+            if (var2 != null && var2.getItem() == Blocks.ICE.asItem() && par1PlayerEntityEntity.distanceToSqr((Entity)this) < 25.0 && this.isOwnedBy((LivingEntity)par1PlayerEntityEntity)) {
+                if (!this.level.isClientSide) {
+                    this.level.broadcastEntityEvent(this, (byte)7);
+                    this.level.broadcastEntityEvent(this, (byte)6);
                     this.setDragonFire(0);
-                    par1EntityPlayer.sendMessage(new TextComponentString("Dragon fireballs extinguished."));
+                    par1PlayerEntityEntity.sendMessage(new StringTextComponent("Dragon fireballs extinguished."), par1PlayerEntityEntity.getUUID());
                 }
-                if (!par1EntityPlayer.capabilities.isCreativeMode) {
+                if (!par1PlayerEntityEntity.isCreative()) {
                     var2.shrink(1);
                     if (var2.isEmpty()) {
-                        par1EntityPlayer.setHeldItem(hand, ItemStack.EMPTY);
+                        par1PlayerEntityEntity.setItemInHand(hand, ItemStack.EMPTY);
                     }
                 }
-                return true;
+                return ActionResultType.SUCCESS;
             }
-            if (var2 != null && var2.getItem() == Items.FLINT_AND_STEEL && par1EntityPlayer.getDistanceSq((Entity)this) < 25.0 && this.isOwner((EntityLivingBase)par1EntityPlayer)) {
-                if (!this.world.isRemote) {
-                    this.playTameEffect(true);
-                    this.world.setEntityState((Entity)this, (byte)6);
+            if (var2 != null && var2.getItem() == Items.FLINT_AND_STEEL && par1PlayerEntityEntity.distanceToSqr((Entity)this) < 25.0 && this.isOwnedBy((LivingEntity)par1PlayerEntityEntity)) {
+                if (!this.level.isClientSide) {
+                    this.level.broadcastEntityEvent(this, (byte)7);
+                    this.level.broadcastEntityEvent(this, (byte)6);
                     this.setDragonFire(1);
-                    par1EntityPlayer.sendMessage(new TextComponentString("Dragon fireballs lit!"));
+                    par1PlayerEntityEntity.sendMessage(new StringTextComponent("Dragon fireballs lit!"), par1PlayerEntityEntity.getUUID());
                 }
-                if (!par1EntityPlayer.capabilities.isCreativeMode) {
+                if (!par1PlayerEntityEntity.isCreative()) {
                     var2.shrink(1);
                     if (var2.isEmpty()) {
-                        par1EntityPlayer.setHeldItem(hand, ItemStack.EMPTY);
+                        par1PlayerEntityEntity.setItemInHand(hand, ItemStack.EMPTY);
                     }
                 }
-                return true;
+                return ActionResultType.SUCCESS;
             }
-            if (var2 != null && var2.getItem() == Items.GUNPOWDER && par1EntityPlayer.getDistanceSq((Entity)this) < 25.0 && this.isOwner((EntityLivingBase)par1EntityPlayer) && this.getDragonFire() > 0) {
-                if (!this.world.isRemote) {
-                    this.playTameEffect(true);
-                    this.world.setEntityState((Entity)this, (byte)6);
+            if (var2 != null && var2.getItem() == Items.GUNPOWDER && par1PlayerEntityEntity.distanceToSqr((Entity)this) < 25.0 && this.isOwnedBy((LivingEntity)par1PlayerEntityEntity) && this.getDragonFire() > 0) {
+                if (!this.level.isClientSide) {
+                    this.level.broadcastEntityEvent(this, (byte)7);
+                    this.level.broadcastEntityEvent(this, (byte)6);
                     this.setDragonFire(2);
-                    par1EntityPlayer.sendMessage(new TextComponentString("Dragon fireballs supercharged!"));
+                    par1PlayerEntityEntity.sendMessage(new StringTextComponent("Dragon fireballs supercharged!"), par1PlayerEntityEntity.getUUID());
                 }
-                if (!par1EntityPlayer.capabilities.isCreativeMode) {
+                if (!par1PlayerEntityEntity.isCreative()) {
                     var2.shrink(1);
                     if (var2.isEmpty()) {
-                        par1EntityPlayer.setHeldItem(hand, ItemStack.EMPTY);
+                        par1PlayerEntityEntity.setItemInHand(hand, ItemStack.EMPTY);
                     }
                 }
-                return true;
+                return ActionResultType.SUCCESS;
             }
-            if (var2 != null && var2.getItem() == Items.SNOWBALL && par1EntityPlayer.getDistanceSq((Entity)this) < 25.0) {
-                if (this.world.isRemote) {
-                    this.playTameEffect(true);
-                    this.world.setEntityState((Entity)this, (byte)7);
+            if (var2 != null && var2.getItem() == Items.SNOWBALL && par1PlayerEntityEntity.distanceToSqr((Entity)this) < 25.0) {
+                if (this.level.isClientSide) {
+                    this.level.broadcastEntityEvent(this, (byte)7);
+                    this.level.broadcastEntityEvent(this, (byte)7);
                 }
                 this.dragontype = 1;
                 this.setDragonType(this.dragontype);
-                if (!par1EntityPlayer.capabilities.isCreativeMode) {
+                if (!par1PlayerEntityEntity.isCreative()) {
                     var2.shrink(1);
                     if (var2.isEmpty()) {
-                        par1EntityPlayer.setHeldItem(hand, ItemStack.EMPTY);
+                        par1PlayerEntityEntity.setItemInHand(hand, ItemStack.EMPTY);
                     }
                 }
-                return true;
+                return ActionResultType.SUCCESS;
             }
-            if (var2 != null && var2.getItem() == Items.COAL && par1EntityPlayer.getDistanceSq((Entity)this) < 25.0) {
-                if (this.world.isRemote) {
-                    this.playTameEffect(true);
-                    this.world.setEntityState((Entity)this, (byte)7);
+            if (var2 != null && var2.getItem() == Items.COAL && par1PlayerEntityEntity.distanceToSqr((Entity)this) < 25.0) {
+                if (this.level.isClientSide) {
+                    this.level.broadcastEntityEvent(this, (byte)7);
+                    this.level.broadcastEntityEvent(this, (byte)7);
                 }
                 this.dragontype = 0;
                 this.setDragonType(this.dragontype);
-                if (!par1EntityPlayer.capabilities.isCreativeMode) {
+                if (!par1PlayerEntityEntity.isCreative()) {
                     var2.shrink(1);
                     if (var2.isEmpty()) {
-                        par1EntityPlayer.setHeldItem(hand, ItemStack.EMPTY);
+                        par1PlayerEntityEntity.setItemInHand(hand, ItemStack.EMPTY);
                     }
                 }
-                return true;
+                return ActionResultType.SUCCESS;
             }
-            if (var2 != null && var2.getItem() == Items.DIAMOND && par1EntityPlayer.getDistanceSq((Entity)this) < 25.0 && this.isOwner((EntityLivingBase)par1EntityPlayer) && !this.world.isRemote) {
+            if (var2 != null && var2.getItem() == Items.DIAMOND && par1PlayerEntityEntity.distanceToSqr((Entity)this) < 25.0 && this.isOwnedBy((LivingEntity)par1PlayerEntityEntity) && !this.level.isClientSide) {
                 Entity ent = null;
                 Spyro d = null;
-                ent = Dragon.spawnCreature((World)this.world, (String)"Baby Dragon", (double)this.posX, (double)this.posY, (double)this.posZ);
+                ent = Dragon.spawnCreature((World)this.level, (String)"Baby Dragon", (double)this.getX(), (double)this.getY(), (double)this.getZ());
                 if (ent != null) {
                     d = (Spyro)ent;
-                    if (this.isTamed()) {
-                        d.setTamed(true);
-                        d.setOwnerId(par1EntityPlayer.getUniqueID());
+                    if (this.isTame()) {
+                        d.setTame(true);
+                        d.setOwnerUUID(par1PlayerEntityEntity.getUUID());
                     }
-                    this.setDead();
+                    this.remove();
                 }
-                if (!par1EntityPlayer.capabilities.isCreativeMode) {
+                if (!par1PlayerEntityEntity.isCreative()) {
                     var2.shrink(1);
                     if (var2.isEmpty()) {
-                        par1EntityPlayer.setHeldItem(hand, ItemStack.EMPTY);
+                        par1PlayerEntityEntity.setItemInHand(hand, ItemStack.EMPTY);
                     }
                 }
-                return true;
+                return ActionResultType.SUCCESS;
             }
-            if (this.isTamed() && var2 != null && var2.getItem() == Items.NAME_TAG && par1EntityPlayer.getDistanceSq((Entity)this) < 25.0 && this.isOwner((EntityLivingBase)par1EntityPlayer)) {
-                this.setCustomNameTag(var2.getDisplayName());
-                if (!par1EntityPlayer.capabilities.isCreativeMode) {
+            if (this.isTame() && var2 != null && var2.getItem() == Items.NAME_TAG && par1PlayerEntityEntity.distanceToSqr((Entity)this) < 25.0 && this.isOwnedBy((LivingEntity)par1PlayerEntityEntity)) {
+                this.setCustomName(var2.getHoverName());
+                if (!par1PlayerEntityEntity.isCreative()) {
                     var2.shrink(1);
                     if (var2.isEmpty()) {
-                        par1EntityPlayer.setHeldItem(hand, ItemStack.EMPTY);
+                        par1PlayerEntityEntity.setItemInHand(hand, ItemStack.EMPTY);
                     }
                 }
-                return true;
+                return ActionResultType.SUCCESS;
             }
-            if (var2 != null && par1EntityPlayer.getDistanceSq((Entity)this) < 25.0) {
-                if (!this.isSitting()) {
-                    this.setSitting(true);
+            if (var2 != null && par1PlayerEntityEntity.distanceToSqr((Entity)this) < 25.0) {
+                if (!this.isOrderedToSit()) {
+                    this.setOrderedToSit(true);
                     this.setActivity(0);
                 } else {
-                    this.setSitting(false);
+                    this.setOrderedToSit(false);
                     this.setActivity(0);
                 }
-                return true;
+                return ActionResultType.SUCCESS;
             }
         }
-        return super.processInteract(par1EntityPlayer, hand);
+        return super.mobInteract(par1PlayerEntityEntity, hand);
     }
 
     public boolean isWheat(ItemStack par1ItemStack) {
@@ -1530,88 +1540,87 @@ extends EntityTameable {
     }
 
     public int getAttacking() {
-        return this.getDataManager().get(ATTACKING).intValue();
+        return this.entityData.get(ATTACKING).intValue();
     }
 
     public void setAttacking(int par1) {
-        if (this.world != null && this.world.isRemote) {
+        if (this.level != null && this.level.isClientSide) {
             return;
         }
-        this.getDataManager().set(ATTACKING, (byte)par1);
+        this.entityData.set(ATTACKING, (byte)par1);
     }
 
     public int getActivity() {
-        return this.getDataManager().get(STATE2).byteValue();
+        return this.entityData.get(STATE2).byteValue();
     }
 
     public void setActivity(int par1) {
-        if (this.world != null && this.world.isRemote) {
+        if (this.level != null && this.level.isClientSide) {
             return;
         }
-        this.getDataManager().set(STATE2, (byte)par1);
+        this.entityData.set(STATE2, (byte)par1);
     }
 
     public int getDragonFire() {
-        return this.getDataManager().get(INT24).intValue();
+        return this.entityData.get(INT24).intValue();
     }
 
     public void setDragonFire(int par1) {
-        if (this.world.isRemote) {
+        if (this.level.isClientSide) {
             return;
         }
-        this.getDataManager().set(INT24, par1);
+        this.entityData.set(INT24, par1);
     }
 
     public static Entity spawnCreature(World par0World, String par1, double par2, double par4, double par6) {
         Entity var8 = null;
-        var8 = EntityList.createEntityByIDFromName(new net.minecraft.util.ResourceLocation("chaospersists", par1.toLowerCase().replace(" ", "_")), par0World);
+        EntityType<?> entityType = ForgeRegistries.ENTITIES.getValue(new net.minecraft.util.ResourceLocation("chaospersists", par1.toLowerCase().replace(" ", "_")));
+        if (entityType != null) {
+            var8 = entityType.create(par0World);
+        }
         if (var8 != null) {
-            var8.setLocationAndAngles(par2, par4, par6, par0World.rand.nextFloat() * 360.0f, 0.0f);
-            par0World.spawnEntity(var8);
-            ((EntityLiving)var8).playLivingSound();
+            var8.moveTo(par2, par4, par6, par0World.random.nextFloat() * 360.0f, 0.0f);
+            par0World.addFreshEntity(var8);
+                com.astryxion.chaospersists.entity.RockBase.playSpawnAmbientSound((LivingEntity) var8);
         }
         return var8;
     }
 
     public void setDragonType(int par1) {
-        this.getDataManager().set(INT22, par1);
+        this.entityData.set(INT22, par1);
     }
 
     public int getDragonType() {
-        return this.getDataManager().get(INT22).intValue();
+        return this.entityData.get(INT22).intValue();
     }
 
-    public EntityAgeable createChild(EntityAgeable entityageable) {
-        return null;
-    }
-
-    protected boolean canDespawn() {
-        if (this.isNoDespawnRequired()) {
+    protected boolean canDespawn(double distanceToClosestPlayerEntity) {
+        if (this.isPersistenceRequired()) {
             return false;
         }
         if ((this.getPassengers().isEmpty() ? null : this.getPassengers().get(0)) != null) {
             return false;
         }
-        if (this.isTamed()) {
+        if (this.isTame()) {
             return false;
         }
         return true;
     }
 
-    public void writeEntityToNBT(NBTTagCompound par1NBTTagCompound) {
-        super.writeEntityToNBT(par1NBTTagCompound);
-        par1NBTTagCompound.setInteger("DragonAttacking", this.getAttacking());
-        par1NBTTagCompound.setInteger("DragonActivity", this.getActivity());
-        par1NBTTagCompound.setInteger("DragonFire", this.getDragonFire());
-        par1NBTTagCompound.setInteger("DragonType", this.getDragonType());
+    public void addAdditionalSaveData(CompoundNBT par1CompoundNBT) {
+        super.addAdditionalSaveData(par1CompoundNBT);
+        par1CompoundNBT.putInt("DragonAttacking", this.getAttacking());
+        par1CompoundNBT.putInt("DragonActivity", this.getActivity());
+        par1CompoundNBT.putInt("DragonFire", this.getDragonFire());
+        par1CompoundNBT.putInt("DragonType", this.getDragonType());
     }
 
-    public void readEntityFromNBT(NBTTagCompound par1NBTTagCompound) {
-        super.readEntityFromNBT(par1NBTTagCompound);
-        this.setAttacking(par1NBTTagCompound.getInteger("DragonAttacking"));
-        this.setActivity(par1NBTTagCompound.getInteger("DragonActivity"));
-        this.setDragonFire(par1NBTTagCompound.getInteger("DragonFire"));
-        this.dragontype = par1NBTTagCompound.getInteger("DragonType");
+    public void readAdditionalSaveData(CompoundNBT par1CompoundNBT) {
+        super.readAdditionalSaveData(par1CompoundNBT);
+        this.setAttacking(par1CompoundNBT.getInt("DragonAttacking"));
+        this.setActivity(par1CompoundNBT.getInt("DragonActivity"));
+        this.setDragonFire(par1CompoundNBT.getInt("DragonFire"));
+        this.dragontype = par1CompoundNBT.getInt("DragonType");
         this.setDragonType(this.dragontype);
     }
 }

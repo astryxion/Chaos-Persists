@@ -1,6 +1,6 @@
-{
+﻿{
   "parent": "item/generated",
   "textures": {
-    "layer0": "chaospersists:items/cagespiderdriver"
+    "layer0": "chaospersists:item/cagespiderdriver"
   }
 }

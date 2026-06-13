@@ -1,155 +1,137 @@
-/*
- * Decompiled with CFR 0_125.
- * 
- * Could not load the following classes:
- *  net.minecraftforge.fml.relauncher.Side
- *  net.minecraftforge.fml.relauncher.SideOnly
- *  com.astryxion.chaospersists.BlockPizza
- *  com.astryxion.chaospersists.ChaosPersists
- *  net.minecraft.block.Block
- *  net.minecraft.block.material.Material
- *  net.minecraft.client.renderer.texture.IIconRegister
- *  net.minecraft.entity.player.EntityPlayer
- *  net.minecraft.item.Item
- *  net.minecraft.util.math.AxisAlignedBB
- *  net.minecraft.util.FoodStats
- *  net.minecraft.util.IIcon
- *  net.minecraft.world.IBlockAccess
- *  net.minecraft.world.World
- */
 package com.astryxion.chaospersists.block;
 
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 import com.astryxion.chaospersists.core.ChaosPersists;
-import java.util.Random;
-import net.minecraft.block.Block;
-import net.minecraft.block.material.Material;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.FoodStats;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.util.BlockRenderLayer;
-import net.minecraft.util.EnumBlockRenderType;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.world.IBlockAccess;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.Direction;
+import net.minecraft.util.Hand;
+import net.minecraft.util.ActionResultType;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.BlockItemUseContext;
+import net.minecraft.item.ItemStack;
+import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
+import net.minecraft.world.IWorldReader;
+import net.minecraft.block.Block;
+import net.minecraft.block.AbstractBlock;
+import net.minecraft.block.BlockState;
+import net.minecraft.state.StateContainer;
+import net.minecraft.state.IntegerProperty;
+import net.minecraft.block.material.Material;
+import net.minecraft.util.math.BlockRayTraceResult;
+import net.minecraft.util.math.shapes.ISelectionContext;
+import net.minecraft.util.math.shapes.VoxelShapes;
+import net.minecraft.util.math.shapes.VoxelShape;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraft.client.renderer.RenderType;
 
-public class BlockPizza
-extends Block {
-    public static final net.minecraft.block.properties.PropertyInteger SLICES = net.minecraft.block.properties.PropertyInteger.create("slices", 0, 5);
+import java.util.Random;
+
+public class BlockPizza extends Block {
+
+    public static final IntegerProperty SLICES = IntegerProperty.create("slices", 0, 5);
 
     public BlockPizza() {
-        super(Material.CAKE);
-        this.setTickRandomly(true);
-        this.setDefaultState(this.blockState.getBaseState().withProperty(SLICES, 0));
+        super(AbstractBlock.Properties.of(Material.CAKE).randomTicks());
+        this.registerDefaultState(this.stateDefinition.any().setValue(SLICES, 0));
     }
 
-    protected net.minecraft.block.state.BlockStateContainer createBlockState() {
-        return new net.minecraft.block.state.BlockStateContainer(this, SLICES);
+    @Override
+    protected void createBlockStateDefinition(StateContainer.Builder<Block, BlockState> builder) {
+        builder.add(SLICES);
     }
 
-    public net.minecraft.block.state.IBlockState getStateFromMeta(int meta) {
-        return this.getDefaultState().withProperty(SLICES, Math.min(5, meta));
+    public BlockState getStateFromMeta(int meta) {
+        return this.defaultBlockState().setValue(SLICES, Math.min(5, meta));
     }
 
-    public int getMetaFromState(net.minecraft.block.state.IBlockState state) {
+    public int getMetaFromState(BlockState state) {
         return state.getValue(SLICES);
     }
 
-    public AxisAlignedBB getCollisionBoundingBox(net.minecraft.block.state.IBlockState state, net.minecraft.world.IBlockAccess worldIn, net.minecraft.util.math.BlockPos pos) {
-        int l = this.getMetaFromState(state);
+    private static VoxelShape shapeForSlices(int l) {
         float f = 0.0625f;
-        float f1 = (float)(1 + l * 2) / 16.0f;
+        float f1 = (float) (1 + l * 2) / 16.0f;
         float f2 = 0.25f;
-        return new AxisAlignedBB((double)f1, 0.0, (double)f, (double)(1.0f - f), (double)(f2 - f), (double)(1.0f - f)).offset(pos);
-    }
-
-    public boolean renderAsNormalBlock() {
-        return false;
-    }
-
-    @SideOnly(value=Side.CLIENT)
-    public AxisAlignedBB getSelectedBoundingBox(net.minecraft.block.state.IBlockState state, World par1World, net.minecraft.util.math.BlockPos pos) {
-        int l = this.getMetaFromState(state);
-        float f = 0.0625f;
-        float f1 = (float)(1 + l * 2) / 16.0f;
-        float f2 = 0.25f;
-        return new AxisAlignedBB((double)f1, 0.0, (double)f, (double)(1.0f - f), (double)f2, (double)(1.0f - f)).offset(pos);
+        return VoxelShapes.box(f1, 0.0, f, 1.0f - f, f2 - f, 1.0f - f);
     }
 
     @Override
-    public boolean isOpaqueCube(IBlockState state) {
-        return false;
+    public VoxelShape getShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context) {
+        return shapeForSlices(getMetaFromState(state));
     }
 
     @Override
-    public boolean isFullCube(IBlockState state) {
-        return false;
+    public VoxelShape getCollisionShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context) {
+        return shapeForSlices(getMetaFromState(state));
     }
 
     @Override
-    public EnumBlockRenderType getRenderType(IBlockState state) {
-        return EnumBlockRenderType.MODEL;
-    }
-
-    @SideOnly(value=Side.CLIENT)
-    @Override
-    public BlockRenderLayer getRenderLayer() {
-        return BlockRenderLayer.SOLID;
-    }
-
-    @Override
-    public IBlockState getStateForPlacement(World worldIn, net.minecraft.util.math.BlockPos pos, EnumFacing facing,
-                                              float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer) {
-        // Placement is driven by ItemPizza via getStateForPlacement; default to 0 slices.
-        return this.getDefaultState().withProperty(SLICES, 0);
-    }
-
-    public boolean onBlockActivated(World par1World, net.minecraft.util.math.BlockPos pos, net.minecraft.block.state.IBlockState state, EntityPlayer par5EntityPlayer, net.minecraft.util.EnumHand hand, net.minecraft.util.EnumFacing facing, float par7, float par8, float par9) {
-        this.eatPizzaSlice(par1World, pos, par5EntityPlayer);
+    public boolean propagatesSkylightDown(BlockState state, IBlockReader reader, BlockPos pos) {
         return true;
     }
 
-    public void onBlockClicked(World par1World, net.minecraft.util.math.BlockPos pos, EntityPlayer par5EntityPlayer) {
-        this.eatPizzaSlice(par1World, pos, par5EntityPlayer);
+    @Override
+    public boolean useShapeForLightOcclusion(BlockState state) {
+        return false;
     }
 
-    private void eatPizzaSlice(World par1World, net.minecraft.util.math.BlockPos pos, EntityPlayer par5EntityPlayer) {
-        if (par5EntityPlayer.canEat(false)) {
-            par5EntityPlayer.getFoodStats().addStats(4, 0.2f);
-            int l = this.getMetaFromState(par1World.getBlockState(pos)) + 1;
+    @OnlyIn(Dist.CLIENT)
+public RenderType getRenderType(BlockState state) {
+        return RenderType.solid();
+    }
+
+    @Override
+    public BlockState getStateForPlacement(BlockItemUseContext context) {
+        return this.defaultBlockState().setValue(SLICES, 0);
+    }
+
+    @Override
+    public ActionResultType use(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockRayTraceResult hit) {
+        this.eatPizzaSlice(world, pos, player);
+        return ActionResultType.SUCCESS;
+    }
+
+    @Override
+    public void attack(BlockState state, World world, BlockPos pos, PlayerEntity player) {
+        this.eatPizzaSlice(world, pos, player);
+    }
+
+    private void eatPizzaSlice(World world, BlockPos pos, PlayerEntity player) {
+        if (player.canEat(false)) {
+            player.getFoodData().eat(4, 0.2f);
+            int l = getMetaFromState(world.getBlockState(pos)) + 1;
             if (l >= 6) {
-                par1World.setBlockToAir(pos);
+                world.removeBlock(pos, false);
             } else {
-                par1World.setBlockState(pos, this.getStateFromMeta(l), 2);
+                world.setBlock(pos, this.defaultBlockState().setValue(SLICES, Math.min(5, l)), 2);
             }
         }
     }
 
-    public boolean canPlaceBlockAt(World par1World, net.minecraft.util.math.BlockPos pos) {
-        return !super.canPlaceBlockAt(par1World, pos) ? false : this.canBlockStay(par1World, pos.getX(), pos.getY(), pos.getZ());
+    @Override
+    public boolean canSurvive(BlockState state, IWorldReader world, BlockPos pos) {
+        return canBlockStay(world, pos.getX(), pos.getY(), pos.getZ());
     }
 
-    public void onNeighborBlockChange(World par1World, net.minecraft.util.math.BlockPos pos, net.minecraft.block.state.IBlockState state, net.minecraft.block.Block neighborBlock) {
-        if (!this.canBlockStay(par1World, pos.getX(), pos.getY(), pos.getZ())) {
-            par1World.setBlockToAir(pos);
+    @Override
+    public void neighborChanged(BlockState state, World world, BlockPos pos, Block blockIn, BlockPos fromPos, boolean isMoving) {
+        if (!canBlockStay(world, pos.getX(), pos.getY(), pos.getZ())) {
+            world.removeBlock(pos, false);
         }
     }
 
-    public boolean canBlockStay(World par1World, int par2, int par3, int par4) {
-        net.minecraft.block.state.IBlockState below = par1World.getBlockState(new net.minecraft.util.math.BlockPos(par2, par3 - 1, par4));
-        return below.getBlock().isNormalCube(below, par1World, new net.minecraft.util.math.BlockPos(par2, par3 - 1, par4));
+    public boolean canBlockStay(IWorldReader world, int par2, int par3, int par4) {
+        BlockState below = world.getBlockState(new BlockPos(par2, par3 - 1, par4));
+        return below.canOcclude();
     }
 
     public int quantityDropped(Random par1Random) {
         return 0;
     }
 
-    public Item getItemDropped(int par1, Random par2Random, int par3) {
-        return ChaosPersists.MyPizzaItem;
+    public ItemStack getCloneItemStack(IBlockReader world, BlockPos pos, BlockState state) {
+        return new ItemStack(ChaosPersists.MyPizzaItem);
     }
 }
-

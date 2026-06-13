@@ -45,29 +45,27 @@ import com.astryxion.chaospersists.entity.SpiderRobot;
 import com.astryxion.chaospersists.entity.GiantRobot;
 import com.astryxion.chaospersists.entity.AntRobot;
 import com.astryxion.chaospersists.entity.Crab;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraft.block.material.Material;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.Gui;
-import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.renderer.texture.TextureManager;
-import net.minecraft.client.settings.GameSettings;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.math.EntityRayTraceResult;
 import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldProvider;
+import net.minecraft.tags.FluidTags;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
-import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
-import java.io.IOException;
-import org.lwjgl.opengl.GL11;
+import net.minecraft.client.settings.GraphicsFanciness;
 
-public class GirlfriendOverlayGui extends Gui
-{
-  private Minecraft mc;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.matrix.MatrixStack;
+import java.io.IOException;
+
+public class GirlfriendOverlayGui extends AbstractGui {
+  private final Minecraft mc;
   private static final ResourceLocation texture = new ResourceLocation("chaospersists", "textures/entity/girlfriendgui.png");
   private static final ResourceLocation legacyTexture = new ResourceLocation("chaospersists", "textures/girlfriendgui.png");
 
@@ -86,7 +84,7 @@ public class GirlfriendOverlayGui extends Gui
     int v = 0;
     String outstring = null;
     int color = 16725044;
-    FontRenderer fr = this.mc.fontRenderer;
+    FontRenderer fr = this.mc.font;
 
     int barWidth = 182;
 
@@ -95,9 +93,9 @@ public class GirlfriendOverlayGui extends Gui
     float gfHealth = 0.0F;
 
     Entity entity = null;
-    EntityPlayer player = null;
+    PlayerEntity player = null;
 
-    if ((this.mc.gameSettings.hideGUI) || (this.mc.currentScreen != null)) {
+    if ((this.mc.options.hideGui) || (this.mc.screen != null)) {
       return;
     }
 
@@ -108,8 +106,8 @@ public class GirlfriendOverlayGui extends Gui
       return;
     }
 
-    ChaosPersists.current_dimension = player.world.provider.getDimension();
-    if (this.mc.gameSettings.fancyGraphics)
+    ChaosPersists.current_dimension = resolveDimensionId(player.level);
+    if (this.mc.options.graphicsMode != GraphicsFanciness.FAST)
       ChaosPersists.FastGraphicsLeaves = 0;
     else {
       ChaosPersists.FastGraphicsLeaves = 1;
@@ -119,32 +117,32 @@ public class GirlfriendOverlayGui extends Gui
       return;
     }
 
-    entity = this.mc.pointedEntity;
+    entity = this.mc.crosshairPickEntity;
     if (entity == null) {
-      RayTraceResult over = this.mc.objectMouseOver;
-      if (over != null && over.typeOfHit == RayTraceResult.Type.ENTITY) {
-        entity = over.entityHit;
+      RayTraceResult over = this.mc.hitResult;
+      if (over != null && over.getType() == RayTraceResult.Type.ENTITY) {
+        entity = ((EntityRayTraceResult) over).getEntity();
       }
     }
 
     if (entity == null) {
-      entity = ChaosPersists.getPointedAtEntity(this.mc.world, player, 16.0D);
+      entity = ChaosPersists.getPointedAtEntity(this.mc.level, player, 16.0D);
       if (entity == null) return;
-      if (!(entity instanceof EntityLivingBase)) return;
+      if (!(entity instanceof LivingEntity)) return;
     }
 
     if ((entity instanceof Girlfriend)) {
       Girlfriend gf = null;
       gf = (Girlfriend)entity;
 
-      if (!gf.isOwner(player))
+      if (!gf.isOwnedBy(player))
       {
         return;
       }
 
-      if (gf.passenger != 0) return;
+      if (!gf.getPassengers().isEmpty()) return;
 
-      if (gf.hasCustomName()) outstring = gf.getCustomNameTag();
+      if (gf.hasCustomName()) outstring = gf.getCustomName().getString();
       if ((outstring == null) || (outstring.equals(""))) {
         outstring = "Girlfriend";
       }
@@ -156,14 +154,14 @@ public class GirlfriendOverlayGui extends Gui
       Boyfriend gf = null;
       gf = (Boyfriend)entity;
 
-      if (!gf.isOwner(player))
+      if (!gf.isOwnedBy(player))
       {
         return;
       }
 
-      if (gf.passenger != 0) return;
+      if (!gf.getPassengers().isEmpty()) return;
 
-      if (gf.hasCustomName()) outstring = gf.getCustomNameTag();
+      if (gf.hasCustomName()) outstring = gf.getCustomName().getString();
       if ((outstring == null) || (outstring.equals(""))) {
         outstring = "Boyfriend";
       }
@@ -175,12 +173,12 @@ public class GirlfriendOverlayGui extends Gui
       ThePrince gf = null;
       gf = (ThePrince)entity;
 
-      if (!gf.isOwner(player))
+      if (!gf.isOwnedBy(player))
       {
         return;
       }
 
-      if (gf.hasCustomName()) outstring = gf.getCustomNameTag();
+      if (gf.hasCustomName()) outstring = gf.getCustomName().getString();
       if ((outstring == null) || (outstring.equals(""))) {
         outstring = "The Toddler Prince";
       }
@@ -192,12 +190,12 @@ public class GirlfriendOverlayGui extends Gui
       ThePrincess gf = null;
       gf = (ThePrincess)entity;
 
-      if (!gf.isOwner(player))
+      if (!gf.isOwnedBy(player))
       {
         return;
       }
 
-      if (gf.hasCustomName()) outstring = gf.getCustomNameTag();
+      if (gf.hasCustomName()) outstring = gf.getCustomName().getString();
       if ((outstring == null) || (outstring.equals(""))) {
         outstring = "The Toddler Princess";
       }
@@ -209,12 +207,12 @@ public class GirlfriendOverlayGui extends Gui
       ThePrinceTeen gf = null;
       gf = (ThePrinceTeen)entity;
 
-      if (!gf.isOwner(player))
+      if (!gf.isOwnedBy(player))
       {
         return;
       }
 
-      if (gf.hasCustomName()) outstring = gf.getCustomNameTag();
+      if (gf.hasCustomName()) outstring = gf.getCustomName().getString();
       if ((outstring == null) || (outstring.equals(""))) {
         outstring = "The Young Prince";
       }
@@ -227,12 +225,12 @@ public class GirlfriendOverlayGui extends Gui
       ThePrinceAdult gf = null;
       gf = (ThePrinceAdult)entity;
 
-      if (!gf.isOwner(player))
+      if (!gf.isOwnedBy(player))
       {
         return;
       }
 
-      if (gf.hasCustomName()) outstring = gf.getCustomNameTag();
+      if (gf.hasCustomName()) outstring = gf.getCustomName().getString();
       if ((outstring == null) || (outstring.equals(""))) {
         outstring = "The Young Adult Prince";
       }
@@ -245,7 +243,7 @@ public class GirlfriendOverlayGui extends Gui
       Dragon df = null;
       df = (Dragon)entity;
 
-      if (df.hasCustomName()) outstring = df.getCustomNameTag();
+      if (df.hasCustomName()) outstring = df.getCustomName().getString();
       if ((outstring == null) || (outstring.equals(""))) {
         outstring = "Dragon";
       }
@@ -274,7 +272,7 @@ public class GirlfriendOverlayGui extends Gui
 
     if ((entity instanceof Spyro)) {
       Spyro e = (Spyro)entity;
-      if (e.hasCustomName()) outstring = e.getCustomNameTag();
+      if (e.hasCustomName()) outstring = e.getCustomName().getString();
       if ((outstring == null) || (outstring.equals(""))) {
         outstring = "Baby Dragon";
       }
@@ -284,7 +282,7 @@ public class GirlfriendOverlayGui extends Gui
 
     if ((entity instanceof WormLarge)) {
       WormLarge e = (WormLarge)entity;
-      if (!e.noClip) {
+      if (!e.noPhysics) {
         outstring = "Worm";
         gfHealth = e.getHealth() / e.getMaxHealth();
       }
@@ -298,7 +296,7 @@ public class GirlfriendOverlayGui extends Gui
 
     if ((entity instanceof WaterDragon)) {
       WaterDragon e = (WaterDragon)entity;
-      if (e.hasCustomName()) outstring = e.getCustomNameTag();
+      if (e.hasCustomName()) outstring = e.getCustomName().getString();
       if ((outstring == null) || (outstring.equals(""))) {
         outstring = "WaterDragon";
       }
@@ -446,7 +444,7 @@ public class GirlfriendOverlayGui extends Gui
 
     if ((entity instanceof Leon)) {
       Leon e = (Leon)entity;
-      if (e.hasCustomName()) outstring = e.getCustomNameTag();
+      if (e.hasCustomName()) outstring = e.getCustomName().getString();
       if ((outstring == null) || (outstring.equals(""))) {
         outstring = "Leonopteryx";
       }
@@ -501,28 +499,37 @@ public class GirlfriendOverlayGui extends Gui
       return;
     }
 
-    ScaledResolution res = new ScaledResolution(this.mc);
-    int width = res.getScaledWidth();
-    int barWidthFilled = (int)(gfHealth * (barWidth + 1));
+    int width = this.mc.getWindow().getGuiScaledWidth();
+    int barWidthFilled = (int) (gfHealth * (barWidth + 1));
 
     int x = width / 2 - barWidth / 2;
 
     int y = 25;
 
-    if ((player.isInsideOfMaterial(Material.WATER)) || (player.getTotalArmorValue() > 0)) {
+    if (player.isEyeInFluid(FluidTags.WATER) || player.getArmorValue() > 0) {
       y -= 10;
     }
 
-    fr.drawStringWithShadow(outstring, width / 2 - fr.getStringWidth(outstring) / 2, y - 10, color);
+    MatrixStack matrixStack = event.getMatrixStack();
+    fr.drawShadow(matrixStack, outstring, width / 2 - fr.width(outstring) / 2, y - 10, color);
 
-    this.mc.renderEngine.bindTexture(this.resolveGuiTexture());
+    this.mc.getTextureManager().bind(this.resolveGuiTexture());
 
-    GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+    RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+    this.blit(matrixStack, x, y, u, v, barWidth, barHeight);
 
-    drawTexturedModalRect(x, y, u, v, barWidth, barHeight);
+    if (barWidthFilled > 0) {
+      this.blit(matrixStack, x, y, u, v + barHeight, barWidthFilled, barHeight);
+    }
+  }
 
-    if (barWidthFilled > 0)
-      drawTexturedModalRect(x, y, u, v + barHeight, barWidthFilled, barHeight);
+  private static int resolveDimensionId(net.minecraft.world.World level) {
+    for (Integer id : ChaosPersists.getRegisteredChaosDimensionIds()) {
+      if (ChaosPersists.getServerWorldByDimensionId(id) == level) {
+        return id;
+      }
+    }
+    return 0;
   }
 
   private ResourceLocation resolveGuiTexture() {

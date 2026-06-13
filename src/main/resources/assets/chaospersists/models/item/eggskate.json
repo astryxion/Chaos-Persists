@@ -1,6 +1,6 @@
-{
+﻿{
   "parent": "item/generated",
   "textures": {
-    "layer0": "chaospersists:items/eggskate"
+    "layer0": "chaospersists:item/eggskate"
   }
 }

@@ -12,14 +12,15 @@
  */
 package com.astryxion.chaospersists.item;
 
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
-import net.minecraft.creativetab.CreativeTabs;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraft.item.ItemGroup;
 import net.minecraft.item.Item;
 
 public class ItemIrukandjiArrow
 extends Item {
     public ItemIrukandjiArrow(int i) {
-        this.setCreativeTab(CreativeTabs.COMBAT);
-    }}
+        super(new Item.Properties());
+    }
+}
 

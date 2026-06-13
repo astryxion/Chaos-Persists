@@ -1,48 +1,31 @@
-/*
- * Decompiled with CFR 0_125.
- * 
- * Could not load the following classes:
- *  com.astryxion.chaospersists.GoldCow
- *  com.astryxion.chaospersists.RedCow
- *  net.minecraft.entity.EntityAgeable
- *  net.minecraft.entity.item.EntityItem
- *  net.minecraft.entity.passive.EntityCow
- *  net.minecraft.init.Items
- *  net.minecraft.item.Item
- *  net.minecraft.world.World
- */
 package com.astryxion.chaospersists.entity;
 
-import com.astryxion.chaospersists.entity.RedCow;
-import java.util.Random;
-import net.minecraft.entity.EntityAgeable;
-import net.minecraft.entity.item.EntityItem;
-import net.minecraft.entity.passive.EntityCow;
-import net.minecraft.init.Items;
-import net.minecraft.item.Item;
+import net.minecraft.entity.AgeableEntity;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.passive.CowEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.util.DamageSource;
 import net.minecraft.world.World;
+import net.minecraft.world.server.ServerWorld;
 
-public class GoldCow
-extends RedCow {
-    public GoldCow(World world) {
-        super(world);
+public class GoldCow extends RedCow {
+    public GoldCow(EntityType<? extends GoldCow> type, World world) {
+        super(type, world);
     }
 
-    protected void dropFewItems(boolean par1, int par2) {
-        int var3 = this.rand.nextInt(3) + this.rand.nextInt(1 + par2);
+    @Override
+    protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+        int var3 = this.random.nextInt(3) + this.random.nextInt(1 + looting);
         for (int var4 = 0; var4 < var3; ++var4) {
-            this.dropItem(Items.APPLE, 1);
+            this.spawnAtLocation(new ItemStack(Items.APPLE));
         }
-        this.dropItem(Items.GOLDEN_APPLE, 1);
-        super.dropFewItems(par1, par2);
+        this.spawnAtLocation(new ItemStack(Items.GOLDEN_APPLE));
+        super.dropCustomDeathLoot(source, looting, recentlyHit);
     }
 
-    public EntityCow createChild(EntityAgeable entityageable) {
-        return this.spawnBabyAnimal(entityageable);
-    }
-
-    public GoldCow spawnBabyAnimal(EntityAgeable par1EntityAgeable) {
-        return new GoldCow(this.world);
+    @Override
+    public CowEntity getBreedOffspring(ServerWorld level, AgeableEntity mate) {
+        return (GoldCow) this.getType().create(level);
     }
 }
-

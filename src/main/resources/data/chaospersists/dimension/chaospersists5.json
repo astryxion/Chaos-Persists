@@ -1,0 +1,12 @@
+{
+  "type": "chaospersists:chaospersists_type",
+  "generator": {
+    "type": "chaospersists:crystal",
+    "seed": 0,
+    "generate_features": true,
+    "biome_source": {
+      "type": "minecraft:fixed",
+      "biome": "chaospersists:crystal_dimension"
+    }
+  }
+}

@@ -1,109 +1,65 @@
-/*
- * Decompiled with CFR 0_125.
- * 
- * Could not load the following classes:
- *  com.astryxion.chaospersists.CrystalCow
- *  com.astryxion.chaospersists.EnchantedCow
- *  com.astryxion.chaospersists.GoldCow
- *  com.astryxion.chaospersists.RedCow
- *  com.astryxion.chaospersists.RenderEnchantedCow
- *  net.minecraft.client.model.ModelBase
- *  net.minecraft.client.model.ModelCow
- *  net.minecraft.client.renderer.entity.RenderLiving
- *  net.minecraft.entity.Entity
- *  net.minecraft.entity.EntityLiving
- *  net.minecraft.entity.EntityLivingBase
- *  net.minecraft.util.ResourceLocation
- *  org.lwjgl.opengl.GL11
- */
 package com.astryxion.chaospersists.render;
 
 import com.astryxion.chaospersists.entity.CrystalCow;
 import com.astryxion.chaospersists.entity.EnchantedCow;
 import com.astryxion.chaospersists.entity.GoldCow;
 import com.astryxion.chaospersists.entity.RedCow;
-import net.minecraft.client.model.ModelBase;
-import net.minecraft.client.model.ModelCow;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.GlStateManager.DestFactor;
-import net.minecraft.client.renderer.GlStateManager.SourceFactor;
-import net.minecraft.client.renderer.entity.RenderLiving;
-import net.minecraft.client.renderer.entity.RenderManager;
+import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.renderer.entity.model.CowModel;
+import net.minecraft.entity.passive.CowEntity;
+import net.minecraft.client.renderer.IRenderTypeBuffer;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.entity.EntityRendererManager;
+import net.minecraft.client.renderer.entity.LivingRenderer;
 import net.minecraft.client.renderer.entity.layers.LayerRenderer;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.vector.Vector3f;
 import org.lwjgl.opengl.GL11;
 
-public class RenderEnchantedCow
-extends RenderLiving<RedCow> {
-    protected ModelCow model;
+public class RenderEnchantedCow extends LivingRenderer<RedCow, CowModel<RedCow>> {
     private static final ResourceLocation texture3 = new ResourceLocation("chaospersists", "textures/entity/crystal_cow.png");
     private static final ResourceLocation texture1 = new ResourceLocation("chaospersists", "textures/entity/red_cow.png");
     private static final ResourceLocation texture2 = new ResourceLocation("chaospersists", "textures/entity/gold_cow.png");
-    /** Vanilla enchantment glint texture - used for Enchanted Cow overlay (same as 1.7.10 shouldRenderPass return 31). */
     private static final ResourceLocation ENCHANTED_GLINT = new ResourceLocation("minecraft", "textures/misc/enchanted_item_glint.png");
 
-    public RenderEnchantedCow(RenderManager manager, ModelCow par1ModelBase, float par2) {
-        super(manager, (ModelBase)par1ModelBase, par2);
-        this.model = (ModelCow)this.mainModel;
-        this.addLayer(new LayerRenderer<RedCow>() {
+    public RenderEnchantedCow(EntityRendererManager manager, CowModel<RedCow> par1Model, float par2) {
+        super(manager, par1Model, par2);
+        this.addLayer(new LayerRenderer<RedCow, CowModel<RedCow>>(this) {
             @Override
-            public void doRenderLayer(RedCow entity, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch, float scale) {
+            public void render(MatrixStack matrixStack, IRenderTypeBuffer buffer, int packedLight, RedCow entity, float animationPosition, float animationSpeedOld, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch) {
                 if (!(entity instanceof EnchantedCow)) {
                     return;
                 }
-                // Match vanilla item enchant glint: GlStateManager + depth equality so the glint only sits on
-                // surfaces already drawn for this entity (avoids solid purple "shell"). Always restore state so
-                // other mobs in the same frame are not tinted by leaked blend/color (raw GL11 breaks 1.12 tracking).
-                RenderEnchantedCow.this.bindTexture(RenderEnchantedCow.ENCHANTED_GLINT);
+                RenderEnchantedCow.this.entityRenderDispatcher.textureManager.bind(RenderEnchantedCow.ENCHANTED_GLINT);
 
-                GlStateManager.enableBlend();
-                GlStateManager.depthMask(false);
-                GlStateManager.depthFunc(GL11.GL_EQUAL);
-                GlStateManager.disableLighting();
-                GlStateManager.tryBlendFuncSeparate(
-                        SourceFactor.SRC_COLOR, DestFactor.ONE,
-                        SourceFactor.ONE, DestFactor.ZERO);
-                GlStateManager.color(0.38F, 0.19F, 0.608F, 1.0F);
+                RenderSystem.enableBlend();
+                RenderSystem.depthMask(false);
+                RenderSystem.depthFunc(GL11.GL_EQUAL);
+                com.mojang.blaze3d.platform.GlStateManager._disableLighting();
+                RenderSystem.blendFunc(GL11.GL_SRC_COLOR, GL11.GL_ONE);
+                RenderSystem.color4f(0.38F, 0.19F, 0.608F, 1.0F);
 
-                GlStateManager.matrixMode(GL11.GL_TEXTURE);
-                GlStateManager.pushMatrix();
-                float scroll = (entity.ticksExisted + partialTicks) * 0.01F;
-                GlStateManager.translate(scroll, scroll * 0.5F, 0.0F);
-                GlStateManager.matrixMode(GL11.GL_MODELVIEW);
+                matrixStack.pushPose();
+                float scroll = (entity.tickCount + partialTicks) * 0.01F;
+                matrixStack.translate(scroll, scroll * 0.5F, 0.0F);
 
-                RenderEnchantedCow.this.getMainModel().render(entity, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scale);
+                RenderEnchantedCow.this.getModel().renderToBuffer(matrixStack, buffer.getBuffer(RenderType.entityCutoutNoCull(RenderEnchantedCow.ENCHANTED_GLINT)), packedLight, OverlayTexture.NO_OVERLAY, 0.38F, 0.19F, 0.608F, 1.0F);
+                matrixStack.popPose();
 
-                GlStateManager.matrixMode(GL11.GL_TEXTURE);
-                GlStateManager.popMatrix();
-                GlStateManager.matrixMode(GL11.GL_MODELVIEW);
-
-                GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-                GlStateManager.tryBlendFuncSeparate(
-                        SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA,
-                        SourceFactor.ONE, DestFactor.ZERO);
-                GlStateManager.enableLighting();
-                GlStateManager.depthMask(true);
-                GlStateManager.depthFunc(GL11.GL_LEQUAL);
-                GlStateManager.disableBlend();
-            }
-            @Override
-            public boolean shouldCombineTextures() {
-                return false;
+                RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+                RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+                com.mojang.blaze3d.platform.GlStateManager._enableLighting();
+                RenderSystem.depthMask(true);
+                RenderSystem.depthFunc(GL11.GL_LEQUAL);
+                RenderSystem.disableBlend();
             }
         });
     }
 
     @Override
-    public void doRender(RedCow entity, double x, double y, double z, float entityYaw, float partialTicks) {
-        this.renderEnchantedCow(entity, x, y, z, entityYaw, partialTicks);
-    }
-
-    public void renderEnchantedCow(RedCow entity, double x, double y, double z, float entityYaw, float partialTicks) {
-        super.doRender(entity, x, y, z, entityYaw, partialTicks);
-    }
-
-    @Override
-    protected ResourceLocation getEntityTexture(RedCow entity) {
+    public ResourceLocation getTextureLocation(RedCow entity) {
         if (entity instanceof EnchantedCow) {
             return texture2;
         }
@@ -116,4 +72,3 @@ extends RenderLiving<RedCow> {
         return texture1;
     }
 }
-

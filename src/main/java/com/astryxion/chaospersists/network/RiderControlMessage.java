@@ -1,27 +1,19 @@
-/*
- * Decompiled with CFR 0_125.
- * 
- * Could not load the following classes:
- *  net.minecraftforge.fml.common.network.simpleimpl.IMessage
- *  com.astryxion.chaospersists.RiderControlMessage
- *  io.netty.buffer.ByteBuf
- */
 package com.astryxion.chaospersists.network;
 
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
-import io.netty.buffer.ByteBuf;
+import net.minecraft.network.PacketBuffer;
 
-public class RiderControlMessage
-implements IMessage {
+public class RiderControlMessage {
     public int keystate = 0;
     private int previous;
 
-    public void fromBytes(ByteBuf buf) {
-        this.fromInteger((int)buf.readUnsignedByte());
+    public static void encode(RiderControlMessage message, PacketBuffer buf) {
+        buf.writeByte(message.toInteger());
     }
 
-    public void toBytes(ByteBuf buf) {
-        buf.writeByte(this.toInteger());
+    public static RiderControlMessage decode(PacketBuffer buf) {
+        RiderControlMessage message = new RiderControlMessage();
+        message.fromInteger(buf.readUnsignedByte());
+        return message;
     }
 
     public void fromInteger(int value) {
@@ -39,4 +31,3 @@ implements IMessage {
         return changed;
     }
 }
-

@@ -1,56 +1,48 @@
-/*
- * Decompiled with CFR 0_125.
- * 
- * Could not load the following classes:
- *  net.minecraftforge.fml.relauncher.Side
- *  net.minecraftforge.fml.relauncher.SideOnly
- *  com.astryxion.chaospersists.BlockRice
- *  com.astryxion.chaospersists.ChaosPersists
- *  net.minecraft.block.BlockCrops
- *  net.minecraft.client.renderer.texture.IIconRegister
- *  net.minecraft.item.Item
- *  net.minecraft.util.IIcon
- */
 package com.astryxion.chaospersists.block;
 
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 import com.astryxion.chaospersists.core.ChaosPersists;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+
+import java.util.Collections;
+import java.util.List;
 import java.util.Random;
-import net.minecraft.block.BlockCrops;
-import net.minecraft.block.state.IBlockState;
+
+import net.minecraft.block.CropsBlock;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.AbstractBlock;
+import net.minecraft.block.Blocks;
 import net.minecraft.item.Item;
-import net.minecraft.util.BlockRenderLayer;
-import net.minecraft.util.EnumBlockRenderType;
+import net.minecraft.item.ItemStack;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.loot.LootContext;
+import net.minecraft.loot.LootParameterSets;
+import net.minecraft.loot.LootParameters;
 
-public class BlockRice
-extends BlockCrops {
-    public BlockRice() { this(0); }
+public class BlockRice extends CropsBlock {
+
+    public BlockRice() {
+        this(0);
+    }
+
     public BlockRice(int par1) {
+        super(AbstractBlock.Properties.copy(Blocks.WHEAT).noCollission().randomTicks());
+    }
+
+    @OnlyIn(Dist.CLIENT)
+public RenderType getRenderType(BlockState state) {
+        return RenderType.cutout();
     }
 
     @Override
-    public EnumBlockRenderType getRenderType(IBlockState state) {
-        return EnumBlockRenderType.MODEL;
+    protected Item getBaseSeedId() {
+        return ChaosPersists.MyRice;
     }
 
-    @SideOnly(Side.CLIENT)
     @Override
-    public BlockRenderLayer getRenderLayer() {
-        return BlockRenderLayer.CUTOUT;
+    public List<ItemStack> getDrops(BlockState state, LootContext.Builder builder) {
+        LootContext ctx = builder.withParameter(LootParameters.BLOCK_STATE, state).create(LootParameterSets.BLOCK);
+        Random rand = ctx.getRandom();
+        return Collections.singletonList(new ItemStack(ChaosPersists.MyRice, 2 + rand.nextInt(4)));
     }
-
-    public int quantityDropped(Random par1Random) {
-        return 2 + par1Random.nextInt(4);
-    }
-
-    protected Item func_149866_i() {
-        return ChaosPersists.MyRice;
-    }
-
-    protected Item func_149865_P() {
-        return ChaosPersists.MyRice;
-    }
-
 }
-

@@ -1,38 +1,34 @@
-/*
- * Decompiled with CFR 0_125.
- * 
- * Could not load the following classes:
- *  com.astryxion.chaospersists.Cockateil
- *  com.astryxion.chaospersists.RubyBird
- *  net.minecraft.world.World
- */
 package com.astryxion.chaospersists.entity;
 
-import com.astryxion.chaospersists.entity.Cockateil;
+import com.astryxion.chaospersists.core.ChaosSounds;
+import net.minecraft.util.SoundEvent;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.SpawnReason;
 import net.minecraft.world.World;
+import net.minecraft.world.IWorldReader;
 
-public class RubyBird
-extends Cockateil {
-    public RubyBird(World par1World) {
-        super(par1World);
+public class RubyBird extends Cockateil {
+    public RubyBird(EntityType<? extends RubyBird> type, World par1World) {
+        super(type, par1World);
     }
 
-    protected void entityInit() {
-        super.entityInit();
+    @Override
+    protected void defineSynchedData() {
+        super.defineSynchedData();
         this.birdtype = 5;
         this.setBirdType(this.birdtype);
         this.setFlyUp();
     }
 
-    protected net.minecraft.util.SoundEvent getAmbientSound() {
-        if (this.world.isDaytime() && !this.world.isRaining()) {
-            return com.astryxion.chaospersists.core.ChaosSounds.RUBYBIRD;
+    @Override
+    protected SoundEvent getAmbientSound() {
+        if (this.level.isDay() && !this.level.isRaining()) {
+            return ChaosSounds.RUBYBIRD;
         }
         return null;
     }
 
-    public boolean getCanSpawnHere() {
+    public boolean checkSpawnRules(IWorldReader world, SpawnReason reason) {
         return true;
     }
 }
-

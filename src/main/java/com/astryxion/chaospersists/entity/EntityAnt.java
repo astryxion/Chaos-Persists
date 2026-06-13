@@ -1,77 +1,30 @@
-/*
- * Decompiled with CFR 0_125.
- * 
- * Could not load the following classes:
- *  com.astryxion.chaospersists.EntityAnt
- *  com.astryxion.chaospersists.EntityRainbowAnt
- *  com.astryxion.chaospersists.EntityRedAnt
- *  com.astryxion.chaospersists.EntityUnstableAnt
- *  com.astryxion.chaospersists.MyEntityAIWanderALot
- *  com.astryxion.chaospersists.ChaosPersists
- *  com.astryxion.chaospersists.ChaosTeleporter
- *  com.astryxion.chaospersists.Termite
- *  net.minecraft.entity.EntityAgeable
- *  net.minecraft.entity.EntityCreature
- *  net.minecraft.entity.EntityLivingBase
- *  net.minecraft.entity.SharedMonsterAttributes
- *  net.minecraft.entity.ai.EntityAIBase
- *  net.minecraft.entity.ai.EntityAIPanic
- *  net.minecraft.entity.ai.EntityAITasks
- *  net.minecraft.entity.ai.attributes.BaseAttributeMap
- *  net.minecraft.entity.ai.attributes.IAttribute
- *  net.minecraft.entity.ai.attributes.IAttributeInstance
- *  net.minecraft.entity.passive.EntityAnimal
- *  net.minecraft.entity.player.EntityPlayer
- *  net.minecraft.entity.player.EntityPlayerMP
- *  net.minecraft.entity.player.InventoryPlayer
- *  net.minecraft.item.ItemStack
- *  net.minecraft.pathfinding.PathNavigate
- *  net.minecraft.server.MinecraftServer
- *  net.minecraft.server.management.PlayerList
- *  net.minecraft.util.math.AxisAlignedBB
- *  net.minecraft.util.ResourceLocation
- *  net.minecraft.world.Teleporter
- *  net.minecraft.world.World
- *  net.minecraft.world.WorldServer
- */
 package com.astryxion.chaospersists.entity;
+import net.minecraft.util.DamageSource;
+import net.minecraft.entity.MobEntity;
 
-import com.astryxion.chaospersists.entity.EntityRainbowAnt;
-import com.astryxion.chaospersists.entity.EntityRedAnt;
-import com.astryxion.chaospersists.entity.EntityUnstableAnt;
-import com.astryxion.chaospersists.util.MyEntityAIWanderALot;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.core.ChaosTeleporter;
-import com.astryxion.chaospersists.entity.Termite;
+import com.astryxion.chaospersists.util.MyEntityAIWanderALot;
 import java.util.List;
-import java.util.Random;
-import net.minecraft.entity.EntityAgeable;
-import net.minecraft.entity.EntityCreature;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.ai.EntityAIBase;
-import net.minecraft.entity.ai.EntityAIPanic;
-import net.minecraft.entity.ai.EntityAITasks;
-import net.minecraft.entity.ai.attributes.AbstractAttributeMap;
-import net.minecraft.entity.ai.attributes.IAttribute;
-import net.minecraft.entity.ai.attributes.IAttributeInstance;
-import net.minecraft.entity.passive.EntityAnimal;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.item.ItemStack;
-import net.minecraft.pathfinding.PathNavigate;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.management.PlayerList;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.Teleporter;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.util.Hand;
+import net.minecraft.entity.AgeableEntity;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.ai.attributes.AttributeModifierMap;
+import net.minecraft.entity.ai.attributes.Attributes;
+import net.minecraft.entity.ai.goal.Goal;
+import net.minecraft.entity.ai.goal.PanicGoal;
+import net.minecraft.entity.passive.AnimalEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
+import net.minecraft.world.server.ServerWorld;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraftforge.common.util.ITeleporter;
 
-public class EntityAnt
-extends EntityAnimal {
+public class EntityAnt extends AnimalEntity {
     public double moveSpeed = 0.15000000596046448;
     private static final ResourceLocation texture1 = new ResourceLocation("chaospersists", "textures/entity/ant.png");
     private static final ResourceLocation texture2 = new ResourceLocation("chaospersists", "textures/entity/red_ant.png");
@@ -79,20 +32,18 @@ extends EntityAnimal {
     private static final ResourceLocation texture4 = new ResourceLocation("chaospersists", "textures/entity/unstableant.png");
     private static final ResourceLocation texture5 = new ResourceLocation("chaospersists", "textures/entity/termite.png");
 
-    public EntityAnt(World par1World) {
-        super(par1World);
-        this.setSize(0.1f, 0.1f);
-        this.experienceValue = 0;
-                this.tasks.addTask(0, (EntityAIBase)new EntityAIPanic((EntityCreature)this, 1.4));
-        this.tasks.addTask(1, (EntityAIBase)new MyEntityAIWanderALot((EntityCreature)this, 9, 1.0));
+    public EntityAnt(EntityType<? extends EntityAnt> type, World par1World) {
+        super(type, par1World);
+        this.goalSelector.addGoal(0, new PanicGoal(this, 1.4));
+        this.goalSelector.addGoal(1, new MyEntityAIWanderALot(this, 9, 1.0));
     }
 
-    protected void applyEntityAttributes() {
-        super.applyEntityAttributes();
-        this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue((double)this.mygetMaxHealth());
-        this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(this.moveSpeed);
-        this.getAttributeMap().registerAttribute(SharedMonsterAttributes.ATTACK_DAMAGE);
-        this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(0.0);
+    public static AttributeModifierMap createAttributes() {
+        return MobEntity.createMobAttributes()
+                .add(Attributes.MAX_HEALTH, 1.0)
+                .add(Attributes.MOVEMENT_SPEED, 0.15000000596046448)
+                .add(Attributes.ATTACK_DAMAGE, 0.0)
+                .build();
     }
 
     public ResourceLocation getTexture(EntityAnt a) {
@@ -110,49 +61,56 @@ extends EntityAnimal {
         }
         return texture1;
     }
-
-    protected boolean canDespawn() {
-        if (this.isNoDespawnRequired()) {
+    protected boolean canDespawn(double distanceToClosestPlayerEntity) {
+        if (this.isPersistenceRequired()) {
             return false;
         }
         return true;
     }
 
-    public void onUpdate() {
-        this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(this.moveSpeed);
-        super.onUpdate();
-    }
-
-    /** Called on right-click in 1.12.2; delegates to interact() so teleport runs. */
     @Override
-    public boolean processInteract(EntityPlayer player, EnumHand hand) {
-        if (player != null && (player.getHeldItem(hand) == null || player.getHeldItem(hand).isEmpty())) {
-            return this.interact(player);
-        }
-        return super.processInteract(player, hand);
+    public void tick() {
+        this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(this.moveSpeed);
+        super.tick();
     }
 
-    public boolean interact(EntityPlayer par1EntityPlayer) {
-        if (par1EntityPlayer == null) {
+    @Override
+    public net.minecraft.util.ActionResultType mobInteract(PlayerEntity player, Hand hand) {
+        if (player != null && (player.getItemInHand(hand) == null || player.getItemInHand(hand).isEmpty())) {
+            return this.interact(player) ? net.minecraft.util.ActionResultType.SUCCESS : net.minecraft.util.ActionResultType.PASS;
+        }
+        return super.mobInteract(player, hand);
+    }
+
+    public boolean interact(PlayerEntity par1PlayerEntityEntity) {
+        if (par1PlayerEntityEntity == null) {
             return false;
         }
-        if (!(par1EntityPlayer instanceof EntityPlayerMP)) {
+        if (!(par1PlayerEntityEntity instanceof ServerPlayerEntity)) {
             return false;
         }
-        ItemStack var2 = par1EntityPlayer.inventory.getCurrentItem();
+        ItemStack var2 = par1PlayerEntityEntity.inventory.getSelected();
         if (var2 != null && var2.getCount() <= 0) {
-            par1EntityPlayer.inventory.setInventorySlotContents(par1EntityPlayer.inventory.currentItem, ItemStack.EMPTY);
+            par1PlayerEntityEntity.inventory.setItem(par1PlayerEntityEntity.inventory.selected, ItemStack.EMPTY);
             var2 = null;
         }
         if (var2 != null) {
             return false;
         }
-        if (par1EntityPlayer.dimension != ChaosPersists.getDimension()) {
-            net.minecraft.server.MinecraftServer server = this.world.getMinecraftServer();
-            if (server != null) server.getPlayerList().transferPlayerToDimension((EntityPlayerMP)par1EntityPlayer, ChaosPersists.getDimension(), (Teleporter)new ChaosTeleporter(server.getWorld(ChaosPersists.getDimension()), ChaosPersists.getDimension(), this.world));
+        ServerPlayerEntity serverPlayerEntity = (ServerPlayerEntity) par1PlayerEntityEntity;
+        MinecraftServer server = this.level.getServer();
+        if (server == null) {
+            return true;
+        }
+        ServerWorld targetWorld = ChaosPersists.getServerWorldByDimensionId(ChaosPersists.getDimension());
+        ServerWorld overworld = server.getLevel(World.OVERWORLD);
+        if (targetWorld == null || overworld == null) {
+            return false;
+        }
+        if (serverPlayerEntity.getLevel() != targetWorld) {
+            serverPlayerEntity.changeDimension(targetWorld, (ITeleporter) new ChaosTeleporter(targetWorld, ChaosPersists.getDimension(), this.level));
         } else {
-            net.minecraft.server.MinecraftServer server = this.world.getMinecraftServer();
-            if (server != null) server.getPlayerList().transferPlayerToDimension((EntityPlayerMP)par1EntityPlayer, 0, (Teleporter)new ChaosTeleporter(server.getWorld(0), 0, this.world));
+            serverPlayerEntity.changeDimension(overworld, (ITeleporter) new ChaosTeleporter(overworld, 0, this.level));
         }
         return true;
     }
@@ -165,38 +123,44 @@ extends EntityAnimal {
         return 1;
     }
 
+    @Override
     protected net.minecraft.util.SoundEvent getAmbientSound() {
         return null;
     }
 
+    @Override
     protected net.minecraft.util.SoundEvent getHurtSound(net.minecraft.util.DamageSource damageSource) {
         return null;
     }
 
+    @Override
     protected net.minecraft.util.SoundEvent getDeathSound() {
         return null;
     }
 
+    @Override
     protected float getSoundVolume() {
         return 0.0f;
     }
 
-    protected void playStepSound(int par1, int par2, int par3, int par4) {
+    @Override
+    protected void playStepSound(net.minecraft.util.math.BlockPos pos, net.minecraft.block.BlockState state) {
     }
 
-    protected void dropFewItems(boolean par1, int par2) {
+    @Override
+    protected void dropCustomDeathLoot(net.minecraft.util.DamageSource source, int looting, boolean recentlyHit) {
     }
 
     protected boolean canTriggerWalking() {
         return true;
     }
 
-    public EntityAgeable createChild(EntityAgeable var1) {
+    public AgeableEntity getBreedOffspring(net.minecraft.world.server.ServerWorld level, AgeableEntity mate) {
         return null;
     }
 
-    public boolean getCanSpawnHere() {
-        if (this.posY < 50.0) {
+    public boolean checkSpawnRules(net.minecraft.world.IWorldReader world, net.minecraft.entity.SpawnReason reason) {
+        if (this.getY() < 50.0) {
             return false;
         }
         if (this.findBuddies() > 4) {
@@ -206,15 +170,15 @@ extends EntityAnimal {
     }
 
     private int findBuddies() {
-        List var5 = this.world.getEntitiesWithinAABB(EntityAnt.class, this.getEntityBoundingBox().expand(20.0, 10.0, 20.0));
+        List<EntityAnt> var5 = this.level.getEntitiesOfClass(EntityAnt.class, this.getBoundingBox().inflate(20.0, 10.0, 20.0));
         return var5.size();
     }
 
-    public void updateAITasks() {
-        if (this.world.rand.nextInt(200) == 1) {
-            this.setRevengeTarget(null);
+    @Override
+    protected void customServerAiStep() {
+        if (this.level.random.nextInt(200) == 1) {
+            this.setLastHurtByMob(null);
         }
-        super.updateAITasks();
+        super.customServerAiStep();
     }
 }
-

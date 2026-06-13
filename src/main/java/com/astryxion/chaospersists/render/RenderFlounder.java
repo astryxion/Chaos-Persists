@@ -5,63 +5,46 @@
  *  com.astryxion.chaospersists.Flounder
  *  com.astryxion.chaospersists.ModelFlounder
  *  com.astryxion.chaospersists.RenderFlounder
- *  net.minecraft.client.model.ModelBase
+ *  net.minecraft.client.renderer.entity.model.Model
  *  net.minecraft.client.renderer.entity.RenderLiving
  *  net.minecraft.entity.Entity
- *  net.minecraft.entity.EntityLiving
- *  net.minecraft.entity.EntityLivingBase
+ *  net.minecraft.entity.LivingEntity
+ *  net.minecraft.entity.LivingEntity
  *  net.minecraft.util.ResourceLocation
  *  org.lwjgl.opengl.GL11
  */
 package com.astryxion.chaospersists.render;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
+import net.minecraft.client.renderer.entity.LivingRenderer;
+import net.minecraft.client.renderer.entity.EntityRendererManager;
 import com.astryxion.chaospersists.entity.Flounder;
 import com.astryxion.chaospersists.model.ModelFlounder;
-import net.minecraft.client.model.ModelBase;
-import net.minecraft.client.renderer.entity.RenderLiving;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.ResourceLocation;
-import org.lwjgl.opengl.GL11;
 
 public class RenderFlounder
-extends RenderLiving {
+extends LivingRenderer<Flounder, ModelFlounder> {
     protected ModelFlounder model;
     private float scale = 1.0f;
     private static final ResourceLocation texture = new ResourceLocation("chaospersists", "textures/entity/floundertexture.png");
 
-    public RenderFlounder(net.minecraft.client.renderer.entity.RenderManager manager, ModelFlounder par1ModelBase, float par2, float par3) {
-        super(manager, (ModelBase)par1ModelBase, par2 * par3);
-        this.model = (ModelFlounder)this.mainModel;
+    public RenderFlounder(EntityRendererManager manager, ModelFlounder par1Model, float par2, float par3) {
+        super(manager, par1Model, par2 * par3);
+        this.model = this.getModel();
         this.scale = par3;
     }
-
-    public void renderFlounder(Flounder par1EntityFlounder, double par2, double par4, double par6, float par8, float par9) {
-        super.doRender((EntityLiving)par1EntityFlounder, par2, par4, par6, par8, par9);
-    }
-
-    public void doRender(EntityLiving par1EntityLiving, double par2, double par4, double par6, float par8, float par9) {
-        this.renderFlounder((Flounder)par1EntityLiving, par2, par4, par6, par8, par9);
-    }
-
-    public void doRender(Entity par1Entity, double par2, double par4, double par6, float par8, float par9) {
-        this.renderFlounder((Flounder)par1Entity, par2, par4, par6, par8, par9);
-    }
-
-    protected void preRenderScale(Flounder par1Entity, float par2) {
-        if (par1Entity != null && par1Entity.isChild()) {
-            GL11.glScalef((float)(this.scale / 2.0f), (float)(this.scale / 2.0f), (float)(this.scale / 2.0f));
-            return;
+@Override
+    protected void scale(Flounder entity, MatrixStack matrixStack, float partialTick) {
+        float s = this.scale;
+        if (entity != null && entity.isBaby()) {
+            s = this.scale / 2.0f;
         }
-        GL11.glScalef((float)this.scale, (float)this.scale, (float)this.scale);
+        matrixStack.scale(s, s, s);
     }
 
-    protected void preRenderCallback(EntityLivingBase par1EntityLiving, float par2) {
-        this.preRenderScale((Flounder)par1EntityLiving, par2);
-    }
 
-    protected ResourceLocation getEntityTexture(Entity entity) {
+    @Override
+    public ResourceLocation getTextureLocation(Flounder entity) {
         return texture;
     }
 }

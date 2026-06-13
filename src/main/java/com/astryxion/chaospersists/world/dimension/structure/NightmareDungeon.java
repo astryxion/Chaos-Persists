@@ -6,14 +6,14 @@
  *  com.astryxion.chaospersists.NightmareDungeon
  *  com.astryxion.chaospersists.ChaosPersists
  *  net.minecraft.block.Block
- *  net.minecraft.block.BlockChest
- *  net.minecraft.init.Blocks
+ *  net.minecraft.block.ChestBlock
+ *  net.minecraft.block.Blocks
  *  net.minecraft.inventory.IInventory
  *  net.minecraft.item.Item
  *  net.minecraft.tileentity.MobSpawnerBaseLogic
  *  net.minecraft.tileentity.TileEntity
- *  net.minecraft.tileentity.TileEntityChest
- *  net.minecraft.tileentity.TileEntityMobSpawner
+ *  net.minecraft.tileentity.ChestTileEntity
+ *  net.minecraft.tileentity.MobSpawnerTileEntity
  *  net.minecraft.util.WeightedRandomChestContent
  *  net.minecraft.world.World
  */
@@ -25,21 +25,20 @@ import com.astryxion.chaospersists.util.WeightedRandomChestContent;
 import java.util.Random;
 import net.minecraft.block.Block;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.block.BlockChest;
-import net.minecraft.init.Blocks;
+import net.minecraft.block.ChestBlock;
+import net.minecraft.block.Blocks;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.Item;
-import net.minecraft.tileentity.MobSpawnerBaseLogic;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityChest;
-import net.minecraft.tileentity.TileEntityMobSpawner;
+import net.minecraft.tileentity.ChestTileEntity;
+import net.minecraft.tileentity.MobSpawnerTileEntity;
 import net.minecraft.world.World;
 
 public class NightmareDungeon {
     private final WeightedRandomChestContent[] chestContentsList = new WeightedRandomChestContent[]{new WeightedRandomChestContent(ChaosPersists.CageEmpty, 0, 3, 10, 20), new WeightedRandomChestContent((Item)ChaosPersists.ExperienceBody, 0, 1, 1, 25), new WeightedRandomChestContent((Item)ChaosPersists.ExperienceLegs, 0, 1, 1, 25), new WeightedRandomChestContent((Item)ChaosPersists.ExperienceHelmet, 0, 1, 1, 25), new WeightedRandomChestContent((Item)ChaosPersists.ExperienceBoots, 0, 1, 1, 25), new WeightedRandomChestContent(ChaosPersists.MyExperienceSword, 0, 1, 1, 25), new WeightedRandomChestContent((Item)ChaosPersists.UltimateBody, 0, 1, 1, 25), new WeightedRandomChestContent((Item)ChaosPersists.UltimateLegs, 0, 1, 1, 25), new WeightedRandomChestContent((Item)ChaosPersists.UltimateHelmet, 0, 1, 1, 25), new WeightedRandomChestContent((Item)ChaosPersists.UltimateBoots, 0, 1, 1, 25), new WeightedRandomChestContent(ChaosPersists.MyUltimateSword, 0, 1, 1, 25), new WeightedRandomChestContent(ChaosPersists.MyUltimatePickaxe, 0, 1, 1, 25), new WeightedRandomChestContent(ChaosPersists.MyUltimateShovel, 0, 1, 1, 25), new WeightedRandomChestContent(ChaosPersists.MyUltimateHoe, 0, 1, 1, 25), new WeightedRandomChestContent(ChaosPersists.MyUltimateAxe, 0, 1, 1, 25), new WeightedRandomChestContent(ChaosPersists.MyUltimateBow, 0, 1, 1, 25), new WeightedRandomChestContent(ChaosPersists.MyBertha, 0, 1, 1, 25), new WeightedRandomChestContent(ChaosPersists.MySlice, 0, 1, 1, 25), new WeightedRandomChestContent(ChaosPersists.MyAmethyst, 0, 2, 8, 15), new WeightedRandomChestContent(ChaosPersists.MyBacon, 0, 6, 12, 20), new WeightedRandomChestContent(ChaosPersists.MyButterCandy, 0, 6, 12, 20), new WeightedRandomChestContent(ChaosPersists.MyAmethystPickaxe, 0, 1, 1, 15), new WeightedRandomChestContent(ChaosPersists.MyAmethystShovel, 0, 1, 1, 15), new WeightedRandomChestContent(ChaosPersists.MyAmethystHoe, 0, 1, 1, 15), new WeightedRandomChestContent(ChaosPersists.MyAmethystAxe, 0, 1, 1, 15), new WeightedRandomChestContent(ChaosPersists.MyAmethystSword, 0, 1, 1, 15), new WeightedRandomChestContent((Item)ChaosPersists.AmethystBody, 0, 1, 1, 15), new WeightedRandomChestContent((Item)ChaosPersists.AmethystLegs, 0, 1, 1, 15), new WeightedRandomChestContent((Item)ChaosPersists.AmethystHelmet, 0, 1, 1, 15), new WeightedRandomChestContent((Item)ChaosPersists.AmethystBoots, 0, 1, 1, 15), new WeightedRandomChestContent(ChaosPersists.MyThunderStaff, 0, 1, 1, 5)};
 
     private void setThisBlock(World world, int cposx, int cposy, int cposz) {
-        if (world.rand.nextInt(2) == 1) {
+        if (world.random.nextInt(2) == 1) {
             this.FastSetBlock(world, cposx, cposy, cposz, Blocks.BEDROCK);
         } else {
             this.FastSetBlock(world, cposx, cposy, cposz, Blocks.OBSIDIAN);
@@ -88,27 +87,27 @@ public class NightmareDungeon {
             }
         }
         BlockPos spawnerPos = new net.minecraft.util.math.BlockPos(cposx + width / 2, cposy + 1, cposz + width / 2);
-        world.setBlockState(spawnerPos, Blocks.MOB_SPAWNER.getDefaultState(), 2);
-        TileEntityMobSpawner tileentitymobspawner = (TileEntityMobSpawner)world.getTileEntity(spawnerPos);
+        world.setBlock(spawnerPos, Blocks.SPAWNER.defaultBlockState(), 2);
+        MobSpawnerTileEntity tileentitymobspawner = (MobSpawnerTileEntity)world.getBlockEntity(spawnerPos);
         if (tileentitymobspawner != null) {
-            if (world.rand.nextInt(2) == 1) {
-                tileentitymobspawner.getSpawnerBaseLogic().setEntityId(new net.minecraft.util.ResourceLocation("chaospersists", "emperor_scorpion"));
+            if (world.random.nextInt(2) == 1) {
+                com.astryxion.chaospersists.util.SpawnerFixHelper.setSpawnerEntityId(tileentitymobspawner.getSpawner(), new net.minecraft.util.ResourceLocation("chaospersists", "emperor_scorpion"));
             } else {
-                tileentitymobspawner.getSpawnerBaseLogic().setEntityId(new net.minecraft.util.ResourceLocation("chaospersists", "nightmare"));
+                com.astryxion.chaospersists.util.SpawnerFixHelper.setSpawnerEntityId(tileentitymobspawner.getSpawner(), new net.minecraft.util.ResourceLocation("chaospersists", "nightmare"));
             }
         }
-        TileEntityChest chest = null;
+        ChestTileEntity chest = null;
         BlockPos chestPos1 = new net.minecraft.util.math.BlockPos(cposx + width / 2 + 1, cposy + 1, cposz + width / 2 + 1);
-        world.setBlockState(chestPos1, Blocks.CHEST.getDefaultState(), 2);
-        chest = (TileEntityChest)world.getTileEntity(chestPos1);
+        world.setBlock(chestPos1, Blocks.CHEST.defaultBlockState(), 2);
+        chest = (ChestTileEntity)world.getBlockEntity(chestPos1);
         if (chest != null) {
-            WeightedRandomChestContent.generateChestContents((Random)world.rand, (WeightedRandomChestContent[])this.chestContentsList, (IInventory)chest, (int)(4 + world.rand.nextInt(7)));
+            WeightedRandomChestContent.generateChestContents((Random)world.random, (WeightedRandomChestContent[])this.chestContentsList, (IInventory)chest, (int)(4 + world.random.nextInt(7)));
         }
         BlockPos chestPos2 = new net.minecraft.util.math.BlockPos(cposx + width / 2 - 1, cposy + 1, cposz + width / 2 - 1);
-        world.setBlockState(chestPos2, Blocks.CHEST.getDefaultState(), 2);
-        chest = (TileEntityChest)world.getTileEntity(chestPos2);
+        world.setBlock(chestPos2, Blocks.CHEST.defaultBlockState(), 2);
+        chest = (ChestTileEntity)world.getBlockEntity(chestPos2);
         if (chest != null) {
-            WeightedRandomChestContent.generateChestContents((Random)world.rand, (WeightedRandomChestContent[])this.chestContentsList, (IInventory)chest, (int)(4 + world.rand.nextInt(7)));
+            WeightedRandomChestContent.generateChestContents((Random)world.random, (WeightedRandomChestContent[])this.chestContentsList, (IInventory)chest, (int)(4 + world.random.nextInt(7)));
         }
     }
 

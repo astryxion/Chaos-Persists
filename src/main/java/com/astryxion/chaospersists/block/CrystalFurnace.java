@@ -1,28 +1,34 @@
 package com.astryxion.chaospersists.block;
 
-import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.tileentity.TileEntityCrystalFurnace;
-
+import net.minecraft.block.AbstractBlock;
+import net.minecraft.block.AbstractFurnaceBlock;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
 import net.minecraft.block.ITileEntityProvider;
 import net.minecraft.block.material.Material;
-import net.minecraft.block.properties.PropertyBool;
-import net.minecraft.block.properties.PropertyDirection;
-import net.minecraft.block.state.BlockStateContainer;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.Container;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.inventory.IInventory;
-import net.minecraft.inventory.InventoryHelper;
+import net.minecraft.inventory.container.Container;
+import net.minecraft.inventory.container.INamedContainerProvider;
 import net.minecraft.item.ItemStack;
+import net.minecraft.particles.ParticleTypes;
+import net.minecraft.state.BooleanProperty;
+import net.minecraft.state.StateContainer;
+import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.BlockRenderLayer;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
+import net.minecraft.util.ActionResultType;
+import net.minecraft.util.Direction;
+import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.BlockRayTraceResult;
+import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraft.inventory.InventoryHelper;
 
 import javax.annotation.Nullable;
 import java.util.Random;
@@ -30,92 +36,57 @@ import java.util.Random;
 public class CrystalFurnace extends Block implements ITileEntityProvider {
     private static boolean keepInventory;
 
-    public static final PropertyDirection FACING =
-            PropertyDirection.create("facing", EnumFacing.Plane.HORIZONTAL);
-
-    public static final PropertyBool LIT =
-            PropertyBool.create("lit");
+    public static final net.minecraft.state.DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
+    public static final BooleanProperty LIT = AbstractFurnaceBlock.LIT;
 
     public CrystalFurnace(float hardness, float resistance) {
-        super(Material.ROCK);
-
-        this.setHardness(hardness);
-        this.setResistance(resistance);
-        this.setCreativeTab(CreativeTabs.DECORATIONS);
-        this.setTickRandomly(true);
-
-        this.setDefaultState(this.blockState.getBaseState()
-                .withProperty(FACING, EnumFacing.NORTH)
-                .withProperty(LIT, false));
-    }
-
-    // ================= BLOCKSTATE =================
-
-    @Override
-    protected BlockStateContainer createBlockState() {
-        return new BlockStateContainer(this, FACING, LIT);
+        super(AbstractBlock.Properties.of(Material.STONE)
+                .strength(hardness, resistance)
+                .randomTicks()
+                .lightLevel(state -> state.getValue(LIT) ? 13 : 0)
+                .noOcclusion());
+        this.registerDefaultState(this.stateDefinition.any()
+                .setValue(FACING, Direction.NORTH)
+                .setValue(LIT, false));
     }
 
     @Override
-    public IBlockState getStateFromMeta(int meta) {
-        EnumFacing facing = EnumFacing.byHorizontalIndex(meta & 3);
-        boolean lit = (meta & 4) != 0;
-
-        return this.getDefaultState()
-                .withProperty(FACING, facing)
-                .withProperty(LIT, lit);
+    protected void createBlockStateDefinition(StateContainer.Builder<Block, BlockState> builder) {
+        builder.add(FACING, LIT);
     }
 
     @Override
-    public int getMetaFromState(IBlockState state) {
-        int meta = state.getValue(FACING).getHorizontalIndex();
-        if (state.getValue(LIT)) meta |= 4;
-        return meta;
+    public BlockState getStateForPlacement(net.minecraft.item.BlockItemUseContext context) {
+        return this.defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
     }
 
-    // ================= PLACEMENT =================
-
     @Override
-    public void onBlockPlacedBy(World world, BlockPos pos,
-                                 IBlockState state,
-                                 EntityLivingBase placer,
-                                 ItemStack stack) {
-
-        EnumFacing facing = placer.getHorizontalFacing().getOpposite();
-        world.setBlockState(pos,
-                state.withProperty(FACING, facing), 2);
+    public void setPlacedBy(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
+        if (placer != null) {
+            world.setBlock(pos, state.setValue(FACING, placer.getDirection().getOpposite()), 2);
+        }
     }
 
-    // ================= GUI =================
-
     @Override
-    public boolean onBlockActivated(World world, BlockPos pos,
-                                    IBlockState state,
-                                    EntityPlayer player,
-                                    EnumHand hand,
-                                    EnumFacing facing,
-                                    float hitX, float hitY, float hitZ) {
-
-        if (world.isRemote) return true;
-
-        player.openGui(ChaosPersists.instance, 0,
-                world, pos.getX(), pos.getY(), pos.getZ());
-
-        return true;
+    public ActionResultType use(BlockState state, World world, BlockPos pos, PlayerEntity player,
+                                Hand hand, BlockRayTraceResult hit) {
+        if (!world.isClientSide) {
+            TileEntity tileentity = world.getBlockEntity(pos);
+            if (tileentity instanceof INamedContainerProvider) {
+                ((ServerPlayerEntity) player).openMenu((INamedContainerProvider) tileentity);
+            }
+        }
+        return ActionResultType.SUCCESS;
     }
 
-    // ================= PARTICLES =================
-
+    @OnlyIn(Dist.CLIENT)
     @Override
-    public void randomDisplayTick(IBlockState state,
-                                  World world,
-                                  BlockPos pos,
-                                  Random rand) {
+    public void animateTick(BlockState state, World world, BlockPos pos, Random rand) {
+        if (!state.getValue(LIT)) {
+            return;
+        }
 
-        if (!state.getValue(LIT)) return;
-
-        EnumFacing facing = state.getValue(FACING);
-
+        Direction facing = state.getValue(FACING);
         double x = pos.getX() + 0.5;
         double y = pos.getY() + rand.nextDouble() * 0.6;
         double z = pos.getZ() + 0.5;
@@ -124,116 +95,81 @@ public class CrystalFurnace extends Block implements ITileEntityProvider {
 
         switch (facing) {
             case WEST:
-                world.spawnParticle(net.minecraft.util.EnumParticleTypes.SMOKE_NORMAL,
-                        x - offset, y, z + randomOffset, 0, 0, 0);
-                world.spawnParticle(net.minecraft.util.EnumParticleTypes.FLAME,
-                        x - offset, y, z + randomOffset, 0, 0, 0);
+                world.addParticle(ParticleTypes.SMOKE, x - offset, y, z + randomOffset, 0.0, 0.0, 0.0);
+                world.addParticle(ParticleTypes.FLAME, x - offset, y, z + randomOffset, 0.0, 0.0, 0.0);
                 break;
             case EAST:
-                world.spawnParticle(net.minecraft.util.EnumParticleTypes.SMOKE_NORMAL,
-                        x + offset, y, z + randomOffset, 0, 0, 0);
-                world.spawnParticle(net.minecraft.util.EnumParticleTypes.FLAME,
-                        x + offset, y, z + randomOffset, 0, 0, 0);
+                world.addParticle(ParticleTypes.SMOKE, x + offset, y, z + randomOffset, 0.0, 0.0, 0.0);
+                world.addParticle(ParticleTypes.FLAME, x + offset, y, z + randomOffset, 0.0, 0.0, 0.0);
                 break;
             case NORTH:
-                world.spawnParticle(net.minecraft.util.EnumParticleTypes.SMOKE_NORMAL,
-                        x + randomOffset, y, z - offset, 0, 0, 0);
-                world.spawnParticle(net.minecraft.util.EnumParticleTypes.FLAME,
-                        x + randomOffset, y, z - offset, 0, 0, 0);
+                world.addParticle(ParticleTypes.SMOKE, x + randomOffset, y, z - offset, 0.0, 0.0, 0.0);
+                world.addParticle(ParticleTypes.FLAME, x + randomOffset, y, z - offset, 0.0, 0.0, 0.0);
                 break;
             case SOUTH:
-                world.spawnParticle(net.minecraft.util.EnumParticleTypes.SMOKE_NORMAL,
-                        x + randomOffset, y, z + offset, 0, 0, 0);
-                world.spawnParticle(net.minecraft.util.EnumParticleTypes.FLAME,
-                        x + randomOffset, y, z + offset, 0, 0, 0);
+                world.addParticle(ParticleTypes.SMOKE, x + randomOffset, y, z + offset, 0.0, 0.0, 0.0);
+                world.addParticle(ParticleTypes.FLAME, x + randomOffset, y, z + offset, 0.0, 0.0, 0.0);
+                break;
+            default:
                 break;
         }
     }
 
-    // ================= RENDER =================
-
     @Override
-    public boolean isOpaqueCube(IBlockState state) {
+    public boolean propagatesSkylightDown(BlockState state, IBlockReader reader, BlockPos pos) {
         return false;
     }
 
     @Override
-    public boolean isFullCube(IBlockState state) {
+    public boolean useShapeForLightOcclusion(BlockState state) {
         return false;
-    }
-
-    @Override
-    public BlockRenderLayer getRenderLayer() {
-        return BlockRenderLayer.CUTOUT;
-    }
-
-    @Override
-    public int getLightValue(IBlockState state) {
-        return state.getValue(LIT) ? 13 : 0;
-    }
-
-    // ================= TILE ENTITY =================
-
-    public boolean hasTileEntity(IBlockState state) {
-        return true;
     }
 
     @Nullable
     @Override
-    public TileEntity createNewTileEntity(World world, int meta) {
+    public TileEntity newBlockEntity(IBlockReader world) {
         return new TileEntityCrystalFurnace();
     }
 
-    // ================= COMPARATOR =================
-
     @Override
-    public boolean hasComparatorInputOverride(IBlockState state) {
+    public boolean hasAnalogOutputSignal(BlockState state) {
         return true;
     }
 
     @Override
-    public int getComparatorInputOverride(IBlockState state,
-                                          World world,
-                                          BlockPos pos) {
-
-        return Container.calcRedstoneFromInventory(
-                (IInventory) world.getTileEntity(pos));
+    public int getAnalogOutputSignal(BlockState state, World world, BlockPos pos) {
+        return Container.getRedstoneSignalFromBlockEntity(world.getBlockEntity(pos));
     }
 
     public static void setKeepInventory(boolean keep) {
         keepInventory = keep;
     }
 
-    /**
-     * Vanilla furnace TE swaps vanilla blocks; crystal furnace must swap only its own lit property.
-     */
     public static void setState(boolean active, World world, BlockPos pos) {
-        IBlockState state = world.getBlockState(pos);
+        BlockState state = world.getBlockState(pos);
         if (!(state.getBlock() instanceof CrystalFurnace)) {
             return;
         }
 
-        TileEntity te = world.getTileEntity(pos);
+        TileEntity te = world.getBlockEntity(pos);
         keepInventory = true;
-
-        world.setBlockState(pos, state.withProperty(LIT, active), 3);
-
+        world.setBlock(pos, state.setValue(LIT, active), 3);
         keepInventory = false;
         if (te != null) {
-            te.validate();
-            world.setTileEntity(pos, te);
+            te.setChanged();
+            world.sendBlockUpdated(pos, state, world.getBlockState(pos), 3);
         }
     }
 
     @Override
-    public void breakBlock(World world, BlockPos pos, IBlockState state) {
-        if (!keepInventory) {
-            TileEntity tileEntity = world.getTileEntity(pos);
-            if (tileEntity instanceof IInventory) {
-                InventoryHelper.dropInventoryItems(world, pos, (IInventory) tileEntity);
-                world.updateComparatorOutputLevel(pos, this);
+    public void onRemove(BlockState state, World world, BlockPos pos, BlockState newState, boolean isMoving) {
+        if (!state.is(newState.getBlock())) {
+            TileEntity tileEntity = world.getBlockEntity(pos);
+            if (!keepInventory && tileEntity instanceof IInventory) {
+                InventoryHelper.dropContents(world, pos, (IInventory) tileEntity);
+                world.updateNeighbourForOutputSignal(pos, this);
             }
+            super.onRemove(state, world, pos, newState, isMoving);
         }
-        super.breakBlock(world, pos, state);
     }
 }

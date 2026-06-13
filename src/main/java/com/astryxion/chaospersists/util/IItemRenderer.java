@@ -25,6 +25,8 @@ public interface IItemRenderer {
     }
 
     boolean handleRenderType(ItemStack item, ItemRenderType type);
+
     boolean shouldUseRenderHelper(ItemRenderType type, ItemStack item, ItemRendererHelper helper);
+
     void renderItem(ItemRenderType type, ItemStack item, Object... data);
 }

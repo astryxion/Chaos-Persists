@@ -1,6 +1,6 @@
-{
+﻿{
   "parent": "item/generated",
   "textures": {
-    "layer0": "chaospersists:items/crystalpink_ingot"
+    "layer0": "chaospersists:item/crystalpink_ingot"
   }
 }

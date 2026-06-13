@@ -1,41 +1,20 @@
-/*
- * Decompiled with CFR 0_125.
- * 
- * Could not load the following classes:
- *  net.minecraftforge.fml.relauncher.Side
- *  net.minecraftforge.fml.relauncher.SideOnly
- *  com.astryxion.chaospersists.AmethystShovel
- *  net.minecraft.client.renderer.texture.IIconRegister
- *  net.minecraft.creativetab.CreativeTabs
- *  net.minecraft.entity.Entity
- *  net.minecraft.item.Item
- *  net.minecraft.item.Item$ToolMaterial
- *  net.minecraft.item.ItemSpade
- *  net.minecraft.util.IIcon
- */
 package com.astryxion.chaospersists.item;
 
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.entity.Entity;
+import net.minecraft.item.ItemGroup;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemSpade;
+import net.minecraft.item.ShovelItem;
+import net.minecraft.item.IItemTier;
 
-public class AmethystShovel
-extends ItemSpade {
-    public AmethystShovel(Item.ToolMaterial par2) {
-        super(par2);
-        this.maxStackSize = 1;
-        this.setMaxDamage(2000);
-        this.setCreativeTab(CreativeTabs.TOOLS);
+public class AmethystShovel extends ShovelItem {
+    public AmethystShovel(IItemTier tier) {
+        this(tier, new Item.Properties().stacksTo(1).durability(2000));
     }
 
-    public int getDamageVsEntity(Entity par1Entity) {
-        return 5;
+    public AmethystShovel(IItemTier tier, Item.Properties properties) {
+        super(tier, 1.5F, -3.0F, properties);
     }
 
     public String getMaterialName() {
         return "Amethyst";
-    }}
-
+    }
+}

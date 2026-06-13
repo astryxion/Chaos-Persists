@@ -20,11 +20,11 @@
  *  net.minecraft.block.Block
  *  net.minecraft.entity.DataWatcher
  *  net.minecraft.entity.Entity
- *  net.minecraft.entity.EntityCreature
- *  net.minecraft.entity.EntityLiving
- *  net.minecraft.entity.EntityLivingBase
- *  net.minecraft.entity.SharedMonsterAttributes
- *  net.minecraft.entity.ai.EntityAIBase
+ *  net.minecraft.entity.CreatureEntity
+ *  net.minecraft.entity.Mob
+ *  net.minecraft.entity.LivingEntity
+ *  net.minecraft.entity.ai.attributes.Attributes
+ *  net.minecraft.entity.ai.goal.Goal
  *  net.minecraft.entity.ai.EntityAIHurtByTarget
  *  net.minecraft.entity.ai.EntityAILookIdle
  *  net.minecraft.entity.ai.EntityAISwimming
@@ -33,20 +33,22 @@
  *  net.minecraft.entity.ai.EntitySenses
  *  net.minecraft.entity.ai.attributes.IAttribute
  *  net.minecraft.entity.ai.attributes.IAttributeInstance
- *  net.minecraft.entity.monster.EntityMob
- *  net.minecraft.entity.player.EntityPlayer
- *  net.minecraft.entity.player.PlayerCapabilities
- *  net.minecraft.init.Blocks
+ *  net.minecraft.entity.monster.Monster
+ *  net.minecraft.entity.player.PlayerEntity
+ *  net.minecraft.entity.player.PlayerEntityCapabilities
+ *  net.minecraft.block.Blocks
  *  net.minecraft.item.Item
- *  net.minecraft.pathfinding.PathNavigate
+ *  net.minecraft.pathfinding.PathNavigator
  *  net.minecraft.tileentity.MobSpawnerBaseLogic
  *  net.minecraft.tileentity.TileEntity
- *  net.minecraft.tileentity.TileEntityMobSpawner
+ *  net.minecraft.tileentity.MobSpawnerTileEntity
  *  net.minecraft.util.math.AxisAlignedBB
  *  net.minecraft.util.DamageSource
  *  net.minecraft.world.World
  */
 package com.astryxion.chaospersists.entity;
+import net.minecraft.entity.EntityType;
+import net.minecraft.world.World;
 
 import com.astryxion.chaospersists.entity.CrystalCow;
 import com.astryxion.chaospersists.entity.Flounder;
@@ -72,64 +74,68 @@ import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityCreature;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.ai.EntityAIBase;
-import net.minecraft.entity.ai.EntityAIHurtByTarget;
-import net.minecraft.entity.ai.EntityAILookIdle;
-import net.minecraft.entity.ai.EntityAISwimming;
-import net.minecraft.entity.ai.EntityAITasks;
-import net.minecraft.entity.ai.EntityAIWatchClosest;
+import net.minecraft.entity.CreatureEntity;
+import net.minecraft.entity.MobEntity;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.ai.attributes.AttributeModifierMap;
+import net.minecraft.entity.ai.attributes.Attributes;
+import net.minecraft.entity.ai.goal.Goal;
+import net.minecraft.entity.ai.goal.HurtByTargetGoal;
+import net.minecraft.entity.ai.goal.LookRandomlyGoal;
+import net.minecraft.entity.ai.goal.SwimGoal;
+
+import net.minecraft.entity.ai.goal.LookAtGoal;
 import net.minecraft.entity.ai.EntitySenses;
-import net.minecraft.entity.ai.attributes.IAttribute;
-import net.minecraft.entity.ai.attributes.IAttributeInstance;
-import net.minecraft.entity.monster.EntityMob;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.PlayerCapabilities;
-import net.minecraft.init.Blocks;
+import net.minecraft.entity.ai.attributes.Attribute;
+import net.minecraft.entity.ai.attributes.ModifiableAttributeInstance;
+import net.minecraft.entity.monster.MonsterEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerAbilities;
+import net.minecraft.block.Blocks;
 import net.minecraft.item.Item;
-import net.minecraft.pathfinding.PathNavigate;
-import net.minecraft.tileentity.MobSpawnerBaseLogic;
+import net.minecraft.pathfinding.PathNavigator;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityMobSpawner;
+import net.minecraft.tileentity.MobSpawnerTileEntity;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.DamageSource;
 import net.minecraft.world.World;
 
 public class Urchin
-extends EntityMob {
-    private static final DataParameter<Byte> ATTACKING = EntityDataManager.createKey(Urchin.class, DataSerializers.BYTE);
+extends MonsterEntity {
+    private static final DataParameter<Byte> ATTACKING = EntityDataManager.defineId(Urchin.class, DataSerializers.BYTE);
     private GenericTargetSorter TargetSorter = null;
     private RenderInfo renderdata = new RenderInfo();
     private float moveSpeed = 0.3f;
     private int was_spawnered = 0;
 
-    public Urchin(World par1World) {
-        super(par1World);
-        this.setSize(1.35f, 2.1f);
-                this.experienceValue = 20;
-                this.isImmuneToFire = true;
+    public Urchin(EntityType<? extends Urchin> type, World par1World) {
+        super(type, par1World);
+        this.xpReward = 20;
         this.TargetSorter = new GenericTargetSorter((Entity)this);
         this.renderdata = new RenderInfo();
-        this.tasks.addTask(0, (EntityAIBase)new EntityAISwimming((EntityLiving)this));
-        this.tasks.addTask(1, (EntityAIBase)new MyEntityAIWanderALot((EntityCreature)this, 14, 1.0));
-        this.tasks.addTask(2, (EntityAIBase)new EntityAIWatchClosest((EntityLiving)this, EntityPlayer.class, 8.0f));
-        this.tasks.addTask(3, (EntityAIBase)new EntityAILookIdle((EntityLiving)this));
-        this.targetTasks.addTask(1, (EntityAIBase)new EntityAIHurtByTarget((EntityCreature)this, false));
+        this.goalSelector.addGoal(0, new SwimGoal(this));
+        this.goalSelector.addGoal(1, new MyEntityAIWanderALot(this, 14, 1.0));
+        this.goalSelector.addGoal(2, new LookAtGoal((MobEntity)this, PlayerEntity.class, 8.0f));
+        this.goalSelector.addGoal(3, new LookRandomlyGoal(this));
+        this.targetSelector.addGoal(1, new HurtByTargetGoal(this));
+    }
+    @Override
+    public boolean fireImmune() {
+        return true;
     }
 
-    protected void applyEntityAttributes() {
-        super.applyEntityAttributes();
-        this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue((double)this.mygetMaxHealth());
-        this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue((double)this.moveSpeed);
-        this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue((double)ChaosPersists.Urchin_stats.attack);
+
+    public static AttributeModifierMap createAttributes() {
+        return MonsterEntity.createMonsterAttributes()
+                .add(Attributes.MAX_HEALTH, ChaosPersists.Urchin_stats.health)
+                .add(Attributes.MOVEMENT_SPEED, 0.3)
+                .add(Attributes.ATTACK_DAMAGE, ChaosPersists.Urchin_stats.attack)
+                .build();
     }
 
-    protected void entityInit() {
-        super.entityInit();
-        this.getDataManager().register(ATTACKING, (byte)0);
+    protected void defineSynchedData() {
+        super.defineSynchedData();
+        this.entityData.define(ATTACKING, (byte)0);
         if (this.renderdata == null) {
             this.renderdata = new RenderInfo();
         }
@@ -143,8 +149,8 @@ extends EntityMob {
         this.renderdata.ri4 = 0;
     }
 
-    protected boolean canDespawn() {
-        if (this.isNoDespawnRequired()) {
+    protected boolean canDespawn(double distanceToClosestPlayerEntity) {
+        if (this.isPersistenceRequired()) {
             return false;
         }
         if (this.was_spawnered != 0) {
@@ -153,18 +159,18 @@ extends EntityMob {
         return true;
     }
 
-    public void onUpdate() {
-        this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue((double)this.moveSpeed);
-        super.onUpdate();
-        if (this.isNoDespawnRequired()) {
+    public void tick() {
+        this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue((double)this.moveSpeed);
+        super.tick();
+        if (this.isPersistenceRequired()) {
             return;
         }
         if (this.was_spawnered != 0) {
             return;
         }
-        long t = this.world.getWorldTime();
-        if ((t %= 24000L) < 12000L && this.world.rand.nextInt(400) == 1) {
-            this.setDead();
+        long t = this.level.getGameTime();
+        if ((t %= 24000L) < 12000L && this.level.random.nextInt(400) == 1) {
+            this.remove();
         }
     }
 
@@ -187,7 +193,7 @@ extends EntityMob {
         this.renderdata.ri4 = r.ri4;
     }
 
-    public int getTotalArmorValue() {
+    public int getArmorValue() {
         return ChaosPersists.Urchin_stats.defense;
     }
 
@@ -195,16 +201,17 @@ extends EntityMob {
         return true;
     }
 
-    public void onLivingUpdate() {
-        super.onLivingUpdate();
-        if (this.world.rand.nextInt(3) == 1) {
-            this.world.spawnParticle(net.minecraft.util.EnumParticleTypes.FLAME, this.posX, this.posY + 0.75, this.posZ, 0.0, (double)(this.world.rand.nextFloat() / 10.0f), 0.0, 0);
-            if (this.isInWater() && this.world.rand.nextInt(5) == 1) {
-                this.attackEntityAsMob((Entity)this);
-                this.world.spawnParticle(net.minecraft.util.EnumParticleTypes.SMOKE_NORMAL, this.posX, this.posY + 1.75, this.posZ, 0.0, (double)(this.world.rand.nextFloat() / 10.0f), 0.0, 0);
-                this.world.spawnParticle(net.minecraft.util.EnumParticleTypes.SMOKE_LARGE, this.posX, this.posY + 1.75, this.posZ, 0.0, (double)(this.world.rand.nextFloat() / 10.0f), 0.0, 0);
-                this.world.spawnParticle(net.minecraft.util.EnumParticleTypes.SMOKE_NORMAL, this.posX, this.posY + 2.0, this.posZ, 0.0, (double)(this.world.rand.nextFloat() / 10.0f), 0.0, 0);
-                this.world.spawnParticle(net.minecraft.util.EnumParticleTypes.SMOKE_LARGE, this.posX, this.posY + 2.0, this.posZ, 0.0, (double)(this.world.rand.nextFloat() / 10.0f), 0.0, 0);
+    @Override
+    public void aiStep() {
+        super.aiStep();
+        if (this.level.random.nextInt(3) == 1) {
+            this.level.addParticle(net.minecraft.particles.ParticleTypes.FLAME, this.getX(), this.getY() + 0.75, this.getZ(), 0.0, (double)(this.level.random.nextFloat() / 10.0f), 0.0);
+            if (this.isInWater() && this.level.random.nextInt(5) == 1) {
+                this.doHurtTarget((LivingEntity)this);
+                this.level.addParticle(net.minecraft.particles.ParticleTypes.SMOKE, this.getX(), this.getY() + 1.75, this.getZ(), 0.0, (double)(this.level.random.nextFloat() / 10.0f), 0.0);
+                this.level.addParticle(net.minecraft.particles.ParticleTypes.LARGE_SMOKE, this.getX(), this.getY() + 1.75, this.getZ(), 0.0, (double)(this.level.random.nextFloat() / 10.0f), 0.0);
+                this.level.addParticle(net.minecraft.particles.ParticleTypes.SMOKE, this.getX(), this.getY() + 2.0, this.getZ(), 0.0, (double)(this.level.random.nextFloat() / 10.0f), 0.0);
+                this.level.addParticle(net.minecraft.particles.ParticleTypes.LARGE_SMOKE, this.getX(), this.getY() + 2.0, this.getZ(), 0.0, (double)(this.level.random.nextFloat() / 10.0f), 0.0);
             }
         }
     }
@@ -225,12 +232,12 @@ extends EntityMob {
         return 1.1f;
     }
 
-    protected float getSoundPitch() {
+    protected float getVoicePitch() {
         return 1.25f;
     }
 
     protected Item getDropItem() {
-        int i = this.world.rand.nextInt(3);
+        int i = this.level.random.nextInt(3);
         if (i == 1) {
             return ChaosPersists.MyCrystalPinkIngot;
         }
@@ -240,30 +247,30 @@ extends EntityMob {
         return null;
     }
 
-    public boolean interact(EntityPlayer par1EntityPlayer) {
+    public boolean interact(PlayerEntity par1PlayerEntityEntity) {
         return false;
     }
 
-    public boolean attackEntityAsMob(Entity par1Entity) {
-        par1Entity.setFire(5);
-        return super.attackEntityAsMob(par1Entity);
+    public boolean doHurtTarget(LivingEntity par1Entity) {
+        par1Entity.setSecondsOnFire(5);
+        return super.doHurtTarget(par1Entity);
     }
 
-    protected void updateAITasks() {
-        if (this.isDead) {
+    protected void customServerAiStep() {
+        if (!this.isAlive()) {
             return;
         }
-        super.updateAITasks();
-        if (this.world.rand.nextInt(8) == 0) {
-            EntityLivingBase e = this.findSomethingToAttack();
+        super.customServerAiStep();
+        if (this.level.random.nextInt(8) == 0) {
+            LivingEntity e = this.findSomethingToAttack();
             if (e != null) {
-                if (this.getDistanceSq((Entity)e) < 8.0) {
+                if (this.distanceToSqr((Entity)e) < 8.0) {
                     this.setAttacking(1);
-                    if (this.world.rand.nextInt(7) == 0 || this.world.rand.nextInt(8) == 1) {
-                        this.attackEntityAsMob((Entity)e);
+                    if (this.level.random.nextInt(7) == 0 || this.level.random.nextInt(8) == 1) {
+                        this.doHurtTarget((LivingEntity)e);
                     }
                 } else {
-                    this.getNavigator().tryMoveToEntityLiving((Entity)e, 1.2);
+                    this.getNavigation().moveTo((Entity)e, 1.2);
                 }
             } else {
                 this.setAttacking(0);
@@ -273,76 +280,76 @@ extends EntityMob {
 
     public boolean attackEntityFrom(DamageSource par1DamageSource, float par2) {
         boolean ret = false;
-        if (!par1DamageSource.getDamageType().equals("cactus")) {
-            ret = super.attackEntityFrom(par1DamageSource, par2);
+        if (!par1DamageSource.getMsgId().equals("cactus")) {
+            ret = super.hurt(par1DamageSource, par2);
         }
         return ret;
     }
 
-    private boolean isSuitableTarget(EntityLivingBase par1EntityLiving, boolean par2) {
-        if (par1EntityLiving == null) {
+    private boolean isSuitableTarget(LivingEntity par1Mob, boolean par2) {
+        if (par1Mob == null) {
             return false;
         }
-        if (par1EntityLiving == this) {
+        if (par1Mob == this) {
             return false;
         }
-        if (!par1EntityLiving.isEntityAlive()) {
+        if (!par1Mob.isAlive()) {
             return false;
         }
-        if (MyUtils.isIgnoreable((EntityLivingBase)par1EntityLiving)) {
+        if (MyUtils.isIgnoreable((LivingEntity)par1Mob)) {
             return false;
         }
-        if (!this.getEntitySenses().canSee((Entity)par1EntityLiving)) {
+        if (!this.getSensing().canSee((Entity)par1Mob)) {
             return false;
         }
-        if (par1EntityLiving instanceof Vortex) {
+        if (par1Mob instanceof Vortex) {
             return false;
         }
-        if (par1EntityLiving instanceof Rotator) {
+        if (par1Mob instanceof Rotator) {
             return false;
         }
-        if (par1EntityLiving instanceof Peacock) {
+        if (par1Mob instanceof Peacock) {
             return false;
         }
-        if (par1EntityLiving instanceof CrystalCow) {
+        if (par1Mob instanceof CrystalCow) {
             return false;
         }
-        if (par1EntityLiving instanceof Irukandji) {
+        if (par1Mob instanceof Irukandji) {
             return false;
         }
-        if (par1EntityLiving instanceof Skate) {
+        if (par1Mob instanceof Skate) {
             return false;
         }
-        if (par1EntityLiving instanceof Whale) {
+        if (par1Mob instanceof Whale) {
             return false;
         }
-        if (par1EntityLiving instanceof Flounder) {
+        if (par1Mob instanceof Flounder) {
             return false;
         }
-        if (par1EntityLiving instanceof Urchin) {
+        if (par1Mob instanceof Urchin) {
             return false;
         }
-        if (par1EntityLiving instanceof EntityPlayer) {
-            EntityPlayer p = (EntityPlayer)par1EntityLiving;
-            if (p.capabilities.isCreativeMode) {
+        if (par1Mob instanceof PlayerEntity) {
+            PlayerEntity p = (PlayerEntity)par1Mob;
+            if (p.isCreative()) {
                 return false;
             }
         }
         return true;
     }
 
-    private EntityLivingBase findSomethingToAttack() {
+    private LivingEntity findSomethingToAttack() {
         if (ChaosPersists.PlayNicely != 0) {
             return null;
         }
-        List var5 = this.world.getEntitiesWithinAABB(EntityLivingBase.class, this.getEntityBoundingBox().expand(16.0, 3.0, 16.0));
+        List var5 = this.level.getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(16.0, 3.0, 16.0));
         Collections.sort(var5, this.TargetSorter);
         Iterator var2 = var5.iterator();
         Entity var3 = null;
-        EntityLivingBase var4 = null;
+        LivingEntity var4 = null;
         while (var2.hasNext()) {
             var3 = (Entity)var2.next();
-            var4 = (EntityLivingBase)var3;
+            var4 = (LivingEntity)var3;
             if (!this.isSuitableTarget(var4, false)) continue;
             return var4;
         }
@@ -350,22 +357,21 @@ extends EntityMob {
     }
 
     public final int getAttacking() {
-        return this.getDataManager().get(ATTACKING).intValue();
+        return this.entityData.get(ATTACKING).intValue();
     }
 
     public final void setAttacking(int par1) {
-        this.getDataManager().set(ATTACKING, (byte)par1);
+        this.entityData.set(ATTACKING, (byte)par1);
     }
 
-    @Override
     protected boolean isValidLightLevel() {
-        if (CrystalDimensionSpawnHelper.isCrystalDimension(this.world)) {
+        if (CrystalDimensionSpawnHelper.isCrystalDimension(this.level)) {
             return true;
         }
-        return super.isValidLightLevel();
+        return MonsterEntity.isDarkEnoughToSpawn((net.minecraft.world.IServerWorld)this.level, this.blockPosition(), this.random);
     }
 
-    public boolean getCanSpawnHere() {
+    public boolean checkSpawnRules(net.minecraft.world.IWorldReader level, net.minecraft.entity.SpawnReason reason) {
         Block bid;
         int j;
         int k;
@@ -373,12 +379,12 @@ extends EntityMob {
         for (k = -2; k <= 2; ++k) {
             for (j = -2; j <= 2; ++j) {
                 for (int i = 1; i < 4; ++i) {
-                    bid = this.world.getBlockState(new net.minecraft.util.math.BlockPos((int)this.posX + j, (int)this.posY + i, (int)this.posZ + k)).getBlock();
-                    if (bid != Blocks.MOB_SPAWNER) continue;
-                    TileEntityMobSpawner tileentitymobspawner = null;
-                    tileentitymobspawner = (TileEntityMobSpawner)this.world.getTileEntity(new net.minecraft.util.math.BlockPos((int)this.posX + j, (int)this.posY + i, (int)this.posZ + k));
+                    bid = this.level.getBlockState(new net.minecraft.util.math.BlockPos((int)this.getX() + j, (int)this.getY() + i, (int)this.getZ() + k)).getBlock();
+                    if (bid != Blocks.SPAWNER) continue;
+                    MobSpawnerTileEntity tileentitymobspawner = null;
+                    tileentitymobspawner = (MobSpawnerTileEntity)this.level.getBlockEntity(new net.minecraft.util.math.BlockPos((int)this.getX() + j, (int)this.getY() + i, (int)this.getZ() + k));
                                         String s = null;
-                    net.minecraft.util.ResourceLocation id = com.astryxion.chaospersists.util.SpawnerFixHelper.getMobSpawnerEntityId(tileentitymobspawner.getSpawnerBaseLogic());
+                    net.minecraft.util.ResourceLocation id = com.astryxion.chaospersists.util.SpawnerFixHelper.getMobSpawnerEntityId(tileentitymobspawner.getSpawner());
                     if (id != null) s = id.getPath();
                     if (s == null || !s.equals("Crystal Urchin")) continue;
                     this.was_spawnered = 1;
@@ -388,7 +394,7 @@ extends EntityMob {
         }
         for (k = -1; k <= 1; ++k) {
             for (j = -1; j <= 1; ++j) {
-                bid = this.world.getBlockState(new net.minecraft.util.math.BlockPos((int)this.posX + j, (int)this.posY + 1, (int)this.posZ + k)).getBlock();
+                bid = this.level.getBlockState(new net.minecraft.util.math.BlockPos((int)this.getX() + j, (int)this.getY() + 1, (int)this.getZ() + k)).getBlock();
                 if (bid != Blocks.AIR) continue;
                 ++sc;
             }
@@ -399,8 +405,8 @@ extends EntityMob {
         if (!this.isValidLightLevel()) {
             return false;
         }
-        if (!CrystalDimensionSpawnHelper.isCrystalDimension(this.world)) {
-            long t = this.world.getWorldTime();
+        if (!CrystalDimensionSpawnHelper.isCrystalDimension(this.level)) {
+            long t = this.level.getGameTime();
             if ((t %= 24000L) < 13000L) {
                 return false;
             }

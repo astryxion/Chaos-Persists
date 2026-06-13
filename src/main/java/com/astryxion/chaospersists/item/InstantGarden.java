@@ -7,14 +7,14 @@
  *  com.astryxion.chaospersists.InstantGarden
  *  com.astryxion.chaospersists.ChaosPersists
  *  net.minecraft.block.Block
- *  net.minecraft.block.BlockGrass
+ *  net.minecraft.block.GrassBlock
  *  net.minecraft.block.BlockSand
  *  net.minecraft.client.renderer.texture.IIconRegister
  *  net.minecraft.creativetab.CreativeTabs
  *  net.minecraft.entity.Entity
- *  net.minecraft.entity.player.EntityPlayer
- *  net.minecraft.entity.player.PlayerCapabilities
- *  net.minecraft.init.Blocks
+ *  net.minecraft.entity.player.PlayerEntity
+ *  net.minecraft.entity.player.PlayerEntityCapabilities
+ *  net.minecraft.block.Blocks
  *  net.minecraft.item.Item
  *  net.minecraft.item.ItemStack
  *  net.minecraft.util.IIcon
@@ -22,22 +22,23 @@
  */
 package com.astryxion.chaospersists.item;
 
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockGrass;
-import net.minecraft.block.BlockSand;
-import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.block.GrassBlock;
+import net.minecraft.block.SandBlock;
+import net.minecraft.item.ItemGroup;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.PlayerCapabilities;
-import net.minecraft.init.Blocks;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerAbilities;
+import net.minecraft.block.Blocks;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemUseContext;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumActionResult;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
+import net.minecraft.util.ActionResultType;
+import net.minecraft.util.Direction;
+import net.minecraft.util.Hand;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.BlockPos;
@@ -46,13 +47,20 @@ import net.minecraft.world.World;
 public class InstantGarden
 extends Item {
     public InstantGarden(int i) {
-        this.maxStackSize = 16;
-        this.setCreativeTab(CreativeTabs.REDSTONE);
+        super(new Item.Properties());
     }
 
     @Override
-    public EnumActionResult onItemUse(EntityPlayer Player, World world, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
-        ItemStack par1ItemStack = Player.getHeldItem(hand);
+    public ActionResultType useOn(ItemUseContext context) {
+        PlayerEntity PlayerEntity = context.getPlayer();
+        if (PlayerEntity == null) {
+            return ActionResultType.FAIL;
+        }
+        World world = context.getLevel();
+        BlockPos pos = context.getClickedPos();
+        Hand hand = context.getHand();
+        Direction facing = context.getClickedFace();
+        ItemStack par1ItemStack = PlayerEntity.getItemInHand(hand);
         int cposx = pos.getX();
         int cposy = pos.getY();
         int cposz = pos.getZ();
@@ -70,9 +78,9 @@ extends Item {
         if (cposz < 0) {
             dirz = -1;
         }
-        int pposx = (int)(Player.posX + 0.99 * (double)dirx);
-        int pposy = (int)Player.posY;
-        int pposz = (int)(Player.posZ + 0.99 * (double)dirz);
+        int pposx = (int)(PlayerEntity.getX() + 0.99 * (double)dirx);
+        int pposy = (int)PlayerEntity.getY();
+        int pposz = (int)(PlayerEntity.getZ() + 0.99 * (double)dirz);
         if (cposx - pposx == 0 || cposz - pposz == 0) {
             int j;
             int i;
@@ -93,21 +101,21 @@ extends Item {
                 deltaz = 1;
             }
             if (deltax == 0 && deltaz == 0) {
-                return EnumActionResult.FAIL;
+                return ActionResultType.FAIL;
             }
             if (deltax != 0 && deltaz != 0) {
-                return EnumActionResult.FAIL;
+                return ActionResultType.FAIL;
             }
-            Player.world.playSound(Player.posX, Player.posY, Player.posZ, net.minecraft.init.SoundEvents.ENTITY_GENERIC_EXPLODE, SoundCategory.PLAYERS, 1.0f, 1.5f, false);
-            if (world.isRemote) {
-                return EnumActionResult.SUCCESS;
+            world.playSound(null, PlayerEntity.getX(), PlayerEntity.getY(), PlayerEntity.getZ(), net.minecraft.util.SoundEvents.GENERIC_EXPLODE, SoundCategory.PLAYERS, 1.0f, 1.5f);
+            if (world.isClientSide) {
+                return ActionResultType.SUCCESS;
             }
             for (i = 0; i < height; ++i) {
                 for (k = 0; k < length; ++k) {
                     for (j = - width; j <= width; ++j) {
-                        world.setBlockState(new BlockPos(x + k * deltax + j * deltaz, y + i, z + k * deltaz + j * deltax), Blocks.AIR.getDefaultState(), 2);
+                        world.setBlock(new BlockPos(x + k * deltax + j * deltaz, y + i, z + k * deltaz + j * deltax), Blocks.AIR.defaultBlockState(), 2);
                         if (i != 0) continue;
-                        world.setBlockState(new BlockPos(x + k * deltax + j * deltaz, y + i - 1, z + k * deltaz + j * deltax), Blocks.GRASS.getDefaultState(), 2);
+                        world.setBlock(new BlockPos(x + k * deltax + j * deltaz, y + i - 1, z + k * deltaz + j * deltax), Blocks.GRASS_BLOCK.defaultBlockState(), 2);
                     }
                 }
             }
@@ -115,66 +123,66 @@ extends Item {
                 i = 0;
                 for (j = - width; j <= width; ++j) {
                     if (i == 1) {
-                        world.setBlockState(new BlockPos(x + k * deltax + j * deltaz, y - 1, z + k * deltaz + j * deltax), Blocks.FARMLAND.getDefaultState(), 2);
-                        world.setBlockState(new BlockPos(x + k * deltax + j * deltaz, y, z + k * deltaz + j * deltax), ChaosPersists.MyRadishPlant.getDefaultState(), 2);
+                        world.setBlock(new BlockPos(x + k * deltax + j * deltaz, y - 1, z + k * deltaz + j * deltax), Blocks.FARMLAND.defaultBlockState(), 2);
+                        world.setBlock(new BlockPos(x + k * deltax + j * deltaz, y, z + k * deltaz + j * deltax), ChaosPersists.MyRadishPlant.defaultBlockState(), 2);
                     }
                     if (i == 2) {
-                        world.setBlockState(new BlockPos(x + k * deltax + j * deltaz, y - 1, z + k * deltaz + j * deltax), Blocks.FARMLAND.getDefaultState(), 2);
-                        world.setBlockState(new BlockPos(x + k * deltax + j * deltaz, y, z + k * deltaz + j * deltax), ChaosPersists.MyLettucePlant1.getDefaultState(), 2);
+                        world.setBlock(new BlockPos(x + k * deltax + j * deltaz, y - 1, z + k * deltaz + j * deltax), Blocks.FARMLAND.defaultBlockState(), 2);
+                        world.setBlock(new BlockPos(x + k * deltax + j * deltaz, y, z + k * deltaz + j * deltax), ChaosPersists.MyLettucePlant1.defaultBlockState(), 2);
                     }
                     if (i == 3) {
-                        world.setBlockState(new BlockPos(x + k * deltax + j * deltaz, y - 1, z + k * deltaz + j * deltax), Blocks.FARMLAND.getDefaultState(), 2);
-                        world.setBlockState(new BlockPos(x + k * deltax + j * deltaz, y, z + k * deltaz + j * deltax), Blocks.CARROTS.getDefaultState(), 2);
+                        world.setBlock(new BlockPos(x + k * deltax + j * deltaz, y - 1, z + k * deltaz + j * deltax), Blocks.FARMLAND.defaultBlockState(), 2);
+                        world.setBlock(new BlockPos(x + k * deltax + j * deltaz, y, z + k * deltaz + j * deltax), Blocks.CARROTS.defaultBlockState(), 2);
                     }
                     if (i == 4) {
-                        world.setBlockState(new BlockPos(x + k * deltax + j * deltaz, y - 1, z + k * deltaz + j * deltax), Blocks.WATER.getDefaultState(), 2);
-                        world.setBlockState(new BlockPos(x + k * deltax + j * deltaz, y - 2, z + k * deltaz + j * deltax), Blocks.COBBLESTONE.getDefaultState(), 2);
+                        world.setBlock(new BlockPos(x + k * deltax + j * deltaz, y - 1, z + k * deltaz + j * deltax), Blocks.WATER.defaultBlockState(), 2);
+                        world.setBlock(new BlockPos(x + k * deltax + j * deltaz, y - 2, z + k * deltaz + j * deltax), Blocks.COBBLESTONE.defaultBlockState(), 2);
                     }
                     if (i == 5) {
-                        world.setBlockState(new BlockPos(x + k * deltax + j * deltaz, y - 1, z + k * deltaz + j * deltax), Blocks.FARMLAND.getDefaultState(), 2);
-                        world.setBlockState(new BlockPos(x + k * deltax + j * deltaz, y, z + k * deltaz + j * deltax), Blocks.POTATOES.getDefaultState(), 2);
+                        world.setBlock(new BlockPos(x + k * deltax + j * deltaz, y - 1, z + k * deltaz + j * deltax), Blocks.FARMLAND.defaultBlockState(), 2);
+                        world.setBlock(new BlockPos(x + k * deltax + j * deltaz, y, z + k * deltaz + j * deltax), Blocks.POTATOES.defaultBlockState(), 2);
                     }
                     if (i == 6) {
-                        world.setBlockState(new BlockPos(x + k * deltax + j * deltaz, y - 1, z + k * deltaz + j * deltax), Blocks.FARMLAND.getDefaultState(), 2);
-                        world.setBlockState(new BlockPos(x + k * deltax + j * deltaz, y, z + k * deltaz + j * deltax), Blocks.WHEAT.getDefaultState(), 2);
+                        world.setBlock(new BlockPos(x + k * deltax + j * deltaz, y - 1, z + k * deltaz + j * deltax), Blocks.FARMLAND.defaultBlockState(), 2);
+                        world.setBlock(new BlockPos(x + k * deltax + j * deltaz, y, z + k * deltaz + j * deltax), Blocks.WHEAT.defaultBlockState(), 2);
                     }
                     if (i == 7) {
-                        world.setBlockState(new BlockPos(x + k * deltax + j * deltaz, y - 1, z + k * deltaz + j * deltax), Blocks.FARMLAND.getDefaultState(), 2);
-                        world.setBlockState(new BlockPos(x + k * deltax + j * deltaz, y, z + k * deltaz + j * deltax), ChaosPersists.MyTomatoPlant1.getDefaultState(), 2);
+                        world.setBlock(new BlockPos(x + k * deltax + j * deltaz, y - 1, z + k * deltaz + j * deltax), Blocks.FARMLAND.defaultBlockState(), 2);
+                        world.setBlock(new BlockPos(x + k * deltax + j * deltaz, y, z + k * deltaz + j * deltax), ChaosPersists.MyTomatoPlant1.defaultBlockState(), 2);
                     }
                     if (i == 8) {
-                        world.setBlockState(new BlockPos(x + k * deltax + j * deltaz, y - 1, z + k * deltaz + j * deltax), Blocks.WATER.getDefaultState(), 2);
-                        world.setBlockState(new BlockPos(x + k * deltax + j * deltaz, y - 2, z + k * deltaz + j * deltax), Blocks.COBBLESTONE.getDefaultState(), 2);
+                        world.setBlock(new BlockPos(x + k * deltax + j * deltaz, y - 1, z + k * deltaz + j * deltax), Blocks.WATER.defaultBlockState(), 2);
+                        world.setBlock(new BlockPos(x + k * deltax + j * deltaz, y - 2, z + k * deltaz + j * deltax), Blocks.COBBLESTONE.defaultBlockState(), 2);
                     }
                     if (i == 9) {
-                        world.setBlockState(new BlockPos(x + k * deltax + j * deltaz, y - 1, z + k * deltaz + j * deltax), Blocks.FARMLAND.getDefaultState(), 2);
-                        world.setBlockState(new BlockPos(x + k * deltax + j * deltaz, y, z + k * deltaz + j * deltax), ChaosPersists.MyCornPlant1.getDefaultState(), 2);
+                        world.setBlock(new BlockPos(x + k * deltax + j * deltaz, y - 1, z + k * deltaz + j * deltax), Blocks.FARMLAND.defaultBlockState(), 2);
+                        world.setBlock(new BlockPos(x + k * deltax + j * deltaz, y, z + k * deltaz + j * deltax), ChaosPersists.MyCornPlant1.defaultBlockState(), 2);
                     }
                     if (i == 10) {
-                        world.setBlockState(new BlockPos(x + k * deltax + j * deltaz, y - 1, z + k * deltaz + j * deltax), Blocks.FARMLAND.getDefaultState(), 2);
-                        world.setBlockState(new BlockPos(x + k * deltax + j * deltaz, y, z + k * deltaz + j * deltax), ChaosPersists.MyStrawberryPlant.getDefaultState(), 2);
+                        world.setBlock(new BlockPos(x + k * deltax + j * deltaz, y - 1, z + k * deltaz + j * deltax), Blocks.FARMLAND.defaultBlockState(), 2);
+                        world.setBlock(new BlockPos(x + k * deltax + j * deltaz, y, z + k * deltaz + j * deltax), ChaosPersists.MyStrawberryPlant.defaultBlockState(), 2);
                     }
                     if (i == 11) {
-                        world.setBlockState(new BlockPos(x + k * deltax + j * deltaz, y - 2, z + k * deltaz + j * deltax), Blocks.COBBLESTONE.getDefaultState(), 2);
-                        world.setBlockState(new BlockPos(x + k * deltax + j * deltaz, y - 1, z + k * deltaz + j * deltax), Blocks.SAND.getDefaultState(), 2);
-                        world.setBlockState(new BlockPos(x + k * deltax + j * deltaz, y, z + k * deltaz + j * deltax), Blocks.REEDS.getDefaultState(), 2);
+                        world.setBlock(new BlockPos(x + k * deltax + j * deltaz, y - 2, z + k * deltaz + j * deltax), Blocks.COBBLESTONE.defaultBlockState(), 2);
+                        world.setBlock(new BlockPos(x + k * deltax + j * deltaz, y - 1, z + k * deltaz + j * deltax), Blocks.SAND.defaultBlockState(), 2);
+                        world.setBlock(new BlockPos(x + k * deltax + j * deltaz, y, z + k * deltaz + j * deltax), Blocks.SUGAR_CANE.defaultBlockState(), 2);
                     }
                     if (i == 12) {
-                        world.setBlockState(new BlockPos(x + k * deltax + j * deltaz, y - 1, z + k * deltaz + j * deltax), Blocks.WATER.getDefaultState(), 2);
-                        world.setBlockState(new BlockPos(x + k * deltax + j * deltaz, y - 2, z + k * deltaz + j * deltax), Blocks.COBBLESTONE.getDefaultState(), 2);
+                        world.setBlock(new BlockPos(x + k * deltax + j * deltaz, y - 1, z + k * deltaz + j * deltax), Blocks.WATER.defaultBlockState(), 2);
+                        world.setBlock(new BlockPos(x + k * deltax + j * deltaz, y - 2, z + k * deltaz + j * deltax), Blocks.COBBLESTONE.defaultBlockState(), 2);
                     }
                     if (i == 13) {
-                        world.setBlockState(new BlockPos(x + k * deltax + j * deltaz, y - 1, z + k * deltaz + j * deltax), Blocks.FARMLAND.getDefaultState(), 2);
-                        world.setBlockState(new BlockPos(x + k * deltax + j * deltaz, y, z + k * deltaz + j * deltax), Blocks.MELON_STEM.getDefaultState(), 2);
+                        world.setBlock(new BlockPos(x + k * deltax + j * deltaz, y - 1, z + k * deltaz + j * deltax), Blocks.FARMLAND.defaultBlockState(), 2);
+                        world.setBlock(new BlockPos(x + k * deltax + j * deltaz, y, z + k * deltaz + j * deltax), Blocks.MELON_STEM.defaultBlockState(), 2);
                     }
                     ++i;
                 }
             }
-            if (!Player.capabilities.isCreativeMode) {
+            if (!PlayerEntity.isCreative()) {
                 par1ItemStack.shrink(1);
             }
-            return EnumActionResult.SUCCESS;
+            return ActionResultType.SUCCESS;
         }
-        return EnumActionResult.FAIL;
+        return ActionResultType.FAIL;
     }}
 

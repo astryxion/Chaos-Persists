@@ -11,19 +11,19 @@
  *  com.astryxion.chaospersists.MyUtils
  *  com.astryxion.chaospersists.PitchBlack
  *  net.minecraft.block.Block
- *  net.minecraft.block.BlockFire
+ *  net.minecraft.block.FireBlock
  *  net.minecraft.entity.Entity
- *  net.minecraft.entity.EntityLiving
- *  net.minecraft.entity.EntityLivingBase
- *  net.minecraft.entity.player.EntityPlayer
+ *  net.minecraft.entity.Mob
+ *  net.minecraft.entity.LivingEntity
+ *  net.minecraft.entity.player.PlayerEntity
  *  net.minecraft.entity.projectile.EntityFireball
- *  net.minecraft.init.Blocks
- *  net.minecraft.nbt.NBTTagCompound
+ *  net.minecraft.block.Blocks
+ *  net.minecraft.nbt.CompoundNBT
  *  net.minecraft.util.math.AxisAlignedBB
  *  net.minecraft.util.DamageSource
- *  net.minecraft.util.MathHelper
+ *  net.minecraft.util.math.MathHelper
  *  net.minecraft.util.math.RayTraceResult
- *  net.minecraft.util.math.Vec3d
+ *  net.minecraft.util.math.Vector3d
  *  net.minecraft.world.Explosion
  *  net.minecraft.world.GameRules
  *  net.minecraft.world.World
@@ -38,33 +38,39 @@ import com.astryxion.chaospersists.entity.Mothra;
 import com.astryxion.chaospersists.util.MyUtils;
 import com.astryxion.chaospersists.entity.PitchBlack;
 import java.util.List;
-import java.util.Random;
+import java.util.Optional;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockFire;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.projectile.EntityFireball;
-import net.minecraft.init.Blocks;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.MobEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.projectile.ThrowableEntity;
+import net.minecraft.block.Blocks;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.particles.ParticleTypes;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.BlockRayTraceResult;
+import net.minecraft.util.math.EntityRayTraceResult;
+import net.minecraft.util.math.RayTraceContext;
+import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.Direction;
 import net.minecraft.world.Explosion;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
 
 public class BetterFireball
-extends EntityFireball {
+extends ThrowableEntity {
     private int xTile = -1;
     private int yTile = -1;
     private int zTile = -1;
     private int inTile = 0;
     private boolean inGround = false;
-    public EntityLivingBase shootingEntity;
+    public LivingEntity shootingEntity;
     private int ticksAlive;
     private int ticksInAir = 0;
     public double accelerationX;
@@ -74,27 +80,40 @@ extends EntityFireball {
     private int notme = 0;
     private boolean small = false;
 
+    @SuppressWarnings("unchecked")
+    private static EntityType<? extends ThrowableEntity> fireballEntityType() {
+        return (EntityType<? extends ThrowableEntity>)(EntityType<?>)EntityType.SMALL_FIREBALL;
+    }
+
     public BetterFireball(World par1World) {
-        super(par1World);
-        this.setSize(1.0f, 1.0f);
+        super(fireballEntityType(), par1World);
+        this.setFireballSize(1.0f, 1.0f);
     }
 
-    protected void entityInit() {
+    @Override
+    protected void defineSynchedData() {
     }
 
-    public BetterFireball(World par1World, EntityLivingBase par2EntityLiving, double par3, double par5, double par7) {
-        super(par1World);
-        this.shootingEntity = par2EntityLiving;
-        this.setSize(1.0f, 1.0f);
-        this.setLocationAndAngles(par2EntityLiving.posX, par2EntityLiving.posY, par2EntityLiving.posZ, par2EntityLiving.rotationYaw, par2EntityLiving.rotationPitch);
-        this.setPosition(this.posX, this.posY, this.posZ);
-        this.motionZ = 0.0;
-        this.motionY = 0.0;
-        this.motionX = 0.0;
+    public BetterFireball(World par1World, LivingEntity par2Mob, double par3, double par5, double par7) {
+        super(fireballEntityType(), par1World);
+        this.shootingEntity = par2Mob;
+        this.setOwner(par2Mob);
+        this.setFireballSize(1.0f, 1.0f);
+        this.moveTo(par2Mob.getX(), par2Mob.getY(), par2Mob.getZ(), par2Mob.yRot, par2Mob.xRot);
+        this.setPos(this.getX(), this.getY(), this.getZ());
+        this.setDeltaMovement(this.getDeltaMovement().x, this.getDeltaMovement().y, 0.0);
+        this.setDeltaMovement(this.getDeltaMovement().x, 0.0, this.getDeltaMovement().z);
+        this.setDeltaMovement(0.0, this.getDeltaMovement().y, this.getDeltaMovement().z);
         double var9 = MathHelper.sqrt((double)(par3 * par3 + par5 * par5 + par7 * par7));
         this.accelerationX = par3 / var9 * 0.1;
         this.accelerationY = par5 / var9 * 0.1;
         this.accelerationZ = par7 / var9 * 0.1;
+    }
+
+    private void setFireballSize(float width, float height) {
+        double w = (double)width;
+        double h = (double)height;
+        this.setBoundingBox(new AxisAlignedBB(-w * 0.5, 0.0, -w * 0.5, w * 0.5, h, w * 0.5));
     }
 
     public void setNotMe() {
@@ -111,15 +130,20 @@ extends EntityFireball {
 
     public void setSmall() {
         this.small = true;
-        this.setSize(0.3125f, 0.3125f);
+        this.setFireballSize(0.3125f, 0.3125f);
     }
 
-    public void onUpdate() {
-        Vec3d var15 = null;
-        Vec3d var2 = null;
+    private float getMotionFactor() {
+        return 0.95f;
+    }
+
+    @Override
+    public void tick() {
+        Vector3d var15 = null;
+        Vector3d var2 = null;
         RayTraceResult var3 = null;
         Entity var4 = null;
-        List var5 = null;
+        List<Entity> var5 = null;
         double var6 = 0.0;
         Entity var9 = null;
         float var10 = 0.3f;
@@ -128,41 +152,40 @@ extends EntityFireball {
         float var17 = 0.0f;
         float var18 = 0.0f;
         if (this.ticksAlive >= 600 || this.ticksInAir >= 600) {
-            this.setDead();
+            this.remove();
             return;
         }
-        if (!this.world.isRemote && (this.shootingEntity != null && this.shootingEntity.isDead || !this.world.isBlockLoaded(new net.minecraft.util.math.BlockPos(this.posX, this.posY, this.posZ)))) {
-            this.setDead();
+        if (!this.level.isClientSide && (this.shootingEntity != null && !this.shootingEntity.isAlive() || !this.level.hasChunkAt(new BlockPos((int)this.getX(), (int)this.getY(), (int)this.getZ())))) {
+            this.remove();
         } else {
-            super.onUpdate();
-            this.setFire(1);
+            super.tick();
+            this.setSecondsOnFire(1);
             if (this.inGround) {
-                Block var1 = this.world.getBlockState(new net.minecraft.util.math.BlockPos(this.xTile, this.yTile, this.zTile)).getBlock();
+                Block var1 = this.level.getBlockState(new BlockPos(this.xTile, this.yTile, this.zTile)).getBlock();
                 if (var1 != Blocks.AIR) {
                     ++this.ticksAlive;
                 }
                 this.inGround = false;
-                this.motionX *= (double)(this.rand.nextFloat() * 0.2f);
-                this.motionY *= (double)(this.rand.nextFloat() * 0.2f);
-                this.motionZ *= (double)(this.rand.nextFloat() * 0.2f);
+                com.astryxion.chaospersists.util.MyUtils.mulDeltaMovement(this, (double)(this.random.nextFloat() * 0.2f), (double)(this.random.nextFloat() * 0.2f), (double)(this.random.nextFloat() * 0.2f));
             } else {
                 ++this.ticksInAir;
             }
-            var15 = new Vec3d((double)this.posX, (double)this.posY, (double)this.posZ);
-            var2 = new Vec3d((double)(this.posX + this.motionX), (double)(this.posY + this.motionY), (double)(this.posZ + this.motionZ));
-            var3 = this.world.rayTraceBlocks(var15, var2, false);
-            var15 = new Vec3d((double)this.posX, (double)this.posY, (double)this.posZ);
-            var2 = new Vec3d((double)(this.posX + this.motionX), (double)(this.posY + this.motionY), (double)(this.posZ + this.motionZ));
+            var15 = new Vector3d((double)this.getX(), (double)this.getY(), (double)this.getZ());
+            var2 = new Vector3d((double)(this.getX() + this.getDeltaMovement().x), (double)(this.getY() + this.getDeltaMovement().y), (double)(this.getZ() + this.getDeltaMovement().z));
+            BlockRayTraceResult blockHit = this.level.clip(new RayTraceContext(var15, var2, RayTraceContext.BlockMode.COLLIDER, RayTraceContext.FluidMode.NONE, this));
+            var3 = blockHit.getType() != RayTraceResult.Type.MISS ? blockHit : null;
+            var15 = new Vector3d((double)this.getX(), (double)this.getY(), (double)this.getZ());
+            var2 = new Vector3d((double)(this.getX() + this.getDeltaMovement().x), (double)(this.getY() + this.getDeltaMovement().y), (double)(this.getZ() + this.getDeltaMovement().z));
             if (var3 != null) {
-                var2 = new Vec3d((double)var3.hitVec.x, (double)var3.hitVec.y, (double)var3.hitVec.z);
+                var2 = blockHit.getLocation();
             }
             var4 = null;
-            var5 = this.world.getEntitiesWithinAABBExcludingEntity((Entity)this, this.getEntityBoundingBox().expand(this.motionX, this.motionY, this.motionZ).expand(1.0, 1.0, 1.0));
+            var5 = this.level.getEntities((Entity)this, this.getBoundingBox().inflate(this.getDeltaMovement().x, this.getDeltaMovement().y, this.getDeltaMovement().z).inflate(1.0, 1.0, 1.0));
             var6 = 0.0;
             for (int var8 = 0; var8 < var5.size(); ++var8) {
                 AxisAlignedBB var11;
-                RayTraceResult var12;
-                var9 = (Entity)var5.get(var8);
+                Optional<Vector3d> hitOptional;
+                var9 = var5.get(var8);
                 if (this.shootingEntity == var9) {
                     var3 = null;
                     break;
@@ -179,119 +202,118 @@ extends EntityFireball {
                     var3 = null;
                     break;
                 }
-                if (this.notme != 0 && (var9 instanceof EntityPlayer || var9 instanceof Dragon || var9 instanceof Mothra)) {
+                if (this.notme != 0 && (var9 instanceof PlayerEntity || var9 instanceof Dragon || var9 instanceof Mothra)) {
                     var3 = null;
                     break;
                 }
-                if (!var9.canBeCollidedWith() || var9.isEntityEqual((Entity)this.shootingEntity) && this.ticksInAir < 25 || (var12 = (var11 = var9.getEntityBoundingBox().expand((double)var10, (double)var10, (double)var10)).calculateIntercept(var15, var2)) == null || (var13 = var15.distanceTo(var12.hitVec)) >= var6 && var6 != 0.0) continue;
+                if (!var9.isPickable() || var9 == this.shootingEntity && this.ticksInAir < 25 || !(hitOptional = (var11 = var9.getBoundingBox().inflate((double)var10, (double)var10, (double)var10)).clip(var15, var2)).isPresent() || (var13 = var15.distanceTo(hitOptional.get())) >= var6 && var6 != 0.0) continue;
                 var4 = var9;
                 var6 = var13;
             }
             if (var4 != null) {
-                var3 = new RayTraceResult(var4);
+                var3 = new EntityRayTraceResult(var4);
             }
             if (var3 != null) {
                 this.onImpact(var3);
             }
-            this.posX += this.motionX;
-            this.posY += this.motionY;
-            this.posZ += this.motionZ;
-            var16 = MathHelper.sqrt((double)(this.motionX * this.motionX + this.motionZ * this.motionZ));
-            this.rotationYaw = (float)(Math.atan2(this.motionZ, this.motionX) * 180.0 / 3.141592653589793) + 90.0f;
-            this.rotationPitch = (float)(Math.atan2(var16, this.motionY) * 180.0 / 3.141592653589793) - 90.0f;
-            while (this.rotationPitch - this.prevRotationPitch < -180.0f) {
-                this.prevRotationPitch -= 360.0f;
+            com.astryxion.chaospersists.util.MyUtils.addEntityX(this, this.getDeltaMovement().x);
+            com.astryxion.chaospersists.util.MyUtils.addEntityY(this, this.getDeltaMovement().y);
+            com.astryxion.chaospersists.util.MyUtils.addEntityZ(this, this.getDeltaMovement().z);
+            var16 = MathHelper.sqrt((double)(this.getDeltaMovement().x * this.getDeltaMovement().x + this.getDeltaMovement().z * this.getDeltaMovement().z));
+            this.yRot = (float)(Math.atan2(this.getDeltaMovement().z, this.getDeltaMovement().x) * 180.0 / 3.141592653589793) + 90.0f;
+            this.xRot = (float)(Math.atan2(var16, this.getDeltaMovement().y) * 180.0 / 3.141592653589793) - 90.0f;
+            while (this.xRot - this.xRotO < -180.0f) {
+                this.xRotO -= 360.0f;
             }
-            while (this.rotationPitch - this.prevRotationPitch >= 180.0f) {
-                this.prevRotationPitch += 360.0f;
+            while (this.xRot - this.xRotO >= 180.0f) {
+                this.xRotO += 360.0f;
             }
-            while (this.rotationYaw - this.prevRotationYaw < -180.0f) {
-                this.prevRotationYaw -= 360.0f;
+            while (this.yRot - this.yRotO < -180.0f) {
+                this.yRotO -= 360.0f;
             }
-            while (this.rotationYaw - this.prevRotationYaw >= 180.0f) {
-                this.prevRotationYaw += 360.0f;
+            while (this.yRot - this.yRotO >= 180.0f) {
+                this.yRotO += 360.0f;
             }
-            this.rotationPitch = this.prevRotationPitch + (this.rotationPitch - this.prevRotationPitch) * 0.2f;
-            this.rotationYaw = this.prevRotationYaw + (this.rotationYaw - this.prevRotationYaw) * 0.2f;
+            this.xRot = this.xRotO + (this.xRot - this.xRotO) * 0.2f;
+            this.yRot = this.yRotO + (this.yRot - this.yRotO) * 0.2f;
             var17 = this.getMotionFactor();
             if (this.isInWater()) {
                 for (int var19 = 0; var19 < 4; ++var19) {
                     var18 = 0.25f;
-                    this.world.spawnParticle(net.minecraft.util.EnumParticleTypes.WATER_BUBBLE, this.posX - this.motionX * (double)var18, this.posY - this.motionY * (double)var18, this.posZ - this.motionZ * (double)var18, this.motionX, this.motionY, this.motionZ);
+                    this.level.addParticle(ParticleTypes.BUBBLE, this.getX() - this.getDeltaMovement().x * (double)var18, this.getY() - this.getDeltaMovement().y * (double)var18, this.getZ() - this.getDeltaMovement().z * (double)var18, this.getDeltaMovement().x, this.getDeltaMovement().y, this.getDeltaMovement().z);
                 }
                 var17 = 0.8f;
             }
-            this.motionX += this.accelerationX;
-            this.motionY += this.accelerationY;
-            this.motionZ += this.accelerationZ;
-            this.motionX *= (double)var17;
-            this.motionY *= (double)var17;
-            this.motionZ *= (double)var17;
-            this.world.spawnParticle(net.minecraft.util.EnumParticleTypes.SMOKE_NORMAL, this.posX, this.posY + 0.5, this.posZ, 0.0, 0.0, 0.0);
-            this.setPosition(this.posX, this.posY, this.posZ);
+            com.astryxion.chaospersists.util.MyUtils.addDeltaMovement(this, this.accelerationX, this.accelerationY, this.accelerationZ);
+            com.astryxion.chaospersists.util.MyUtils.mulDeltaMovement(this, (double)var17, (double)var17, (double)var17);
+            this.level.addParticle(ParticleTypes.SMOKE, this.getX(), this.getY() + 0.5, this.getZ(), 0.0, 0.0, 0.0);
+            this.setPos(this.getX(), this.getY(), this.getZ());
         }
     }
 
     protected void onImpact(RayTraceResult par1MovingObjectPosition) {
-        if (!this.world.isRemote) {
-            if (par1MovingObjectPosition.entityHit != null) {
-                if (par1MovingObjectPosition.entityHit instanceof BetterFireball) {
+        if (!this.level.isClientSide) {
+            if (par1MovingObjectPosition.getType() == RayTraceResult.Type.ENTITY) {
+                Entity entityHit = ((EntityRayTraceResult)par1MovingObjectPosition).getEntity();
+                if (entityHit instanceof BetterFireball) {
                     return;
                 }
-                if (par1MovingObjectPosition.entityHit instanceof Mothra) {
+                if (entityHit instanceof Mothra) {
                     return;
                 }
-                if (this.notme != 0 && (par1MovingObjectPosition.entityHit instanceof Dragon || par1MovingObjectPosition.entityHit instanceof EntityPlayer)) {
-                    this.setDead();
+                if (this.notme != 0 && (entityHit instanceof Dragon || entityHit instanceof PlayerEntity)) {
+                    this.remove();
                     return;
                 }
-                Entity e = par1MovingObjectPosition.entityHit;
-                if (e instanceof EntityLiving) {
-                    EntityLiving el = (EntityLiving)e;
-                    if (!(el.width * el.height <= 30.0f || MyUtils.isRoyalty((Entity)el) || el instanceof Godzilla || el instanceof GodzillaHead || el instanceof PitchBlack || el instanceof Kraken)) {
+                Entity e = entityHit;
+                if (e instanceof MobEntity) {
+                    MobEntity el = (MobEntity)e;
+                    if (!(el.getBbWidth() * el.getBbHeight() <= 30.0f || MyUtils.isRoyalty((Entity)el) || el instanceof Godzilla || el instanceof GodzillaHead || el instanceof PitchBlack || el instanceof Kraken)) {
                         el.setHealth(el.getHealth() / 2.0f);
                     }
                 }
                 if (!this.small) {
-                    par1MovingObjectPosition.entityHit.attackEntityFrom(DamageSource.causeFireballDamage((EntityFireball)this, (Entity)this.shootingEntity), 10.0f);
-                    par1MovingObjectPosition.entityHit.setFire(5);
+                    entityHit.hurt(DamageSource.indirectMagic((Entity)this, (Entity)this.shootingEntity), 10.0f);
+                    entityHit.setSecondsOnFire(5);
                 } else {
-                    par1MovingObjectPosition.entityHit.attackEntityFrom(DamageSource.causeFireballDamage((EntityFireball)this, (Entity)this.shootingEntity), 5.0f);
-                    par1MovingObjectPosition.entityHit.setFire(5);
+                    entityHit.hurt(DamageSource.indirectMagic((Entity)this, (Entity)this.shootingEntity), 5.0f);
+                    entityHit.setSecondsOnFire(5);
                 }
-            } else {
-                int i = par1MovingObjectPosition.getBlockPos().getX();
-                int j = par1MovingObjectPosition.getBlockPos().getY();
-                int k = par1MovingObjectPosition.getBlockPos().getZ();
-                net.minecraft.util.EnumFacing side = par1MovingObjectPosition.sideHit;
-                if (side == net.minecraft.util.EnumFacing.DOWN) --j;
-                else if (side == net.minecraft.util.EnumFacing.UP) ++j;
-                else if (side == net.minecraft.util.EnumFacing.NORTH) --k;
-                else if (side == net.minecraft.util.EnumFacing.SOUTH) ++k;
-                else if (side == net.minecraft.util.EnumFacing.WEST) --i;
-                else if (side == net.minecraft.util.EnumFacing.EAST) ++i;
-                net.minecraft.util.math.BlockPos firePos = new net.minecraft.util.math.BlockPos(i, j, k);
-                if (this.world.isAirBlock(firePos)) {
-                    this.world.setBlockState(firePos, Blocks.FIRE.getDefaultState());
+            } else if (par1MovingObjectPosition.getType() == RayTraceResult.Type.BLOCK) {
+                BlockRayTraceResult blockResult = (BlockRayTraceResult)par1MovingObjectPosition;
+                int i = blockResult.getBlockPos().getX();
+                int j = blockResult.getBlockPos().getY();
+                int k = blockResult.getBlockPos().getZ();
+                Direction side = blockResult.getDirection();
+                if (side == Direction.DOWN) --j;
+                else if (side == Direction.UP) ++j;
+                else if (side == Direction.NORTH) --k;
+                else if (side == Direction.SOUTH) ++k;
+                else if (side == Direction.WEST) --i;
+                else if (side == Direction.EAST) ++i;
+                BlockPos firePos = new BlockPos(i, j, k);
+                if (this.level.isEmptyBlock(firePos)) {
+                    this.level.setBlock(firePos, Blocks.FIRE.defaultBlockState(), 3);
                 }
             }
             if (!this.small) {
-                this.world.newExplosion((Entity)null, this.posX, this.posY, this.posZ, (float)this.field_92012_e, true, this.world.getGameRules().getBoolean("mobGriefing"));
+                this.level.explode((Entity)null, this.getX(), this.getY(), this.getZ(), (float)this.field_92012_e, this.level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) ? Explosion.Mode.DESTROY : Explosion.Mode.NONE);
             }
-            this.setDead();
+            this.remove();
         }
     }
 
-    public void writeEntityToNBT(NBTTagCompound par1NBTTagCompound) {
-        super.writeEntityToNBT(par1NBTTagCompound);
-        par1NBTTagCompound.setInteger("ExplosionPower", this.field_92012_e);
+    @Override
+    public void addAdditionalSaveData(CompoundNBT par1CompoundNBT) {
+        super.addAdditionalSaveData(par1CompoundNBT);
+        par1CompoundNBT.putInt("ExplosionPower", this.field_92012_e);
     }
 
-    public void readEntityFromNBT(NBTTagCompound par1NBTTagCompound) {
-        super.readEntityFromNBT(par1NBTTagCompound);
-        if (par1NBTTagCompound.hasKey("ExplosionPower")) {
-            this.field_92012_e = par1NBTTagCompound.getInteger("ExplosionPower");
+    @Override
+    public void readAdditionalSaveData(CompoundNBT par1CompoundNBT) {
+        super.readAdditionalSaveData(par1CompoundNBT);
+        if (par1CompoundNBT.contains("ExplosionPower")) {
+            this.field_92012_e = par1CompoundNBT.getInt("ExplosionPower");
         }
     }
 }
-

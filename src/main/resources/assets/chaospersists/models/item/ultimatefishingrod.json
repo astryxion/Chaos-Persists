@@ -1,7 +1,7 @@
-{
+﻿{
   "parent": "item/handheld_rod",
   "textures": {
-    "layer0": "chaospersists:items/ultimatefishingrod"
+    "layer0": "chaospersists:item/ultimatefishingrod"
   },
   "overrides": [
     {

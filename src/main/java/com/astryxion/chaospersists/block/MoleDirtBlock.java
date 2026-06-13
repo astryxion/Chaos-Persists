@@ -1,59 +1,53 @@
-/*
- * Decompiled with CFR 0_125.
- * 
- * Could not load the following classes:
- *  net.minecraftforge.fml.relauncher.Side
- *  net.minecraftforge.fml.relauncher.SideOnly
- *  com.astryxion.chaospersists.MoleDirtBlock
- *  net.minecraft.block.Block
- *  net.minecraft.block.material.Material
- *  net.minecraft.client.renderer.texture.IIconRegister
- *  net.minecraft.creativetab.CreativeTabs
- *  net.minecraft.entity.Entity
- *  net.minecraft.init.Blocks
- *  net.minecraft.util.math.AxisAlignedBB
- *  net.minecraft.util.IIcon
- *  net.minecraft.world.World
- */
 package com.astryxion.chaospersists.block;
 
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 import java.util.Random;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.material.Material;
-import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.item.ItemGroup;
 import net.minecraft.entity.Entity;
-import net.minecraft.init.Blocks;
-import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.block.Blocks;
+import net.minecraft.util.math.shapes.VoxelShape;
+import net.minecraft.util.math.shapes.VoxelShapes;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraft.world.server.ServerWorld;
 
-public class MoleDirtBlock
-extends Block {
-    public MoleDirtBlock() { this(0); }
+public class MoleDirtBlock extends Block {
+
+    public MoleDirtBlock() {
+        this(0);
+    }
+
+    public MoleDirtBlock(float hardness) {
+        super(AbstractBlock.Properties.of(Material.STONE)
+                .sound(SoundType.STONE)
+                .strength(hardness)
+                .randomTicks());
+    }
+
     public MoleDirtBlock(int i) {
-        super(Material.ROCK);
-        this.setSoundType(SoundType.STONE);
-        this.setCreativeTab(CreativeTabs.BUILDING_BLOCKS);
-        this.setTickRandomly(true);
+        this(0.6F);
     }
 
-    public void updateTick(World par1World, int par2, int par3, int par4, Random par5Random) {
-        if (par1World.isRemote) {
-            return;
-        }
-        par1World.setBlockState(new net.minecraft.util.math.BlockPos(par2, par3, par4), Blocks.AIR.getDefaultState(), 2);
+    @Override
+    public void randomTick(BlockState state, ServerWorld world, BlockPos pos, Random rand) {
+        world.setBlock(pos, Blocks.AIR.defaultBlockState(), 2);
     }
 
-    public AxisAlignedBB getCollisionBoundingBoxFromPool(World par1World, int par2, int par3, int par4) {
+    @Override
+    public VoxelShape getCollisionShape(BlockState state, net.minecraft.world.IBlockReader world, BlockPos pos, net.minecraft.util.math.shapes.ISelectionContext context) {
         float f = 0.125f;
-        return new AxisAlignedBB((double)par2, (double)par3, (double)par4, (double)(par2 + 1), (double)((float)(par3 + 1) - f), (double)(par4 + 1));
+        return VoxelShapes.box(0.0D, 0.0D, 0.0D, 1.0D, 1.0D - f, 1.0D);
     }
 
-    public void onEntityCollidedWithBlock(World par1World, int par2, int par3, int par4, Entity par5Entity) {
-        if (par5Entity != null) {
-            par5Entity.motionX *= 0.3;
-            par5Entity.motionZ *= 0.3;
+    @Override
+    public void entityInside(BlockState state, World world, BlockPos pos, Entity entity) {
+        if (entity != null) {
+            entity.setDeltaMovement(entity.getDeltaMovement().multiply(0.3D, 1.0D, 0.3D));
         }
-    }}
+    }
+}

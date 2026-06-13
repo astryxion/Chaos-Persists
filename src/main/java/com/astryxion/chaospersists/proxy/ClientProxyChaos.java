@@ -370,9 +370,9 @@
  *  com.astryxion.chaospersists.WormMedium
  *  com.astryxion.chaospersists.WormSmall
  *  net.minecraft.client.Minecraft
- *  net.minecraft.client.model.ModelBiped
- *  net.minecraft.client.model.ModelCow
- *  net.minecraft.client.model.ModelSpider
+ *  net.minecraft.client.renderer.model.ModelBiped
+ *  net.minecraft.client.renderer.model.ModelCow
+ *  net.minecraft.client.renderer.model.ModelSpider
  *  net.minecraft.client.renderer.entity.Render
  *  net.minecraft.client.renderer.entity.RenderArrow
  *  net.minecraft.client.renderer.entity.RenderFish
@@ -383,10 +383,10 @@
  */
 package com.astryxion.chaospersists.proxy;
 
+import net.minecraftforge.fml.client.registry.IRenderFactory;
 import net.minecraftforge.fml.client.registry.RenderingRegistry;
-import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.common.eventhandler.EventBus;
-import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.registries.ForgeRegistries;
 import com.astryxion.chaospersists.item.Acid;
 import com.astryxion.chaospersists.entity.Alien;
 import com.astryxion.chaospersists.entity.Alosaurus;
@@ -523,6 +523,7 @@ import com.astryxion.chaospersists.model.ModelHerculesBeetle;
 import com.astryxion.chaospersists.model.ModelHydrolisc;
 import com.astryxion.chaospersists.model.ModelIrukandji;
 import com.astryxion.chaospersists.model.ModelIsland;
+import com.astryxion.chaospersists.model.ModelIslandToo;
 import com.astryxion.chaospersists.model.ModelKraken;
 import com.astryxion.chaospersists.model.ModelKyuubi;
 import com.astryxion.chaospersists.model.ModelLeafMonster;
@@ -614,6 +615,7 @@ import com.astryxion.chaospersists.render.RenderCage;
 import com.astryxion.chaospersists.render.RenderCamarasaurus;
 import com.astryxion.chaospersists.render.RenderCassowary;
 import com.astryxion.chaospersists.render.RenderCaterKiller;
+import com.astryxion.chaospersists.render.RenderChaosFallback;
 import com.astryxion.chaospersists.render.RenderCaveFisher;
 import com.astryxion.chaospersists.render.RenderCephadrome;
 import com.astryxion.chaospersists.render.RenderChipmunk;
@@ -764,37 +766,45 @@ import com.astryxion.chaospersists.entity.WormLarge;
 import com.astryxion.chaospersists.entity.WormMedium;
 import com.astryxion.chaospersists.entity.WormSmall;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.model.ModelBiped;
-import net.minecraft.client.model.ModelCow;
-import net.minecraft.client.model.ModelSpider;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.renderer.block.model.IBakedModel;
-import net.minecraft.client.renderer.tileentity.TileEntityItemStackRenderer;
-import net.minecraft.client.renderer.block.model.ModelResourceLocation;
-import net.minecraft.client.renderer.block.statemap.StateMapperBase;
+import net.minecraft.client.renderer.entity.model.PlayerModel;
+import net.minecraft.client.renderer.entity.model.CowModel;
+import net.minecraft.client.renderer.entity.model.SpiderModel;
+import net.minecraft.client.renderer.model.IBakedModel;
+import net.minecraft.client.renderer.tileentity.ItemStackTileEntityRenderer;
+import net.minecraft.client.renderer.model.ModelResourceLocation;
+
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.registry.RegistrySimple;
-import net.minecraft.client.renderer.entity.Render;
-import net.minecraft.client.renderer.entity.RenderArrow;
-import net.minecraft.client.renderer.entity.RenderFish;
+
+import net.minecraft.client.renderer.entity.ArrowRenderer;
+import net.minecraft.client.renderer.entity.FishRenderer;
 import net.minecraft.item.Item;
 import net.minecraft.client.renderer.color.BlockColors;
 import net.minecraft.client.renderer.color.IBlockColor;
 import net.minecraft.client.renderer.color.ItemColors;
 import net.minecraft.client.renderer.color.IItemColor;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockAccess;
-import net.minecraft.world.biome.BiomeColorHelper;
-import net.minecraft.world.ColorizerFoliage;
-import net.minecraft.world.ColorizerGrass;
+import net.minecraft.world.IBlockDisplayReader;
+import net.minecraft.world.biome.BiomeColors;
 import net.minecraftforge.client.event.ModelBakeEvent;
 
+import java.lang.reflect.Field;
+import java.util.concurrent.Callable;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.model.ModelLoader;
+import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
+import net.minecraft.client.renderer.BlockModelShapes;
+import net.minecraft.client.renderer.entity.EntityRenderer;
+import net.minecraft.client.renderer.entity.EntityRendererManager;
+import net.minecraft.entity.EntityType;
+import java.util.Map;
 import net.minecraftforge.client.MinecraftForgeClient;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -813,12 +823,12 @@ extends CommonProxyChaos {
         MinecraftForge.EVENT_BUS.register(new Object() {
             @SubscribeEvent
             public void onModelRegistry(ModelRegistryEvent event) {
-                // Blockstates have "normal", "inventory", and for BlockGrass "snowy=false"/"snowy=true"
-                for (Item item : Item.REGISTRY) {
+                // Blockstates have "normal", "inventory", and for GrassBlock "snowy=false"/"snowy=true"
+                for (Item item : ForgeRegistries.ITEMS.getValues()) {
                     ResourceLocation rl = item.getRegistryName();
                     if (rl != null && "chaospersists".equals(rl.getNamespace())) {
                         ModelResourceLocation mrl = new ModelResourceLocation(rl, "inventory");
-                        ModelLoader.setCustomModelResourceLocation(item, 0, mrl);
+                        ModelLoader.addSpecialModel(mrl);
                         String path = rl.getPath();
                         if ("oremothra".equals(path) || "cagemothra".equals(path) || "eggmothra".equals(path)) {
                             LOG.info("Registering model: {} -> {}", rl, mrl);
@@ -826,119 +836,205 @@ extends CommonProxyChaos {
                     }
                 }
                 // Explicit 1.12.2 plant model registration (empty variant blocks)
-                ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(ChaosPersists.MyFlowerPinkBlock), 0, new ModelResourceLocation("chaospersists:flower_pink", "inventory"));
-                ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(ChaosPersists.MyFlowerBlueBlock), 0, new ModelResourceLocation("chaospersists:flower_blue", "inventory"));
-                ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(ChaosPersists.MyFlowerBlackBlock), 0, new ModelResourceLocation("chaospersists:flower_black", "inventory"));
-                ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(ChaosPersists.MyFlowerScaryBlock), 0, new ModelResourceLocation("chaospersists:flower_scary", "inventory"));
-
-                ModelLoader.setCustomStateMapper(ChaosPersists.MyPizzaBlock, new StateMapperBase() {
-                    @Override
-                    protected ModelResourceLocation getModelResourceLocation(IBlockState state) {
-                        return new ModelResourceLocation(ChaosPersists.MyPizzaBlock.getRegistryName(),
-                                "slices=" + state.getValue(BlockPizza.SLICES));
-                    }
-                });
-                ModelLoader.setCustomStateMapper(ChaosPersists.MyDuctTapeBlock, new StateMapperBase() {
-                    @Override
-                    protected ModelResourceLocation getModelResourceLocation(IBlockState state) {
-                        return new ModelResourceLocation(ChaosPersists.MyDuctTapeBlock.getRegistryName(),
-                                "slices=" + state.getValue(BlockDuctTape.SLICES));
-                    }
-                });
-                ModelLoader.setCustomModelResourceLocation(ChaosPersists.MyPizzaItem, 0,
-                        new ModelResourceLocation(ChaosPersists.MyPizzaItem.getRegistryName(), "inventory"));
-                ModelLoader.setCustomModelResourceLocation(ChaosPersists.MyDuctTapeItem, 0,
-                        new ModelResourceLocation(ChaosPersists.MyDuctTapeItem.getRegistryName(), "inventory"));
+                ModelLoader.addSpecialModel(new ModelResourceLocation("chaospersists:flower_pink", "inventory"));
+                ModelLoader.addSpecialModel(new ModelResourceLocation("chaospersists:flower_blue", "inventory"));
+                ModelLoader.addSpecialModel(new ModelResourceLocation("chaospersists:flower_black", "inventory"));
+                ModelLoader.addSpecialModel(new ModelResourceLocation("chaospersists:flower_scary", "inventory"));
+                // Pizza / duct tape slice variants: blockstate JSON (assets/.../blockstates/*.json)
+                ModelLoader.addSpecialModel(new ModelResourceLocation(ChaosPersists.MyPizzaItem.getRegistryName(), "inventory"));
+                ModelLoader.addSpecialModel(new ModelResourceLocation(ChaosPersists.MyDuctTapeItem.getRegistryName(), "inventory"));
             }
         });
         MinecraftForge.EVENT_BUS.register(new Object() {
             @SubscribeEvent
             @SuppressWarnings("unchecked")
             public void onModelBake(ModelBakeEvent event) {
+                fixBlockItemInventoryModels(event);
                 wrapTeisrHandItem(event, ChaosPersists.MyChainsaw, ChainsawItemStackRenderer::new);
 
                 ModelBertha berthaModel = new ModelBertha();
                 wrapTeisrHandItem(event, ChaosPersists.MyBertha, flat -> new StaticBigWeaponItemStackRenderer(flat,
                     new ResourceLocation("chaospersists", "textures/entity/berthatexture.png"),
                     StaticBigWeaponItemStackRenderer.Style.BERTHA,
-                    berthaModel::render));
+                    (matrixStack, buffer, light, overlay) -> berthaModel.renderToBuffer(matrixStack, buffer, light, overlay, 1.0F, 1.0F, 1.0F, 1.0F)));
 
                 ModelHammy hammyModel = new ModelHammy();
                 wrapTeisrHandItem(event, ChaosPersists.MyHammy, flat -> new StaticBigWeaponItemStackRenderer(flat,
                     new ResourceLocation("chaospersists", "textures/entity/attitudeadjustertexture.png"),
                     StaticBigWeaponItemStackRenderer.Style.HAMMY,
-                    hammyModel::render));
+                    (matrixStack, buffer, light, overlay) -> hammyModel.renderToBuffer(matrixStack, buffer, light, overlay, 1.0F, 1.0F, 1.0F, 1.0F)));
 
                 ModelSlice sliceModel = new ModelSlice();
                 wrapTeisrHandItem(event, ChaosPersists.MySlice, flat -> new StaticBigWeaponItemStackRenderer(flat,
                     new ResourceLocation("chaospersists", "textures/entity/slicetexture.png"),
                     StaticBigWeaponItemStackRenderer.Style.SLICE,
-                    sliceModel::render));
+                    (matrixStack, buffer, light, overlay) -> sliceModel.renderToBuffer(matrixStack, buffer, light, overlay, 1.0F, 1.0F, 1.0F, 1.0F)));
 
                 ModelSlice royalModel = new ModelSlice();
                 wrapTeisrHandItem(event, ChaosPersists.MyRoyal, flat -> new StaticBigWeaponItemStackRenderer(flat,
                     new ResourceLocation("chaospersists", "textures/entity/royaltexture.png"),
                     StaticBigWeaponItemStackRenderer.Style.ROYAL,
-                    royalModel::render));
+                    (matrixStack, buffer, light, overlay) -> royalModel.renderToBuffer(matrixStack, buffer, light, overlay, 1.0F, 1.0F, 1.0F, 1.0F)));
 
                 ModelBattleAxe battleAxeModel = new ModelBattleAxe();
                 wrapTeisrHandItem(event, ChaosPersists.MyBattleAxe, flat -> new StaticBigWeaponItemStackRenderer(flat,
                     new ResourceLocation("chaospersists", "textures/entity/battleaxetexture.png"),
                     StaticBigWeaponItemStackRenderer.Style.BATTLE_AXE,
-                    battleAxeModel::render));
+                    (matrixStack, buffer, light, overlay) -> battleAxeModel.renderToBuffer(matrixStack, buffer, light, overlay, 1.0F, 1.0F, 1.0F, 1.0F)));
 
                 ModelQueenBattleAxe queenAxeModel = new ModelQueenBattleAxe();
                 wrapTeisrHandItem(event, ChaosPersists.MyQueenBattleAxe, flat -> new StaticBigWeaponItemStackRenderer(flat,
                     new ResourceLocation("chaospersists", "textures/entity/queenbattleaxetexture.png"),
                     StaticBigWeaponItemStackRenderer.Style.QUEEN_BATTLE_AXE,
-                    queenAxeModel::render));
+                    (matrixStack, buffer, light, overlay) -> queenAxeModel.renderToBuffer(matrixStack, buffer, light, overlay, 1.0F, 1.0F, 1.0F, 1.0F)));
 
                 ModelSquidZooka squidModel = new ModelSquidZooka();
                 wrapTeisrHandItem(event, ChaosPersists.MySquidZooka, flat -> new StaticBigWeaponItemStackRenderer(flat,
                     new ResourceLocation("chaospersists", "textures/entity/squidzookatexture.png"),
                     StaticBigWeaponItemStackRenderer.Style.SQUID_ZOOKA,
-                    squidModel::render));
+                    (matrixStack, buffer, light, overlay) -> squidModel.renderToBuffer(matrixStack, buffer, light, overlay, 1.0F, 1.0F, 1.0F, 1.0F)));
 
                 wrapTeisrHandItem(event, ChaosPersists.MyBigHammer, BigHammerItemStackRenderer::new);
             }
         });
     }
 
+    /**
+     * Many item models reference {@code textures/items/...} while only {@code textures/blocks/...} exists.
+     * Placed blocks look fine; inventory icons show missing (pink/black). Use the block baked model in hand.
+     */
+    private static void fixBlockItemInventoryModels(ModelBakeEvent event) {
+        IBakedModel missing = event.getModelManager().getMissingModel();
+        int fixed = 0;
+        for (Item item : ForgeRegistries.ITEMS.getValues()) {
+            ResourceLocation rl = item.getRegistryName();
+            if (rl == null || !"chaospersists".equals(rl.getNamespace())) {
+                continue;
+            }
+            Block block = Block.byItem(item);
+            if (block == null || block == Blocks.AIR) {
+                continue;
+            }
+            ModelResourceLocation inventory = new ModelResourceLocation(rl, "inventory");
+            IBakedModel blockModel = resolveBlockBakedModel(event, block, missing);
+            if (blockModel != null) {
+                event.getModelRegistry().put(inventory, blockModel);
+                fixed++;
+            }
+        }
+        if (fixed > 0) {
+            LOG.info("Chaos Persists: used block models for {} inventory item icons (missing item textures).", fixed);
+        }
+    }
+
+    private static IBakedModel resolveBlockBakedModel(ModelBakeEvent event, Block block, IBakedModel missing) {
+        BlockState defaultState = block.defaultBlockState();
+        ModelResourceLocation defaultKey = BlockModelShapes.stateToModelLocation(defaultState);
+        IBakedModel model = event.getModelRegistry().get(defaultKey);
+        if (model != null && model != missing) {
+            return model;
+        }
+        for (BlockState state : block.getStateDefinition().getPossibleStates()) {
+            ModelResourceLocation stateKey = BlockModelShapes.stateToModelLocation(state);
+            model = event.getModelRegistry().get(stateKey);
+            if (model != null && model != missing) {
+                return model;
+            }
+        }
+        model = event.getModelRegistry().get(new ModelResourceLocation(block.getRegistryName(), ""));
+        if (model != null && model != missing) {
+            return model;
+        }
+        return null;
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static void patchMissingChaosEntityRenderersInManager() {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc == null) {
+            return;
+        }
+        EntityRendererManager manager = mc.getEntityRenderDispatcher();
+        Map<EntityType, EntityRenderer> renderMap = null;
+        for (String fieldName : new String[] {"entityRenderers", "renderers"}) {
+            try {
+                renderMap = ObfuscationReflectionHelper.getPrivateValue(EntityRendererManager.class, manager, fieldName);
+                if (renderMap != null) {
+                    break;
+                }
+            } catch (Exception ignored) {
+            }
+        }
+        if (renderMap == null) {
+            LOG.error("Chaos Persists: could not access EntityRendererManager renderer map; entity render crashes may continue.");
+            return;
+        }
+        int patched = 0;
+        for (net.minecraft.entity.EntityType<?> type : ForgeRegistries.ENTITIES.getValues()) {
+            ResourceLocation id = type.getRegistryName();
+            if (id == null || !"chaospersists".equals(id.getNamespace())) {
+                continue;
+            }
+            if (!renderMap.containsKey(type)) {
+                renderMap.put(type, new RenderChaosFallback(manager));
+                patched++;
+            }
+        }
+        if (patched > 0) {
+            LOG.warn("Chaos Persists: patched {} entity renderers directly into EntityRendererManager.", patched);
+        }
+    }
+
     @SuppressWarnings("unchecked")
-    private static void wrapTeisrHandItem(ModelBakeEvent event, Item item, Function<IBakedModel, TileEntityItemStackRenderer> createRenderer) {
+    private static void wrapTeisrHandItem(ModelBakeEvent event, Item item, Function<IBakedModel, net.minecraft.client.renderer.tileentity.ItemStackTileEntityRenderer> createRenderer) {
         ModelResourceLocation mrl = new ModelResourceLocation(item.getRegistryName(), "inventory");
-        IBakedModel baked = event.getModelRegistry().getObject(mrl);
+        IBakedModel baked = event.getModelRegistry().get(mrl);
         IBakedModel original = baked instanceof TeisrHandBakedModelWrapper
             ? ((TeisrHandBakedModelWrapper) baked).getInner()
             : baked;
         if (original != null) {
-            ((RegistrySimple<ModelResourceLocation, IBakedModel>) event.getModelRegistry()).putObject(mrl, new TeisrHandBakedModelWrapper(original));
-            item.setTileEntityItemStackRenderer(createRenderer.apply(original));
+            event.getModelRegistry().put(mrl, new TeisrHandBakedModelWrapper(original));
+            setItemTeisr(item, createRenderer.apply(original));
+        }
+    }
+
+    /** 1.12.2 {@code Item#setTileEntityItemStackRenderer}; 1.16.5 stores ISTER on {@link Item.Properties}. */
+    private static void setItemTeisr(Item item, ItemStackTileEntityRenderer renderer) {
+        try {
+            Field propertiesField = Item.class.getDeclaredField("properties");
+            propertiesField.setAccessible(true);
+            Item.Properties properties = (Item.Properties) propertiesField.get(item);
+            Field isterField = Item.Properties.class.getDeclaredField("ister");
+            isterField.setAccessible(true);
+            Supplier<Callable<ItemStackTileEntityRenderer>> supplier = () -> () -> renderer;
+            isterField.set(properties, supplier);
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException("Failed to set TEISR on " + item.getRegistryName(), e);
         }
     }
 
     @Override
     public void registerBlockColors() {
-        BlockColors blockColors = Minecraft.getMinecraft().getBlockColors();
+        BlockColors blockColors = Minecraft.getInstance().getBlockColors();
         IBlockColor grassColorHandler = (state, world, pos, tintIndex) -> {
             if (tintIndex == 0 && world != null && pos != null) {
-                return BiomeColorHelper.getGrassColorAtPos(world, pos);
+                return BiomeColors.getAverageGrassColor(world, pos);
             }
             return -1;
         };
-        blockColors.registerBlockColorHandler(grassColorHandler,
+        blockColors.register(grassColorHandler,
             ChaosPersists.MyAntBlock, ChaosPersists.MyRedAntBlock, ChaosPersists.MyRainbowAntBlock,
             ChaosPersists.MyUnstableAntBlock, ChaosPersists.TermiteBlock, ChaosPersists.CrystalTermiteBlock);
     }
 
     @Override
     public void registerLeafColors() {
-        net.minecraft.client.Minecraft.getMinecraft().getBlockColors().registerBlockColorHandler(
+        Minecraft.getInstance().getBlockColors().register(
             (state, world, pos, tintIndex) -> {
                 if (world != null && pos != null) {
-                    return net.minecraft.world.biome.BiomeColorHelper.getFoliageColorAtPos(world, pos);
+                    return BiomeColors.getAverageFoliageColor(world, pos);
                 }
-                return ColorizerFoliage.getFoliageColorBasic();
+                return net.minecraft.world.FoliageColors.getDefaultColor();
             },
             ChaosPersists.MyAppleLeaves,
             ChaosPersists.MyExperienceLeaves,
@@ -950,184 +1046,228 @@ extends CommonProxyChaos {
 
     @Override
     public void registerItemColors() {
-        ItemColors itemColors = Minecraft.getMinecraft().getItemColors();
+        ItemColors itemColors = Minecraft.getInstance().getItemColors();
         IItemColor grassColorHandler = (stack, tintIndex) -> {
             if (tintIndex == 0) {
-                return ColorizerGrass.getGrassColor(0.5D, 1.0D);
+                return net.minecraft.world.GrassColors.get(0.5F, 1.0F);
             }
             return -1;
         };
-        itemColors.registerItemColorHandler(grassColorHandler,
-            Item.getItemFromBlock(ChaosPersists.MyAntBlock),
-            Item.getItemFromBlock(ChaosPersists.MyRedAntBlock),
-            Item.getItemFromBlock(ChaosPersists.MyRainbowAntBlock),
-            Item.getItemFromBlock(ChaosPersists.MyUnstableAntBlock),
-            Item.getItemFromBlock(ChaosPersists.TermiteBlock),
-            Item.getItemFromBlock(ChaosPersists.CrystalTermiteBlock));
+        itemColors.register(grassColorHandler,
+            Item.byBlock(ChaosPersists.MyAntBlock),
+            Item.byBlock(ChaosPersists.MyRedAntBlock),
+            Item.byBlock(ChaosPersists.MyRainbowAntBlock),
+            Item.byBlock(ChaosPersists.MyUnstableAntBlock),
+            Item.byBlock(ChaosPersists.TermiteBlock),
+            Item.byBlock(ChaosPersists.CrystalTermiteBlock));
 
         // Same idea as ant nests: inventory / creative uses ItemColors; grayscale leaf textures use tintindex 0.
         IItemColor foliageItemColor = (stack, tintIndex) -> {
             if (tintIndex == 0) {
-                return ColorizerFoliage.getFoliageColorBasic();
+                return net.minecraft.world.FoliageColors.getDefaultColor();
             }
             return -1;
         };
-        itemColors.registerItemColorHandler(foliageItemColor,
-            Item.getItemFromBlock(ChaosPersists.MyAppleLeaves),
-            Item.getItemFromBlock(ChaosPersists.MyExperienceLeaves),
-            Item.getItemFromBlock(ChaosPersists.MyScaryLeaves),
-            Item.getItemFromBlock(ChaosPersists.MyCherryLeaves),
-            Item.getItemFromBlock(ChaosPersists.MyPeachLeaves));
+        itemColors.register(foliageItemColor,
+            Item.byBlock(ChaosPersists.MyAppleLeaves),
+            Item.byBlock(ChaosPersists.MyExperienceLeaves),
+            Item.byBlock(ChaosPersists.MyScaryLeaves),
+            Item.byBlock(ChaosPersists.MyCherryLeaves),
+            Item.byBlock(ChaosPersists.MyPeachLeaves));
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T extends net.minecraft.entity.Entity> net.minecraft.entity.EntityType<T> chaosEntityType(String path) {
+        return (net.minecraft.entity.EntityType<T>) ChaosPersists.getChaosEntityType(path);
+    }
+
+    private static boolean chaosRenderersRegistered;
+    private static final java.util.Set<String> chaosRendererPathsRegistered = new java.util.HashSet<>();
+
+    private static <T extends net.minecraft.entity.Entity> void registerChaosRenderer(
+            String path, IRenderFactory<T> factory) {
+        net.minecraft.entity.EntityType<T> type = chaosEntityType(path);
+        if (type != null) {
+            RenderingRegistry.registerEntityRenderingHandler(type, factory);
+            chaosRendererPathsRegistered.add(path);
+        } else {
+            org.apache.logging.log4j.LogManager.getLogger(ChaosPersists.class)
+                    .warn("Chaos Persists: cannot register renderer; entity type not loaded: chaospersists:{}", path);
+        }
+    }
+
+    private static void registerMissingChaosEntityRenderers() {
+        for (net.minecraft.entity.EntityType<?> type : net.minecraftforge.registries.ForgeRegistries.ENTITIES.getValues()) {
+            net.minecraft.util.ResourceLocation id = type.getRegistryName();
+            if (id == null || !"chaospersists".equals(id.getNamespace())) {
+                continue;
+            }
+            if (chaosRendererPathsRegistered.contains(id.getPath())) {
+                continue;
+            }
+            RenderingRegistry.registerEntityRenderingHandler(type, RenderChaosFallback::new);
+            chaosRendererPathsRegistered.add(id.getPath());
+            org.apache.logging.log4j.LogManager.getLogger(ChaosPersists.class)
+                    .warn("Chaos Persists: registered fallback renderer for chaospersists:{}", id.getPath());
+        }
     }
 
     public void registerRenderThings() {
-        MinecraftForge.EVENT_BUS.register((Object)new GirlfriendOverlayGui(Minecraft.getMinecraft()));
-        RenderingRegistry.registerEntityRenderingHandler(Girlfriend.class, manager -> new RenderGirlfriend(manager, new ModelBiped(), 0.5f));
-        RenderingRegistry.registerEntityRenderingHandler(Boyfriend.class, manager -> new RenderBoyfriend(manager, new ModelBiped(), 0.55f));
-        RenderingRegistry.registerEntityRenderingHandler(RedCow.class, manager -> new RenderEnchantedCow(manager, new ModelCow(), 0.7f));
-        RenderingRegistry.registerEntityRenderingHandler(GoldCow.class, manager -> new RenderEnchantedCow(manager, new ModelCow(), 0.7f));
-        RenderingRegistry.registerEntityRenderingHandler(EnchantedCow.class, manager -> new RenderEnchantedCow(manager, new ModelCow(), 0.7f));
-        RenderingRegistry.registerEntityRenderingHandler(CrystalCow.class, manager -> new RenderEnchantedCow(manager, new ModelCow(), 0.7f));
-        RenderingRegistry.registerEntityRenderingHandler(Shoes.class, manager -> new RenderShoe(manager));
-        RenderingRegistry.registerEntityRenderingHandler(SunspotUrchin.class, manager -> new RenderItemUrchin(manager));
-        RenderingRegistry.registerEntityRenderingHandler(WaterBall.class, manager -> new RenderItemUrchin(manager));
-        RenderingRegistry.registerEntityRenderingHandler(InkSack.class, manager -> new RenderItemUrchin(manager));
+        if (chaosRenderersRegistered) {
+            return;
+        }
+        chaosRenderersRegistered = true;
+        MinecraftForge.EVENT_BUS.register(new GirlfriendOverlayGui(Minecraft.getInstance()));
+        registerChaosRenderer("girlfriend", manager -> new RenderGirlfriend(manager, new PlayerModel<>(0.0F, false), 0.5f));
+        registerChaosRenderer("boyfriend", manager -> new RenderBoyfriend(manager, new PlayerModel<>(0.0F, false), 0.55f));
+        registerChaosRenderer("apple_cow", manager -> new RenderEnchantedCow(manager, new CowModel<com.astryxion.chaospersists.entity.RedCow>(), 0.7f));
+        registerChaosRenderer("golden_apple_cow", manager -> new RenderEnchantedCow(manager, new CowModel<com.astryxion.chaospersists.entity.RedCow>(), 0.7f));
+        registerChaosRenderer("enchanted_golden_apple_cow", manager -> new RenderEnchantedCow(manager, new CowModel<com.astryxion.chaospersists.entity.RedCow>(), 0.7f));
+        registerChaosRenderer("crystal_apple_cow", manager -> new RenderEnchantedCow(manager, new CowModel<com.astryxion.chaospersists.entity.RedCow>(), 0.7f));
+        registerChaosRenderer("shoes", manager -> new RenderShoe(manager));
+        registerChaosRenderer("sunspot_urchin", manager -> new RenderItemUrchin(manager));
+        registerChaosRenderer("water_ball", manager -> new RenderItemUrchin(manager));
+        registerChaosRenderer("ink_sack", manager -> new RenderItemUrchin(manager));
         final ResourceLocation texLaserBall = new ResourceLocation("chaospersists", "textures/items/laserball.png");
         final ResourceLocation texIceBall = new ResourceLocation("chaospersists", "textures/items/iceball.png");
         final ResourceLocation texAcid = new ResourceLocation("chaospersists", "textures/items/acid.png");
         final ResourceLocation texDeadIruk = new ResourceLocation("chaospersists", "textures/items/deadirukandji.png");
-        RenderingRegistry.registerEntityRenderingHandler(LaserBall.class, manager -> new RenderThrowableBillboard(manager, texLaserBall));
-        RenderingRegistry.registerEntityRenderingHandler(IceBall.class, manager -> new RenderThrowableBillboard(manager, texIceBall));
-        RenderingRegistry.registerEntityRenderingHandler(Acid.class, manager -> new RenderThrowableBillboard(manager, texAcid));
-        RenderingRegistry.registerEntityRenderingHandler(DeadIrukandji.class, manager -> new RenderThrowableBillboard(manager, texDeadIruk));
-        RenderingRegistry.registerEntityRenderingHandler(com.astryxion.chaospersists.item.ThunderBolt.class, manager -> new RenderThrowableBillboard(manager, texLaserBall));
-        RenderingRegistry.registerEntityRenderingHandler(BerthaHit.class, manager -> new RenderItemUrchin(manager));
-        RenderingRegistry.registerEntityRenderingHandler(EntityCage.class, manager -> new RenderCage(manager));
-        RenderingRegistry.registerEntityRenderingHandler(UltimateFishHook.class, manager -> new RenderFish(manager));
-        RenderingRegistry.registerEntityRenderingHandler(UltimateArrow.class, manager -> new RenderUltimateArrow(manager));
-        RenderingRegistry.registerEntityRenderingHandler(EntityThrownRock.class, manager -> new RenderThrownRock(manager));
-        RenderingRegistry.registerEntityRenderingHandler(IrukandjiArrow.class, manager -> new RenderArrow<IrukandjiArrow>(manager) {
+        registerChaosRenderer("laser_ball", manager -> new RenderThrowableBillboard(manager, texLaserBall));
+        registerChaosRenderer("ice_ball", manager -> new RenderThrowableBillboard(manager, texIceBall));
+        registerChaosRenderer("acid", manager -> new RenderThrowableBillboard(manager, texAcid));
+        registerChaosRenderer("dead_irukandji", manager -> new RenderThrowableBillboard(manager, texDeadIruk));
+        registerChaosRenderer("thunder_bolt", manager -> new RenderThrowableBillboard(manager, texLaserBall));
+        registerChaosRenderer("bertha_hit", manager -> new RenderItemUrchin(manager));
+        registerChaosRenderer("entity_cage", manager -> new RenderCage(manager));
+        registerChaosRenderer("ultimate_fish_hook", manager -> new FishRenderer(manager));
+        registerChaosRenderer("ultimate_arrow", manager -> new RenderUltimateArrow(manager));
+        registerChaosRenderer("thrown_rock", manager -> new RenderThrownRock(manager));
+        registerChaosRenderer("irukandji_arrow", manager -> new ArrowRenderer<IrukandjiArrow>(manager) {
             private final ResourceLocation tex = new ResourceLocation("minecraft", "textures/entity/projectiles/arrow.png");
 
             @Override
-            protected ResourceLocation getEntityTexture(IrukandjiArrow entity) {
+            public ResourceLocation getTextureLocation(IrukandjiArrow entity) {
                 return this.tex;
             }
         });
-        RenderingRegistry.registerEntityRenderingHandler(EntityButterfly.class, manager -> new RenderButterfly(manager, new ModelButterfly(1.0f), 0.3f, 1.0f));
-        RenderingRegistry.registerEntityRenderingHandler(Firefly.class, manager -> new RenderFirefly(manager, new ModelFirefly(2.5f), 0.2f, 0.75f));
-        RenderingRegistry.registerEntityRenderingHandler(EntityLunaMoth.class, manager -> new RenderButterfly(manager, new ModelButterfly(0.75f), 0.4f, 1.5f));
-        RenderingRegistry.registerEntityRenderingHandler(EntityMosquito.class, manager -> new RenderMosquito(manager, new ModelMosquito(), 0.3f, 0.5f));
-        RenderingRegistry.registerEntityRenderingHandler(Ghost.class, manager -> new RenderGhost(manager, new ModelGhost(), 0.0f, 0.65f));
-        RenderingRegistry.registerEntityRenderingHandler(GhostSkelly.class, manager -> new RenderGhostSkelly(manager, new ModelGhostSkelly(), 0.0f, 1.05f));
-        RenderingRegistry.registerEntityRenderingHandler(Mothra.class, manager -> new RenderButterfly(manager, new ModelButterfly(0.2f), 0.75f, 10.0f));
-        RenderingRegistry.registerEntityRenderingHandler(EntityAnt.class, manager -> new RenderAnt(manager, new ModelAnt(), 0.1f, 0.25f));
-        RenderingRegistry.registerEntityRenderingHandler(EntityRedAnt.class, manager -> new RenderAnt(manager, new ModelAnt(), 0.15f, 0.35f));
-        RenderingRegistry.registerEntityRenderingHandler(EntityRainbowAnt.class, manager -> new RenderAnt(manager, new ModelAnt(), 0.1f, 0.25f));
-        RenderingRegistry.registerEntityRenderingHandler(EntityUnstableAnt.class, manager -> new RenderAnt(manager, new ModelAnt(), 0.1f, 0.25f));
-        RenderingRegistry.registerEntityRenderingHandler(Alosaurus.class, manager -> new RenderAlosaurus(manager, new ModelAlosaurus(0.22f), 1.0f, 1.0f));
-        RenderingRegistry.registerEntityRenderingHandler(TRex.class, manager -> new RenderTRex(manager, new ModelTRex(0.2f), 1.0f, 1.2f));
-        RenderingRegistry.registerEntityRenderingHandler(Tshirt.class, manager -> new RenderTshirt(manager, new ModelTshirt(0.22f), 1.0f, 0.33f));
-        RenderingRegistry.registerEntityRenderingHandler(Cryolophosaurus.class, manager -> new RenderCryolophosaurus(manager, new ModelCryolophosaurus(0.75f), 0.75f, 0.5f));
-        RenderingRegistry.registerEntityRenderingHandler(Basilisk.class, manager -> new RenderBasilisk(manager, new ModelBasilisk(0.3f), 0.5f, 1.25f));
-        RenderingRegistry.registerEntityRenderingHandler(Camarasaurus.class, manager -> new RenderCamarasaurus(manager, new ModelCamarasaurus(0.65f), 0.65f, 0.65f));
-        RenderingRegistry.registerEntityRenderingHandler(Hydrolisc.class, manager -> new RenderHydrolisc(manager, new ModelHydrolisc(0.65f), 0.65f, 0.65f));
-        RenderingRegistry.registerEntityRenderingHandler(VelocityRaptor.class, manager -> new RenderVelocityRaptor(manager, new ModelVelocityRaptor(1.25f), 0.55f, 0.75f));
-        RenderingRegistry.registerEntityRenderingHandler(Dragonfly.class, manager -> new RenderDragonfly(manager, new ModelDragonfly(2.0f), 0.3f, 1.5f));
-        RenderingRegistry.registerEntityRenderingHandler(Bee.class, manager -> new RenderBee(manager, new ModelBee(2.0f), 0.9f, 1.1f));
-        RenderingRegistry.registerEntityRenderingHandler(EmperorScorpion.class, manager -> new RenderEmperorScorpion(manager, new ModelEmperorScorpion(0.22f), 0.95f, 1.5f));
-        RenderingRegistry.registerEntityRenderingHandler(Spyro.class, manager -> new RenderSpyro(manager, new ModelSpyro(0.65f), 0.65f, 0.75f));
-        RenderingRegistry.registerEntityRenderingHandler(Baryonyx.class, manager -> new RenderBaryonyx(manager, new ModelBaryonyx(0.25f), 1.0f, 1.0f));
-        RenderingRegistry.registerEntityRenderingHandler(GammaMetroid.class, manager -> new RenderGammaMetroid(manager, new ModelGammaMetroid(0.45f), 0.75f, 0.9f));
-        RenderingRegistry.registerEntityRenderingHandler(Cockateil.class, manager -> new RenderCockateil(manager, new ModelCockateil(1.0f), 0.3f, 0.75f));
-        RenderingRegistry.registerEntityRenderingHandler(RubyBird.class, manager -> new RenderCockateil(manager, new ModelCockateil(1.0f), 0.3f, 0.75f));
-        RenderingRegistry.registerEntityRenderingHandler(Kyuubi.class, manager -> new RenderKyuubi(manager, new ModelKyuubi(0.5f), 0.1f, 1.0f));
-        RenderingRegistry.registerEntityRenderingHandler(Scorpion.class, manager -> new RenderScorpion(manager, new ModelScorpion(0.62f), 0.35f, 0.75f));
-        RenderingRegistry.registerEntityRenderingHandler(CaveFisher.class, manager -> new RenderCaveFisher(manager, new ModelCaveFisher(0.62f), 0.35f, 0.75f));
-        RenderingRegistry.registerEntityRenderingHandler(Alien.class, manager -> new RenderAlien(manager, new ModelAlien(0.22f), 0.35f, 1.1f));
-        RenderingRegistry.registerEntityRenderingHandler(WaterDragon.class, manager -> new RenderWaterDragon(manager, new ModelWaterDragon(0.5f), 0.85f, 1.1f));
-        RenderingRegistry.registerEntityRenderingHandler(AttackSquid.class, manager -> new RenderAttackSquid(manager, new ModelAttackSquid(1.0f), 0.25f, 0.9f));
-        RenderingRegistry.registerEntityRenderingHandler(Elevator.class, manager -> new RenderElevator(manager));
-        RenderingRegistry.registerEntityRenderingHandler(Robot1.class, manager -> new RenderRobot1(manager, new ModelRobot1(2.0f), 0.3f, 1.0f));
-        RenderingRegistry.registerEntityRenderingHandler(Robot2.class, manager -> new RenderRobot2(manager, new ModelRobot2(1.0f), 1.0f, 1.0f));
-        RenderingRegistry.registerEntityRenderingHandler(Robot3.class, manager -> new RenderRobot3(manager, new ModelRobot3(1.0f), 1.0f, 0.5f));
-        RenderingRegistry.registerEntityRenderingHandler(Robot4.class, manager -> new RenderRobot4(manager, new ModelRobot4(1.0f), 1.0f, 1.0f));
-        RenderingRegistry.registerEntityRenderingHandler(Robot5.class, manager -> new RenderRobot5(manager, new ModelRobot5(1.0f), 0.5f, 1.0f));
-        RenderingRegistry.registerEntityRenderingHandler(Kraken.class, manager -> new RenderKraken(manager, new ModelKraken(1.0f), 1.0f, 1.0f));
-        RenderingRegistry.registerEntityRenderingHandler(Lizard.class, manager -> new RenderLizard(manager, new ModelLizard(0.65f), 0.75f, 1.0f));
-        RenderingRegistry.registerEntityRenderingHandler(Cephadrome.class, manager -> new RenderCephadrome(manager, new ModelCephadrome(0.55f), 1.25f, 1.0f));
-        RenderingRegistry.registerEntityRenderingHandler(Dragon.class, manager -> new RenderDragon(manager, new ModelDragon(0.65f), 1.25f, 1.0f));
-        RenderingRegistry.registerEntityRenderingHandler(Chipmunk.class, manager -> new RenderChipmunk(manager, new ModelChipmunk(1.0f), 0.15f, 0.9f));
-        RenderingRegistry.registerEntityRenderingHandler(Gazelle.class, manager -> new RenderGazelle(manager, new ModelGazelle(0.65f), 0.45f, 1.0f));
-        RenderingRegistry.registerEntityRenderingHandler(Ostrich.class, manager -> new RenderOstrich(manager, new ModelOstrich(0.65f), 0.55f, 1.0f));
-        RenderingRegistry.registerEntityRenderingHandler(TrooperBug.class, manager -> new RenderTrooperBug(manager, new ModelTrooperBug(0.22f), 0.95f, 1.1f));
-        RenderingRegistry.registerEntityRenderingHandler(SpitBug.class, manager -> new RenderSpitBug(manager, new ModelSpitBug(0.55f), 0.55f, 0.75f));
-        RenderingRegistry.registerEntityRenderingHandler(StinkBug.class, manager -> new RenderStinkBug(manager, new ModelStinkBug(0.75f), 0.35f, 0.85f));
-        RenderingRegistry.registerEntityRenderingHandler(Island.class, manager -> new RenderIsland(manager, new ModelIsland(1.0f), 0.25f, 1.0f));
-        RenderingRegistry.registerEntityRenderingHandler(IslandToo.class, manager -> new RenderIslandToo(manager, new ModelIsland(1.0f), 0.25f, 1.0f));
-        RenderingRegistry.registerEntityRenderingHandler(CreepingHorror.class, manager -> new RenderCreepingHorror(manager, new ModelCreepingHorror(), 0.45f, 0.75f));
-        RenderingRegistry.registerEntityRenderingHandler(TerribleTerror.class, manager -> new RenderTerribleTerror(manager, new ModelTerribleTerror(), 0.45f, 0.75f));
-        RenderingRegistry.registerEntityRenderingHandler(CliffRacer.class, manager -> new RenderCliffRacer(manager, new ModelCliffRacer(1.0f), 0.3f, 1.0f));
-        RenderingRegistry.registerEntityRenderingHandler(Triffid.class, manager -> new RenderTriffid(manager, new ModelTriffid(1.0f), 0.3f, 1.0f));
-        RenderingRegistry.registerEntityRenderingHandler(PitchBlack.class, manager -> new RenderPitchBlack(manager, new ModelPitchBlack(0.65f), 1.25f, 1.0f));
-        RenderingRegistry.registerEntityRenderingHandler(LurkingTerror.class, manager -> new RenderLurkingTerror(manager, new ModelLurkingTerror(), 0.45f, 0.85f));
-        RenderingRegistry.registerEntityRenderingHandler(Godzilla.class, manager -> new RenderGodzilla(manager, new ModelGodzilla(0.2f), 1.0f, 2.0f));
-        RenderingRegistry.registerEntityRenderingHandler(GodzillaHead.class, manager -> new RenderGodzillaHead(manager, null, 0.0f, 0.0f));
-        RenderingRegistry.registerEntityRenderingHandler(KingHead.class, manager -> new RenderKingHead(manager, null, 0.0f, 0.0f));
-        RenderingRegistry.registerEntityRenderingHandler(QueenHead.class, manager -> new RenderQueenHead(manager, null, 0.0f, 0.0f));
-        RenderingRegistry.registerEntityRenderingHandler(WormSmall.class, manager -> new RenderWormSmall(manager, new ModelWormSmall(), 0.1f, 1.0f));
-        RenderingRegistry.registerEntityRenderingHandler(WormMedium.class, manager -> new RenderWormMedium(manager, new ModelWormMedium(), 0.25f, 1.0f));
-        RenderingRegistry.registerEntityRenderingHandler(WormLarge.class, manager -> new RenderWormLarge(manager, new ModelWormLarge(), 0.9f, 1.0f));
-        RenderingRegistry.registerEntityRenderingHandler(Cassowary.class, manager -> new RenderCassowary(manager, new ModelCassowary(0.55f), 0.5f, 1.0f));
-        RenderingRegistry.registerEntityRenderingHandler(GoldFish.class, manager -> new RenderGoldFish(manager, new ModelGoldFish(0.7f), 0.2f, 1.0f));
-        RenderingRegistry.registerEntityRenderingHandler(CloudShark.class, manager -> new RenderCloudShark(manager, new ModelCloudShark(1.0f), 0.5f, 1.0f));
-        RenderingRegistry.registerEntityRenderingHandler(LeafMonster.class, manager -> new RenderLeafMonster(manager, new ModelLeafMonster(), 0.65f, 1.0f));
-        RenderingRegistry.registerEntityRenderingHandler(EnderKnight.class, manager -> new RenderEnderKnight(manager, new ModelEnderKnight(0.21f), 0.3f, 1.0f));
-        RenderingRegistry.registerEntityRenderingHandler(EnderReaper.class, manager -> new RenderEnderReaper(manager, new ModelEnderReaper(0.23f), 0.2f, 1.0f));
-        RenderingRegistry.registerEntityRenderingHandler(Beaver.class, manager -> new RenderBeaver(manager, new ModelBeaver(0.5f), 0.15f, 0.75f));
-        RenderingRegistry.registerEntityRenderingHandler(Termite.class, manager -> new RenderAnt(manager, new ModelAnt(), 0.15f, 0.35f));
-        RenderingRegistry.registerEntityRenderingHandler(Fairy.class, manager -> new RenderFairy(manager, new ModelFairy(1.5f), 0.1f, 0.35f));
-        RenderingRegistry.registerEntityRenderingHandler(Peacock.class, manager -> new RenderPeacock(manager, new ModelPeacock(0.75f), 0.25f, 1.0f));
-        RenderingRegistry.registerEntityRenderingHandler(Rotator.class, manager -> new RenderRotator(manager, new ModelRotator(0.25f), 0.1f, 1.0f));
-        RenderingRegistry.registerEntityRenderingHandler(Vortex.class, manager -> new RenderVortex(manager, new ModelVortex(0.25f), 0.1f, 1.0f));
-        RenderingRegistry.registerEntityRenderingHandler(DungeonBeast.class, manager -> new RenderDungeonBeast(manager, new ModelDungeonBeast(0.62f), 0.25f, 1.0f));
-        RenderingRegistry.registerEntityRenderingHandler(Rat.class, manager -> new RenderRat(manager, new ModelRat(1.0f), 0.1f, 0.75f));
-        RenderingRegistry.registerEntityRenderingHandler(Flounder.class, manager -> new RenderFlounder(manager, new ModelFlounder(), 0.1f, 1.0f));
-        RenderingRegistry.registerEntityRenderingHandler(Whale.class, manager -> new RenderWhale(manager, new ModelWhale(), 0.1f, 1.0f));
-        RenderingRegistry.registerEntityRenderingHandler(Irukandji.class, manager -> new RenderIrukandji(manager, new ModelIrukandji(1.0f), 0.1f, 0.25f));
-        RenderingRegistry.registerEntityRenderingHandler(Skate.class, manager -> new RenderSkate(manager, new ModelSkate(1.0f), 0.1f, 0.75f));
-        RenderingRegistry.registerEntityRenderingHandler(Urchin.class, manager -> new RenderUrchin(manager, new ModelUrchin(1.0f), 0.35f, 1.25f));
-        RenderingRegistry.registerEntityRenderingHandler(Mantis.class, manager -> new RenderMantis(manager, new ModelMantis(2.0f), 0.9f, 1.1f));
-        RenderingRegistry.registerEntityRenderingHandler(HerculesBeetle.class, manager -> new RenderHerculesBeetle(manager, new ModelHerculesBeetle(1.0f), 0.99f, 1.1f));
-        RenderingRegistry.registerEntityRenderingHandler(Stinky.class, manager -> new RenderStinky(manager, new ModelStinky(0.65f), 0.75f, 1.0f));
-        RenderingRegistry.registerEntityRenderingHandler(Coin.class, manager -> new RenderCoin(manager, new ModelCoin(0.22f), 0.75f, 0.125f));
-        RenderingRegistry.registerEntityRenderingHandler(TheKing.class, manager -> new RenderTheKing(manager, new ModelTheKing(0.65f), 1.9f, 2.1f));
-        RenderingRegistry.registerEntityRenderingHandler(TheQueen.class, manager -> new RenderTheQueen(manager, new ModelTheQueen(0.65f), 1.9f, 2.0f));
-        RenderingRegistry.registerEntityRenderingHandler(ThePrince.class, manager -> new RenderThePrince(manager, new ModelThePrince(0.65f), 0.75f, 0.75f));
-        RenderingRegistry.registerEntityRenderingHandler(Molenoid.class, manager -> new RenderMolenoid(manager, new ModelMolenoid(0.5f), 1.0f, 1.0f));
-        RenderingRegistry.registerEntityRenderingHandler(SeaMonster.class, manager -> new RenderSeaMonster(manager, new ModelSeaMonster(0.5f), 1.0f, 1.0f));
-        RenderingRegistry.registerEntityRenderingHandler(SeaViper.class, manager -> new RenderSeaViper(manager, new ModelSeaViper(0.5f), 1.0f, 1.0f));
-        RenderingRegistry.registerEntityRenderingHandler(EasterBunny.class, manager -> new RenderEasterBunny(manager, new ModelEasterBunny(0.55f), 0.5f, 1.0f));
-        RenderingRegistry.registerEntityRenderingHandler(CaterKiller.class, manager -> new RenderCaterKiller(manager, new ModelCaterKiller(0.22f), 1.0f, 1.25f));
-        RenderingRegistry.registerEntityRenderingHandler(Leon.class, manager -> new RenderLeon(manager, new ModelLeon(0.22f), 1.0f, 1.75f));
-        RenderingRegistry.registerEntityRenderingHandler(Hammerhead.class, manager -> new RenderHammerhead(manager, new ModelHammerhead(0.33f), 1.0f, 2.5f));
-        RenderingRegistry.registerEntityRenderingHandler(RubberDucky.class, manager -> new RenderRubberDucky(manager, new ModelRubberDucky(1.0f), 0.15f, 0.75f));
-        RenderingRegistry.registerEntityRenderingHandler(ThePrinceTeen.class, manager -> new RenderThePrinceTeen(manager, new ModelThePrinceTeen(0.65f), 1.0f, 1.25f));
-        RenderingRegistry.registerEntityRenderingHandler(BandP.class, manager -> new RenderBandP(manager, new ModelBandP(0.4f), 1.0f, 1.0f));
-        RenderingRegistry.registerEntityRenderingHandler(RockBase.class, manager -> new RenderRockBase(manager, new ModelRockBase(1.0f), 0.0f, 1.0f));
-        RenderingRegistry.registerEntityRenderingHandler(PurplePower.class, manager -> new RenderPurplePower(manager, new ModelPurplePower(1.0f), 0.3f, 2.75f));
-        RenderingRegistry.registerEntityRenderingHandler(Brutalfly.class, manager -> new RenderBrutalfly(manager, new ModelBrutalfly(0.2f), 0.75f, 9.0f));
-        RenderingRegistry.registerEntityRenderingHandler(Nastysaurus.class, manager -> new RenderNastysaurus(manager, new ModelNastysaurus(0.65f), 1.0f, 1.5f));
-        RenderingRegistry.registerEntityRenderingHandler(Pointysaurus.class, manager -> new RenderPointysaurus(manager, new ModelPointysaurus(1.0f), 1.0f, 1.0f));
-        RenderingRegistry.registerEntityRenderingHandler(Cricket.class, manager -> new RenderCricket(manager, new ModelCricket(2.5f), 0.15f, 0.5f));
-        RenderingRegistry.registerEntityRenderingHandler(ThePrincess.class, manager -> new RenderThePrincess(manager, new ModelThePrincess(0.65f), 0.7f, 0.7f));
-        RenderingRegistry.registerEntityRenderingHandler(Frog.class, manager -> new RenderFrog(manager, new ModelFrog(1.0f), 0.35f, 1.0f));
-        RenderingRegistry.registerEntityRenderingHandler(ThePrinceAdult.class, manager -> new RenderThePrinceAdult(manager, new ModelThePrinceAdult(0.65f), 1.2f, 1.0f));
-        RenderingRegistry.registerEntityRenderingHandler(SpiderRobot.class, manager -> new RenderSpiderRobot(manager, new ModelSpiderRobot(1.0f), 0.99f, 1.0f));
-        RenderingRegistry.registerEntityRenderingHandler(SpiderDriver.class, manager -> new RenderSpiderDriver(manager, new ModelSpider(), 0.5f));
-        RenderingRegistry.registerEntityRenderingHandler(GiantRobot.class, manager -> new RenderGiantRobot(manager, new ModelGiantRobot(0.25f), 0.99f, 1.0f));
-        RenderingRegistry.registerEntityRenderingHandler(AntRobot.class, manager -> new RenderAntRobot(manager, new ModelAntRobot(1.0f), 0.99f, 1.0f));
-        RenderingRegistry.registerEntityRenderingHandler(Crab.class, manager -> new RenderCrab(manager, new ModelCrab(1.0f), 0.99f, 1.0f));
+        registerChaosRenderer("butterfly", manager -> new RenderButterfly(manager, new ModelButterfly(1.0f), 0.3f, 1.0f));
+        registerChaosRenderer("firefly", manager -> new RenderFirefly(manager, new ModelFirefly(2.5f), 0.2f, 0.75f));
+        registerChaosRenderer("moth", manager -> new RenderButterfly(manager, new ModelButterfly(0.75f), 0.4f, 1.5f));
+        registerChaosRenderer("mosquito", manager -> new RenderMosquito(manager, new ModelMosquito(), 0.3f, 0.5f));
+        registerChaosRenderer("ghost", manager -> new RenderGhost(manager, new ModelGhost(), 0.0f, 0.65f));
+        registerChaosRenderer("ghost_pumpkin_skelly", manager -> new RenderGhostSkelly(manager, new ModelGhostSkelly(), 0.0f, 1.05f));
+        registerChaosRenderer("mothra", manager -> new RenderButterfly(manager, new ModelButterfly(0.2f), 0.75f, 10.0f));
+        registerChaosRenderer("ant", manager -> new RenderAnt(manager, new ModelAnt(), 0.1f, 0.25f));
+        registerChaosRenderer("red_ant", manager -> new RenderAnt(manager, new ModelAnt(), 0.15f, 0.35f));
+        registerChaosRenderer("rainbow_ant", manager -> new RenderAnt(manager, new ModelAnt(), 0.1f, 0.25f));
+        registerChaosRenderer("unstable_ant", manager -> new RenderAnt(manager, new ModelAnt(), 0.1f, 0.25f));
+        registerChaosRenderer("alosaurus", manager -> new RenderAlosaurus(manager, new ModelAlosaurus(0.22f), 1.0f, 1.0f));
+        registerChaosRenderer("t._rex", manager -> new RenderTRex(manager, new ModelTRex(0.2f), 1.0f, 1.2f));
+        registerChaosRenderer("trex", manager -> new RenderTRex(manager, new ModelTRex(0.2f), 1.0f, 1.2f));
+        registerChaosRenderer("tshirt", manager -> new RenderTshirt(manager, new ModelTshirt(0.22f), 1.0f, 0.33f));
+        registerChaosRenderer("cryolophosaurus", manager -> new RenderCryolophosaurus(manager, new ModelCryolophosaurus(0.75f), 0.75f, 0.5f));
+        registerChaosRenderer("basilisk", manager -> new RenderBasilisk(manager, new ModelBasilisk(0.3f), 0.5f, 1.25f));
+        registerChaosRenderer("camarasaurus", manager -> new RenderCamarasaurus(manager, new ModelCamarasaurus(0.65f), 0.65f, 0.65f));
+        registerChaosRenderer("hydrolisc", manager -> new RenderHydrolisc(manager, new ModelHydrolisc(0.65f), 0.65f, 0.65f));
+        registerChaosRenderer("velocity_raptor", manager -> new RenderVelocityRaptor(manager, new ModelVelocityRaptor(1.25f), 0.55f, 0.75f));
+        registerChaosRenderer("dragonfly", manager -> new RenderDragonfly(manager, new ModelDragonfly(2.0f), 0.3f, 1.5f));
+        registerChaosRenderer("bee", manager -> new RenderBee(manager, new ModelBee(2.0f), 0.9f, 1.1f));
+        registerChaosRenderer("emperor_scorpion", manager -> new RenderEmperorScorpion(manager, new ModelEmperorScorpion(0.22f), 0.95f, 1.5f));
+        registerChaosRenderer("baby_dragon", manager -> new RenderSpyro(manager, new ModelSpyro(0.65f), 0.65f, 0.75f));
+        registerChaosRenderer("baryonyx", manager -> new RenderBaryonyx(manager, new ModelBaryonyx(0.25f), 1.0f, 1.0f));
+        registerChaosRenderer("wtf", manager -> new RenderGammaMetroid(manager, new ModelGammaMetroid(0.45f), 0.75f, 0.9f));
+        registerChaosRenderer("gamma_metroid", manager -> new RenderGammaMetroid(manager, new ModelGammaMetroid(0.45f), 0.75f, 0.9f));
+        registerChaosRenderer("bird", manager -> new RenderCockateil(manager, new ModelCockateil(1.0f), 0.3f, 0.75f));
+        registerChaosRenderer("ruby_bird", manager -> new RenderCockateil(manager, new ModelCockateil(1.0f), 0.3f, 0.75f));
+        registerChaosRenderer("kyuubi", manager -> new RenderKyuubi(manager, new ModelKyuubi(0.5f), 0.1f, 1.0f));
+        registerChaosRenderer("scorpion", manager -> new RenderScorpion(manager, new ModelScorpion(0.62f), 0.35f, 0.75f));
+        registerChaosRenderer("cave_fisher", manager -> new RenderCaveFisher(manager, new ModelCaveFisher(0.62f), 0.35f, 0.75f));
+        registerChaosRenderer("alien", manager -> new RenderAlien(manager, new ModelAlien(0.22f), 0.35f, 1.1f));
+        registerChaosRenderer("water_dragon", manager -> new RenderWaterDragon(manager, new ModelWaterDragon(0.5f), 0.85f, 1.1f));
+        registerChaosRenderer("attack_squid", manager -> new RenderAttackSquid(manager, new ModelAttackSquid(1.0f), 0.25f, 0.9f));
+        registerChaosRenderer("hoverboard", manager -> new RenderElevator(manager));
+        registerChaosRenderer("bomb_omb", manager -> new RenderRobot1(manager, new ModelRobot1(2.0f), 0.3f, 1.0f));
+        registerChaosRenderer("robo_pounder", manager -> new RenderRobot2(manager, new ModelRobot2(1.0f), 1.0f, 1.0f));
+        registerChaosRenderer("robo_gunner", manager -> new RenderRobot3(manager, new ModelRobot3(1.0f), 1.0f, 0.5f));
+        registerChaosRenderer("robo_warrior", manager -> new RenderRobot4(manager, new ModelRobot4(1.0f), 1.0f, 1.0f));
+        registerChaosRenderer("robo_sniper", manager -> new RenderRobot5(manager, new ModelRobot5(1.0f), 0.5f, 1.0f));
+        registerChaosRenderer("the_kraken", manager -> new RenderKraken(manager, new ModelKraken(1.0f), 1.0f, 1.0f));
+        registerChaosRenderer("lizard", manager -> new RenderLizard(manager, new ModelLizard(0.65f), 0.75f, 1.0f));
+        registerChaosRenderer("cephadrome", manager -> new RenderCephadrome(manager, new ModelCephadrome(0.55f), 1.25f, 1.0f));
+        registerChaosRenderer("dragon", manager -> new RenderDragon(manager, new ModelDragon(0.65f), 1.25f, 1.0f));
+        registerChaosRenderer("chipmunk", manager -> new RenderChipmunk(manager, new ModelChipmunk(1.0f), 0.15f, 0.9f));
+        registerChaosRenderer("gazelle", manager -> new RenderGazelle(manager, new ModelGazelle(0.65f), 0.45f, 1.0f));
+        registerChaosRenderer("ostrich", manager -> new RenderOstrich(manager, new ModelOstrich(0.65f), 0.55f, 1.0f));
+        registerChaosRenderer("jumpy_bug", manager -> new RenderTrooperBug(manager, new ModelTrooperBug(0.22f), 0.95f, 1.1f));
+        registerChaosRenderer("spit_bug", manager -> new RenderSpitBug(manager, new ModelSpitBug(0.55f), 0.55f, 0.75f));
+        registerChaosRenderer("stink_bug", manager -> new RenderStinkBug(manager, new ModelStinkBug(0.75f), 0.35f, 0.85f));
+        registerChaosRenderer("island", manager -> new RenderIsland(manager, new ModelIsland(1.0f), 0.25f, 1.0f));
+        registerChaosRenderer("island_too", manager -> new RenderIslandToo(manager, new ModelIslandToo(1.0f), 0.25f, 1.0f));
+        registerChaosRenderer("creeping_horror", manager -> new RenderCreepingHorror(manager, new ModelCreepingHorror(), 0.45f, 0.75f));
+        registerChaosRenderer("terrible_terror", manager -> new RenderTerribleTerror(manager, new ModelTerribleTerror(), 0.45f, 0.75f));
+        registerChaosRenderer("cliff_racer", manager -> new RenderCliffRacer(manager, new ModelCliffRacer(1.0f), 0.3f, 1.0f));
+        registerChaosRenderer("triffid", manager -> new RenderTriffid(manager, new ModelTriffid(1.0f), 0.3f, 1.0f));
+        registerChaosRenderer("nightmare", manager -> new RenderPitchBlack(manager, new ModelPitchBlack(0.65f), 1.25f, 1.0f));
+        registerChaosRenderer("lurking_terror", manager -> new RenderLurkingTerror(manager, new ModelLurkingTerror(), 0.45f, 0.85f));
+        registerChaosRenderer("mobzilla", manager -> new RenderGodzilla(manager, new ModelGodzilla(0.2f), 1.0f, 2.0f));
+        registerChaosRenderer("mobzilla_head", manager -> new RenderGodzillaHead(manager));
+        registerChaosRenderer("king_head", manager -> new RenderKingHead(manager));
+        registerChaosRenderer("queen_head", manager -> new RenderQueenHead(manager));
+        registerChaosRenderer("small_worm", manager -> new RenderWormSmall(manager, new ModelWormSmall(), 0.1f, 1.0f));
+        registerChaosRenderer("medium_worm", manager -> new RenderWormMedium(manager, new ModelWormMedium(), 0.25f, 1.0f));
+        registerChaosRenderer("large_worm", manager -> new RenderWormLarge(manager, new ModelWormLarge(), 0.9f, 1.0f));
+        registerChaosRenderer("cassowary", manager -> new RenderCassowary(manager, new ModelCassowary(0.55f), 0.5f, 1.0f));
+        registerChaosRenderer("gold_fish", manager -> new RenderGoldFish(manager, new ModelGoldFish(0.7f), 0.2f, 1.0f));
+        registerChaosRenderer("cloud_shark", manager -> new RenderCloudShark(manager, new ModelCloudShark(1.0f), 0.5f, 1.0f));
+        registerChaosRenderer("leaf_monster", manager -> new RenderLeafMonster(manager, new ModelLeafMonster(), 0.65f, 1.0f));
+        registerChaosRenderer("ender_knight", manager -> new RenderEnderKnight(manager, new ModelEnderKnight(0.21f), 0.3f, 1.0f));
+        registerChaosRenderer("ender_reaper", manager -> new RenderEnderReaper(manager, new ModelEnderReaper(0.23f), 0.2f, 1.0f));
+        registerChaosRenderer("beaver", manager -> new RenderBeaver(manager, new ModelBeaver(0.5f), 0.15f, 0.75f));
+        registerChaosRenderer("termite", manager -> new RenderAnt(manager, new ModelAnt(), 0.15f, 0.35f));
+        registerChaosRenderer("fairy", manager -> new RenderFairy(manager, new ModelFairy(1.5f), 0.1f, 0.35f));
+        registerChaosRenderer("peacock", manager -> new RenderPeacock(manager, new ModelPeacock(0.75f), 0.25f, 1.0f));
+        registerChaosRenderer("rotator", manager -> new RenderRotator(manager, new ModelRotator(0.25f), 0.1f, 1.0f));
+        registerChaosRenderer("vortex", manager -> new RenderVortex(manager, new ModelVortex(0.25f), 0.1f, 1.0f));
+        registerChaosRenderer("dungeon_beast", manager -> new RenderDungeonBeast(manager, new ModelDungeonBeast(0.62f), 0.25f, 1.0f));
+        registerChaosRenderer("rat", manager -> new RenderRat(manager, new ModelRat(1.0f), 0.1f, 0.75f));
+        registerChaosRenderer("flounder", manager -> new RenderFlounder(manager, new ModelFlounder(), 0.1f, 1.0f));
+        registerChaosRenderer("whale", manager -> new RenderWhale(manager, new ModelWhale(), 0.1f, 1.0f));
+        registerChaosRenderer("irukandji", manager -> new RenderIrukandji(manager, new ModelIrukandji(1.0f), 0.1f, 0.25f));
+        registerChaosRenderer("skate", manager -> new RenderSkate(manager, new ModelSkate(1.0f), 0.1f, 0.75f));
+        registerChaosRenderer("crystal_urchin", manager -> new RenderUrchin(manager, new ModelUrchin(1.0f), 0.35f, 1.25f));
+        registerChaosRenderer("mantis", manager -> new RenderMantis(manager, new ModelMantis(2.0f), 0.9f, 1.1f));
+        registerChaosRenderer("hercules_beetle", manager -> new RenderHerculesBeetle(manager, new ModelHerculesBeetle(1.0f), 0.99f, 1.1f));
+        registerChaosRenderer("stinky", manager -> new RenderStinky(manager, new ModelStinky(0.65f), 0.75f, 1.0f));
+        registerChaosRenderer("coin", manager -> new RenderCoin(manager, new ModelCoin(0.22f), 0.75f, 0.125f));
+        registerChaosRenderer("the_king", manager -> new RenderTheKing(manager, new ModelTheKing(0.65f), 1.9f, 2.1f));
+        registerChaosRenderer("the_queen", manager -> new RenderTheQueen(manager, new ModelTheQueen(0.65f), 1.9f, 2.0f));
+        registerChaosRenderer("the_prince", manager -> new RenderThePrince(manager, new ModelThePrince(0.65f), 0.75f, 0.75f));
+        registerChaosRenderer("molenoid", manager -> new RenderMolenoid(manager, new ModelMolenoid(0.5f), 1.0f, 1.0f));
+        registerChaosRenderer("sea_monster", manager -> new RenderSeaMonster(manager, new ModelSeaMonster(0.5f), 1.0f, 1.0f));
+        registerChaosRenderer("sea_viper", manager -> new RenderSeaViper(manager, new ModelSeaViper(0.5f), 1.0f, 1.0f));
+        registerChaosRenderer("easter_bunny", manager -> new RenderEasterBunny(manager, new ModelEasterBunny(0.55f), 0.5f, 1.0f));
+        registerChaosRenderer("caterkiller", manager -> new RenderCaterKiller(manager, new ModelCaterKiller(0.22f), 1.0f, 1.25f));
+        registerChaosRenderer("leonopteryx", manager -> new RenderLeon(manager, new ModelLeon(0.22f), 1.0f, 1.75f));
+        registerChaosRenderer("hammerhead", manager -> new RenderHammerhead(manager, new ModelHammerhead(0.33f), 1.0f, 2.5f));
+        registerChaosRenderer("rubber_ducky", manager -> new RenderRubberDucky(manager, new ModelRubberDucky(1.0f), 0.15f, 0.75f));
+        registerChaosRenderer("the_young_prince", manager -> new RenderThePrinceTeen(manager, new ModelThePrinceTeen(0.65f), 1.0f, 1.25f));
+        registerChaosRenderer("criminal", manager -> new RenderBandP(manager, new ModelBandP(0.4f), 1.0f, 1.0f));
+        registerChaosRenderer("rock", manager -> new RenderRockBase(manager, new ModelRockBase(1.0f), 0.0f, 1.0f));
+        registerChaosRenderer("purple_power", manager -> new RenderPurplePower(manager, new ModelPurplePower(1.0f), 0.3f, 2.75f));
+        registerChaosRenderer("brutalfly", manager -> new RenderBrutalfly(manager, new ModelBrutalfly(0.2f), 0.75f, 9.0f));
+        registerChaosRenderer("nastysaurus", manager -> new RenderNastysaurus(manager, new ModelNastysaurus(0.65f), 1.0f, 1.5f));
+        registerChaosRenderer("pointysaurus", manager -> new RenderPointysaurus(manager, new ModelPointysaurus(1.0f), 1.0f, 1.0f));
+        registerChaosRenderer("cricket", manager -> new RenderCricket(manager, new ModelCricket(2.5f), 0.15f, 0.5f));
+        registerChaosRenderer("the_princess", manager -> new RenderThePrincess(manager, new ModelThePrincess(0.65f), 0.7f, 0.7f));
+        registerChaosRenderer("frog", manager -> new RenderFrog(manager, new ModelFrog(1.0f), 0.35f, 1.0f));
+        registerChaosRenderer("the_young_adult_prince", manager -> new RenderThePrinceAdult(manager, new ModelThePrinceAdult(0.65f), 1.2f, 1.0f));
+        registerChaosRenderer("robot_spider", manager -> new RenderSpiderRobot(manager, new ModelSpiderRobot(1.0f), 0.99f, 1.0f));
+        registerChaosRenderer("spider_driver", manager -> new RenderSpiderDriver(manager, new SpiderModel(), 0.5f));
+        registerChaosRenderer("jeffery", manager -> new RenderGiantRobot(manager, new ModelGiantRobot(0.25f), 0.99f, 1.0f));
+        registerChaosRenderer("robot_red_ant", manager -> new RenderAntRobot(manager, new ModelAntRobot(1.0f), 0.99f, 1.0f));
+        registerChaosRenderer("crab", manager -> new RenderCrab(manager, new ModelCrab(1.0f), 0.99f, 1.0f));
+        registerMissingChaosEntityRenderers();
+        patchMissingChaosEntityRenderersInManager();
         // 1.12.2: custom item renderers via ModelLoader / baked model
         // MinecraftForgeClient.registerItemRenderer removed in this Forge version
     }
@@ -1138,13 +1278,13 @@ extends CommonProxyChaos {
 
     public void registerKeyboardInput() {
         KeyHandler k = new KeyHandler();
-        FMLCommonHandler.instance().bus().register((Object)k);
+        MinecraftForge.EVENT_BUS.register(k);
         ChaosPersists.MyKeyhandler = k;
     }
 
     public void registerNetworkStuff() {
         super.registerNetworkStuff();
-        FMLCommonHandler.instance().bus().register((Object)new RiderControl(this.getNetwork()));
+        MinecraftForge.EVENT_BUS.register(new RiderControl(this.getNetwork()));
     }
 
     public int setArmorPrefix(String string) {

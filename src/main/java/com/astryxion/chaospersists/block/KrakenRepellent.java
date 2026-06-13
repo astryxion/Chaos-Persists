@@ -3,86 +3,74 @@ package com.astryxion.chaospersists.block;
 import com.astryxion.chaospersists.entity.EntityAnt;
 import com.astryxion.chaospersists.entity.Kraken;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockTorch;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumParticleTypes;
+import net.minecraft.block.TorchBlock;
+import net.minecraft.util.Util;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.AbstractBlock;
+import net.minecraft.block.Blocks;
+import net.minecraft.item.ItemGroup;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.util.Direction;
+import net.minecraft.particles.ParticleTypes;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraft.world.server.ServerWorld;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 import java.util.List;
 import java.util.Random;
 
-public class KrakenRepellent extends BlockTorch {
+public class KrakenRepellent extends TorchBlock {
 
     public KrakenRepellent() {
-        this(0);
+        this(0.8F);
+    }
+
+    public KrakenRepellent(float lightLevel) {
+        super(AbstractBlock.Properties.copy(Blocks.TORCH)
+                .lightLevel(state -> (int) (lightLevel * 15.0F)), ParticleTypes.FLAME);
     }
 
     public KrakenRepellent(int par1) {
-        this.setCreativeTab(CreativeTabs.REDSTONE);
+        this(0.8F);
     }
 
-    /** Matches 1.7.10 particle positions; {@link BlockTorch#FACING} replaces metadata 1–4 / floor. */
     @Override
-    @SideOnly(Side.CLIENT)
-    public void randomDisplayTick(IBlockState stateIn, World worldIn, BlockPos pos, Random rand) {
-        EnumFacing f = stateIn.getValue(FACING);
-        double var7 = pos.getX() + 0.5D;
-        double var9 = pos.getY() + 0.7D;
-        double var11 = pos.getZ() + 0.5D;
-        double var13 = 0.413D;
-        double var15 = 0.271D;
-
-        if (f == EnumFacing.EAST) {
-            this.spawnRepellentParticles(worldIn, var7 - var15, var9 + var13, var11);
-        } else if (f == EnumFacing.WEST) {
-            this.spawnRepellentParticles(worldIn, var7 + var15, var9 + var13, var11);
-        } else if (f == EnumFacing.NORTH) {
-            this.spawnRepellentParticles(worldIn, var7, var9 + var13, var11 - var15);
-        } else if (f == EnumFacing.SOUTH) {
-            this.spawnRepellentParticles(worldIn, var7, var9 + var13, var11 + var15);
-        } else {
-            this.spawnRepellentParticles(worldIn, var7, var9 + 0.21D, var11);
-        }
+    public String getDescriptionId() {
+        return Util.makeDescriptionId("block", this.getRegistryName());
     }
 
-    @SideOnly(Side.CLIENT)
+    @Override
+    @OnlyIn(Dist.CLIENT)
+    public void animateTick(BlockState stateIn, World worldIn, BlockPos pos, Random rand) {
+        spawnRepellentParticles(worldIn, pos.getX() + 0.5D, pos.getY() + 0.7D, pos.getZ() + 0.5D);
+    }
+
+    @OnlyIn(Dist.CLIENT)
     private void spawnRepellentParticles(World worldIn, double x, double y, double z) {
-        worldIn.spawnParticle(EnumParticleTypes.SMOKE_NORMAL, x, y, z, 0.0D, 0.0D, 0.0D);
-        worldIn.spawnParticle(EnumParticleTypes.FLAME, x, y, z, 0.0D, 0.0D, 0.0D);
-        worldIn.spawnParticle(EnumParticleTypes.REDSTONE, x, y, z, 0.0D, 0.0D, 0.0D);
+        worldIn.addParticle(ParticleTypes.SMOKE, x, y, z, 0.0D, 0.0D, 0.0D);
+        worldIn.addParticle(ParticleTypes.FLAME, x, y, z, 0.0D, 0.0D, 0.0D);
+        worldIn.addParticle(new net.minecraft.particles.RedstoneParticleData(1.0F, 0.0F, 0.0F, 1.0F), x, y, z, 0.0D, 0.0D, 0.0D);
     }
 
     @Override
-    public int tickRate(World worldIn) {
-        return 10;
+    public void tick(BlockState state, ServerWorld world, BlockPos pos, Random rand) {
+        findSomethingToRepell(world, pos);
+        ((ServerWorld) world).getBlockTicks().scheduleTick(pos, this, 10);
     }
 
     @Override
-    public void updateTick(World worldIn, BlockPos pos, IBlockState state, Random rand) {
-        if (!worldIn.isRemote) {
-            this.findSomethingToRepell(worldIn, pos);
-            worldIn.scheduleUpdate(pos, this, this.tickRate(worldIn));
-        }
+    public void onPlace(BlockState state, World world, BlockPos pos, BlockState oldState, boolean isMoving) {
+        ((ServerWorld) world).getBlockTicks().scheduleTick(pos, this, 10);
     }
 
     @Override
-    public void onBlockAdded(World worldIn, BlockPos pos, IBlockState state) {
-        worldIn.scheduleUpdate(pos, this, this.tickRate(worldIn));
+    public void neighborChanged(BlockState state, World world, BlockPos pos, Block block, BlockPos fromPos, boolean isMoving) {
+        ((ServerWorld) world).getBlockTicks().scheduleTick(pos, this, 10);
     }
 
-    @Override
-    public void neighborChanged(IBlockState state, World worldIn, BlockPos pos, Block blockIn, BlockPos fromPos) {
-        worldIn.scheduleUpdate(pos, this, this.tickRate(worldIn));
-    }
-
-    /** 1.7.10: push Krakens (larger vertical range) and Ants away within ~20 blocks. */
     private void findSomethingToRepell(World world, BlockPos pos) {
         int par2 = pos.getX();
         int par3 = pos.getY();
@@ -90,14 +78,13 @@ public class KrakenRepellent extends BlockTorch {
         AxisAlignedBB bb = new AxisAlignedBB(
                 (double) par2 - 20.0D, (double) par3 - 10.0D, (double) par4 - 20.0D,
                 (double) par2 + 20.0D, (double) par3 + 40.0D, (double) par4 + 20.0D);
-        List<EntityLivingBase> list = world.getEntitiesWithinAABB(EntityLivingBase.class, bb);
-        for (EntityLivingBase var3 : list) {
-            if (var3 != null && var3 instanceof Kraken) {
-                double d1 = var3.posX - (double) par2;
-                double d2 = var3.posY - 15.0D - (double) par3;
-                double d3 = var3.posZ - (double) par4;
-                double f = d1 * d1 + d2 * d2 + d3 * d3;
-                f = Math.sqrt(f);
+        List<LivingEntity> list = world.getEntitiesOfClass(LivingEntity.class, bb);
+        for (LivingEntity var3 : list) {
+            if (var3 instanceof Kraken) {
+                double d1 = var3.getX() - (double) par2;
+                double d2 = var3.getY() - 15.0D - (double) par3;
+                double d3 = var3.getZ() - (double) par4;
+                double f = Math.sqrt(d1 * d1 + d2 * d2 + d3 * d3);
                 f = 20.0D - f;
                 if (f > 20.0D) {
                     f = 20.0D;
@@ -105,17 +92,15 @@ public class KrakenRepellent extends BlockTorch {
                 if (f < 0.0D) {
                     f = 0.0D;
                 }
-                double dir = Math.atan2(var3.posX - (double) par2, var3.posZ - (double) par4);
+                double dir = Math.atan2(var3.getX() - (double) par2, var3.getZ() - (double) par4);
                 f *= 0.4D;
-                var3.motionX += f * Math.sin(dir);
-                var3.motionZ += f * Math.cos(dir);
+                var3.setDeltaMovement(var3.getDeltaMovement().add(f * Math.sin(dir), 0.0D, f * Math.cos(dir)));
             }
-            if (var3 != null && var3 instanceof EntityAnt) {
-                double d1 = var3.posX - (double) par2;
-                double d2 = var3.posY - (double) par3;
-                double d3 = var3.posZ - (double) par4;
-                double f = d1 * d1 + d2 * d2 + d3 * d3;
-                f = Math.sqrt(f);
+            if (var3 instanceof EntityAnt) {
+                double d1 = var3.getX() - (double) par2;
+                double d2 = var3.getY() - (double) par3;
+                double d3 = var3.getZ() - (double) par4;
+                double f = Math.sqrt(d1 * d1 + d2 * d2 + d3 * d3);
                 f = 20.0D - f;
                 if (f > 20.0D) {
                     f = 20.0D;
@@ -123,10 +108,9 @@ public class KrakenRepellent extends BlockTorch {
                 if (f < 0.0D) {
                     f = 0.0D;
                 }
-                double dir = Math.atan2(var3.posX - (double) par2, var3.posZ - (double) par4);
+                double dir = Math.atan2(var3.getX() - (double) par2, var3.getZ() - (double) par4);
                 f *= 0.4D;
-                var3.motionX += f * Math.sin(dir);
-                var3.motionZ += f * Math.cos(dir);
+                var3.setDeltaMovement(var3.getDeltaMovement().add(f * Math.sin(dir), 0.0D, f * Math.cos(dir)));
             }
         }
     }

@@ -7,19 +7,21 @@
  *  com.astryxion.chaospersists.ItemLettuce
  *  net.minecraft.block.Block
  *  net.minecraft.client.renderer.texture.IIconRegister
- *  net.minecraft.item.ItemSeedFood
+ *  net.minecraft.item.BlockItem
  *  net.minecraft.util.IIcon
  */
 package com.astryxion.chaospersists.item;
 
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraft.block.Block;
-import net.minecraft.item.ItemSeedFood;
+import net.minecraft.item.Food;
+import net.minecraft.item.Item;
+import net.minecraft.item.BlockItem;
 
 public class ItemLettuce
-extends ItemSeedFood {
+extends BlockItem {
     public ItemLettuce(int par2, float par3, Block par4, Block par5) {
-        super(par2, par3, par4, par5);
+        super(par4, new Item.Properties().food(new Food.Builder().nutrition(par2).saturationMod(par3).build()));
     }}
 

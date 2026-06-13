@@ -1,13 +1,13 @@
 package com.astryxion.chaospersists.item;
 
 import net.minecraft.block.Block;
-import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.item.ItemGroup;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
-import net.minecraft.init.Enchantments;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.block.Blocks;
+import net.minecraft.enchantment.Enchantments;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
@@ -22,49 +22,45 @@ import net.minecraft.world.World;
  */
 public class ItemNetherLost extends Item {
 
-    public ItemNetherLost(int par1) {
-        this.setMaxStackSize(1);
-        this.setMaxDamage(3000);
-        this.setCreativeTab(CreativeTabs.DECORATIONS);
-    }
+    public ItemNetherLost(int par1) { super(new Item.Properties()); }
 
     @Override
-    public void onCreated(ItemStack stack, World world, EntityPlayer player) {
-        stack.addEnchantment(Enchantments.SHARPNESS, 2);
+    public void onCraftedBy(ItemStack stack, World world, PlayerEntity player) {
+        stack.enchant(Enchantments.SHARPNESS, 2);
     }
 
-    public void onUsingTick(ItemStack stack, EntityPlayer player, int count) {
-        int lvl = EnchantmentHelper.getEnchantmentLevel(Enchantments.SHARPNESS, stack);
+    public void onUseTick(World world, PlayerEntity player, ItemStack stack, int count) {
+        int lvl = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.SHARPNESS, stack);
         if (lvl <= 0) {
-            stack.addEnchantment(Enchantments.SHARPNESS, 2);
+            stack.enchant(Enchantments.SHARPNESS, 2);
         }
     }
 
     @Override
-    public void onUpdate(ItemStack stack, World world, Entity entity, int itemSlot, boolean isSelected) {
-        this.onUsingTick(stack, null, 0);
-        if (world == null || entity == null || !(entity instanceof EntityPlayer)) {
+    public void inventoryTick(ItemStack stack, World world, Entity entity, int itemSlot, boolean isSelected) {
+        this.onUseTick(world, null, stack, 0);
+        if (world == null || entity == null || !(entity instanceof PlayerEntity)) {
             return;
         }
-        EntityPlayer player = (EntityPlayer) entity;
-        boolean holding = player.getHeldItemMainhand() == stack || player.getHeldItemOffhand() == stack;
+        PlayerEntity player = (PlayerEntity) entity;
+        boolean holding = player.getMainHandItem() == stack || player.getOffhandItem() == stack;
         if (!holding) {
             return;
         }
-        if (world.provider.getDimension() != -1) {
+        if (com.astryxion.chaospersists.core.ChaosPersists.getDimensionId(world) != -1) {
             return;
         }
-        BlockPos below = new BlockPos((int) player.posX, (int) player.posY - 1, (int) player.posZ);
+        BlockPos below = new BlockPos((int) player.getX(), (int) player.getY() - 1, (int) player.getZ());
         if (world.getBlockState(below).getBlock() != Blocks.NETHERRACK) {
             return;
         }
-        if (!world.isRemote) {
-            world.setBlockState(below, Blocks.QUARTZ_BLOCK.getDefaultState(), 3);
+        if (!world.isClientSide) {
+            world.setBlock(below, Blocks.QUARTZ_BLOCK.defaultBlockState(), 3);
         }
     }
 
     @Override
-    public int getMaxItemUseDuration(ItemStack stack) {
+    public int getUseDuration(ItemStack stack) {
         return 3000;
     }
 }

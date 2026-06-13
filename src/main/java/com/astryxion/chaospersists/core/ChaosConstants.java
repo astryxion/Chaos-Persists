@@ -22,7 +22,7 @@ public class ChaosConstants {
     public static final int GhastBlockID = 10;
     public static final int ZombiePigmanBlockID = 11;
     public static final int EndermanBlockID = 12;
-    public static final int CaveSpiderBlockID = 13;
+    public static final int CaveSpiderEntityBlockID = 13;
     public static final int SilverfishBlockID = 14;
     public static final int MagmaCubeBlockID = 15;
     public static final int WitchBlockID = 16;
@@ -238,7 +238,7 @@ public class ChaosConstants {
     public static final int GhastCageItemID = 11;
     public static final int ZombiePigmanCageItemID = 12;
     public static final int EndermanCageItemID = 13;
-    public static final int CaveSpiderCageItemID = 14;
+    public static final int CaveSpiderEntityCageItemID = 14;
     public static final int SilverfishCageItemID = 15;
     public static final int MagmaCubeCageItemID = 16;
     public static final int WitchCageItemID = 17;
@@ -732,7 +732,7 @@ public class ChaosConstants {
     public static final int GhastCageIndex = 171;
     public static final int ZombiePigmanCageIndex = 172;
     public static final int EndermanCageIndex = 173;
-    public static final int CaveSpiderCageIndex = 174;
+    public static final int CaveSpiderEntityCageIndex = 174;
     public static final int SilverfishCageIndex = 175;
     public static final int MagmaCubeCageIndex = 176;
     public static final int WitchCageIndex = 177;

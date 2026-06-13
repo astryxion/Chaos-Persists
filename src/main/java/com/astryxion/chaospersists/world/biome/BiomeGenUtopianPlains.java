@@ -77,474 +77,443 @@ import com.astryxion.chaospersists.entity.Ostrich;
 import com.astryxion.chaospersists.entity.Beaver;
 import com.astryxion.chaospersists.entity.Alosaurus;
 import com.astryxion.chaospersists.entity.Basilisk;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import net.minecraft.entity.EntityClassification;
+import net.minecraft.entity.EntityType;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.biome.BiomeDecorator;
-import net.minecraft.world.gen.feature.WorldGenAbstractTree;
+import net.minecraft.world.biome.BiomeAmbience;
+import net.minecraft.world.biome.BiomeGenerationSettings;
+import net.minecraft.world.biome.MobSpawnInfo;
+import net.minecraftforge.registries.ForgeRegistries;
 
-public class BiomeGenUtopianPlains
-extends Biome {
-    /**
-     * Registered Utopia biome ({@code BiomeGenUtopianPlains(BiomeUtopiaID)}). OreSpawn 1.7.10 only adds spawns inside
-     * {@code if (OreSpawnMain.*Enable != 0)} — the 1.12 port had mistakenly added the full table here unconditionally,
-     * which ignores config and massively outpaces the mining dimension (small pack sizes there).
-     */
-    public BiomeGenUtopianPlains(int par1) {
-        super(new Biome.BiomeProperties("Utopia").setTemperature(0.7f).setRainfall(0.5f).setWaterColor(353825).setBaseHeight(0.125f).setHeightVariation(0.05f));
-        this.spawnableCreatureList = new ArrayList<>();
-        this.spawnableMonsterList = new ArrayList<>();
-        this.spawnableCaveCreatureList = new ArrayList<>();
-        this.spawnableWaterCreatureList = new ArrayList<>();
-        this.addUtopiaPlainsSpawnEntries();
-        this.decorator.treesPerChunk = -999;
-        this.decorator.flowersPerChunk = 4;
-        this.decorator.grassPerChunk = 6;
+/**
+ * Utopia-family biomes ({@link Biome} is final in 1.16.5). Spawn tables match 1.12.2 {@code BiomeGenUtopianPlains}.
+ */
+public class BiomeGenUtopianPlains {
+
+    public static void addSpawn(MobSpawnInfo.Builder spawns, EntityClassification classification, String path, int weight,
+            int min, int max) {
+        EntityType<?> type = ForgeRegistries.ENTITIES.getValue(new ResourceLocation("chaospersists", path));
+        if (type != null) {
+            spawns.addSpawn(classification, new MobSpawnInfo.Spawners(type, weight, min, max));
+        }
     }
 
-    /**
-     * OreSpawn 1.7.10 {@code BiomeGenUtopianPlains(int)} spawn table — weights and min/max group sizes match
-     * {@code src 1.7.10/.../BiomeGenUtopianPlains.java} constructor. Village Mania uses the same base via {@link #setVillageCreatures()}.
-     */
-    private void addUtopiaPlainsSpawnEntries() {
-        if (ChaosPersists.GazelleEnable != 0) {
-            this.spawnableCreatureList.add(new Biome.SpawnListEntry(Gazelle.class, 10, 2, 4));
+    private static BiomeAmbience ambience(int waterColor) {
+        return new BiomeAmbience.Builder().waterColor(waterColor).waterFogColor(waterColor).fogColor(12638463).skyColor(7907327)
+                .build();
+    }
+
+    public static Biome buildBiome(int waterColor, float temperature, float downfall, float depth, float scale,
+            MobSpawnInfo.Builder spawns) {
+        return buildBiome(waterColor, temperature, downfall, depth, scale, spawns, ChaosBiomeGeneration.plainsLike());
+    }
+
+    public static Biome buildBiome(int waterColor, float temperature, float downfall, float depth, float scale,
+            MobSpawnInfo.Builder spawns, BiomeGenerationSettings generationSettings) {
+        return new Biome.Builder().precipitation(Biome.RainType.RAIN).biomeCategory(Biome.Category.PLAINS).depth(depth)
+                .scale(scale).temperature(temperature).downfall(downfall).specialEffects(ambience(waterColor))
+                .mobSpawnSettings(spawns.build()).generationSettings(generationSettings).build();
+    }
+
+    public Biome build() {
+        MobSpawnInfo.Builder spawns = new MobSpawnInfo.Builder();
+        addUtopiaPlainsSpawnEntries(spawns);
+        return buildBiome(353825, 0.7f, 0.5f, 0.125f, 0.05f, spawns);
+    }
+
+    public static void addUtopiaPlainsSpawnEntries(MobSpawnInfo.Builder spawns) {
+if (ChaosPersists.GazelleEnable != 0) {
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.CREATURE, "gazelle", 10, 2, 4);
         }
         if (ChaosPersists.FireflyEnable != 0) {
-            this.spawnableCaveCreatureList.add(new Biome.SpawnListEntry(Firefly.class, 15, 3, 6));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.AMBIENT, "firefly", 15, 3, 6);
         }
         if (ChaosPersists.GirlfriendEnable != 0) {
-            this.spawnableCreatureList.add(new Biome.SpawnListEntry(Girlfriend.class, 5, 2, 3));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.CREATURE, "girlfriend", 5, 2, 3);
         }
         if (ChaosPersists.BoyfriendEnable != 0) {
-            this.spawnableCreatureList.add(new Biome.SpawnListEntry(Boyfriend.class, 5, 2, 3));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.CREATURE, "boyfriend", 5, 2, 3);
         }
         if (ChaosPersists.CowEnable != 0) {
-            this.spawnableCreatureList.add(new Biome.SpawnListEntry(RedCow.class, 10, 4, 8));
-            this.spawnableCreatureList.add(new Biome.SpawnListEntry(GoldCow.class, 8, 2, 6));
-            this.spawnableCreatureList.add(new Biome.SpawnListEntry(EnchantedCow.class, 5, 2, 4));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.CREATURE, "apple_cow", 10, 4, 8);
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.CREATURE, "golden_apple_cow", 8, 2, 6);
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.CREATURE, "enchanted_golden_apple_cow", 5, 2, 4);
         }
         if (ChaosPersists.ButterflyEnable != 0) {
-            this.spawnableCaveCreatureList.add(new Biome.SpawnListEntry(EntityButterfly.class, 20, 3, 6));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.AMBIENT, "butterfly", 20, 3, 6);
         }
         if (ChaosPersists.MothEnable != 0) {
-            this.spawnableCaveCreatureList.add(new Biome.SpawnListEntry(EntityLunaMoth.class, 10, 1, 5));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.AMBIENT, "moth", 10, 1, 5);
         }
         if (ChaosPersists.ChipmunkEnable != 0) {
-            this.spawnableCaveCreatureList.add(new Biome.SpawnListEntry(Chipmunk.class, 3, 1, 2));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.AMBIENT, "chipmunk", 3, 1, 2);
         }
         if (ChaosPersists.CockateilEnable != 0) {
-            this.spawnableCaveCreatureList.add(new Biome.SpawnListEntry(Cockateil.class, 10, 2, 4));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.AMBIENT, "bird", 10, 2, 4);
         }
         if (ChaosPersists.GoldFishEnable != 0) {
-            this.spawnableCaveCreatureList.add(new Biome.SpawnListEntry(GoldFish.class, 1, 1, 1));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.AMBIENT, "gold_fish", 1, 1, 1);
         }
         if (ChaosPersists.WhaleEnable != 0) {
-            this.spawnableWaterCreatureList.add(new Biome.SpawnListEntry(Whale.class, 1, 1, 1));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.WATER_CREATURE, "whale", 1, 1, 1);
         }
         if (ChaosPersists.FlounderEnable != 0) {
-            this.spawnableWaterCreatureList.add(new Biome.SpawnListEntry(Flounder.class, 2, 2, 4));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.WATER_CREATURE, "flounder", 2, 2, 4);
         }
         if (ChaosPersists.CoinEnable != 0) {
-            this.spawnableCaveCreatureList.add(new Biome.SpawnListEntry(Coin.class, 2, 1, 1));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.AMBIENT, "coin", 2, 1, 1);
         }
         if (ChaosPersists.CricketEnable != 0) {
-            this.spawnableCaveCreatureList.add(new Biome.SpawnListEntry(Cricket.class, 5, 4, 6));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.AMBIENT, "cricket", 5, 4, 6);
         }
         if (ChaosPersists.FrogEnable != 0) {
-            this.spawnableWaterCreatureList.add(new Biome.SpawnListEntry(Frog.class, 5, 4, 6));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.WATER_CREATURE, "frog", 5, 4, 6);
         }
     }
 
-    @Override
-    public WorldGenAbstractTree getRandomTreeFeature(Random rand) {
-        return null;
-    }
-
-    public BiomeGenUtopianPlains(int par1, String name, int color, float temp, float rainfall) {
-        super(new Biome.BiomeProperties(name).setTemperature(temp).setRainfall(rainfall).setWaterColor(color).setBaseHeight(0.125f).setHeightVariation(0.05f));
-    }
-
-    public BiomeGenUtopianPlains(int par1, String name, int color, float temp, float rainfall, float baseHeight, float heightVariation) {
-        super(new Biome.BiomeProperties(name).setTemperature(temp).setRainfall(rainfall).setWaterColor(color).setBaseHeight(baseHeight).setHeightVariation(heightVariation));
-    }
-
-    public void setIslandCreatures() {
-        this.spawnableCreatureList = new ArrayList<>();
-        this.spawnableMonsterList = new ArrayList<>();
-        this.spawnableWaterCreatureList = new ArrayList<>();
-        this.spawnableCaveCreatureList = new ArrayList<>();
-        if (ChaosPersists.ButterflyEnable != 0) {
-            this.spawnableCaveCreatureList.add(new Biome.SpawnListEntry(EntityButterfly.class, 5, 2, 6));
+    public static void addIslandSpawnEntries(MobSpawnInfo.Builder spawns) {
+if (ChaosPersists.ButterflyEnable != 0) {
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.AMBIENT, "butterfly", 5, 2, 6);
         }
         if (ChaosPersists.CockateilEnable != 0) {
-            this.spawnableCaveCreatureList.add(new Biome.SpawnListEntry(Cockateil.class, 4, 1, 2));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.AMBIENT, "bird", 4, 1, 2);
         }
         if (ChaosPersists.MothEnable != 0) {
-            this.spawnableCaveCreatureList.add(new Biome.SpawnListEntry(EntityLunaMoth.class, 5, 2, 4));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.AMBIENT, "moth", 5, 2, 4);
         }
         if (ChaosPersists.FireflyEnable != 0) {
-            this.spawnableCaveCreatureList.add(new Biome.SpawnListEntry(Firefly.class, 10, 4, 8));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.AMBIENT, "firefly", 10, 4, 8);
         }
         if (ChaosPersists.DragonEnable != 0) {
-            this.spawnableCaveCreatureList.add(new Biome.SpawnListEntry(Dragon.class, 1, 1, 2));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.AMBIENT, "dragon", 1, 1, 2);
         }
         if (ChaosPersists.StinkyEnable != 0) {
-            this.spawnableCaveCreatureList.add(new Biome.SpawnListEntry(Stinky.class, 2, 1, 2));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.AMBIENT, "stinky", 2, 1, 2);
         }
         if (ChaosPersists.CliffRacerEnable != 0) {
-            this.spawnableCaveCreatureList.add(new Biome.SpawnListEntry(CliffRacer.class, 20, 3, 6));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.AMBIENT, "cliff_racer", 20, 3, 6);
         }
         if (ChaosPersists.CloudSharkEnable != 0) {
-            this.spawnableCaveCreatureList.add(new Biome.SpawnListEntry(CloudShark.class, 1, 1, 1));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.AMBIENT, "cloud_shark", 1, 1, 1);
         }
         if (ChaosPersists.GoldFishEnable != 0) {
-            this.spawnableCaveCreatureList.add(new Biome.SpawnListEntry(GoldFish.class, 5, 2, 4));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.AMBIENT, "gold_fish", 5, 2, 4);
         }
         if (ChaosPersists.CreepingHorrorEnable != 0) {
-            this.spawnableMonsterList.add(new Biome.SpawnListEntry(CreepingHorror.class, 60, 4, 8));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.MONSTER, "creeping_horror", 60, 4, 8);
         }
         if (ChaosPersists.TerribleTerrorEnable != 0) {
-            this.spawnableMonsterList.add(new Biome.SpawnListEntry(TerribleTerror.class, 25, 3, 6));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.MONSTER, "terrible_terror", 25, 3, 6);
         }
         if (ChaosPersists.LurkingTerrorEnable != 0) {
-            this.spawnableMonsterList.add(new Biome.SpawnListEntry(LurkingTerror.class, 1, 1, 1));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.MONSTER, "lurking_terror", 1, 1, 1);
         }
         if (ChaosPersists.PitchBlackEnable != 0) {
-            this.spawnableMonsterList.add(new Biome.SpawnListEntry(PitchBlack.class, 15, 3, 6));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.MONSTER, "nightmare", 15, 3, 6);
         }
         if (ChaosPersists.LeafMonsterEnable != 0) {
-            this.spawnableMonsterList.add(new Biome.SpawnListEntry(LeafMonster.class, 35, 2, 4));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.MONSTER, "leaf_monster", 35, 2, 4);
         }
         if (ChaosPersists.EnderReaperEnable != 0) {
-            this.spawnableMonsterList.add(new Biome.SpawnListEntry(EnderReaper.class, 25, 2, 4));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.MONSTER, "ender_reaper", 25, 2, 4);
         }
         if (ChaosPersists.HerculesBeetleEnable != 0) {
-            this.spawnableMonsterList.add(new Biome.SpawnListEntry(HerculesBeetle.class, 5, 1, 2));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.MONSTER, "hercules_beetle", 5, 1, 2);
         }
     }
 
-    public void setCrystalCreatures() {
-        this.spawnableCreatureList = new ArrayList<>();
-        this.spawnableMonsterList = new ArrayList<>();
-        this.spawnableWaterCreatureList = new ArrayList<>();
-        this.spawnableCaveCreatureList = new ArrayList<>();
-        if (ChaosPersists.CowEnable != 0) {
-            this.spawnableCreatureList.add(new Biome.SpawnListEntry(CrystalCow.class, 1, 1, 4));
+    public static void addCrystalSpawnEntries(MobSpawnInfo.Builder spawns) {
+if (ChaosPersists.CowEnable != 0) {
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.CREATURE, "crystal_apple_cow", 1, 1, 4);
         }
         if (ChaosPersists.FairyEnable != 0) {
-            this.spawnableCaveCreatureList.add(new Biome.SpawnListEntry(Fairy.class, 10, 4, 8));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.AMBIENT, "fairy", 10, 4, 8);
         }
         if (ChaosPersists.PeacockEnable != 0) {
-            this.spawnableCaveCreatureList.add(new Biome.SpawnListEntry(Peacock.class, 5, 4, 8));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.AMBIENT, "peacock", 5, 4, 8);
         }
         if (ChaosPersists.MantisEnable != 0) {
-            this.spawnableCaveCreatureList.add(new Biome.SpawnListEntry(Mantis.class, 1, 1, 1));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.AMBIENT, "mantis", 1, 1, 1);
         }
         if (ChaosPersists.RotatorEnable != 0) {
-            this.spawnableMonsterList.add(new Biome.SpawnListEntry(Rotator.class, 4, 1, 2));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.MONSTER, "rotator", 4, 1, 2);
         }
         if (ChaosPersists.VortexEnable != 0) {
-            this.spawnableMonsterList.add(new Biome.SpawnListEntry(Vortex.class, 3, 1, 2));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.MONSTER, "vortex", 3, 1, 2);
         }
         if (ChaosPersists.UrchinEnable != 0) {
-            this.spawnableMonsterList.add(new Biome.SpawnListEntry(Urchin.class, 15, 2, 4));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.MONSTER, "crystal_urchin", 15, 2, 4);
         }
         if (ChaosPersists.DungeonBeastEnable != 0) {
-            this.spawnableMonsterList.add(new Biome.SpawnListEntry(DungeonBeast.class, 30, 4, 6));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.MONSTER, "dungeon_beast", 30, 4, 6);
         }
         if (ChaosPersists.RatEnable != 0) {
-            this.spawnableMonsterList.add(new Biome.SpawnListEntry(Rat.class, 40, 4, 6));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.MONSTER, "rat", 40, 4, 6);
         }
         if (ChaosPersists.ButterflyEnable != 0) {
-            this.spawnableCaveCreatureList.add(new Biome.SpawnListEntry(EntityButterfly.class, 10, 2, 4));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.AMBIENT, "butterfly", 10, 2, 4);
         }
         if (ChaosPersists.CockateilEnable != 0) {
-            this.spawnableCaveCreatureList.add(new Biome.SpawnListEntry(Cockateil.class, 4, 1, 2));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.AMBIENT, "bird", 4, 1, 2);
         }
         if (ChaosPersists.MothEnable != 0) {
-            this.spawnableCaveCreatureList.add(new Biome.SpawnListEntry(EntityLunaMoth.class, 4, 1, 2));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.AMBIENT, "moth", 4, 1, 2);
         }
         if (ChaosPersists.WhaleEnable != 0) {
-            this.spawnableWaterCreatureList.add(new Biome.SpawnListEntry(Whale.class, 1, 1, 2));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.WATER_CREATURE, "whale", 1, 1, 2);
         }
         if (ChaosPersists.CrabEnable != 0) {
-            this.spawnableWaterCreatureList.add(new Biome.SpawnListEntry(Crab.class, 1, 1, 2));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.WATER_CREATURE, "crab", 1, 1, 2);
         }
         if (ChaosPersists.FlounderEnable != 0) {
-            this.spawnableWaterCreatureList.add(new Biome.SpawnListEntry(Flounder.class, 5, 6, 8));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.WATER_CREATURE, "flounder", 5, 6, 8);
         }
         if (ChaosPersists.IrukandjiEnable != 0) {
-            this.spawnableWaterCreatureList.add(new Biome.SpawnListEntry(Irukandji.class, 4, 2, 3));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.WATER_CREATURE, "irukandji", 4, 2, 3);
         }
         if (ChaosPersists.SkateEnable != 0) {
-            this.spawnableWaterCreatureList.add(new Biome.SpawnListEntry(Skate.class, 2, 3, 6));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.WATER_CREATURE, "skate", 2, 3, 6);
         }
         if (ChaosPersists.FrogEnable != 0) {
-            this.spawnableWaterCreatureList.add(new Biome.SpawnListEntry(Frog.class, 1, 3, 5));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.WATER_CREATURE, "frog", 1, 3, 5);
         }
-        this.decorator.flowersPerChunk = -999;
-        this.decorator.grassPerChunk = -999;
-        this.decorator.treesPerChunk = -999;
-        this.decorator.bigMushroomsPerChunk = -999;
-        this.decorator.mushroomsPerChunk = -999;
-        this.decorator.reedsPerChunk = -999;
     }
 
     /**
-     * Village Mania dimension (1.7.10): same biome instance first gets {@link #addUtopiaPlainsSpawnEntries()} then these entries — we rebuild lists to match that cumulative table.
+     * Village Mania dimension (1.7.10): same biome instance first gets {@link #addUtopiaPlainsSpawnEntries()} then these entries.
      */
-    public void setVillageCreatures() {
-        this.spawnableCreatureList = new ArrayList<>();
-        this.spawnableMonsterList = new ArrayList<>();
-        this.spawnableWaterCreatureList = new ArrayList<>();
-        this.spawnableCaveCreatureList = new ArrayList<>();
-        this.addUtopiaPlainsSpawnEntries();
-        this.decorator.treesPerChunk = -999;
-        this.decorator.flowersPerChunk = 4;
-        this.decorator.grassPerChunk = 6;
-        if (ChaosPersists.Robot1Enable != 0) {
-            this.spawnableMonsterList.add(new Biome.SpawnListEntry(Robot1.class, 25, 4, 8));
+    public static void addVillageSpawnEntries(MobSpawnInfo.Builder spawns) {
+if (ChaosPersists.Robot1Enable != 0) {
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.MONSTER, "bomb_omb", 25, 4, 8);
         }
         if (ChaosPersists.Robot2Enable != 0) {
-            this.spawnableMonsterList.add(new Biome.SpawnListEntry(Robot2.class, 16, 2, 8));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.MONSTER, "robo_pounder", 16, 2, 8);
         }
         if (ChaosPersists.Robot3Enable != 0) {
-            this.spawnableMonsterList.add(new Biome.SpawnListEntry(Robot3.class, 12, 2, 4));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.MONSTER, "robo_gunner", 12, 2, 4);
         }
         if (ChaosPersists.Robot4Enable != 0) {
-            this.spawnableMonsterList.add(new Biome.SpawnListEntry(Robot4.class, 8, 1, 2));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.MONSTER, "robo_warrior", 8, 1, 2);
         }
         if (ChaosPersists.Robot5Enable != 0) {
-            this.spawnableMonsterList.add(new Biome.SpawnListEntry(Robot5.class, 20, 4, 8));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.MONSTER, "robo_sniper", 20, 4, 8);
         }
         if (ChaosPersists.JefferyEnable != 0) {
-            this.spawnableMonsterList.add(new Biome.SpawnListEntry(GiantRobot.class, 8, 1, 2));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.MONSTER, "jeffery", 8, 1, 2);
         }
         if (ChaosPersists.SpiderDriverEnable != 0) {
-            this.spawnableMonsterList.add(new Biome.SpawnListEntry(SpiderDriver.class, 20, 3, 5));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.MONSTER, "spider_driver", 20, 3, 5);
         }
         if (ChaosPersists.GodzillaEnable != 0) {
-            this.spawnableMonsterList.add(new Biome.SpawnListEntry(Godzilla.class, 2, 1, 1));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.MONSTER, "mobzilla", 2, 1, 1);
         }
         if (ChaosPersists.FireflyEnable != 0) {
-            this.spawnableCaveCreatureList.add(new Biome.SpawnListEntry(Firefly.class, 10, 3, 6));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.AMBIENT, "firefly", 10, 3, 6);
         }
         if (ChaosPersists.GirlfriendEnable != 0) {
-            this.spawnableCreatureList.add(new Biome.SpawnListEntry(Girlfriend.class, 1, 2, 3));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.CREATURE, "girlfriend", 1, 2, 3);
         }
         if (ChaosPersists.BoyfriendEnable != 0) {
-            this.spawnableCreatureList.add(new Biome.SpawnListEntry(Boyfriend.class, 1, 2, 3));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.CREATURE, "boyfriend", 1, 2, 3);
         }
         if (ChaosPersists.CowEnable != 0) {
-            this.spawnableCreatureList.add(new Biome.SpawnListEntry(RedCow.class, 8, 4, 8));
-            this.spawnableCreatureList.add(new Biome.SpawnListEntry(GoldCow.class, 6, 2, 6));
-            this.spawnableCreatureList.add(new Biome.SpawnListEntry(EnchantedCow.class, 4, 2, 4));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.CREATURE, "apple_cow", 8, 4, 8);
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.CREATURE, "golden_apple_cow", 6, 2, 6);
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.CREATURE, "enchanted_golden_apple_cow", 4, 2, 4);
         }
         if (ChaosPersists.ButterflyEnable != 0) {
-            this.spawnableCaveCreatureList.add(new Biome.SpawnListEntry(EntityButterfly.class, 25, 3, 6));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.AMBIENT, "butterfly", 25, 3, 6);
         }
         if (ChaosPersists.MothEnable != 0) {
-            this.spawnableCaveCreatureList.add(new Biome.SpawnListEntry(EntityLunaMoth.class, 20, 1, 5));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.AMBIENT, "moth", 20, 1, 5);
         }
         if (ChaosPersists.ChipmunkEnable != 0) {
-            this.spawnableCaveCreatureList.add(new Biome.SpawnListEntry(Chipmunk.class, 5, 1, 2));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.AMBIENT, "chipmunk", 5, 1, 2);
         }
         if (ChaosPersists.CockateilEnable != 0) {
-            this.spawnableCaveCreatureList.add(new Biome.SpawnListEntry(Cockateil.class, 15, 2, 4));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.AMBIENT, "bird", 15, 2, 4);
         }
         if (ChaosPersists.TshirtEnable != 0) {
-            this.spawnableCaveCreatureList.add(new Biome.SpawnListEntry(Tshirt.class, 2, 1, 1));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.AMBIENT, "tshirt", 2, 1, 1);
         }
         if (ChaosPersists.CoinEnable != 0) {
-            this.spawnableCaveCreatureList.add(new Biome.SpawnListEntry(Coin.class, 2, 1, 1));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.AMBIENT, "coin", 2, 1, 1);
         }
         if (ChaosPersists.CriminalEnable != 0) {
-            this.spawnableCaveCreatureList.add(new Biome.SpawnListEntry(BandP.class, 15, 1, 2));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.AMBIENT, "criminal", 15, 1, 2);
         }
     }
 
-    /**
-     * OreSpawn 1.7.10 {@code BiomeGenUtopianPlains#setChaosCreatures()} (dimension 6). Weights and min/max groups match 1.7.10; water list stays empty.
-     */
-    public void setChaosCreatures() {
-        this.spawnableCreatureList = new ArrayList<>();
-        this.spawnableMonsterList = new ArrayList<>();
-        this.spawnableWaterCreatureList = new ArrayList<>();
-        this.spawnableCaveCreatureList = new ArrayList<>();
-        this.decorator.flowersPerChunk = 2;
-        this.decorator.grassPerChunk = 4;
-        this.decorator.treesPerChunk = 1;
-        this.decorator.bigMushroomsPerChunk = -999;
-        this.decorator.mushroomsPerChunk = -999;
-        this.decorator.reedsPerChunk = -999;
-        if (ChaosPersists.ButterflyEnable != 0) {
-            this.spawnableCaveCreatureList.add(new Biome.SpawnListEntry(EntityButterfly.class, 20, 3, 6));
+    public static void addChaosSpawnEntries(MobSpawnInfo.Builder spawns) {
+if (ChaosPersists.ButterflyEnable != 0) {
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.AMBIENT, "butterfly", 20, 3, 6);
         }
         if (ChaosPersists.MothEnable != 0) {
-            this.spawnableCaveCreatureList.add(new Biome.SpawnListEntry(EntityLunaMoth.class, 10, 1, 5));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.AMBIENT, "moth", 10, 1, 5);
         }
         if (ChaosPersists.CockateilEnable != 0) {
-            this.spawnableCaveCreatureList.add(new Biome.SpawnListEntry(Cockateil.class, 10, 2, 4));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.AMBIENT, "bird", 10, 2, 4);
         }
         if (ChaosPersists.FireflyEnable != 0) {
-            this.spawnableCaveCreatureList.add(new Biome.SpawnListEntry(Firefly.class, 15, 3, 6));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.AMBIENT, "firefly", 15, 3, 6);
         }
         if (ChaosPersists.CliffRacerEnable != 0) {
-            this.spawnableCaveCreatureList.add(new Biome.SpawnListEntry(CliffRacer.class, 30, 3, 6));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.AMBIENT, "cliff_racer", 30, 3, 6);
         }
         if (ChaosPersists.CloudSharkEnable != 0) {
-            this.spawnableCaveCreatureList.add(new Biome.SpawnListEntry(CloudShark.class, 2, 1, 1));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.AMBIENT, "cloud_shark", 2, 1, 1);
         }
         if (ChaosPersists.GoldFishEnable != 0) {
-            this.spawnableCaveCreatureList.add(new Biome.SpawnListEntry(GoldFish.class, 10, 2, 4));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.AMBIENT, "gold_fish", 10, 2, 4);
         }
         if (ChaosPersists.FairyEnable != 0) {
-            this.spawnableCaveCreatureList.add(new Biome.SpawnListEntry(Fairy.class, 5, 2, 4));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.AMBIENT, "fairy", 5, 2, 4);
         }
         if (ChaosPersists.BaryonyxEnable != 0) {
-            this.spawnableCaveCreatureList.add(new Biome.SpawnListEntry(Baryonyx.class, 2, 2, 4));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.AMBIENT, "baryonyx", 2, 2, 4);
         }
         if (ChaosPersists.BeeEnable != 0) {
-            this.spawnableCaveCreatureList.add(new Biome.SpawnListEntry(Bee.class, 2, 2, 4));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.AMBIENT, "bee", 2, 2, 4);
         }
         if (ChaosPersists.CassowaryEnable != 0) {
-            this.spawnableCaveCreatureList.add(new Biome.SpawnListEntry(Cassowary.class, 2, 2, 4));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.AMBIENT, "cassowary", 2, 2, 4);
         }
         if (ChaosPersists.DragonflyEnable != 0) {
-            this.spawnableCaveCreatureList.add(new Biome.SpawnListEntry(Dragonfly.class, 2, 2, 4));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.AMBIENT, "dragonfly", 2, 2, 4);
         }
         if (ChaosPersists.PeacockEnable != 0) {
-            this.spawnableCaveCreatureList.add(new Biome.SpawnListEntry(Peacock.class, 2, 2, 4));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.AMBIENT, "peacock", 2, 2, 4);
         }
         if (ChaosPersists.StinkBugEnable != 0) {
-            this.spawnableCaveCreatureList.add(new Biome.SpawnListEntry(StinkBug.class, 3, 2, 4));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.AMBIENT, "stink_bug", 3, 2, 4);
         }
         if (ChaosPersists.OstrichEnable != 0) {
-            this.spawnableCaveCreatureList.add(new Biome.SpawnListEntry(Ostrich.class, 1, 1, 2));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.AMBIENT, "ostrich", 1, 1, 2);
         }
         if (ChaosPersists.ChipmunkEnable != 0) {
-            this.spawnableCaveCreatureList.add(new Biome.SpawnListEntry(Chipmunk.class, 1, 1, 2));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.AMBIENT, "chipmunk", 1, 1, 2);
         }
         if (ChaosPersists.BeaverEnable != 0) {
-            this.spawnableCreatureList.add(new Biome.SpawnListEntry(Beaver.class, 1, 1, 2));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.CREATURE, "beaver", 1, 1, 2);
         }
         if (ChaosPersists.CowEnable != 0) {
-            this.spawnableCreatureList.add(new Biome.SpawnListEntry(RedCow.class, 3, 2, 4));
-            this.spawnableCreatureList.add(new Biome.SpawnListEntry(GoldCow.class, 2, 2, 4));
-            this.spawnableCreatureList.add(new Biome.SpawnListEntry(EnchantedCow.class, 1, 2, 4));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.CREATURE, "apple_cow", 3, 2, 4);
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.CREATURE, "golden_apple_cow", 2, 2, 4);
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.CREATURE, "enchanted_golden_apple_cow", 1, 2, 4);
         }
         if (ChaosPersists.VortexEnable != 0) {
-            this.spawnableMonsterList.add(new Biome.SpawnListEntry(Vortex.class, 1, 1, 2));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.MONSTER, "vortex", 1, 1, 2);
         }
         if (ChaosPersists.PitchBlackEnable != 0) {
-            this.spawnableMonsterList.add(new Biome.SpawnListEntry(PitchBlack.class, 1, 1, 2));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.MONSTER, "nightmare", 1, 1, 2);
         }
         if (ChaosPersists.TerribleTerrorEnable != 0) {
-            this.spawnableMonsterList.add(new Biome.SpawnListEntry(TerribleTerror.class, 4, 2, 6));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.MONSTER, "terrible_terror", 4, 2, 6);
         }
         if (ChaosPersists.AlosaurusEnable != 0) {
-            this.spawnableMonsterList.add(new Biome.SpawnListEntry(Alosaurus.class, 1, 1, 1));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.MONSTER, "alosaurus", 1, 1, 1);
         }
         if (ChaosPersists.BasiliskEnable != 0) {
-            this.spawnableMonsterList.add(new Biome.SpawnListEntry(Basilisk.class, 1, 1, 1));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.MONSTER, "basilisk", 1, 1, 1);
         }
         if (ChaosPersists.Robot1Enable != 0) {
-            this.spawnableMonsterList.add(new Biome.SpawnListEntry(Robot1.class, 5, 2, 8));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.MONSTER, "bomb_omb", 5, 2, 8);
         }
         if (ChaosPersists.Robot2Enable != 0) {
-            this.spawnableMonsterList.add(new Biome.SpawnListEntry(Robot2.class, 2, 1, 4));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.MONSTER, "robo_pounder", 2, 1, 4);
         }
         if (ChaosPersists.Robot3Enable != 0) {
-            this.spawnableMonsterList.add(new Biome.SpawnListEntry(Robot3.class, 2, 1, 4));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.MONSTER, "robo_gunner", 2, 1, 4);
         }
         if (ChaosPersists.Robot4Enable != 0) {
-            this.spawnableMonsterList.add(new Biome.SpawnListEntry(Robot4.class, 1, 1, 2));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.MONSTER, "robo_warrior", 1, 1, 2);
         }
         if (ChaosPersists.Robot5Enable != 0) {
-            this.spawnableMonsterList.add(new Biome.SpawnListEntry(Robot5.class, 2, 3, 5));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.MONSTER, "robo_sniper", 2, 3, 5);
         }
         if (ChaosPersists.CaterKillerEnable != 0) {
-            this.spawnableMonsterList.add(new Biome.SpawnListEntry(CaterKiller.class, 1, 1, 1));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.MONSTER, "caterkiller", 1, 1, 1);
         }
         if (ChaosPersists.CaveFisherEnable != 0) {
-            this.spawnableMonsterList.add(new Biome.SpawnListEntry(CaveFisher.class, 5, 1, 5));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.MONSTER, "cave_fisher", 5, 1, 5);
         }
         if (ChaosPersists.CreepingHorrorEnable != 0) {
-            this.spawnableMonsterList.add(new Biome.SpawnListEntry(CreepingHorror.class, 5, 1, 5));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.MONSTER, "creeping_horror", 5, 1, 5);
         }
         if (ChaosPersists.CryolophosaurusEnable != 0) {
-            this.spawnableMonsterList.add(new Biome.SpawnListEntry(Cryolophosaurus.class, 5, 1, 5));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.MONSTER, "cryolophosaurus", 5, 1, 5);
         }
         if (ChaosPersists.UrchinEnable != 0) {
-            this.spawnableMonsterList.add(new Biome.SpawnListEntry(Urchin.class, 2, 1, 5));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.MONSTER, "crystal_urchin", 2, 1, 5);
         }
         if (ChaosPersists.DungeonBeastEnable != 0) {
-            this.spawnableMonsterList.add(new Biome.SpawnListEntry(DungeonBeast.class, 2, 1, 5));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.MONSTER, "dungeon_beast", 2, 1, 5);
         }
         if (ChaosPersists.EmperorScorpionEnable != 0) {
-            this.spawnableMonsterList.add(new Biome.SpawnListEntry(EmperorScorpion.class, 1, 1, 1));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.MONSTER, "emperor_scorpion", 1, 1, 1);
         }
         if (ChaosPersists.EnderKnightEnable != 0) {
-            this.spawnableMonsterList.add(new Biome.SpawnListEntry(EnderKnight.class, 2, 1, 2));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.MONSTER, "ender_knight", 2, 1, 2);
         }
         if (ChaosPersists.EnderReaperEnable != 0) {
-            this.spawnableMonsterList.add(new Biome.SpawnListEntry(EnderReaper.class, 1, 1, 1));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.MONSTER, "ender_reaper", 1, 1, 1);
         }
         if (ChaosPersists.HammerheadEnable != 0) {
-            this.spawnableMonsterList.add(new Biome.SpawnListEntry(Hammerhead.class, 1, 1, 1));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.MONSTER, "hammerhead", 1, 1, 1);
         }
         if (ChaosPersists.HerculesBeetleEnable != 0) {
-            this.spawnableMonsterList.add(new Biome.SpawnListEntry(HerculesBeetle.class, 1, 1, 1));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.MONSTER, "hercules_beetle", 1, 1, 1);
         }
         if (ChaosPersists.TrooperBugEnable != 0) {
-            this.spawnableMonsterList.add(new Biome.SpawnListEntry(TrooperBug.class, 1, 1, 1));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.MONSTER, "jumpy_bug", 1, 1, 1);
         }
         if (ChaosPersists.MolenoidEnable != 0) {
-            this.spawnableMonsterList.add(new Biome.SpawnListEntry(Molenoid.class, 1, 1, 1));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.MONSTER, "molenoid", 1, 1, 1);
         }
         if (ChaosPersists.MothraEnable != 0) {
-            this.spawnableMonsterList.add(new Biome.SpawnListEntry(Mothra.class, 1, 1, 1));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.MONSTER, "mothra", 1, 1, 1);
         }
         if (ChaosPersists.BrutalflyEnable != 0) {
-            this.spawnableMonsterList.add(new Biome.SpawnListEntry(Brutalfly.class, 1, 1, 1));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.MONSTER, "brutalfly", 1, 1, 1);
         }
         if (ChaosPersists.RatEnable != 0) {
-            this.spawnableMonsterList.add(new Biome.SpawnListEntry(Rat.class, 10, 1, 10));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.MONSTER, "rat", 10, 1, 10);
         }
         if (ChaosPersists.RotatorEnable != 0) {
-            this.spawnableMonsterList.add(new Biome.SpawnListEntry(Rotator.class, 1, 1, 3));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.MONSTER, "rotator", 1, 1, 3);
         }
         if (ChaosPersists.ScorpionEnable != 0) {
-            this.spawnableMonsterList.add(new Biome.SpawnListEntry(Scorpion.class, 2, 1, 3));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.MONSTER, "scorpion", 2, 1, 3);
         }
         if (ChaosPersists.SpitBugEnable != 0) {
-            this.spawnableMonsterList.add(new Biome.SpawnListEntry(SpitBug.class, 2, 1, 3));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.MONSTER, "spit_bug", 2, 1, 3);
         }
         if (ChaosPersists.NastysaurusEnable != 0) {
-            this.spawnableMonsterList.add(new Biome.SpawnListEntry(Nastysaurus.class, 1, 1, 1));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.MONSTER, "nastysaurus", 1, 1, 1);
         }
         if (ChaosPersists.TRexEnable != 0) {
-            this.spawnableMonsterList.add(new Biome.SpawnListEntry(TRex.class, 1, 1, 1));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.MONSTER, "trex", 1, 1, 1);
         }
         if (ChaosPersists.LeafMonsterEnable != 0) {
-            this.spawnableMonsterList.add(new Biome.SpawnListEntry(LeafMonster.class, 2, 1, 4));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.MONSTER, "leaf_monster", 2, 1, 4);
         }
         if (ChaosPersists.PointysaurusEnable != 0) {
-            this.spawnableMonsterList.add(new Biome.SpawnListEntry(Pointysaurus.class, 2, 1, 4));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.MONSTER, "pointysaurus", 2, 1, 4);
         }
         if (ChaosPersists.LeonEnable != 0) {
-            this.spawnableMonsterList.add(new Biome.SpawnListEntry(Leon.class, 1, 1, 1));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.MONSTER, "leonopteryx", 1, 1, 1);
         }
         if (ChaosPersists.MantisEnable != 0) {
-            this.spawnableMonsterList.add(new Biome.SpawnListEntry(Mantis.class, 1, 1, 1));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.MONSTER, "mantis", 1, 1, 1);
         }
         if (ChaosPersists.LurkingTerrorEnable != 0) {
-            this.spawnableMonsterList.add(new Biome.SpawnListEntry(LurkingTerror.class, 1, 1, 1));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.MONSTER, "lurking_terror", 1, 1, 1);
         }
         if (ChaosPersists.GammaMetroidEnable != 0) {
-            this.spawnableMonsterList.add(new Biome.SpawnListEntry(GammaMetroid.class, 1, 1, 1));
+            BiomeGenUtopianPlains.addSpawn(spawns, EntityClassification.MONSTER, "gamma_metroid", 1, 1, 1);
         }
     }
+
+
 }

@@ -1,50 +1,22 @@
-/*
- * Decompiled with CFR 0_125.
- * 
- * Could not load the following classes:
- *  com.astryxion.chaospersists.Mothra
- *  com.astryxion.chaospersists.MyEntityAITarget
- *  com.astryxion.chaospersists.ChaosPersists
- *  net.minecraft.entity.Entity
- *  net.minecraft.entity.EntityLiving
- *  net.minecraft.entity.EntityLivingBase
- *  net.minecraft.entity.ai.EntityAIBase
- *  net.minecraft.entity.ai.EntitySenses
- *  net.minecraft.entity.monster.EntityCreeper
- *  net.minecraft.entity.monster.EntityEnderman
- *  net.minecraft.entity.monster.EntityGhast
- *  net.minecraft.entity.monster.EntityPigZombie
- *  net.minecraft.entity.passive.EntityTameable
- *  net.minecraft.entity.player.EntityPlayer
- *  net.minecraft.pathfinding.Path
- *  net.minecraft.pathfinding.PathNavigate
- *  net.minecraft.pathfinding.PathPoint
- *  net.minecraft.util.MathHelper
- */
 package com.astryxion.chaospersists.util;
 
 import com.astryxion.chaospersists.entity.Mothra;
 import com.astryxion.chaospersists.core.ChaosPersists;
-import java.util.Random;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.ai.EntityAIBase;
-import net.minecraft.entity.ai.EntitySenses;
-import net.minecraft.entity.monster.EntityCreeper;
-import net.minecraft.entity.monster.EntityEnderman;
-import net.minecraft.entity.monster.EntityGhast;
-import net.minecraft.entity.monster.EntityPigZombie;
-import net.minecraft.entity.passive.EntityTameable;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.pathfinding.Path;
-import net.minecraft.pathfinding.PathNavigate;
-import net.minecraft.pathfinding.PathPoint;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.MobEntity;
+import net.minecraft.entity.passive.TameableEntity;
+import net.minecraft.entity.ai.goal.Goal;
+import net.minecraft.entity.monster.CreeperEntity;
+import net.minecraft.entity.monster.EndermanEntity;
+import net.minecraft.entity.monster.GhastEntity;
+import net.minecraft.entity.monster.ZombifiedPiglinEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.pathfinding.Path;
+import net.minecraft.pathfinding.PathPoint;
 
-public abstract class MyEntityAITarget
-extends EntityAIBase {
-    protected EntityLiving taskOwner;
+public abstract class MyEntityAITarget extends Goal {
+    protected MobEntity taskOwner;
     protected float targetDistance;
     protected boolean shouldCheckSight;
     private boolean nearbyOnly;
@@ -52,35 +24,36 @@ extends EntityAIBase {
     private int targetSearchDelay = 0;
     private int field_75298_g = 0;
 
-    public MyEntityAITarget(EntityLiving par1EntityLiving, float par2, boolean par3) {
-        this(par1EntityLiving, par2, par3, false);
+    public MyEntityAITarget(MobEntity par1LivingEntity, float par2, boolean par3) {
+        this(par1LivingEntity, par2, par3, false);
     }
 
-    public MyEntityAITarget(EntityLiving par1EntityLiving, float par2, boolean par3, boolean par4) {
-        this.taskOwner = par1EntityLiving;
+    public MyEntityAITarget(MobEntity par1LivingEntity, float par2, boolean par3, boolean par4) {
+        this.taskOwner = par1LivingEntity;
         this.targetDistance = par2;
         this.shouldCheckSight = par3;
         this.nearbyOnly = par4;
     }
 
     @Override
-    public boolean shouldContinueExecuting() {
-        EntityLivingBase var1 = this.taskOwner.getAttackTarget();
+    public boolean canContinueToUse() {
+        LivingEntity var1 = this.taskOwner.getTarget();
         if (var1 == null) {
             return false;
         }
-        if (!var1.isEntityAlive()) {
-            this.taskOwner.setAttackTarget(null);
+        if (!var1.isAlive()) {
+            this.taskOwner.setTarget(null);
             return false;
         }
-        if (this.taskOwner.getDistanceSq((Entity)var1) > (double)(this.targetDistance * this.targetDistance)) {
+        if (this.taskOwner.distanceToSqr(var1) > (double) (this.targetDistance * this.targetDistance)) {
             return false;
         }
-        if (this.taskOwner instanceof EntityTameable && ((EntityTameable)this.taskOwner).isTamed() && var1 instanceof EntityTameable && ((EntityTameable)var1).isTamed()) {
+        if (this.taskOwner instanceof TameableEntity && ((TameableEntity) this.taskOwner).isTame()
+                && var1 instanceof TameableEntity && ((TameableEntity) var1).isTame()) {
             return false;
         }
         if (this.shouldCheckSight) {
-            if (this.taskOwner.getEntitySenses().canSee((Entity)var1)) {
+            if (this.taskOwner.getSensing().canSee(var1)) {
                 this.field_75298_g = 0;
             } else if (++this.field_75298_g > 60) {
                 return false;
@@ -90,57 +63,57 @@ extends EntityAIBase {
     }
 
     @Override
-    public void startExecuting() {
+    public void start() {
         this.targetSearchStatus = 0;
         this.targetSearchDelay = 0;
         this.field_75298_g = 0;
     }
 
     @Override
-    public void resetTask() {
-        this.taskOwner.setAttackTarget((EntityLivingBase)null);
+    public void stop() {
+        this.taskOwner.setTarget(null);
     }
 
-    protected boolean isSuitableTarget(EntityLivingBase par1EntityLiving, boolean par2) {
-        if (par1EntityLiving == null) {
+    protected boolean isSuitableTarget(LivingEntity par1LivingEntity, boolean par2) {
+        if (par1LivingEntity == null) {
             return false;
         }
-        if (par1EntityLiving == this.taskOwner) {
+        if (par1LivingEntity == this.taskOwner) {
             return false;
         }
-        if (!par1EntityLiving.isEntityAlive()) {
+        if (!par1LivingEntity.isAlive()) {
             return false;
         }
-        if (this.taskOwner instanceof EntityTameable && ((EntityTameable)this.taskOwner).isTamed()) {
-            if (par1EntityLiving instanceof EntityTameable && ((EntityTameable)par1EntityLiving).isTamed()) {
+        if (this.taskOwner instanceof TameableEntity && ((TameableEntity) this.taskOwner).isTame()) {
+            if (par1LivingEntity instanceof TameableEntity && ((TameableEntity) par1LivingEntity).isTame()) {
                 return false;
             }
-            if (par1EntityLiving == ((EntityTameable)this.taskOwner).getOwner()) {
+            if (par1LivingEntity == ((TameableEntity) this.taskOwner).getOwner()) {
                 return false;
             }
         }
-        if (par1EntityLiving instanceof EntityPlayer) {
+        if (par1LivingEntity instanceof PlayerEntity) {
             if (ChaosPersists.valentines_day != 0) {
                 return true;
             }
             return false;
         }
-        if (par1EntityLiving instanceof EntityPigZombie) {
+        if (par1LivingEntity instanceof ZombifiedPiglinEntity) {
             return false;
         }
-        if (par1EntityLiving instanceof EntityEnderman) {
+        if (par1LivingEntity instanceof EndermanEntity) {
             return false;
         }
-        if (par1EntityLiving instanceof Mothra) {
+        if (par1LivingEntity instanceof Mothra) {
             return true;
         }
-        if (this.shouldCheckSight && !this.taskOwner.getEntitySenses().canSee((Entity)par1EntityLiving)) {
+        if (this.shouldCheckSight && !this.taskOwner.getSensing().canSee(par1LivingEntity)) {
             return false;
         }
-        if (par1EntityLiving instanceof EntityCreeper) {
+        if (par1LivingEntity instanceof CreeperEntity) {
             return true;
         }
-        if (par1EntityLiving instanceof EntityGhast) {
+          if (par1LivingEntity instanceof GhastEntity) {
             return true;
         }
         if (this.nearbyOnly) {
@@ -148,7 +121,7 @@ extends EntityAIBase {
                 this.targetSearchStatus = 0;
             }
             if (this.targetSearchStatus == 0) {
-                int n = this.targetSearchStatus = this.canEasilyReach(par1EntityLiving) ? 1 : 2;
+                this.targetSearchStatus = this.canEasilyReach(par1LivingEntity) ? 1 : 2;
             }
             if (this.targetSearchStatus == 2) {
                 return false;
@@ -157,19 +130,18 @@ extends EntityAIBase {
         return true;
     }
 
-    private boolean canEasilyReach(EntityLivingBase par1EntityLiving) {
+    private boolean canEasilyReach(LivingEntity par1LivingEntity) {
         int var5;
-        this.targetSearchDelay = 10 + this.taskOwner.getRNG().nextInt(5);
-        Path var2 = this.taskOwner.getNavigator().getPathToEntityLiving((Entity)par1EntityLiving);
+        this.targetSearchDelay = 10 + this.taskOwner.getRandom().nextInt(5);
+        Path var2 = this.taskOwner.getNavigation().createPath(par1LivingEntity, 0);
         if (var2 == null) {
             return false;
         }
-        PathPoint var3 = var2.getFinalPathPoint();
+        PathPoint var3 = var2.getEndNode();
         if (var3 == null) {
             return false;
         }
-        int var4 = var3.x - MathHelper.floor(par1EntityLiving.posX);
-        return (double)(var4 * var4 + (var5 = var3.z - MathHelper.floor(par1EntityLiving.posZ)) * var5) <= 2.25;
+        int var4 = var3.x - MathHelper.floor(par1LivingEntity.getX());
+        return (double) (var4 * var4 + (var5 = var3.z - MathHelper.floor(par1LivingEntity.getZ())) * var5) <= 2.25;
     }
 }
-

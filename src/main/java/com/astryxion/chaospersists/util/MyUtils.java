@@ -1,44 +1,3 @@
-/*
- * Decompiled with CFR 0_125.
- * 
- * Could not load the following classes:
- *  com.astryxion.chaospersists.Boyfriend
- *  com.astryxion.chaospersists.Cephadrome
- *  com.astryxion.chaospersists.Cockateil
- *  com.astryxion.chaospersists.Cricket
- *  com.astryxion.chaospersists.Dragon
- *  com.astryxion.chaospersists.Dragonfly
- *  com.astryxion.chaospersists.Elevator
- *  com.astryxion.chaospersists.EntityAnt
- *  com.astryxion.chaospersists.EntityButterfly
- *  com.astryxion.chaospersists.EntityMosquito
- *  com.astryxion.chaospersists.Firefly
- *  com.astryxion.chaospersists.GammaMetroid
- *  com.astryxion.chaospersists.Ghost
- *  com.astryxion.chaospersists.GhostSkelly
- *  com.astryxion.chaospersists.Girlfriend
- *  com.astryxion.chaospersists.KingHead
- *  com.astryxion.chaospersists.Leon
- *  com.astryxion.chaospersists.Mothra
- *  com.astryxion.chaospersists.MyUtils
- *  com.astryxion.chaospersists.PurplePower
- *  com.astryxion.chaospersists.QueenHead
- *  com.astryxion.chaospersists.RockBase
- *  com.astryxion.chaospersists.Spyro
- *  com.astryxion.chaospersists.Stinky
- *  com.astryxion.chaospersists.Termite
- *  com.astryxion.chaospersists.TheKing
- *  com.astryxion.chaospersists.ThePrince
- *  com.astryxion.chaospersists.ThePrinceAdult
- *  com.astryxion.chaospersists.ThePrinceTeen
- *  com.astryxion.chaospersists.ThePrincess
- *  com.astryxion.chaospersists.TheQueen
- *  com.astryxion.chaospersists.WaterDragon
- *  net.minecraft.entity.Entity
- *  net.minecraft.entity.EntityLivingBase
- *  net.minecraft.entity.monster.EntityMob
- *  net.minecraft.entity.passive.EntityVillager
- */
 package com.astryxion.chaospersists.util;
 
 import com.astryxion.chaospersists.entity.Boyfriend;
@@ -73,20 +32,17 @@ import com.astryxion.chaospersists.entity.ThePrincess;
 import com.astryxion.chaospersists.entity.TheQueen;
 import com.astryxion.chaospersists.entity.WaterDragon;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.monster.EntityMob;
-import net.minecraft.entity.passive.EntityVillager;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.MobEntity;
+import net.minecraft.entity.merchant.villager.VillagerEntity;
+import net.minecraft.util.math.vector.Vector3d;
 
-/*
- * Exception performing whole class analysis ignored.
- */
 public class MyUtils {
     public MyUtils() {
     }
 
     public static boolean isRoyalty(Entity e) {
-        if (!(e instanceof EntityLivingBase)) {
+        if (!(e instanceof LivingEntity)) {
             return false;
         }
         if (e instanceof ThePrince) {
@@ -119,105 +75,123 @@ public class MyUtils {
         return false;
     }
 
-    public static boolean isAttackableNonMob(EntityLivingBase par1EntityLiving) {
-        if (par1EntityLiving instanceof EntityMob) {
+    public static boolean isAttackableNonMob(LivingEntity par1LivingEntity) {
+        if (par1LivingEntity instanceof MobEntity) {
             return true;
         }
-        if (par1EntityLiving instanceof Mothra) {
+        if (par1LivingEntity instanceof Mothra) {
             return true;
         }
-        if (par1EntityLiving instanceof Leon) {
+        if (par1LivingEntity instanceof Leon) {
             return true;
         }
-        if (par1EntityLiving instanceof Dragon) {
+        if (par1LivingEntity instanceof Dragon) {
             return true;
         }
-        if (par1EntityLiving instanceof Spyro) {
+        if (par1LivingEntity instanceof Spyro) {
             return true;
         }
-        if (MyUtils.isRoyalty((Entity)par1EntityLiving)) {
+        if (MyUtils.isRoyalty(par1LivingEntity)) {
             return true;
         }
-        if (par1EntityLiving instanceof GammaMetroid) {
+        if (par1LivingEntity instanceof GammaMetroid) {
             return true;
         }
-        if (par1EntityLiving instanceof Cephadrome) {
+        if (par1LivingEntity instanceof Cephadrome) {
             return true;
         }
-        if (par1EntityLiving instanceof WaterDragon) {
+        if (par1LivingEntity instanceof WaterDragon) {
             return true;
         }
-        if (par1EntityLiving instanceof Girlfriend) {
+        if (par1LivingEntity instanceof Girlfriend) {
             return true;
         }
-        if (par1EntityLiving instanceof Boyfriend) {
+        if (par1LivingEntity instanceof Boyfriend) {
             return true;
         }
-        if (par1EntityLiving instanceof EntityVillager) {
+        if (par1LivingEntity instanceof VillagerEntity) {
             return true;
         }
-        if (par1EntityLiving instanceof Stinky) {
-            return true;
-        }
-        return false;
-    }
-
-    public static boolean isIgnoreable(EntityLivingBase par1EntityLiving) {
-        if (par1EntityLiving instanceof RockBase) {
-            return true;
-        }
-        if (par1EntityLiving instanceof EntityAnt) {
-            return true;
-        }
-        if (par1EntityLiving instanceof EntityButterfly) {
-            return true;
-        }
-        if (par1EntityLiving instanceof EntityMosquito) {
-            return true;
-        }
-        if (par1EntityLiving instanceof Dragonfly) {
-            return true;
-        }
-        if (par1EntityLiving instanceof Firefly) {
-            return true;
-        }
-        if (par1EntityLiving instanceof Cricket) {
-            return true;
-        }
-        if (par1EntityLiving instanceof Cockateil) {
-            return true;
-        }
-        if (par1EntityLiving instanceof Termite) {
-            return true;
-        }
-        if (par1EntityLiving instanceof Ghost) {
-            return true;
-        }
-        if (par1EntityLiving instanceof GhostSkelly) {
-            return true;
-        }
-        if (par1EntityLiving instanceof Elevator) {
+        if (par1LivingEntity instanceof Stinky) {
             return true;
         }
         return false;
     }
 
-    /**
-     * Prince-family mounts: while nobody is riding, never leave noClip/gravity-off on or stay inside blocks.
-     */
-    public static void enforceDragonMountGroundSafety(EntityLiving entity) {
-        if (entity == null || entity.world == null || entity.world.isRemote) {
+    public static boolean isIgnoreable(LivingEntity par1LivingEntity) {
+        if (par1LivingEntity instanceof RockBase) {
+            return true;
+        }
+        if (par1LivingEntity instanceof EntityAnt) {
+            return true;
+        }
+        if (par1LivingEntity instanceof EntityButterfly) {
+            return true;
+        }
+        if (par1LivingEntity instanceof EntityMosquito) {
+            return true;
+        }
+        if (par1LivingEntity instanceof Dragonfly) {
+            return true;
+        }
+        if (par1LivingEntity instanceof Firefly) {
+            return true;
+        }
+        if (par1LivingEntity instanceof Cricket) {
+            return true;
+        }
+        if (par1LivingEntity instanceof Cockateil) {
+            return true;
+        }
+        if (par1LivingEntity instanceof Termite) {
+            return true;
+        }
+        if (par1LivingEntity instanceof Ghost) {
+            return true;
+        }
+        if (par1LivingEntity instanceof GhostSkelly) {
+            return true;
+        }
+        if (par1LivingEntity instanceof Elevator) {
+            return true;
+        }
+        return false;
+    }
+
+    public static void enforceDragonMountGroundSafety(LivingEntity entity) {
+        if (entity == null || entity.level == null || entity.level.isClientSide) {
             return;
         }
         if (!entity.getPassengers().isEmpty()) {
             return;
         }
-        entity.noClip = false;
+        entity.noPhysics = false;
         entity.setNoGravity(false);
         int n = 0;
-        while (entity.isEntityInsideOpaqueBlock() && n++ < 48) {
-            entity.setPosition(entity.posX, Math.min(252.0, entity.posY + 0.5), entity.posZ);
+        while (entity.isInWall() && n++ < 48) {
+            entity.setPos(entity.getX(), Math.min(252.0D, entity.getY() + 0.5D), entity.getZ());
         }
     }
-}
 
+    public static void mulDeltaMovement(Entity entity, double factorX, double factorY, double factorZ) {
+        Vector3d motion = entity.getDeltaMovement();
+        entity.setDeltaMovement(motion.x * factorX, motion.y * factorY, motion.z * factorZ);
+    }
+
+    public static void addEntityY(Entity entity, double deltaY) {
+        entity.setPos(entity.getX(), entity.getY() + deltaY, entity.getZ());
+    }
+
+    public static void addEntityZ(Entity entity, double deltaZ) {
+        entity.setPos(entity.getX(), entity.getY(), entity.getZ() + deltaZ);
+    }
+
+    public static void addEntityX(Entity entity, double deltaX) {
+        entity.setPos(entity.getX() + deltaX, entity.getY(), entity.getZ());
+    }
+
+    public static void addDeltaMovement(Entity entity, double deltaX, double deltaY, double deltaZ) {
+        Vector3d motion = entity.getDeltaMovement();
+        entity.setDeltaMovement(motion.x + deltaX, motion.y + deltaY, motion.z + deltaZ);
+    }
+}

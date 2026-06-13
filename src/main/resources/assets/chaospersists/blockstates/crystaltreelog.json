@@ -1,7 +1,7 @@
 {
   "variants": {
-    "axis=y": { "model": "chaospersists:crystaltreelog" },
-    "axis=z": { "model": "chaospersists:crystaltreelog", "x": 90 },
-    "axis=x": { "model": "chaospersists:crystaltreelog", "x": 90, "y": 90 }
+    "axis=y": { "model": "chaospersists:block/crystaltreelog" },
+    "axis=z": { "model": "chaospersists:block/crystaltreelog", "x": 90 },
+    "axis=x": { "model": "chaospersists:block/crystaltreelog", "x": 90, "y": 90 }
   }
 }

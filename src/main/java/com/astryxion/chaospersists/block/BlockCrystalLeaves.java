@@ -1,135 +1,101 @@
 package com.astryxion.chaospersists.block;
 
+import com.astryxion.chaospersists.core.ChaosPersists;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.common.IForgeShearable;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
-import com.astryxion.chaospersists.core.ChaosPersists;
-
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockLeaves;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.block.LeavesBlock;
 import net.minecraft.block.SoundType;
-import net.minecraft.block.state.BlockStateContainer;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.AbstractBlock;
+import net.minecraft.block.Blocks;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.BlockRenderLayer;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.NonNullList;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockAccess;
+import net.minecraft.world.IBlockReader;
+import net.minecraft.world.IWorldReader;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.world.server.ServerWorld;
+import javax.annotation.Nullable;
 
-public class BlockCrystalLeaves extends BlockLeaves {
+public class BlockCrystalLeaves extends LeavesBlock implements IForgeShearable {
 
     public BlockCrystalLeaves() {
-        this.setSoundType(SoundType.PLANT);
-        this.setTickRandomly(true);
-        this.setCreativeTab(CreativeTabs.DECORATIONS);
-
-        this.setDefaultState(
-                this.blockState.getBaseState()
-                        .withProperty(DECAYABLE, true)
-                        .withProperty(CHECK_DECAY, true)
-        );
+        this(0.2F);
     }
 
-    // ===== STATE =====
-
-    @Override
-    protected BlockStateContainer createBlockState() {
-        return new BlockStateContainer(this, DECAYABLE, CHECK_DECAY);
+    public BlockCrystalLeaves(float hardness) {
+        super(AbstractBlock.Properties.copy(Blocks.OAK_LEAVES)
+                .randomTicks()
+                .strength(hardness)
+                .sound(SoundType.GRASS)
+                .noOcclusion());
+        this.registerDefaultState(this.stateDefinition.any()
+                .setValue(PERSISTENT, false)
+                .setValue(DISTANCE, 7));
     }
 
     @Override
-    public IBlockState getStateFromMeta(int meta) {
-        return this.getDefaultState()
-                .withProperty(DECAYABLE, (meta & 8) != 0)
-                .withProperty(CHECK_DECAY, (meta & 4) != 0);
+    public boolean isShearable(ItemStack item, World world, BlockPos pos) {
+        return true;
     }
 
     @Override
-    public int getMetaFromState(IBlockState state) {
-        int i = 0;
-        if (state.getValue(CHECK_DECAY)) i |= 4;
-        if (state.getValue(DECAYABLE)) i |= 8;
-        return i;
-    }
-
-    @Override
-    public net.minecraft.block.BlockPlanks.EnumType getWoodType(int meta) {
-        return net.minecraft.block.BlockPlanks.EnumType.OAK;
-    }
-
-    // ===== CREATIVE TAB FIX =====
-
-    @Override
-    public void getSubBlocks(CreativeTabs tab, NonNullList<ItemStack> items) {
-        items.add(new ItemStack(this));
-    }
-
-    // ===== SHEARING =====
-
-    @Override
-    public List<ItemStack> onSheared(ItemStack item, IBlockAccess world, BlockPos pos, int fortune) {
+    public List<ItemStack> onSheared(PlayerEntity player, ItemStack item, World world, BlockPos pos, int fortune) {
         return Collections.singletonList(new ItemStack(this));
     }
 
-    // ===== DROPS =====
-
-    @Override
-    public void dropBlockAsItemWithChance(World world, BlockPos pos, IBlockState state, float chance, int fortune) {
-
-        if (!world.isRemote) {
-
-            if (world.rand.nextInt(100) == 1) {
-                spawnAsEntity(world, pos, new ItemStack(ChaosPersists.MyCrystalApple));
+    private void dropCrystalBreakLoot(ServerWorld world, BlockPos pos) {
+        if (world.random.nextInt(100) == 1) {
+            popResource(world, pos, new ItemStack(ChaosPersists.MyCrystalApple));
+        }
+        if (world.random.nextInt(50) == 1) {
+            if (this == ChaosPersists.MyCrystalLeaves) {
+                popResource(world, pos, new ItemStack(ChaosPersists.MyCrystalPlant));
             }
-
-            if (world.rand.nextInt(50) == 1) {
-
-                if (this == ChaosPersists.MyCrystalLeaves) {
-                    spawnAsEntity(world, pos, new ItemStack(ChaosPersists.MyCrystalPlant));
-                }
-
-                if (this == ChaosPersists.MyCrystalLeaves2) {
-                    spawnAsEntity(world, pos, new ItemStack(ChaosPersists.MyCrystalPlant2));
-                }
-
-                if (this == ChaosPersists.MyCrystalLeaves3) {
-                    spawnAsEntity(world, pos, new ItemStack(ChaosPersists.MyCrystalPlant3));
-                }
+            if (this == ChaosPersists.MyCrystalLeaves2) {
+                popResource(world, pos, new ItemStack(ChaosPersists.MyCrystalPlant2));
+            }
+            if (this == ChaosPersists.MyCrystalLeaves3) {
+                popResource(world, pos, new ItemStack(ChaosPersists.MyCrystalPlant3));
             }
         }
     }
 
     @Override
-    public int quantityDropped(Random random) {
+    public void playerDestroy(World world, PlayerEntity player, BlockPos pos, BlockState state, @Nullable TileEntity te, ItemStack stack) {
+        super.playerDestroy(world, player, pos, state, te, stack);
+        if (!world.isClientSide && !player.isCreative() && world instanceof ServerWorld) {
+            this.dropCrystalBreakLoot((ServerWorld) world, pos);
+        }
+    }
+
+    @Override
+    public int getExpDrop(BlockState state, IWorldReader world, BlockPos pos, int fortune, int silktouch) {
         return 1;
     }
 
-    // ===== GRAPHICS =====
-
     @Override
-    public boolean isOpaqueCube(IBlockState state) {
+    public boolean propagatesSkylightDown(BlockState state, IBlockReader reader, BlockPos pos) {
         return ChaosPersists.FastGraphicsLeaves != 0;
     }
 
+    @OnlyIn(Dist.CLIENT)
     @Override
-    public boolean shouldSideBeRendered(IBlockState state, IBlockAccess world,
-                                        BlockPos pos, EnumFacing side) {
-
-        Block block = world.getBlockState(pos.offset(side)).getBlock();
-        return ChaosPersists.FastGraphicsLeaves == 0 || block != this;
+    public boolean skipRendering(BlockState state, BlockState adjacentState, Direction side) {
+        return ChaosPersists.FastGraphicsLeaves == 0 || adjacentState.getBlock() != this;
     }
 
-    // 🔥 Proper 1.12.2 Render Layer
-
-    @SideOnly(Side.CLIENT)
-    @Override
-    public BlockRenderLayer getRenderLayer() {
-        return BlockRenderLayer.TRANSLUCENT;
+    @OnlyIn(Dist.CLIENT)
+    public RenderType getRenderType(BlockState state) {
+        return RenderType.translucent();
     }
 }

@@ -7,17 +7,17 @@
  *  com.astryxion.chaospersists.ItemChaosArmor
  *  com.astryxion.chaospersists.ChaosPersists
  *  net.minecraft.block.Block
- *  net.minecraft.block.BlockChest
+ *  net.minecraft.block.ChestBlock
  *  net.minecraft.entity.Entity
  *  net.minecraft.entity.EntityList
- *  net.minecraft.entity.EntityLiving
- *  net.minecraft.init.Blocks
- *  net.minecraft.init.Items
+ *  net.minecraft.entity.LivingEntity
+ *  net.minecraft.block.Blocks
+ *  net.minecraft.item.Items
  *  net.minecraft.inventory.IInventory
  *  net.minecraft.item.Item
- *  net.minecraft.item.ItemArmor
+ *  net.minecraft.item.ArmorItem
  *  net.minecraft.tileentity.TileEntity
- *  net.minecraft.tileentity.TileEntityChest
+ *  net.minecraft.tileentity.ChestTileEntity
  *  net.minecraft.util.WeightedRandomChestContent
  *  net.minecraft.world.World
  */
@@ -30,18 +30,18 @@ import java.awt.Point;
 import java.util.Random;
 import java.util.Vector;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockChest;
+import net.minecraft.block.ChestBlock;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityList;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.block.Blocks;
+import net.minecraft.item.Items;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemArmor;
+import net.minecraft.item.ArmorItem;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityChest;
-import net.minecraft.tileentity.TileEntityMobSpawner;
+import net.minecraft.tileentity.ChestTileEntity;
+import net.minecraft.tileentity.MobSpawnerTileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 
@@ -53,7 +53,7 @@ public class BasiliskMaze {
     private final WeightedRandomChestContent[] chestContentsList = new WeightedRandomChestContent[]{new WeightedRandomChestContent(Items.ENDER_PEARL, 0, 3, 6, 15), new WeightedRandomChestContent(Items.DIAMOND, 0, 15, 25, 20), new WeightedRandomChestContent(Items.BLAZE_ROD, 0, 4, 12, 15), new WeightedRandomChestContent(ChaosPersists.CageEmpty, 0, 3, 10, 20), new WeightedRandomChestContent(ChaosPersists.CagedGirlfriend, 0, 2, 4, 15), new WeightedRandomChestContent(Items.IRON_INGOT, 0, 2, 20, 20), new WeightedRandomChestContent(Items.GOLD_INGOT, 0, 4, 16, 20), new WeightedRandomChestContent(ChaosPersists.MyIngotUranium, 0, 2, 8, 20), new WeightedRandomChestContent(ChaosPersists.MyIngotTitanium, 0, 2, 6, 20), new WeightedRandomChestContent(ChaosPersists.MySunFish, 0, 2, 8, 20), new WeightedRandomChestContent(ChaosPersists.MyFireFish, 0, 3, 8, 20), new WeightedRandomChestContent(ChaosPersists.MyLavaEel, 0, 5, 24, 20), new WeightedRandomChestContent(ChaosPersists.MyCornDog, 0, 6, 12, 20), new WeightedRandomChestContent(Items.DIAMOND_PICKAXE, 0, 1, 1, 15), new WeightedRandomChestContent(Items.DIAMOND_SWORD, 0, 1, 1, 15), new WeightedRandomChestContent(ChaosPersists.MyUltimatePickaxe, 0, 1, 1, 15), new WeightedRandomChestContent(ChaosPersists.MyUltimateSword, 0, 1, 1, 15), new WeightedRandomChestContent(ChaosPersists.MyUltimateFishingRod, 0, 1, 1, 15), new WeightedRandomChestContent(ChaosPersists.MyUltimateBow, 0, 1, 1, 15), new WeightedRandomChestContent((Item)Items.DIAMOND_CHESTPLATE, 0, 1, 1, 15), new WeightedRandomChestContent((Item)Items.DIAMOND_HELMET, 0, 1, 1, 15), new WeightedRandomChestContent((Item)Items.DIAMOND_LEGGINGS, 0, 1, 1, 15), new WeightedRandomChestContent((Item)Items.DIAMOND_BOOTS, 0, 1, 1, 15), new WeightedRandomChestContent((Item)ChaosPersists.UltimateBody, 0, 1, 1, 15), new WeightedRandomChestContent((Item)ChaosPersists.UltimateLegs, 0, 1, 1, 15), new WeightedRandomChestContent((Item)ChaosPersists.UltimateHelmet, 0, 1, 1, 15), new WeightedRandomChestContent((Item)ChaosPersists.UltimateBoots, 0, 1, 1, 15), new WeightedRandomChestContent(ChaosPersists.MyRuby, 0, 1, 1, 5), new WeightedRandomChestContent(ChaosPersists.MyThunderStaff, 0, 1, 1, 5), new WeightedRandomChestContent(ChaosPersists.MagicApple, 0, 1, 1, 15), new WeightedRandomChestContent(Items.GOLDEN_APPLE, 0, 2, 4, 15)};
 
     public void buildBasiliskMaze(World world, int x, int y, int z) {
-        int depth = 20 + world.rand.nextInt(10);
+        int depth = 20 + world.random.nextInt(10);
         this.clearArea(world, x + 3, y - depth - 4, z - 20);
         this.makeMaze(world, x + 3, y - depth - 3, z - 20, 10, 10, 3, 0);
         this.openMaze(world, x + 3, y - depth - 3, z - 20, 10, 10, 3);
@@ -267,11 +267,12 @@ public class BasiliskMaze {
 
     private Entity spawnCreature(World par0World, String par1, double par2, double par4, double par6) {
         Entity var8 = null;
-        var8 = EntityList.createEntityByIDFromName(new net.minecraft.util.ResourceLocation(par1.contains(":") ? par1.split(":")[0] : "chaospersists", par1.contains(":") ? par1.split(":")[1] : par1), par0World);
+        net.minecraft.entity.EntityType<?> spawnType = net.minecraftforge.registries.ForgeRegistries.ENTITIES.getValue(new net.minecraft.util.ResourceLocation(par1.contains(":") ? par1.split(":")[0] : "chaospersists", par1.contains(":") ? par1.split(":")[1] : par1));
+        var8 = spawnType != null ? spawnType.create(par0World) : null;
         if (var8 != null) {
-            var8.setLocationAndAngles(par2, par4, par6, par0World.rand.nextFloat() * 360.0f, 0.0f);
-            par0World.spawnEntity(var8);
-            ((EntityLiving)var8).playLivingSound();
+            var8.moveTo(par2, par4, par6, par0World.random.nextFloat() * 360.0f, 0.0f);
+            par0World.addFreshEntity(var8);
+            com.astryxion.chaospersists.entity.RockBase.playSpawnAmbientSound((LivingEntity)var8);
         }
         return var8;
     }
@@ -330,10 +331,10 @@ public class BasiliskMaze {
             }
         }
         for (i = 0; i < 80; ++i) {
-            ChaosPersists.setBlockFast((World)world, (int)(x + world.rand.nextInt(28) + 1), (int)y, (int)(z + world.rand.nextInt(28) + 1), (Block)Blocks.LAVA, (int)0, (int)2);
+            ChaosPersists.setBlockFast((World)world, (int)(x + world.random.nextInt(28) + 1), (int)y, (int)(z + world.random.nextInt(28) + 1), (Block)Blocks.LAVA, (int)0, (int)2);
         }
         for (i = 0; i < 20; ++i) {
-            ChaosPersists.setBlockFast((World)world, (int)(x + 30 + world.rand.nextInt(28) + 1), (int)y, (int)(z + world.rand.nextInt(28) + 1), (Block)ChaosPersists.MyRTPBlock, (int)0, (int)2);
+            ChaosPersists.setBlockFast((World)world, (int)(x + 30 + world.random.nextInt(28) + 1), (int)y, (int)(z + world.random.nextInt(28) + 1), (Block)ChaosPersists.MyRTPBlock, (int)0, (int)2);
         }
         for (i = 0; i < 30; ++i) {
             for (k = 0; k < 30; ++k) {
@@ -409,21 +410,21 @@ public class BasiliskMaze {
         ChaosPersists.setBlockFast((World)world, (int)(x + 30), (int)(y + 4), (int)(z + 2), (Block)Blocks.REDSTONE_TORCH, (int)0, (int)2);
         ChaosPersists.setBlockFast((World)world, (int)(x + 30), (int)(y + 4), (int)(z + 15), (Block)Blocks.REDSTONE_TORCH, (int)0, (int)2);
         ChaosPersists.setBlockFast((World)world, (int)(x + 30), (int)(y + 4), (int)(z + 27), (Block)Blocks.REDSTONE_TORCH, (int)0, (int)2);
-        TileEntityChest chest = null;
-        i = 2 + world.rand.nextInt(3);
+        ChestTileEntity chest = null;
+        i = 2 + world.random.nextInt(3);
         for (k = 0; k < i; ++k) {
             ChaosPersists.setBlockFast((World)world, (int)(x + 58), (int)(y + 4), (int)(z + 2 + k * 2), (Block)Blocks.TORCH, (int)0, (int)2);
             ChaosPersists.setBlockFast((World)world, (int)(x + 58), (int)(y + 1), (int)(z + 2 + k * 2), (Block)Blocks.CHEST, (int)0, (int)2);
-            chest = (TileEntityChest)world.getTileEntity(new net.minecraft.util.math.BlockPos(x + 58, y + 1, z + 2 + k * 2));
+            chest = (ChestTileEntity)world.getBlockEntity(new net.minecraft.util.math.BlockPos(x + 58, y + 1, z + 2 + k * 2));
             if (chest == null) continue;
-            WeightedRandomChestContent.generateChestContents((Random)world.rand, (WeightedRandomChestContent[])this.chestContentsList, (IInventory)chest, (int)(5 + world.rand.nextInt(6)));
+            WeightedRandomChestContent.generateChestContents((Random)world.random, (WeightedRandomChestContent[])this.chestContentsList, (IInventory)chest, (int)(5 + world.random.nextInt(6)));
         }
         // Use actual spawners so the maze continuously functions after generation.
         for (int sx = 45; sx <= 47; ++sx) {
-            world.setBlockState(new net.minecraft.util.math.BlockPos(x + sx, y + 1, z + 15), Blocks.MOB_SPAWNER.getDefaultState(), 2);
-            TileEntity te = world.getTileEntity(new net.minecraft.util.math.BlockPos(x + sx, y + 1, z + 15));
-            if (te instanceof TileEntityMobSpawner) {
-                ((TileEntityMobSpawner)te).getSpawnerBaseLogic().setEntityId(new ResourceLocation("chaospersists", "basilisk"));
+            world.setBlock(new net.minecraft.util.math.BlockPos(x + sx, y + 1, z + 15), Blocks.SPAWNER.defaultBlockState(), 2);
+            TileEntity te = world.getBlockEntity(new net.minecraft.util.math.BlockPos(x + sx, y + 1, z + 15));
+            if (te instanceof MobSpawnerTileEntity) {
+                com.astryxion.chaospersists.util.SpawnerFixHelper.setSpawnerEntityId(((MobSpawnerTileEntity)te).getSpawner(), new ResourceLocation("chaospersists", "basilisk"));
             }
         }
     }

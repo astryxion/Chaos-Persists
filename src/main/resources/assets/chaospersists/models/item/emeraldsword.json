@@ -1,6 +1,6 @@
-{
+﻿{
   "parent": "item/handheld",
   "textures": {
-    "layer0": "chaospersists:items/emeraldsword"
+    "layer0": "chaospersists:item/emeraldsword"
   }
 }

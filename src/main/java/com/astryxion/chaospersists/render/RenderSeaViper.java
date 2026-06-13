@@ -5,59 +5,40 @@
  *  com.astryxion.chaospersists.ModelSeaViper
  *  com.astryxion.chaospersists.RenderSeaViper
  *  com.astryxion.chaospersists.SeaViper
- *  net.minecraft.client.model.ModelBase
+ *  net.minecraft.client.renderer.entity.model.Model
  *  net.minecraft.client.renderer.entity.RenderLiving
  *  net.minecraft.entity.Entity
- *  net.minecraft.entity.EntityLiving
- *  net.minecraft.entity.EntityLivingBase
+ *  net.minecraft.entity.LivingEntity
+ *  net.minecraft.entity.LivingEntity
  *  net.minecraft.util.ResourceLocation
  *  org.lwjgl.opengl.GL11
  */
 package com.astryxion.chaospersists.render;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
+import net.minecraft.client.renderer.entity.LivingRenderer;
+import net.minecraft.client.renderer.entity.EntityRendererManager;
 import com.astryxion.chaospersists.model.ModelSeaViper;
 import com.astryxion.chaospersists.entity.SeaViper;
-import net.minecraft.client.model.ModelBase;
-import net.minecraft.client.renderer.entity.RenderLiving;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.ResourceLocation;
-import org.lwjgl.opengl.GL11;
 
 public class RenderSeaViper
-extends RenderLiving {
+extends LivingRenderer<SeaViper, ModelSeaViper> {
     protected ModelSeaViper model;
     private float scale = 1.0f;
     private static final ResourceLocation texture = new ResourceLocation("chaospersists", "textures/entity/seavipertexture.png");
 
-    public RenderSeaViper(net.minecraft.client.renderer.entity.RenderManager manager, ModelSeaViper par1ModelBase, float par2, float par3) {
-        super(manager, (ModelBase)par1ModelBase, par2 * par3);
-        this.model = (ModelSeaViper)this.mainModel;
+    public RenderSeaViper(EntityRendererManager manager, ModelSeaViper par1Model, float par2, float par3) {
+        super(manager, par1Model, par2 * par3);
+        this.model = this.getModel();
         this.scale = par3;
     }
+protected void applyScale(MatrixStack matrixStack) { matrixStack.scale(this.scale, this.scale, this.scale); }
 
-    public void renderSeaViper(SeaViper par1EntitySeaViper, double par2, double par4, double par6, float par8, float par9) {
-        super.doRender((EntityLiving)par1EntitySeaViper, par2, par4, par6, par8, par9);
-    }
+    protected void scale(SeaViper entity, MatrixStack matrixStack, float partialTick) { this.applyScale(matrixStack); }
 
-    public void doRender(EntityLiving par1EntityLiving, double par2, double par4, double par6, float par8, float par9) {
-        this.renderSeaViper((SeaViper)par1EntityLiving, par2, par4, par6, par8, par9);
-    }
-
-    public void doRender(Entity par1Entity, double par2, double par4, double par6, float par8, float par9) {
-        this.renderSeaViper((SeaViper)par1Entity, par2, par4, par6, par8, par9);
-    }
-
-    protected void preRenderScale(SeaViper par1Entity, float par2) {
-        GL11.glScalef((float)this.scale, (float)this.scale, (float)this.scale);
-    }
-
-    protected void preRenderCallback(EntityLivingBase par1EntityLiving, float par2) {
-        this.preRenderScale((SeaViper)par1EntityLiving, par2);
-    }
-
-    protected ResourceLocation getEntityTexture(Entity entity) {
+    @Override
+    public ResourceLocation getTextureLocation(SeaViper entity) {
         return texture;
     }
 }

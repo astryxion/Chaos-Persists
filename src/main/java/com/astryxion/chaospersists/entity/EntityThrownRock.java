@@ -1,343 +1,344 @@
-/*
- * Decompiled with CFR 0_125.
- * 
- * Could not load the following classes:
- *  com.astryxion.chaospersists.EntityThrownRock
- *  com.astryxion.chaospersists.ChaosPersists
- *  net.minecraft.block.Block
- *  net.minecraft.entity.DataWatcher
- *  net.minecraft.entity.Entity
- *  net.minecraft.entity.EntityLivingBase
- *  net.minecraft.entity.item.EntityItem
- *  net.minecraft.entity.player.EntityPlayer
- *  net.minecraft.entity.projectile.EntityThrowable
- *  net.minecraft.init.Blocks
- *  net.minecraft.item.Item
- *  net.minecraft.potion.Potion
- *  net.minecraft.potion.PotionEffect
- *  net.minecraft.util.DamageSource
- *  net.minecraft.util.math.RayTraceResult
- *  net.minecraft.world.Explosion
- *  net.minecraft.world.GameRules
- *  net.minecraft.world.World
- */
 package com.astryxion.chaospersists.entity;
+import net.minecraft.util.math.vector.Vector3d;
 
 import com.astryxion.chaospersists.core.ChaosPersists;
-import net.minecraft.block.Block;
-import net.minecraft.network.datasync.EntityDataManager;
+import com.astryxion.chaospersists.core.ChaosSounds;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.item.EntityItem;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.projectile.EntityThrowable;
-import net.minecraft.init.Blocks;
-import net.minecraft.item.Item;
-import net.minecraft.potion.Potion;
-import net.minecraft.potion.PotionEffect;
+import net.minecraft.network.datasync.EntityDataManager;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.SoundCategory;
+import net.minecraft.util.SoundEvent;
 import net.minecraft.util.DamageSource;
-import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.potion.EffectInstance;
+import net.minecraft.potion.Effects;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.projectile.ThrowableEntity;
 import net.minecraft.world.Explosion;
-import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
+import net.minecraft.block.Block;
+import net.minecraft.block.Blocks;
+import net.minecraft.util.math.BlockRayTraceResult;
+import net.minecraft.util.math.EntityRayTraceResult;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraftforge.registries.ForgeRegistries;
 
-public class EntityThrownRock
-extends EntityThrowable {
-    private static final DataParameter<Integer> ROCK_TYPE_DW = EntityDataManager.createKey(EntityThrownRock.class, DataSerializers.VARINT);
+public class EntityThrownRock extends ThrowableEntity {
+    private static final DataParameter<Integer> ROCK_TYPE_DW = EntityDataManager.defineId(EntityThrownRock.class, DataSerializers.INT);
     private int rock_type = 0;
     private int myage = 0;
     private float my_rotation = 0.0f;
 
-    public EntityThrownRock(World par1World) {
-        super(par1World);
+    public EntityThrownRock(EntityType<? extends EntityThrownRock> type, World par1World) {
+        super(type, par1World);
     }
 
     public EntityThrownRock(World par1World, int par2) {
-        super(par1World);
+        this(typeFor(par1World), par1World);
     }
 
-    public EntityThrownRock(World par1World, EntityLivingBase par2EntityLiving) {
-        super(par1World, par2EntityLiving);
+    public EntityThrownRock(World par1World, LivingEntity par2Mob) {
+        this(typeFor(par1World), par1World);
+        this.setOwner(par2Mob);
     }
 
-    public EntityThrownRock(World par1World, EntityLivingBase par2EntityLiving, int par3) {
-        super(par1World, par2EntityLiving);
+    public EntityThrownRock(World par1World, LivingEntity par2Mob, int par3) {
+        this(par1World, par2Mob);
         this.rock_type = par3;
     }
 
     public EntityThrownRock(World par1World, double par2, double par4, double par6) {
-        super(par1World, par2, par4, par6);
+        this(typeFor(par1World), par2, par4, par6, par1World);
     }
 
-    protected void entityInit() {
-        super.entityInit();
-        this.getDataManager().register(ROCK_TYPE_DW, 0);
+    protected EntityThrownRock(EntityType<? extends EntityThrownRock> type, double par2, double par4, double par6, World par1World) {
+        super(type, par2, par4, par6, par1World);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static EntityType<? extends EntityThrownRock> typeFor(World level) {
+        return (EntityType<? extends EntityThrownRock>) ForgeRegistries.ENTITIES.getValue(new ResourceLocation("chaospersists", "thrown_rock"));
+    }
+
+    @Override
+    protected void defineSynchedData() {
+        this.entityData.define(ROCK_TYPE_DW, 0);
     }
 
     public int getRockType() {
-        return this.getDataManager().get(ROCK_TYPE_DW).intValue();
+        return this.entityData.get(ROCK_TYPE_DW);
     }
 
     public void setRockType(int par1) {
-        if (this.world == null) {
+        if (this.level == null) {
             return;
         }
-        if (this.world.isRemote) {
+        if (this.level.isClientSide) {
             return;
         }
         this.rock_type = par1;
-        this.getDataManager().set(ROCK_TYPE_DW, par1);
+        this.entityData.set(ROCK_TYPE_DW, par1);
     }
 
-    protected void onImpact(RayTraceResult par1MovingObjectPosition) {
-        if (this.isDead) {
+    @Override
+    protected void onHit(RayTraceResult par1MovingObjectPosition) {
+        if (this.removed) {
             return;
         }
-        if (this.world.isRemote) {
+        if (this.level.isClientSide) {
             return;
         }
-        if (par1MovingObjectPosition.entityHit != null && this.getThrower() != null) {
+        if (par1MovingObjectPosition.getType() == RayTraceResult.Type.ENTITY && this.getOwner() != null) {
             double ks;
             double inair;
             float f3;
-            Entity e = par1MovingObjectPosition.entityHit;
-            if (this.rock_type == 1 && e != this.getThrower()) {
-                e.attackEntityFrom(DamageSource.causePlayerDamage((EntityPlayer)((EntityPlayer)this.getThrower())), 2.0f);
+            Entity e = ((EntityRayTraceResult) par1MovingObjectPosition).getEntity();
+            Entity ownerEntity = this.getOwner();
+            LivingEntity thrower = ownerEntity instanceof LivingEntity ? (LivingEntity) ownerEntity : null;
+            if (thrower == null) {
+                return;
+            }
+            if (this.rock_type == 1 && e != thrower) {
+                e.hurt(DamageSource.playerAttack((net.minecraft.entity.player.PlayerEntity) thrower), 2.0f);
                 ks = 0.1;
                 inair = 0.025;
-                f3 = (float)Math.atan2(e.posZ - this.getThrower().posZ, e.posX - this.getThrower().posX);
-                if (e.isDead) {
+                f3 = (float) Math.atan2(e.getZ() - thrower.getZ(), e.getX() - thrower.getX());
+                if (!e.isAlive()) {
                     inair *= 2.0;
                 }
-                e.addVelocity(Math.cos(f3) * ks, inair, Math.sin(f3) * ks);
+                e.setDeltaMovement(e.getDeltaMovement().add(Math.cos(f3) * ks, inair, Math.sin(f3) * ks));
             }
-            if (this.rock_type == 2 && e != this.getThrower()) {
-                e.attackEntityFrom(DamageSource.causePlayerDamage((EntityPlayer)((EntityPlayer)this.getThrower())), 5.0f);
+            if (this.rock_type == 2 && e != thrower) {
+                e.hurt(DamageSource.playerAttack((net.minecraft.entity.player.PlayerEntity) thrower), 5.0f);
                 ks = 0.2;
                 inair = 0.025;
-                f3 = (float)Math.atan2(e.posZ - this.getThrower().posZ, e.posX - this.getThrower().posX);
-                if (e.isDead) {
+                f3 = (float) Math.atan2(e.getZ() - thrower.getZ(), e.getX() - thrower.getX());
+                if (!e.isAlive()) {
                     inair *= 2.0;
                 }
-                e.addVelocity(Math.cos(f3) * ks, inair, Math.sin(f3) * ks);
+                e.setDeltaMovement(e.getDeltaMovement().add(Math.cos(f3) * ks, inair, Math.sin(f3) * ks));
             }
-            if (this.rock_type == 3 && e != this.getThrower()) {
-                e.attackEntityFrom(DamageSource.causePlayerDamage((EntityPlayer)((EntityPlayer)this.getThrower())), 5.0f);
+            if (this.rock_type == 3 && e != thrower) {
+                e.hurt(DamageSource.playerAttack((net.minecraft.entity.player.PlayerEntity) thrower), 5.0f);
                 ks = 0.2;
                 inair = 0.025;
-                f3 = (float)Math.atan2(e.posZ - this.getThrower().posZ, e.posX - this.getThrower().posX);
-                if (e.isDead) {
+                f3 = (float) Math.atan2(e.getZ() - thrower.getZ(), e.getX() - thrower.getX());
+                if (!e.isAlive()) {
                     inair *= 2.0;
                 }
-                e.addVelocity(Math.cos(f3) * ks, inair, Math.sin(f3) * ks);
-                e.setFire(20);
+                e.setDeltaMovement(e.getDeltaMovement().add(Math.cos(f3) * ks, inair, Math.sin(f3) * ks));
+                e.setSecondsOnFire(20);
             }
-            if (this.rock_type == 4 && e != this.getThrower()) {
-                e.attackEntityFrom(DamageSource.causePlayerDamage((EntityPlayer)((EntityPlayer)this.getThrower())), 5.0f);
+            if (this.rock_type == 4 && e != thrower) {
+                e.hurt(DamageSource.playerAttack((net.minecraft.entity.player.PlayerEntity) thrower), 5.0f);
                 ks = 0.2;
                 inair = 0.025;
-                f3 = (float)Math.atan2(e.posZ - this.getThrower().posZ, e.posX - this.getThrower().posX);
-                if (e.isDead) {
+                f3 = (float) Math.atan2(e.getZ() - thrower.getZ(), e.getX() - thrower.getX());
+                if (!e.isAlive()) {
                     inair *= 2.0;
                 }
-                e.addVelocity(Math.cos(f3) * ks, inair, Math.sin(f3) * ks);
-                if (e instanceof EntityLivingBase) {
-                    ((EntityLivingBase)e).addPotionEffect(new PotionEffect(Potion.getPotionById(19), 100, 0));
+                e.setDeltaMovement(e.getDeltaMovement().add(Math.cos(f3) * ks, inair, Math.sin(f3) * ks));
+                if (e instanceof LivingEntity) {
+                    ((LivingEntity) e).addEffect(new EffectInstance(Effects.POISON, 100, 0));
                 }
             }
-            if (this.rock_type == 5 && e != this.getThrower()) {
-                e.attackEntityFrom(DamageSource.causePlayerDamage((EntityPlayer)((EntityPlayer)this.getThrower())), 10.0f);
+            if (this.rock_type == 5 && e != thrower) {
+                e.hurt(DamageSource.playerAttack((net.minecraft.entity.player.PlayerEntity) thrower), 10.0f);
                 ks = 0.1;
                 inair = 0.025;
-                f3 = (float)Math.atan2(e.posZ - this.getThrower().posZ, e.posX - this.getThrower().posX);
-                if (e.isDead) {
+                f3 = (float) Math.atan2(e.getZ() - thrower.getZ(), e.getX() - thrower.getX());
+                if (!e.isAlive()) {
                     inair *= 2.0;
                 }
-                e.addVelocity(Math.cos(f3) * ks, inair, Math.sin(f3) * ks);
-                if (e instanceof EntityLivingBase) {
-                    ((EntityLivingBase)e).addPotionEffect(new PotionEffect(Potion.getPotionById(2), 100, 0));
+                e.setDeltaMovement(e.getDeltaMovement().add(Math.cos(f3) * ks, inair, Math.sin(f3) * ks));
+                if (e instanceof LivingEntity) {
+                    ((LivingEntity) e).addEffect(new EffectInstance(Effects.MOVEMENT_SLOWDOWN, 100, 0));
                 }
             }
-            if (this.rock_type == 6 && e != this.getThrower()) {
-                e.attackEntityFrom(DamageSource.causePlayerDamage((EntityPlayer)((EntityPlayer)this.getThrower())), 20.0f);
+            if (this.rock_type == 6 && e != thrower) {
+                e.hurt(DamageSource.playerAttack((net.minecraft.entity.player.PlayerEntity) thrower), 20.0f);
                 ks = 0.2;
                 inair = 0.025;
-                f3 = (float)Math.atan2(e.posZ - this.getThrower().posZ, e.posX - this.getThrower().posX);
-                if (e.isDead) {
+                f3 = (float) Math.atan2(e.getZ() - thrower.getZ(), e.getX() - thrower.getX());
+                if (!e.isAlive()) {
                     inair *= 2.0;
                 }
-                e.addVelocity(Math.cos(f3) * ks, inair, Math.sin(f3) * ks);
-                if (e instanceof EntityLivingBase) {
-                    ((EntityLivingBase)e).addPotionEffect(new PotionEffect(net.minecraft.init.MobEffects.WEAKNESS, 100, 0));
+                e.setDeltaMovement(e.getDeltaMovement().add(Math.cos(f3) * ks, inair, Math.sin(f3) * ks));
+                if (e instanceof LivingEntity) {
+                    ((LivingEntity) e).addEffect(new EffectInstance(Effects.WEAKNESS, 100, 0));
                 }
             }
-            if (this.rock_type == 7 && e != this.getThrower()) {
-                e.attackEntityFrom(DamageSource.causePlayerDamage((EntityPlayer)((EntityPlayer)this.getThrower())), 40.0f);
+            if (this.rock_type == 7 && e != thrower) {
+                e.hurt(DamageSource.playerAttack((net.minecraft.entity.player.PlayerEntity) thrower), 40.0f);
                 ks = 0.2;
                 inair = 0.025;
-                f3 = (float)Math.atan2(e.posZ - this.getThrower().posZ, e.posX - this.getThrower().posX);
-                if (e.isDead) {
+                f3 = (float) Math.atan2(e.getZ() - thrower.getZ(), e.getX() - thrower.getX());
+                if (!e.isAlive()) {
                     inair *= 2.0;
                 }
-                e.addVelocity(Math.cos(f3) * ks, inair, Math.sin(f3) * ks);
+                e.setDeltaMovement(e.getDeltaMovement().add(Math.cos(f3) * ks, inair, Math.sin(f3) * ks));
             }
-            if (this.rock_type == 8 && e != this.getThrower()) {
-                e.attackEntityFrom(DamageSource.causePlayerDamage((EntityPlayer)((EntityPlayer)this.getThrower())), 40.0f);
+            if (this.rock_type == 8 && e != thrower) {
+                e.hurt(DamageSource.playerAttack((net.minecraft.entity.player.PlayerEntity) thrower), 40.0f);
                 ks = 0.5;
                 inair = 0.055;
-                f3 = (float)Math.atan2(e.posZ - this.getThrower().posZ, e.posX - this.getThrower().posX);
-                if (e.isDead) {
+                f3 = (float) Math.atan2(e.getZ() - thrower.getZ(), e.getX() - thrower.getX());
+                if (!e.isAlive()) {
                     inair *= 2.0;
                 }
-                e.addVelocity(Math.cos(f3) * ks, inair, Math.sin(f3) * ks);
-                this.world.newExplosion((Entity)null, e.posX, e.posY + 0.25, e.posZ, 2.1f, true, this.world.getGameRules().getBoolean("mobGriefing"));
+                e.setDeltaMovement(e.getDeltaMovement().add(Math.cos(f3) * ks, inair, Math.sin(f3) * ks));
+                this.level.explode(null, e.getX(), e.getY() + 0.25, e.getZ(), 2.1f, this.level.getGameRules().getBoolean(net.minecraft.world.GameRules.RULE_MOBGRIEFING) ? Explosion.Mode.DESTROY : Explosion.Mode.NONE);
             }
-            if (this.rock_type == 9 && e != this.getThrower()) {
-                e.attackEntityFrom(DamageSource.causePlayerDamage((EntityPlayer)((EntityPlayer)this.getThrower())), 150.0f);
+            if (this.rock_type == 9 && e != thrower) {
+                e.hurt(DamageSource.playerAttack((net.minecraft.entity.player.PlayerEntity) thrower), 150.0f);
                 ks = 0.2;
                 inair = 0.025;
-                f3 = (float)Math.atan2(e.posZ - this.getThrower().posZ, e.posX - this.getThrower().posX);
-                if (e.isDead) {
+                f3 = (float) Math.atan2(e.getZ() - thrower.getZ(), e.getX() - thrower.getX());
+                if (!e.isAlive()) {
                     inair *= 2.0;
                 }
-                e.addVelocity(Math.cos(f3) * ks, inair, Math.sin(f3) * ks);
-                e.setFire(50);
-                if (e instanceof EntityLivingBase) {
-                    ((EntityLivingBase)e).addPotionEffect(new PotionEffect(net.minecraft.init.MobEffects.WEAKNESS, 100, 0));
+                e.setDeltaMovement(e.getDeltaMovement().add(Math.cos(f3) * ks, inair, Math.sin(f3) * ks));
+                e.setSecondsOnFire(50);
+                if (e instanceof LivingEntity) {
+                    ((LivingEntity) e).addEffect(new EffectInstance(Effects.WEAKNESS, 100, 0));
                 }
             }
-            if (this.rock_type == 10 && e != this.getThrower()) {
-                e.attackEntityFrom(DamageSource.causePlayerDamage((EntityPlayer)((EntityPlayer)this.getThrower())), 150.0f);
+            if (this.rock_type == 10 && e != thrower) {
+                e.hurt(DamageSource.playerAttack((net.minecraft.entity.player.PlayerEntity) thrower), 150.0f);
                 ks = 0.2;
                 inair = 0.025;
-                f3 = (float)Math.atan2(e.posZ - this.getThrower().posZ, e.posX - this.getThrower().posX);
-                if (e.isDead) {
+                f3 = (float) Math.atan2(e.getZ() - thrower.getZ(), e.getX() - thrower.getX());
+                if (!e.isAlive()) {
                     inair *= 2.0;
                 }
-                e.addVelocity(Math.cos(f3) * ks, inair, Math.sin(f3) * ks);
-                if (e instanceof EntityLivingBase) {
-                    ((EntityLivingBase)e).addPotionEffect(new PotionEffect(Potion.getPotionById(19), 200, 0));
-                }
-                if (e instanceof EntityLivingBase) {
-                    ((EntityLivingBase)e).addPotionEffect(new PotionEffect(net.minecraft.init.MobEffects.WEAKNESS, 100, 0));
+                e.setDeltaMovement(e.getDeltaMovement().add(Math.cos(f3) * ks, inair, Math.sin(f3) * ks));
+                if (e instanceof LivingEntity) {
+                    ((LivingEntity) e).addEffect(new EffectInstance(Effects.POISON, 200, 0));
+                    ((LivingEntity) e).addEffect(new EffectInstance(Effects.WEAKNESS, 100, 0));
                 }
             }
-            if (this.rock_type == 11 && e != this.getThrower()) {
-                e.attackEntityFrom(DamageSource.causePlayerDamage((EntityPlayer)((EntityPlayer)this.getThrower())), 150.0f);
+            if (this.rock_type == 11 && e != thrower) {
+                e.hurt(DamageSource.playerAttack((net.minecraft.entity.player.PlayerEntity) thrower), 150.0f);
                 ks = 0.2;
                 inair = 0.025;
-                f3 = (float)Math.atan2(e.posZ - this.getThrower().posZ, e.posX - this.getThrower().posX);
-                if (e.isDead) {
+                f3 = (float) Math.atan2(e.getZ() - thrower.getZ(), e.getX() - thrower.getX());
+                if (!e.isAlive()) {
                     inair *= 2.0;
                 }
-                e.addVelocity(Math.cos(f3) * ks, inair, Math.sin(f3) * ks);
-                if (e instanceof EntityLivingBase) {
-                    ((EntityLivingBase)e).addPotionEffect(new PotionEffect(Potion.getPotionById(2), 200, 0));
-                }
-                if (e instanceof EntityLivingBase) {
-                    ((EntityLivingBase)e).addPotionEffect(new PotionEffect(net.minecraft.init.MobEffects.WEAKNESS, 100, 0));
+                e.setDeltaMovement(e.getDeltaMovement().add(Math.cos(f3) * ks, inair, Math.sin(f3) * ks));
+                if (e instanceof LivingEntity) {
+                    ((LivingEntity) e).addEffect(new EffectInstance(Effects.MOVEMENT_SLOWDOWN, 200, 0));
+                    ((LivingEntity) e).addEffect(new EffectInstance(Effects.WEAKNESS, 100, 0));
                 }
             }
-            if (this.rock_type == 12 && e != this.getThrower()) {
-                e.attackEntityFrom(DamageSource.causePlayerDamage((EntityPlayer)((EntityPlayer)this.getThrower())), 250.0f);
+            if (this.rock_type == 12 && e != thrower) {
+                e.hurt(DamageSource.playerAttack((net.minecraft.entity.player.PlayerEntity) thrower), 250.0f);
                 ks = 0.2;
                 inair = 0.025;
-                f3 = (float)Math.atan2(e.posZ - this.getThrower().posZ, e.posX - this.getThrower().posX);
-                if (e.isDead) {
+                f3 = (float) Math.atan2(e.getZ() - thrower.getZ(), e.getX() - thrower.getX());
+                if (!e.isAlive()) {
                     inair *= 2.0;
                 }
-                e.addVelocity(Math.cos(f3) * ks, inair, Math.sin(f3) * ks);
-                if (e instanceof EntityLivingBase) {
-                    ((EntityLivingBase)e).addPotionEffect(new PotionEffect(net.minecraft.init.MobEffects.WEAKNESS, 100, 0));
+                e.setDeltaMovement(e.getDeltaMovement().add(Math.cos(f3) * ks, inair, Math.sin(f3) * ks));
+                if (e instanceof LivingEntity) {
+                    ((LivingEntity) e).addEffect(new EffectInstance(Effects.WEAKNESS, 100, 0));
                 }
-                this.world.newExplosion((Entity)null, e.posX, e.posY + 0.25, e.posZ, 5.1f, true, this.world.getGameRules().getBoolean("mobGriefing"));
+                this.level.explode(null, e.getX(), e.getY() + 0.25, e.getZ(), 5.1f, this.level.getGameRules().getBoolean(net.minecraft.world.GameRules.RULE_MOBGRIEFING) ? Explosion.Mode.DESTROY : Explosion.Mode.NONE);
             }
-        } else if (this.rock_type != 0) {
+        } else if (this.rock_type != 0 && par1MovingObjectPosition.getType() == RayTraceResult.Type.BLOCK) {
             int played = 0;
-            int x = par1MovingObjectPosition.getBlockPos().getX();
-            int y = par1MovingObjectPosition.getBlockPos().getY();
-            int z = par1MovingObjectPosition.getBlockPos().getZ();
+            BlockPos hitPos = ((BlockRayTraceResult) par1MovingObjectPosition).getBlockPos();
+            int x = hitPos.getX();
+            int y = hitPos.getY();
+            int z = hitPos.getZ();
             for (int i = -1; i <= 1; ++i) {
                 for (int j = -1; j <= 1; ++j) {
                     for (int k = -1; k <= 1; ++k) {
-                        Block bid = this.world.getBlockState(new net.minecraft.util.math.BlockPos(x + i, y + j, z + k)).getBlock();
-                        if (bid != Blocks.GLASS && bid != Blocks.GLASS_PANE && bid != Blocks.GLASS) continue;
-                        if (!this.world.isRemote) {
-                            this.world.setBlockState(new net.minecraft.util.math.BlockPos(x + i, y + j, z + k), Blocks.AIR.getDefaultState());
+                        Block bid = this.level.getBlockState(new BlockPos(x + i, y + j, z + k)).getBlock();
+                        if (bid != Blocks.GLASS && bid != Blocks.GLASS_PANE) {
+                            continue;
                         }
-                        if (played != 0) continue;
-                        this.world.playSound(null, (double)x, (double)y, (double)z, net.minecraft.util.SoundEvent.REGISTRY.getObject(new net.minecraft.util.ResourceLocation("chaospersists", "glassdead")), net.minecraft.util.SoundCategory.BLOCKS, 1.0f, 1.0f);
+                        if (!this.level.isClientSide) {
+                            this.level.setBlock(new BlockPos(x + i, y + j, z + k), Blocks.AIR.defaultBlockState(), 3);
+                        }
+                        if (played != 0) {
+                            continue;
+                        }
+                        SoundEvent glassDead = ForgeRegistries.SOUND_EVENTS.getValue(new ResourceLocation("chaospersists", "glassdead"));
+                        if (glassDead != null) {
+                            this.level.playSound(null, x, y, z, glassDead, SoundCategory.BLOCKS, 1.0f, 1.0f);
+                        }
                         ++played;
                     }
                 }
             }
-            if (!this.world.isRemote) {
+            if (!this.level.isClientSide) {
                 if (this.rock_type == 1) {
-                    this.dropItem(ChaosPersists.MySmallRock, 1);
+                    this.spawnAtLocation(ChaosPersists.MySmallRock, 1);
                 }
                 if (this.rock_type == 2) {
-                    this.dropItem(ChaosPersists.MyRock, 1);
+                    this.spawnAtLocation(ChaosPersists.MyRock, 1);
                 }
                 if (this.rock_type == 3) {
-                    this.dropItem(ChaosPersists.MyRedRock, 1);
+                    this.spawnAtLocation(ChaosPersists.MyRedRock, 1);
                 }
                 if (this.rock_type == 4) {
-                    this.dropItem(ChaosPersists.MyGreenRock, 1);
+                    this.spawnAtLocation(ChaosPersists.MyGreenRock, 1);
                 }
                 if (this.rock_type == 5) {
-                    this.dropItem(ChaosPersists.MyBlueRock, 1);
+                    this.spawnAtLocation(ChaosPersists.MyBlueRock, 1);
                 }
                 if (this.rock_type == 6) {
-                    this.dropItem(ChaosPersists.MyPurpleRock, 1);
+                    this.spawnAtLocation(ChaosPersists.MyPurpleRock, 1);
                 }
                 if (this.rock_type == 7) {
-                    this.dropItem(ChaosPersists.MySpikeyRock, 1);
+                    this.spawnAtLocation(ChaosPersists.MySpikeyRock, 1);
                 }
                 if (this.rock_type == 8) {
-                    this.dropItem(ChaosPersists.MyTNTRock, 1);
+                    this.spawnAtLocation(ChaosPersists.MyTNTRock, 1);
                 }
                 if (this.rock_type == 9) {
-                    this.dropItem(ChaosPersists.MyCrystalRedRock, 1);
+                    this.spawnAtLocation(ChaosPersists.MyCrystalRedRock, 1);
                 }
                 if (this.rock_type == 10) {
-                    this.dropItem(ChaosPersists.MyCrystalGreenRock, 1);
+                    this.spawnAtLocation(ChaosPersists.MyCrystalGreenRock, 1);
                 }
                 if (this.rock_type == 11) {
-                    this.dropItem(ChaosPersists.MyCrystalBlueRock, 1);
+                    this.spawnAtLocation(ChaosPersists.MyCrystalBlueRock, 1);
                 }
                 if (this.rock_type == 12) {
-                    this.dropItem(ChaosPersists.MyCrystalTNTRock, 1);
+                    this.spawnAtLocation(ChaosPersists.MyCrystalTNTRock, 1);
                 }
             }
         }
-        this.setDead();
+        this.remove();
     }
 
-    public void onUpdate() {
-        int x = (int)this.posX;
-        int y = (int)this.posY;
-        int z = (int)this.posZ;
-        super.onUpdate();
+    @Override
+    public void tick() {
+        int x = (int) this.getX();
+        int y = (int) this.getY();
+        int z = (int) this.getZ();
+        super.tick();
         this.my_rotation += 30.0f;
         this.my_rotation %= 360.0f;
-        this.rotationPitch = this.prevRotationPitch = this.my_rotation;
+        this.xRot = this.xRotO = this.my_rotation;
         ++this.myage;
         if (this.myage > 1000) {
-            this.setDead();
+            this.remove();
         }
-        if (this.world.isRemote) {
+        if (this.level.isClientSide) {
             this.rock_type = this.getRockType();
         } else {
             this.setRockType(this.rock_type);
         }
-        Block bid = this.world.getBlockState(new net.minecraft.util.math.BlockPos(x, y, z)).getBlock();
-        if (bid == Blocks.WATER && this.motionY < -0.15000000596046448 && this.motionY > -0.550000011920929 && (float)(this.motionX * this.motionX + this.motionZ * this.motionZ) > 0.5f) {
-            this.motionY = - this.motionY * 3.0 / 4.0;
-            this.motionX = this.motionX * 3.0 / 4.0;
-            this.motionZ = this.motionZ * 3.0 / 4.0;
+        Block bid = this.level.getBlockState(new BlockPos(x, y, z)).getBlock();
+        Vector3d motion = this.getDeltaMovement();
+        if (bid == Blocks.WATER && motion.y < -0.15000000596046448 && motion.y > -0.550000011920929 && (float) (motion.x * motion.x + motion.z * motion.z) > 0.5f) {
+            this.setDeltaMovement(-motion.x * 0.75, -motion.y * 0.75, -motion.z * 0.75);
         }
     }
 }
-

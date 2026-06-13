@@ -1,6 +1,6 @@
-{
+﻿{
   "parent": "item/handheld",
   "textures": {
-    "layer0": "chaospersists:items/rubysword"
+    "layer0": "chaospersists:item/rubysword"
   }
 }

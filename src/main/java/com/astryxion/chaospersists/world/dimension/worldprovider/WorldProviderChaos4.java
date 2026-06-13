@@ -1,108 +1,67 @@
-/*
- * Decompiled with CFR 0_125.
- * 
- * Could not load the following classes:
- *  com.astryxion.chaospersists.BiomeGenUtopianPlains
- *  com.astryxion.chaospersists.ChunkProviderChaos4
- *  com.astryxion.chaospersists.ChaosPersists
- *  com.astryxion.chaospersists.WorldProviderChaos4
- *  net.minecraft.server.MinecraftServer
- *  net.minecraft.world.World
- *  net.minecraft.world.WorldProvider
- *  net.minecraft.world.WorldServer
- *  net.minecraft.world.biome.Biome
- *  net.minecraft.world.biome.WorldChunkManager
- *  net.minecraft.world.biome.WorldChunkManagerHell
- *  net.minecraft.world.chunk.IChunkProvider
- *  net.minecraft.world.storage.WorldInfo
- *  net.minecraftforge.common.DimensionManager
- */
 package com.astryxion.chaospersists.world.dimension.worldprovider;
 
 import com.astryxion.chaospersists.core.ChaosPersists;
-import com.astryxion.chaospersists.world.dimension.chunkprovider.ChunkProviderChaos4;
-import net.minecraft.init.Biomes;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.WorldProvider;
-import net.minecraft.world.WorldServer;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.biome.BiomeProvider;
-import net.minecraft.world.biome.BiomeProviderSingle;
-import net.minecraft.world.storage.WorldInfo;
-import net.minecraftforge.common.DimensionManager;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import net.minecraft.world.biome.Biomes;
+import net.minecraft.world.biome.provider.SingleBiomeProvider;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.world.server.ServerWorld;
+import net.minecraftforge.fml.server.ServerLifecycleHooks;
 
-public class WorldProviderChaos4
-extends WorldProvider {
+/** Islands / danger dimension (formerly {@code WorldProviderChaos4}). */
+public class WorldProviderChaos4 {
 
-    private BiomeProviderSingle dangerBiomeProvider;
+    private WorldProviderChaos4() {
+    }
 
-    private Biome resolveDangerBiome() {
+    private static Biome resolveDangerBiome(Registry<Biome> registry) {
         if (ChaosPersists.DANGER_BIOME != null) {
             return ChaosPersists.DANGER_BIOME;
         }
-        Biome registered = ForgeRegistries.BIOMES.getValue(new ResourceLocation("chaospersists", "danger_dimension"));
-        return registered != null ? registered : Biomes.PLAINS;
-    }
-    @Override
-    public net.minecraft.world.DimensionType getDimensionType() {
-        return net.minecraftforge.common.DimensionManager.getProviderType(this.getDimension());
+        Biome registered = registry.get(new ResourceLocation("chaospersists", "danger_dimension"));
+        return registered != null ? registered : registry.getOrThrow(Biomes.PLAINS);
     }
 
-    public String getDimensionName() {
+    public static SingleBiomeProvider createBiomeSource(Registry<Biome> registry) {
+        return new SingleBiomeProvider(resolveDangerBiome(registry));
+    }
+
+    public static String getDimensionName() {
         return "Dimension-Islands";
     }
 
-    public boolean canRespawnHere() {
+    public static boolean canRespawnHere() {
         return true;
     }
 
-    @Override
-    public boolean isSurfaceWorld() {
+    public static boolean isSurfaceWorld() {
         return true;
     }
 
-    @Override
-    public BiomeProvider getBiomeProvider() {
-        if (this.dangerBiomeProvider == null) {
-            this.dangerBiomeProvider = new BiomeProviderSingle(this.resolveDangerBiome());
-        }
-        return this.dangerBiomeProvider;
-    }
-
-    public void registerWorldChunkManager() {
-        if (this.dangerBiomeProvider == null) {
-            this.dangerBiomeProvider = new BiomeProviderSingle(this.resolveDangerBiome());
-        }
-        this.biomeProvider = this.dangerBiomeProvider;
-    }
-
-    public void setWorldTime(long time) {
-        WorldServer ws = DimensionManager.getWorld((int)this.getDimension());
+    public static void setWorldTime(long time) {
+        ServerWorld ws = ChaosPersists.getServerWorldForDimensionIndex(ServerLifecycleHooks.getCurrentServer(), 4);
         if (ws != null) {
-            WorldInfo w = ws.getWorldInfo();
-            if (w != null) {
-                if (time % 24000L > 12000L && ws.areAllPlayersAsleep()) {
-                    long i = time + 24000L;
-                    i -= i % 24000L;
-                    for (Integer dimId : DimensionManager.getIDs()) {
-                        WorldServer worldServer = DimensionManager.getWorld(dimId);
-                        if (worldServer != null) worldServer.setWorldTime(i);
+            boolean allPlayersAsleep = !ws.players().isEmpty();
+            for (ServerPlayerEntity player : ws.players()) {
+                if (!player.isSleeping()) {
+                    allPlayersAsleep = false;
+                    break;
+                }
+            }
+            if (time % 24000L > 12000L && allPlayersAsleep) {
+                long newTime = time + 24000L;
+                newTime -= newTime % 24000L;
+                for (int dimId : ChaosPersists.getRegisteredChaosDimensionIds()) {
+                    ServerWorld worldServer = ChaosPersists.getServerWorldByDimensionId(dimId);
+                    if (worldServer != null) {
+                        worldServer.setDayTime(newTime);
                     }
-                } else {
-                    super.setWorldTime(time);
                 }
             } else {
-                super.setWorldTime(time);
+                ws.setDayTime(time);
             }
-        } else {
-            super.setWorldTime(time);
         }
     }
-
-    @Override
-    public net.minecraft.world.gen.IChunkGenerator createChunkGenerator() {
-        return new ChunkProviderChaos4(this.world, this.world.getSeed(), true);
-    }
 }
-

@@ -1,173 +1,113 @@
-/*
- * Decompiled with CFR 0_125.
- * 
- * Could not load the following classes:
- *  com.astryxion.chaospersists.CreepingHorror
- *  com.astryxion.chaospersists.Dragon
- *  com.astryxion.chaospersists.EnderReaper
- *  com.astryxion.chaospersists.Firefly
- *  com.astryxion.chaospersists.GenericTargetSorter
- *  com.astryxion.chaospersists.Island
- *  com.astryxion.chaospersists.IslandToo
- *  com.astryxion.chaospersists.LeafMonster
- *  com.astryxion.chaospersists.LurkingTerror
- *  com.astryxion.chaospersists.MobStats
- *  com.astryxion.chaospersists.MyEntityAIWanderALot
- *  com.astryxion.chaospersists.ChaosPersists
- *  com.astryxion.chaospersists.PitchBlack
- *  com.astryxion.chaospersists.RockBase
- *  com.astryxion.chaospersists.TerribleTerror
- *  net.minecraft.entity.Entity
- *  net.minecraft.entity.EntityCreature
- *  net.minecraft.entity.EntityLiving
- *  net.minecraft.entity.EntityLivingBase
- *  net.minecraft.entity.SharedMonsterAttributes
- *  net.minecraft.entity.ai.EntityAIBase
- *  net.minecraft.entity.ai.EntityAIHurtByTarget
- *  net.minecraft.entity.ai.EntityAILookIdle
- *  net.minecraft.entity.ai.EntityAIMoveThroughVillage
- *  net.minecraft.entity.ai.EntityAIPanic
- *  net.minecraft.entity.ai.EntityAISwimming
- *  net.minecraft.entity.ai.EntityAITasks
- *  net.minecraft.entity.ai.EntityAIWatchClosest
- *  net.minecraft.entity.ai.EntitySenses
- *  net.minecraft.entity.ai.attributes.IAttribute
- *  net.minecraft.entity.ai.attributes.IAttributeInstance
- *  net.minecraft.entity.monster.EntityMob
- *  net.minecraft.entity.player.EntityPlayer
- *  net.minecraft.entity.player.PlayerCapabilities
- *  net.minecraft.init.Items
- *  net.minecraft.item.Item
- *  net.minecraft.pathfinding.PathNavigate
- *  net.minecraft.util.math.AxisAlignedBB
- *  net.minecraft.world.World
- *  net.minecraft.world.WorldProvider
- */
 package com.astryxion.chaospersists.entity;
 
-import com.astryxion.chaospersists.entity.Dragon;
-import com.astryxion.chaospersists.entity.EnderReaper;
-import com.astryxion.chaospersists.entity.Firefly;
-import com.astryxion.chaospersists.util.GenericTargetSorter;
-import com.astryxion.chaospersists.entity.Island;
-import com.astryxion.chaospersists.entity.IslandToo;
-import com.astryxion.chaospersists.entity.LeafMonster;
-import com.astryxion.chaospersists.entity.LurkingTerror;
-import com.astryxion.chaospersists.util.MobStats;
-import com.astryxion.chaospersists.util.MyEntityAIWanderALot;
 import com.astryxion.chaospersists.core.ChaosPersists;
-import com.astryxion.chaospersists.entity.PitchBlack;
-import com.astryxion.chaospersists.entity.RockBase;
-import com.astryxion.chaospersists.entity.TerribleTerror;
+import com.astryxion.chaospersists.core.ChaosSounds;
+import com.astryxion.chaospersists.util.GenericTargetSorter;
+import com.astryxion.chaospersists.util.MyEntityAIWanderALot;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
+import net.minecraft.util.DamageSource;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityCreature;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.ai.EntityAIBase;
-import net.minecraft.entity.ai.EntityAIHurtByTarget;
-import net.minecraft.entity.ai.EntityAILookIdle;
-import net.minecraft.entity.ai.EntityAIMoveThroughVillage;
-import net.minecraft.entity.ai.EntityAIPanic;
-import net.minecraft.entity.ai.EntityAISwimming;
-import net.minecraft.entity.ai.EntityAITasks;
-import net.minecraft.entity.ai.EntityAIWatchClosest;
-import net.minecraft.entity.ai.EntitySenses;
-import net.minecraft.entity.ai.attributes.IAttribute;
-import net.minecraft.entity.ai.attributes.IAttributeInstance;
-import net.minecraft.entity.monster.EntityMob;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.PlayerCapabilities;
-import net.minecraft.init.Items;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.SpawnReason;
+import net.minecraft.entity.ai.attributes.AttributeModifierMap;
+import net.minecraft.entity.ai.attributes.Attributes;
+import net.minecraft.entity.ai.goal.SwimGoal;
+import net.minecraft.entity.ai.goal.HurtByTargetGoal;
+import net.minecraft.entity.ai.goal.LookAtGoal;
+import net.minecraft.entity.ai.goal.MoveThroughVillageGoal;
+import net.minecraft.entity.ai.goal.PanicGoal;
+import net.minecraft.entity.ai.goal.LookRandomlyGoal;
+import net.minecraft.entity.monster.MonsterEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
-import net.minecraft.pathfinding.PathNavigate;
-import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.item.Items;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldProvider;
+import net.minecraft.world.IWorldReader;
 
-public class CreepingHorror
-extends EntityMob {
+public class CreepingHorror extends MonsterEntity {
     private GenericTargetSorter TargetSorter = null;
     private float moveSpeed = 0.25f;
 
-    public CreepingHorror(World par1World) {
-        super(par1World);
-        this.setSize(0.75f, 0.5f);
-                this.experienceValue = 5;
-                this.tasks.addTask(0, (EntityAIBase)new EntityAISwimming((EntityLiving)this));
-        this.tasks.addTask(1, (EntityAIBase)new EntityAIPanic((EntityCreature)this, 1.350000023841858));
-        this.tasks.addTask(2, (EntityAIBase)new EntityAIMoveThroughVillage((EntityCreature)this, 1.0, false));
-        this.tasks.addTask(3, (EntityAIBase)new MyEntityAIWanderALot((EntityCreature)this, 10, 1.0));
-        this.tasks.addTask(4, (EntityAIBase)new EntityAIWatchClosest((EntityLiving)this, EntityPlayer.class, 8.0f));
-        this.tasks.addTask(5, (EntityAIBase)new EntityAILookIdle((EntityLiving)this));
-        this.targetTasks.addTask(1, (EntityAIBase)new EntityAIHurtByTarget((EntityCreature)this, false));
-        this.TargetSorter = new GenericTargetSorter((Entity)this);
+    public CreepingHorror(EntityType<? extends CreepingHorror> type, World par1World) {
+        super(type, par1World);
+        this.xpReward = 5;
+        this.goalSelector.addGoal(0, new SwimGoal(this));
+        this.goalSelector.addGoal(1, new PanicGoal(this, 1.350000023841858));
+        this.goalSelector.addGoal(2, new MoveThroughVillageGoal(this, 1.0, false, 512, () -> true));
+        this.goalSelector.addGoal(3, new MyEntityAIWanderALot(this, 10, 1.0));
+        this.goalSelector.addGoal(4, new LookAtGoal(this, PlayerEntity.class, 8.0f));
+        this.goalSelector.addGoal(5, new LookRandomlyGoal(this));
+        this.targetSelector.addGoal(1, new HurtByTargetGoal(this));
+        this.TargetSorter = new GenericTargetSorter((Entity) this);
     }
 
-    protected void applyEntityAttributes() {
-        super.applyEntityAttributes();
-        this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue((double)this.mygetMaxHealth());
-        this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue((double)this.moveSpeed);
-        this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue((double)ChaosPersists.CreepingHorror_stats.attack);
+    public static AttributeModifierMap createAttributes() {
+        return MonsterEntity.createMonsterAttributes()
+                .add(Attributes.MAX_HEALTH, ChaosPersists.CreepingHorror_stats.health)
+                .add(Attributes.MOVEMENT_SPEED, 0.25)
+                .add(Attributes.ATTACK_DAMAGE, ChaosPersists.CreepingHorror_stats.attack)
+                .build();
     }
 
-    protected void entityInit() {
-        super.entityInit();
+    @Override
+    protected void defineSynchedData() {
+        super.defineSynchedData();
     }
 
     public int mygetMaxHealth() {
         return ChaosPersists.CreepingHorror_stats.health;
     }
 
-    public int getTotalArmorValue() {
+    public int getArmorValue() {
         return ChaosPersists.CreepingHorror_stats.defense;
     }
 
-    protected boolean isAIEnabled() {
-        return true;
-    }
-
-    public void onUpdate() {
-        this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue((double)this.moveSpeed);
-        super.onUpdate();
-        if (this.isNoDespawnRequired()) {
+    @Override
+    public void tick() {
+        this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue((double) this.moveSpeed);
+        super.tick();
+        if (this.isPersistenceRequired()) {
             return;
         }
-        long t = this.world.getWorldTime();
+        long t = this.level.getDayTime();
         if ((t %= 24000L) > 11000L) {
             return;
         }
-        if (this.world.rand.nextInt(500) == 1) {
-            this.setDead();
+        if (this.level.random.nextInt(500) == 1) {
+            this.remove();
         }
     }
 
+    @Override
     protected net.minecraft.util.SoundEvent getAmbientSound() {
-        return net.minecraft.util.SoundEvent.REGISTRY.getObject(new net.minecraft.util.ResourceLocation("chaospersists", "creepinghorror_living"));
+        return ChaosSounds.CREEPINGHORROR_LIVING;
     }
 
-    protected net.minecraft.util.SoundEvent getHurtSound(net.minecraft.util.DamageSource ds) {
-        return net.minecraft.util.SoundEvent.REGISTRY.getObject(new net.minecraft.util.ResourceLocation("chaospersists", "creepinghorror_hit"));
+    @Override
+    protected net.minecraft.util.SoundEvent getHurtSound(DamageSource ds) {
+        return ChaosSounds.CREEPINGHORROR_HIT;
     }
 
+    @Override
     protected net.minecraft.util.SoundEvent getDeathSound() {
-        return net.minecraft.util.SoundEvent.REGISTRY.getObject(new net.minecraft.util.ResourceLocation("chaospersists", "creepinghorror_dead"));
+        return ChaosSounds.CREEPINGHORROR_DEAD;
     }
 
+    @Override
     protected float getSoundVolume() {
         return 0.65f;
     }
 
-    protected float getSoundPitch() {
+    @Override
+    protected float getVoicePitch() {
         return 1.0f;
     }
 
     protected Item getDropItem() {
-        int i = this.world.rand.nextInt(3);
+        int i = this.level.random.nextInt(3);
         if (i == 0) {
             return Items.ROTTEN_FLESH;
         }
@@ -177,117 +117,118 @@ extends EntityMob {
         return Items.STRING;
     }
 
-    protected void updateAITasks() {
-        EntityLivingBase e;
-        if (this.isDead) {
+    @Override
+    protected void customServerAiStep() {
+        LivingEntity e;
+        if (!this.isAlive()) {
             return;
         }
-        super.updateAITasks();
-        if (this.world.rand.nextInt(200) == 1) {
-            this.setRevengeTarget(null);
+        super.customServerAiStep();
+        if (this.level.random.nextInt(200) == 1) {
+            this.setLastHurtByMob(null);
         }
-        if (this.world.rand.nextInt(5) == 1 && (e = this.findSomethingToAttack()) != null) {
-            this.getNavigator().tryMoveToEntityLiving((Entity)e, 1.25);
-            if (this.getDistanceSq((Entity)e) < 5.0 && (this.rand.nextInt(12) == 0 || this.rand.nextInt(14) == 1)) {
-                this.attackEntityAsMob((Entity)e);
+        if (this.level.random.nextInt(5) == 1 && (e = this.findSomethingToAttack()) != null) {
+            this.getNavigation().moveTo(e, 1.25);
+            if (this.distanceToSqr(e) < 5.0 && (this.random.nextInt(12) == 0 || this.random.nextInt(14) == 1)) {
+                this.doHurtTarget(e);
             }
         }
     }
 
-    private boolean isSuitableTarget(EntityLivingBase par1EntityLiving, boolean par2) {
-        if (par1EntityLiving == null) {
+    private boolean isSuitableTarget(LivingEntity par1LivingEntity, boolean par2) {
+        if (par1LivingEntity == null) {
             return false;
         }
-        if (par1EntityLiving == this) {
+        if (par1LivingEntity == this) {
             return false;
         }
-        if (!par1EntityLiving.isEntityAlive()) {
+        if (!par1LivingEntity.isAlive()) {
             return false;
         }
-        if (!this.getEntitySenses().canSee((Entity)par1EntityLiving)) {
+        if (!this.getSensing().canSee(par1LivingEntity)) {
             return false;
         }
-        if (par1EntityLiving instanceof CreepingHorror) {
+        if (par1LivingEntity instanceof CreepingHorror) {
             return false;
         }
-        if (par1EntityLiving instanceof RockBase) {
+        if (par1LivingEntity instanceof RockBase) {
             return false;
         }
-        if (par1EntityLiving instanceof EnderReaper) {
+        if (par1LivingEntity instanceof EnderReaper) {
             return false;
         }
-        if (par1EntityLiving instanceof LeafMonster) {
+        if (par1LivingEntity instanceof LeafMonster) {
             return false;
         }
-        if (par1EntityLiving instanceof Dragon) {
+        if (par1LivingEntity instanceof Dragon) {
             return false;
         }
-        if (par1EntityLiving instanceof TerribleTerror) {
+        if (par1LivingEntity instanceof TerribleTerror) {
             return false;
         }
-        if (par1EntityLiving instanceof LurkingTerror) {
+        if (par1LivingEntity instanceof LurkingTerror) {
             return false;
         }
-        if (par1EntityLiving instanceof PitchBlack) {
+        if (par1LivingEntity instanceof PitchBlack) {
             return false;
         }
-        if (par1EntityLiving instanceof Firefly) {
+        if (par1LivingEntity instanceof Firefly) {
             return false;
         }
-        if (par1EntityLiving instanceof Island) {
+        if (par1LivingEntity instanceof Island) {
             return false;
         }
-        if (par1EntityLiving instanceof IslandToo) {
+        if (par1LivingEntity instanceof IslandToo) {
             return false;
         }
-        if (par1EntityLiving instanceof EntityPlayer) {
-            EntityPlayer p = (EntityPlayer)par1EntityLiving;
-            if (p.capabilities.isCreativeMode) {
+        if (par1LivingEntity instanceof PlayerEntity) {
+            PlayerEntity p = (PlayerEntity) par1LivingEntity;
+            if (p.isCreative()) {
                 return false;
             }
         }
         return true;
     }
 
-    private EntityLivingBase findSomethingToAttack() {
+    private LivingEntity findSomethingToAttack() {
         if (ChaosPersists.PlayNicely != 0) {
             return null;
         }
-        List var5 = this.world.getEntitiesWithinAABB(EntityLivingBase.class, this.getEntityBoundingBox().expand(16.0, 4.0, 16.0));
+        List var5 = this.level.getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(16.0, 4.0, 16.0));
         Collections.sort(var5, this.TargetSorter);
         Iterator var2 = var5.iterator();
         Entity var3 = null;
-        EntityLivingBase var4 = null;
+        LivingEntity var4 = null;
         while (var2.hasNext()) {
-            var3 = (Entity)var2.next();
-            var4 = (EntityLivingBase)var3;
-            if (!this.isSuitableTarget(var4, false)) continue;
+            var3 = (Entity) var2.next();
+            var4 = (LivingEntity) var3;
+            if (!this.isSuitableTarget(var4, false)) {
+                continue;
+            }
             return var4;
         }
         return null;
     }
 
-    public boolean getCanSpawnHere() {
-        if (!this.isValidLightLevel()) {
+    public boolean checkSpawnRules(IWorldReader level, SpawnReason reason) {
+        if (!MonsterEntity.isDarkEnoughToSpawn((net.minecraft.world.IServerWorld)this.level, this.blockPosition(), this.random)) {
             return false;
         }
-        if (this.world.isDaytime()) {
+        if (this.level.isDay()) {
             return false;
         }
-        if (this.world.provider.getDimension() != ChaosPersists.getDimension(6) && this.posY > 15.0) {
+        if (ChaosPersists.getDimensionId(this.level) != ChaosPersists.getDimension(6) && this.getY() > 15.0) {
             return false;
         }
         return true;
     }
-
-    protected boolean canDespawn() {
-        if (this.isNoDespawnRequired()) {
+    protected boolean canDespawn(double distanceToClosestPlayerEntity) {
+        if (this.isPersistenceRequired()) {
             return false;
         }
-        if (!this.world.isDaytime()) {
+        if (!this.level.isDay()) {
             return false;
         }
         return true;
     }
 }
-

@@ -12,9 +12,9 @@
  *  net.minecraft.block.Block
  *  net.minecraft.entity.DataWatcher
  *  net.minecraft.entity.Entity
- *  net.minecraft.entity.EntityCreature
- *  net.minecraft.entity.EntityLiving
- *  net.minecraft.entity.EntityLivingBase
+ *  net.minecraft.entity.CreatureEntity
+ *  net.minecraft.entity.Mob
+ *  net.minecraft.entity.LivingEntity
  *  net.minecraft.entity.SharedMonsterAttributes
  *  net.minecraft.entity.ai.EntityAIBase
  *  net.minecraft.entity.ai.EntityAILookIdle
@@ -26,23 +26,23 @@
  *  net.minecraft.entity.ai.EntitySenses
  *  net.minecraft.entity.ai.attributes.IAttribute
  *  net.minecraft.entity.ai.attributes.IAttributeInstance
- *  net.minecraft.entity.item.EntityItem
- *  net.minecraft.entity.monster.EntityMob
- *  net.minecraft.entity.passive.EntityVillager
- *  net.minecraft.entity.player.EntityPlayer
- *  net.minecraft.entity.player.InventoryPlayer
- *  net.minecraft.entity.player.PlayerCapabilities
- *  net.minecraft.init.Blocks
- *  net.minecraft.init.Items
+ *  net.minecraft.entity.item.ItemEntity
+ *  net.minecraft.entity.monster.MonsterEntity
+ *  net.minecraft.entity.passive.VillagerEntity
+ *  net.minecraft.entity.player.PlayerEntity
+ *  net.minecraft.entity.player.PlayerInventory
+ *  net.minecraft.entity.player.PlayerEntityCapabilities
+ *  net.minecraft.block.Blocks
+ *  net.minecraft.item.Items
  *  net.minecraft.item.Item
  *  net.minecraft.item.ItemStack
  *  net.minecraft.nbt.NBTBase
- *  net.minecraft.nbt.NBTTagCompound
- *  net.minecraft.nbt.NBTTagList
- *  net.minecraft.pathfinding.PathNavigate
+ *  net.minecraft.nbt.CompoundNBT
+ *  net.minecraft.nbt.NBTINBTList
+ *  net.minecraft.pathfinding.PathNavigator
  *  net.minecraft.tileentity.MobSpawnerBaseLogic
  *  net.minecraft.tileentity.TileEntity
- *  net.minecraft.tileentity.TileEntityMobSpawner
+ *  net.minecraft.tileentity.MobSpawnerTileEntity
  *  net.minecraft.util.math.AxisAlignedBB
  *  net.minecraft.world.World
  */
@@ -62,44 +62,42 @@ import net.minecraft.block.Block;
 import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityCreature;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.ai.EntityAIBase;
-import net.minecraft.entity.ai.EntityAILookIdle;
-import net.minecraft.entity.ai.EntityAIMoveIndoors;
-import net.minecraft.entity.ai.EntityAIMoveThroughVillage;
-import net.minecraft.entity.ai.EntityAIOpenDoor;
-import net.minecraft.entity.ai.EntityAITasks;
-import net.minecraft.entity.ai.EntityAIWatchClosest;
+import net.minecraft.entity.CreatureEntity;
+import net.minecraft.entity.MobEntity;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.ai.attributes.Attributes;
+import net.minecraft.entity.ai.goal.Goal;
+import net.minecraft.entity.ai.goal.LookRandomlyGoal;
+import net.minecraft.entity.ai.goal.MoveThroughVillageGoal;
+import net.minecraft.entity.ai.goal.OpenDoorGoal;
+
+import net.minecraft.entity.ai.goal.LookAtGoal;
 import net.minecraft.entity.ai.EntitySenses;
-import net.minecraft.entity.ai.attributes.IAttribute;
-import net.minecraft.entity.ai.attributes.IAttributeInstance;
-import net.minecraft.entity.item.EntityItem;
-import net.minecraft.entity.monster.EntityMob;
-import net.minecraft.entity.passive.EntityVillager;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.entity.player.PlayerCapabilities;
-import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
+import net.minecraft.entity.ai.attributes.AttributeModifierMap;
+import net.minecraft.entity.item.ItemEntity;
+import net.minecraft.entity.monster.MonsterEntity;
+import net.minecraft.entity.merchant.villager.VillagerEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.entity.player.PlayerAbilities;
+import net.minecraft.block.Blocks;
+import net.minecraft.item.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTBase;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
-import net.minecraft.pathfinding.PathNavigate;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.ListNBT;
+import net.minecraft.pathfinding.PathNavigator;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityMobSpawner;
+import net.minecraft.tileentity.MobSpawnerTileEntity;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.world.World;
 import java.util.Locale;
 
 public class BandP
-extends EntityMob {
-    private static final DataParameter<Byte> ATTACKING = EntityDataManager.createKey(BandP.class, DataSerializers.BYTE);
+extends CreatureEntity {
+    private static final DataParameter<Byte> ATTACKING = EntityDataManager.defineId(BandP.class, DataSerializers.BYTE);
     private GenericTargetSorter TargetSorter = null;
     private float moveSpeed = 0.32f;
     private int whatset = 0;
@@ -107,34 +105,37 @@ extends EntityMob {
     public ItemStack[] MymainInventory = new ItemStack[100];
     int got_stuff = 0;
 
-    public BandP(World par1World) {
-        super(par1World);
-        this.setSize(0.75f, 1.75f);
-        this.experienceValue = 1000;
-        this.isImmuneToFire = true;
+    public BandP(EntityType<? extends BandP> type, World par1World) {
+        super(type, par1World);
+        this.xpReward = 1000;
         this.TargetSorter = new GenericTargetSorter((Entity)this);
-        this.tasks.addTask(0, (EntityAIBase)new EntityAIMoveThroughVillage((EntityCreature)this, 0.5, false));
-        this.tasks.addTask(1, (EntityAIBase)new MyEntityAIWanderALot((EntityCreature)this, 16, 0.5));
-        this.tasks.addTask(2, (EntityAIBase)new EntityAIWatchClosest((EntityLiving)this, EntityPlayer.class, 10.0f));
-        this.tasks.addTask(3, (EntityAIBase)new EntityAILookIdle((EntityLiving)this));
-        this.tasks.addTask(4, (EntityAIBase)new EntityAIOpenDoor((EntityLiving)this, true));
-        this.tasks.addTask(5, (EntityAIBase)new EntityAIMoveIndoors((EntityCreature)this));
+        this.goalSelector.addGoal(0, new MoveThroughVillageGoal(this, 0.5D, false, 32, () -> true));
+        this.goalSelector.addGoal(1, new MyEntityAIWanderALot(this, 16, 0.5D));
+        this.goalSelector.addGoal(2, new LookAtGoal(this, PlayerEntity.class, 10.0F));
+        this.goalSelector.addGoal(3, new LookRandomlyGoal(this));
+        this.goalSelector.addGoal(4, new OpenDoorGoal(this, true));
     }
 
-    protected void applyEntityAttributes() {
-        super.applyEntityAttributes();
-        this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue((double)this.mygetMaxHealth());
-        this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue((double)this.moveSpeed);
-        this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue((double)ChaosPersists.BandP_stats.attack);
+    @Override
+    public boolean fireImmune() {
+        return true;
     }
 
-    protected void entityInit() {
-        super.entityInit();
-        this.getDataManager().register(ATTACKING, (byte)0);
+    public static AttributeModifierMap createAttributes() {
+        return CreatureEntity.createMobAttributes()
+                .add(Attributes.MAX_HEALTH, ChaosPersists.BandP_stats.health)
+                .add(Attributes.MOVEMENT_SPEED, 0.32D)
+                .add(Attributes.ATTACK_DAMAGE, ChaosPersists.BandP_stats.attack)
+                .build();
     }
 
-    protected boolean canDespawn() {
-        if (this.isNoDespawnRequired()) {
+    @Override
+    protected void defineSynchedData() {
+        super.defineSynchedData();
+        this.entityData.define(ATTACKING, (byte)0);
+    }
+    protected boolean canDespawn(double distanceToClosestPlayer) {
+        if (this.isPersistenceRequired()) {
             return false;
         }
         if (this.got_stuff != 0) {
@@ -143,13 +144,17 @@ extends EntityMob {
         return true;
     }
 
-    public void onUpdate() {
-        this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue((double)this.moveSpeed);
-        super.onUpdate();
-        if (!this.world.isRemote && this.whatset == 0) {
+    @Override
+    public void tick() {
+        this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue((double)this.moveSpeed);
+        super.tick();
+        if (!this.level.isClientSide && this.whatset == 0) {
             this.whatset = 1;
-            this.whatami = this.world.rand.nextInt(2);
+            this.whatami = this.level.random.nextInt(2);
             this.setWhat(this.whatami);
+        }
+        if (!this.level.isClientSide) {
+            this.updateAITasks();
         }
     }
 
@@ -157,35 +162,30 @@ extends EntityMob {
         return ChaosPersists.BandP_stats.health;
     }
 
-    public int getTotalArmorValue() {
+    public int getArmorValue() {
         return ChaosPersists.BandP_stats.defense;
     }
 
-    protected boolean isAIEnabled() {
-        return true;
+    @Override
+    protected net.minecraft.util.SoundEvent getAmbientSound() {
+        return net.minecraft.util.SoundEvents.VILLAGER_AMBIENT;
     }
 
-    public void onLivingUpdate() {
-        super.onLivingUpdate();
+    @Override
+    protected net.minecraft.util.SoundEvent getHurtSound(net.minecraft.util.DamageSource damageSource) {
+        return net.minecraft.util.SoundEvents.VILLAGER_HURT;
     }
 
-    protected String getLivingSound() {
-        return "mob.villager.idle";
-    }
-
-    protected String getHurtSound() {
-        return "mob.villager.hit";
-    }
-
+    @Override
     protected net.minecraft.util.SoundEvent getDeathSound() {
-        return net.minecraft.util.SoundEvent.REGISTRY.getObject(new net.minecraft.util.ResourceLocation("entity.villager.death"));
+        return net.minecraft.util.SoundEvents.VILLAGER_DEATH;
     }
 
     protected float getSoundVolume() {
         return 1.5f;
     }
 
-    protected float getSoundPitch() {
+    protected float getVoicePitch() {
         return 1.0f;
     }
 
@@ -194,26 +194,26 @@ extends EntityMob {
     }
 
     private ItemStack dropItemRand(Item index, int par1) {
-        EntityItem var3 = null;
+        ItemEntity var3 = null;
         if (index == null) {
             return null;
         }
-        ItemStack is = new ItemStack(index, par1, 0);
-        var3 = new EntityItem(this.world, this.posX + (double)ChaosPersists.ChaosRand.nextInt(2) - (double)ChaosPersists.ChaosRand.nextInt(2), this.posY + 1.0, this.posZ + (double)ChaosPersists.ChaosRand.nextInt(2) - (double)ChaosPersists.ChaosRand.nextInt(2), is);
+        ItemStack is = new ItemStack(index, par1);
+        var3 = new ItemEntity(this.level, this.getX() + (double)ChaosPersists.ChaosRand.nextInt(2) - (double)ChaosPersists.ChaosRand.nextInt(2), this.getY() + 1.0, this.getZ() + (double)ChaosPersists.ChaosRand.nextInt(2) - (double)ChaosPersists.ChaosRand.nextInt(2), is);
         if (var3 != null) {
-            this.world.spawnEntity((Entity)var3);
+            this.level.addFreshEntity((Entity)var3);
         }
         return is;
     }
 
     protected void dropFewItems(boolean par1, int par2) {
         int i;
-        int var4 = 10 + this.world.rand.nextInt(5);
+        int var4 = 10 + this.level.random.nextInt(5);
         for (i = 0; i < var4; ++i) {
             this.dropItemRand(Items.EMERALD, 1);
         }
         if (this.getWhat() == 0) {
-            var4 = 2 + this.world.rand.nextInt(3);
+            var4 = 2 + this.level.random.nextInt(3);
             for (i = 0; i < var4; ++i) {
                 this.dropItemRand(ChaosPersists.UraniumNugget, 1);
                 this.dropItemRand(ChaosPersists.TitaniumNugget, 1);
@@ -223,31 +223,33 @@ extends EntityMob {
             if (this.MymainInventory[i] == null || this.MymainInventory[i].getCount() == 0) continue;
             ItemStack is = this.dropItemRand(this.MymainInventory[i].getItem(), this.MymainInventory[i].getCount());
             if (this.MymainInventory[i].getCount() != 1) continue;
-            is.setItemDamage(this.MymainInventory[i].getItemDamage());
+            is.setDamageValue(this.MymainInventory[i].getDamageValue());
         }
     }
 
-    public boolean interact(EntityPlayer par1EntityPlayer) {
+    public boolean interact(PlayerEntity par1PlayerEntityEntity) {
         return false;
     }
 
-    public boolean attackEntityAsMob(Entity par1Entity) {
-        return super.attackEntityAsMob(par1Entity);
+    public boolean doHurtTarget(LivingEntity par1Entity) {
+        if (par1Entity == null) {
+            return false;
+        }
+        return par1Entity.hurt(net.minecraft.util.DamageSource.mobAttack(this), (float)ChaosPersists.BandP_stats.attack);
     }
 
     protected void updateAITasks() {
-        EntityLivingBase e;
-        if (this.isDead) {
+        LivingEntity e;
+        if (!this.isAlive()) {
             return;
         }
-        super.updateAITasks();
-        if (this.world.rand.nextInt(12) == 1 && (e = this.findSomethingToAttack()) != null) {
-            this.faceEntity((Entity)e, 10.0f, 10.0f);
-            if (this.getDistanceSq((Entity)e) < 9.0) {
-                this.attackEntityAsMob((Entity)e);
-                if (e instanceof EntityPlayer) {
+        if (this.level.random.nextInt(12) == 1 && (e = this.findSomethingToAttack()) != null) {
+            this.lookAt((Entity)e, 10.0f, 10.0f);
+            if (this.distanceToSqr((Entity)e) < 9.0) {
+                this.doHurtTarget((LivingEntity)e);
+                if (e instanceof PlayerEntity) {
                     int i;
-                    EntityPlayer p = (EntityPlayer)e;
+                    PlayerEntity p = (PlayerEntity)e;
                     int k = -1;
                     int kp = -1;
                     for (i = 0; i < this.MymainInventory.length; ++i) {
@@ -256,80 +258,80 @@ extends EntityMob {
                         break;
                     }
                     if (k >= 0) {
-                        for (i = p.inventory.armorInventory.size() - 1; i >= 0; --i) {
-                            if (p.inventory.armorInventory.get(i).isEmpty()) continue;
+                        for (i = p.inventory.armor.size() - 1; i >= 0; --i) {
+                            if (p.inventory.armor.get(i).isEmpty()) continue;
                             kp = i;
                             break;
                         }
                         if (kp >= 0) {
-                            this.MymainInventory[k] = p.inventory.armorInventory.get(kp);
-                            p.inventory.armorInventory.set(kp, ItemStack.EMPTY);
+                            this.MymainInventory[k] = p.inventory.armor.get(kp);
+                            p.inventory.armor.set(kp, ItemStack.EMPTY);
                             ++this.got_stuff;
                         }
                         if (kp < 0) {
-                            for (i = p.inventory.mainInventory.size() - 1; i >= 0; --i) {
-                                if (p.inventory.mainInventory.get(i).isEmpty()) continue;
+                            for (i = p.inventory.items.size() - 1; i >= 0; --i) {
+                                if (p.inventory.items.get(i).isEmpty()) continue;
                                 kp = i;
                                 break;
                             }
                             if (kp >= 0) {
-                                this.MymainInventory[k] = p.inventory.mainInventory.get(kp);
-                                p.inventory.mainInventory.set(kp, ItemStack.EMPTY);
+                                this.MymainInventory[k] = p.inventory.items.get(kp);
+                                p.inventory.items.set(kp, ItemStack.EMPTY);
                                 ++this.got_stuff;
                             }
                         }
                     }
                 }
             } else {
-                this.getNavigator().tryMoveToEntityLiving((Entity)e, 1.25);
+                this.getNavigation().moveTo((Entity)e, 1.25D);
             }
         }
     }
 
-    private boolean isSuitableTarget(EntityLivingBase par1EntityLiving, boolean par2) {
-        if (par1EntityLiving == null) {
+    private boolean isSuitableTarget(LivingEntity par1Mob, boolean par2) {
+        if (par1Mob == null) {
             return false;
         }
-        if (par1EntityLiving == this) {
+        if (par1Mob == this) {
             return false;
         }
-        if (!par1EntityLiving.isEntityAlive()) {
+        if (!par1Mob.isAlive()) {
             return false;
         }
-        if (!this.getEntitySenses().canSee((Entity)par1EntityLiving)) {
+        if (!this.canSee(par1Mob)) {
             return false;
         }
-        if (par1EntityLiving instanceof EntityPlayer) {
-            EntityPlayer p = (EntityPlayer)par1EntityLiving;
-            if (p.capabilities.isCreativeMode) {
+        if (par1Mob instanceof PlayerEntity) {
+            PlayerEntity p = (PlayerEntity)par1Mob;
+            if (p.isCreative()) {
                 return false;
             }
             return true;
         }
-        if (par1EntityLiving instanceof EntityVillager) {
+        if (par1Mob instanceof VillagerEntity) {
             return true;
         }
-        if (par1EntityLiving instanceof Girlfriend) {
+        if (par1Mob instanceof Girlfriend) {
             return true;
         }
-        if (par1EntityLiving instanceof Boyfriend) {
+        if (par1Mob instanceof Boyfriend) {
             return true;
         }
         return false;
     }
 
-    private EntityLivingBase findSomethingToAttack() {
+    private LivingEntity findSomethingToAttack() {
         if (ChaosPersists.PlayNicely != 0) {
             return null;
         }
-        List var5 = this.world.getEntitiesWithinAABB(EntityLivingBase.class, this.getEntityBoundingBox().expand(20.0, 6.0, 20.0));
+        List var5 = this.level.getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(20.0, 6.0, 20.0));
         Collections.sort(var5, this.TargetSorter);
         Iterator var2 = var5.iterator();
         Entity var3 = null;
-        EntityLivingBase var4 = null;
+        LivingEntity var4 = null;
         while (var2.hasNext()) {
             var3 = (Entity)var2.next();
-            var4 = (EntityLivingBase)var3;
+            var4 = (LivingEntity)var3;
             if (!this.isSuitableTarget(var4, false)) continue;
             return var4;
         }
@@ -337,86 +339,86 @@ extends EntityMob {
     }
 
     public int getWhat() {
-        return this.getDataManager().get(ATTACKING).intValue();
+        return this.entityData.get(ATTACKING).intValue();
     }
 
     public void setWhat(int par1) {
-        this.getDataManager().set(ATTACKING, (byte)par1);
+        this.entityData.set(ATTACKING, (byte)par1);
     }
 
     public boolean getCanSpawnHere() {
         for (int k = -3; k < 3; ++k) {
             for (int j = -3; j < 3; ++j) {
                 for (int i = 0; i < 5; ++i) {
-                    Block bid = this.world.getBlockState(new net.minecraft.util.math.BlockPos((int)this.posX + j, (int)this.posY + i, (int)this.posZ + k)).getBlock();
-                    if (bid != Blocks.MOB_SPAWNER) continue;
-                    TileEntityMobSpawner tileentitymobspawner = null;
-                    tileentitymobspawner = (TileEntityMobSpawner)this.world.getTileEntity(new net.minecraft.util.math.BlockPos((int)this.posX + j, (int)this.posY + i, (int)this.posZ + k));
+                    Block bid = this.level.getBlockState(new net.minecraft.util.math.BlockPos((int)this.getX() + j, (int)this.getY() + i, (int)this.getZ() + k)).getBlock();
+                    if (bid != Blocks.SPAWNER) continue;
+                    MobSpawnerTileEntity tileentitymobspawner = null;
+                    tileentitymobspawner = (MobSpawnerTileEntity)this.level.getBlockEntity(new net.minecraft.util.math.BlockPos((int)this.getX() + j, (int)this.getY() + i, (int)this.getZ() + k));
                     String s = null;
-                    net.minecraft.util.ResourceLocation id = com.astryxion.chaospersists.util.SpawnerFixHelper.getMobSpawnerEntityId(tileentitymobspawner.getSpawnerBaseLogic());
+                    net.minecraft.util.ResourceLocation id = com.astryxion.chaospersists.util.SpawnerFixHelper.getMobSpawnerEntityId(tileentitymobspawner.getSpawner());
                     if (id != null) s = id.getPath();
                     if (s == null || !"criminal".equals(s.toLowerCase(Locale.ROOT))) continue;
                     return true;
                 }
             }
         }
-        if (!this.world.isDaytime()) {
+        if (this.level.isNight()) {
             return false;
         }
-        if (this.posY < 50.0) {
+        if (this.getY() < 50.0) {
             return false;
         }
-        if (this.posY < 100.0) {
+        if (this.getY() < 100.0) {
             return false;
         }
         BandP target = null;
-        target = (BandP)this.world.findNearestEntityWithinAABB(BandP.class, this.getEntityBoundingBox().expand(32.0, 12.0, 32.0), (Entity)this);
+        target = this.level.getNearestEntity(BandP.class, net.minecraft.entity.EntityPredicate.DEFAULT, this, this.getX(), this.getY(), this.getZ(), this.getBoundingBox().inflate(32.0, 12.0, 32.0));
         if (target != null) {
             return false;
         }
-        EntityVillager target2 = null;
-        target2 = (EntityVillager)this.world.findNearestEntityWithinAABB(EntityVillager.class, this.getEntityBoundingBox().expand(36.0, 12.0, 36.0), (Entity)this);
+        VillagerEntity target2 = null;
+        target2 = this.level.getNearestEntity(VillagerEntity.class, net.minecraft.entity.EntityPredicate.DEFAULT, this, this.getX(), this.getY(), this.getZ(), this.getBoundingBox().inflate(36.0, 12.0, 36.0));
         if (target2 == null) {
             return false;
         }
         return true;
     }
 
-    public void writeEntityToNBT(NBTTagCompound par1NBTTagCompound) {
-        super.writeEntityToNBT(par1NBTTagCompound);
+    public void addAdditionalSaveData(CompoundNBT par1CompoundNBT) {
+        super.addAdditionalSaveData(par1CompoundNBT);
         if (this.got_stuff != 0) {
-            par1NBTTagCompound.setTag("Inventory", (NBTBase)this.writeToNBT(new NBTTagList()));
+            par1CompoundNBT.put("Inventory", this.writeToNBT(new ListNBT()));
         }
-        par1NBTTagCompound.setInteger("GotStuff", this.got_stuff);
+        par1CompoundNBT.putInt("GotStuff", this.got_stuff);
     }
 
-    public void readEntityFromNBT(NBTTagCompound par1NBTTagCompound) {
-        super.readEntityFromNBT(par1NBTTagCompound);
-        this.got_stuff = par1NBTTagCompound.getInteger("GotStuff");
+    public void readAdditionalSaveData(CompoundNBT par1CompoundNBT) {
+        super.readAdditionalSaveData(par1CompoundNBT);
+        this.got_stuff = par1CompoundNBT.getInt("GotStuff");
         if (this.got_stuff != 0) {
-            NBTTagList nbttaglist = par1NBTTagCompound.getTagList("Inventory", 10);
+            ListNBT nbttaglist = par1CompoundNBT.getList("Inventory", 10);
             this.readFromNBT(nbttaglist);
         }
     }
 
-    public NBTTagList writeToNBT(NBTTagList par1NBTTagList) {
+    public ListNBT writeToNBT(ListNBT par1ListTag) {
         for (int i = 0; i < this.MymainInventory.length; ++i) {
             if (this.MymainInventory[i] == null) continue;
-            NBTTagCompound nbttagcompound = new NBTTagCompound();
-            nbttagcompound.setByte("Slot", (byte)i);
-            this.MymainInventory[i].writeToNBT(nbttagcompound);
-            par1NBTTagList.appendTag((NBTBase)nbttagcompound);
+            CompoundNBT nbttagcompound = new CompoundNBT();
+            nbttagcompound.putByte("Slot", (byte)i);
+            this.MymainInventory[i].save(nbttagcompound);
+            par1ListTag.add(nbttagcompound);
         }
-        return par1NBTTagList;
+        return par1ListTag;
     }
 
-    public void readFromNBT(NBTTagList par1NBTTagList) {
+    public void readFromNBT(ListNBT par1ListTag) {
         this.MymainInventory = new ItemStack[100];
-        for (int i = 0; i < par1NBTTagList.tagCount(); ++i) {
-            NBTTagCompound nbttagcompound = par1NBTTagList.getCompoundTagAt(i);
+        for (int i = 0; i < par1ListTag.size(); ++i) {
+            CompoundNBT nbttagcompound = par1ListTag.getCompound(i);
             int j = nbttagcompound.getByte("Slot") & 255;
-            ItemStack itemstack = new ItemStack((NBTTagCompound)nbttagcompound);
-            if (itemstack == null || j < 0 || j >= this.MymainInventory.length) continue;
+            ItemStack itemstack = ItemStack.of(nbttagcompound);
+            if (itemstack.isEmpty() || j < 0 || j >= this.MymainInventory.length) continue;
             this.MymainInventory[j] = itemstack;
         }
     }

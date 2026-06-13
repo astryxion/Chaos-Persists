@@ -1,36 +1,33 @@
 package com.astryxion.chaospersists.block;
 
+import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
 import net.minecraft.block.material.Material;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.util.BlockRenderLayer;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraft.util.Direction;
+import net.minecraft.world.IBlockReader;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 public class CrystalWood extends Block {
 
     public CrystalWood(float hardness, float resistance) {
-        super(Material.WOOD);
-        this.setCreativeTab(CreativeTabs.BUILDING_BLOCKS);
-        this.setTickRandomly(false);
-        this.setHardness(hardness);
-        this.setResistance(resistance);
+        super(AbstractBlock.Properties.of(Material.WOOD)
+                .strength(hardness, resistance)
+                .noOcclusion());
     }
 
     @Override
-    public boolean isOpaqueCube(IBlockState state) {
-        return false;
+    public boolean propagatesSkylightDown(BlockState state, IBlockReader reader, net.minecraft.util.math.BlockPos pos) {
+        return true;
     }
 
+    @OnlyIn(Dist.CLIENT)
     @Override
-    public boolean isFullCube(IBlockState state) {
-        return false;
-    }
-
-    @SideOnly(Side.CLIENT)
-    @Override
-    public BlockRenderLayer getRenderLayer() {
-        return BlockRenderLayer.CUTOUT;
+    public boolean skipRendering(BlockState state, BlockState adjacentState, Direction side) {
+        if (adjacentState.getBlock() == this) {
+            return true;
+        }
+        return super.skipRendering(state, adjacentState, side);
     }
 }

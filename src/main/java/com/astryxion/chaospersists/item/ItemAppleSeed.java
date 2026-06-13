@@ -2,49 +2,48 @@ package com.astryxion.chaospersists.item;
 
 import com.astryxion.chaospersists.core.ChaosPersists;
 import net.minecraft.block.Block;
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
+import net.minecraft.item.ItemGroup;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.block.Blocks;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemUseContext;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumActionResult;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
+import net.minecraft.util.ActionResultType;
+import net.minecraft.util.Direction;
+import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 
 public class ItemAppleSeed extends Item {
 
-    public ItemAppleSeed(int i) {
-        this.maxStackSize = 16;
-        this.setCreativeTab(CreativeTabs.DECORATIONS);
-    }
+    public ItemAppleSeed(int i) { super(new Item.Properties()); }
 
     @Override
-    public EnumActionResult onItemUse(EntityPlayer player,
-                                      World world,
-                                      BlockPos pos,
-                                      EnumHand hand,
-                                      EnumFacing facing,
-                                      float hitX,
-                                      float hitY,
-                                      float hitZ) {
+    public ActionResultType useOn(ItemUseContext context) {
+        PlayerEntity player = context.getPlayer();
+        if (player == null) {
+            return ActionResultType.FAIL;
+        }
+        World world = context.getLevel();
+        BlockPos pos = context.getClickedPos();
+        Hand hand = context.getHand();
+        Direction facing = context.getClickedFace();
 
-        if (facing != EnumFacing.UP) {
-            return EnumActionResult.FAIL;
+        if (facing != Direction.UP) {
+            return ActionResultType.FAIL;
         }
 
-        ItemStack stack = player.getHeldItem(hand);
+        ItemStack stack = player.getItemInHand(hand);
 
         Block ground = world.getBlockState(pos).getBlock();
-        if (ground != Blocks.GRASS &&
+        if (ground != Blocks.GRASS_BLOCK &&
             ground != Blocks.DIRT &&
             ground != Blocks.FARMLAND) {
-            return EnumActionResult.FAIL;
+            return ActionResultType.FAIL;
         }
 
-        if (!world.isRemote) {
+        if (!world.isClientSide) {
 
             if (this == ChaosPersists.MyAppleSeed) {
                 makeTree(world, pos.getX(), pos.getY(), pos.getZ(), ChaosPersists.MyAppleLeaves, null);
@@ -54,18 +53,18 @@ public class ItemAppleSeed extends Item {
                 makeTree(world, pos.getX(), pos.getY(), pos.getZ(), ChaosPersists.MyPeachLeaves, null);
             }
 
-            if (!player.capabilities.isCreativeMode) {
+            if (!player.isCreative()) {
                 stack.shrink(1);
             }
         }
 
-        return EnumActionResult.SUCCESS;
+        return ActionResultType.SUCCESS;
     }
 
     public void makeTree(World world, int x, int y, int z, Block blkid, Chunk chunk) {
 
         Block ground = world.getBlockState(new BlockPos(x, y, z)).getBlock();
-        if (ground != Blocks.GRASS &&
+        if (ground != Blocks.GRASS_BLOCK &&
             ground != Blocks.DIRT &&
             ground != Blocks.FARMLAND) {
             return;
@@ -91,23 +90,23 @@ public class ItemAppleSeed extends Item {
 
         // Main trunk
         for (int j = 1; j < h1; j++) {
-            world.setBlockState(new BlockPos(x, y + j, z), Blocks.LOG.getDefaultState(), 2);
+            world.setBlock(new BlockPos(x, y + j, z), Blocks.OAK_LOG.defaultBlockState(), 2);
         }
 
         // First branch layer
         for (int j = 1; j < w1; j++) {
-            ChaosPersists.setBlockSuperFast(world, x + j, y + h2, z, Blocks.LOG, 0, 2, chunk);
-            ChaosPersists.setBlockSuperFast(world, x - j, y + h2, z, Blocks.LOG, 0, 2, chunk);
-            ChaosPersists.setBlockSuperFast(world, x, y + h2, z + j, Blocks.LOG, 0, 2, chunk);
-            ChaosPersists.setBlockSuperFast(world, x, y + h2, z - j, Blocks.LOG, 0, 2, chunk);
+            ChaosPersists.setBlockSuperFast(world, x + j, y + h2, z, Blocks.OAK_LOG, 0, 2, chunk);
+            ChaosPersists.setBlockSuperFast(world, x - j, y + h2, z, Blocks.OAK_LOG, 0, 2, chunk);
+            ChaosPersists.setBlockSuperFast(world, x, y + h2, z + j, Blocks.OAK_LOG, 0, 2, chunk);
+            ChaosPersists.setBlockSuperFast(world, x, y + h2, z - j, Blocks.OAK_LOG, 0, 2, chunk);
         }
 
         // Second branch layer
         for (int j = 1; j < w2; j++) {
-            ChaosPersists.setBlockSuperFast(world, x + j, y + h3, z, Blocks.LOG, 0, 2, chunk);
-            ChaosPersists.setBlockSuperFast(world, x - j, y + h3, z, Blocks.LOG, 0, 2, chunk);
-            ChaosPersists.setBlockSuperFast(world, x, y + h3, z + j, Blocks.LOG, 0, 2, chunk);
-            ChaosPersists.setBlockSuperFast(world, x, y + h3, z - j, Blocks.LOG, 0, 2, chunk);
+            ChaosPersists.setBlockSuperFast(world, x + j, y + h3, z, Blocks.OAK_LOG, 0, 2, chunk);
+            ChaosPersists.setBlockSuperFast(world, x - j, y + h3, z, Blocks.OAK_LOG, 0, 2, chunk);
+            ChaosPersists.setBlockSuperFast(world, x, y + h3, z + j, Blocks.OAK_LOG, 0, 2, chunk);
+            ChaosPersists.setBlockSuperFast(world, x, y + h3, z - j, Blocks.OAK_LOG, 0, 2, chunk);
         }
 
         // Leaf canopy

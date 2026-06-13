@@ -18,12 +18,12 @@
  *  net.minecraft.enchantment.Enchantment
  *  net.minecraft.entity.DataWatcher
  *  net.minecraft.entity.Entity
- *  net.minecraft.entity.EntityCreature
- *  net.minecraft.entity.EntityList
- *  net.minecraft.entity.EntityLiving
- *  net.minecraft.entity.EntityLivingBase
- *  net.minecraft.entity.SharedMonsterAttributes
- *  net.minecraft.entity.ai.EntityAIBase
+ *  net.minecraft.entity.CreatureEntity
+ *  net.minecraftforge.registries.ForgeRegistries.ENTITIES
+ *  net.minecraft.entity.Mob
+ *  net.minecraft.entity.LivingEntity
+ *  net.minecraft.entity.ai.attributes.Attributes
+ *  net.minecraft.entity.ai.goal.Goal
  *  net.minecraft.entity.ai.EntityAIHurtByTarget
  *  net.minecraft.entity.ai.EntityAILookIdle
  *  net.minecraft.entity.ai.EntityAIMoveThroughVillage
@@ -33,26 +33,28 @@
  *  net.minecraft.entity.ai.EntitySenses
  *  net.minecraft.entity.ai.attributes.IAttribute
  *  net.minecraft.entity.ai.attributes.IAttributeInstance
- *  net.minecraft.entity.item.EntityItem
- *  net.minecraft.entity.monster.EntityCreeper
- *  net.minecraft.entity.monster.EntityEnderman
- *  net.minecraft.entity.monster.EntityMob
- *  net.minecraft.entity.player.EntityPlayer
- *  net.minecraft.entity.player.PlayerCapabilities
- *  net.minecraft.init.Blocks
- *  net.minecraft.init.Items
+ *  net.minecraft.entity.item.ItemEntity
+ *  net.minecraft.entity.monster.Creeper
+ *  net.minecraft.entity.monster.EndermanEntity
+ *  net.minecraft.entity.monster.Monster
+ *  net.minecraft.entity.player.PlayerEntity
+ *  net.minecraft.entity.player.PlayerEntityCapabilities
+ *  net.minecraft.block.Blocks
+ *  net.minecraft.item.Items
  *  net.minecraft.item.Item
  *  net.minecraft.item.ItemStack
  *  net.minecraft.pathfinding.Path
- *  net.minecraft.pathfinding.PathNavigate
+ *  net.minecraft.pathfinding.PathNavigator
  *  net.minecraft.tileentity.MobSpawnerBaseLogic
  *  net.minecraft.tileentity.TileEntity
- *  net.minecraft.tileentity.TileEntityMobSpawner
+ *  net.minecraft.tileentity.MobSpawnerTileEntity
  *  net.minecraft.util.math.AxisAlignedBB
  *  net.minecraft.util.DamageSource
  *  net.minecraft.world.World
  */
 package com.astryxion.chaospersists.entity;
+import net.minecraft.entity.EntityType;
+import net.minecraft.world.World;
 
 import com.astryxion.chaospersists.entity.EnderKnight;
 import com.astryxion.chaospersists.entity.EnderReaper;
@@ -75,70 +77,80 @@ import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityCreature;
-import net.minecraft.entity.EntityList;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.ai.EntityAIBase;
-import net.minecraft.entity.ai.EntityAIHurtByTarget;
-import net.minecraft.entity.ai.EntityAILookIdle;
-import net.minecraft.entity.ai.EntityAIMoveThroughVillage;
-import net.minecraft.entity.ai.EntityAISwimming;
-import net.minecraft.entity.ai.EntityAITasks;
-import net.minecraft.entity.ai.EntityAIWatchClosest;
+import net.minecraft.entity.CreatureEntity;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.entity.MobEntity;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.ai.attributes.Attributes;
+import net.minecraft.entity.ai.attributes.AttributeModifierMap;
+import net.minecraft.entity.ai.goal.SwimGoal;
+import net.minecraft.entity.ai.goal.MoveThroughVillageGoal;
+import net.minecraft.entity.ai.goal.LookAtGoal;
+import net.minecraft.entity.ai.goal.LookRandomlyGoal;
+import net.minecraft.entity.ai.goal.HurtByTargetGoal;
+import net.minecraft.entity.ai.goal.Goal;
+import net.minecraft.entity.ai.goal.HurtByTargetGoal;
+import net.minecraft.entity.ai.goal.LookRandomlyGoal;
+import net.minecraft.entity.ai.goal.MoveThroughVillageGoal;
+import net.minecraft.entity.ai.goal.SwimGoal;
+
 import net.minecraft.entity.ai.EntitySenses;
-import net.minecraft.entity.ai.attributes.IAttribute;
-import net.minecraft.entity.ai.attributes.IAttributeInstance;
-import net.minecraft.entity.item.EntityItem;
-import net.minecraft.entity.monster.EntityCreeper;
-import net.minecraft.entity.monster.EntityEnderman;
-import net.minecraft.entity.monster.EntityMob;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.PlayerCapabilities;
-import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
+import net.minecraft.entity.ai.attributes.Attribute;
+import net.minecraft.entity.ai.attributes.ModifiableAttributeInstance;
+import net.minecraft.entity.item.ItemEntity;
+import net.minecraft.entity.monster.CreeperEntity;
+import net.minecraft.entity.monster.EndermanEntity;
+import net.minecraft.entity.monster.MonsterEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerAbilities;
+import net.minecraft.block.Blocks;
+import net.minecraft.item.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.pathfinding.Path;
-import net.minecraft.pathfinding.PathNavigate;
-import net.minecraft.tileentity.MobSpawnerBaseLogic;
+import net.minecraft.pathfinding.PathNavigator;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityMobSpawner;
+import net.minecraft.tileentity.MobSpawnerTileEntity;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.LightType;
 import net.minecraft.world.World;
 
 /*
  * Exception performing whole class analysis ignored.
  */
 public class TrooperBug
-extends EntityMob {
-    private static final DataParameter<Byte> ATTACKING = EntityDataManager.createKey(TrooperBug.class, DataSerializers.BYTE);
+extends MonsterEntity {
+    private static final DataParameter<Byte> ATTACKING = EntityDataManager.defineId(TrooperBug.class, DataSerializers.BYTE);
     private GenericTargetSorter TargetSorter = null;
     private RenderInfo renderdata = new RenderInfo();
     private int force_sync = 50;
     private int hurt_timer = 0;
     private float moveSpeed = 0.4f;
+    private boolean onGround = false;
 
-    public TrooperBug(World par1World) {
-        super(par1World);
-        this.setSize(3.0f, 3.5f);
-                this.experienceValue = 150;
-                this.isImmuneToFire = false;
+    public TrooperBug(EntityType<? extends TrooperBug> type, World par1World) {
+        super(type, par1World);
+        this.xpReward = 150;
         this.TargetSorter = new GenericTargetSorter((Entity)this);
         this.renderdata = new RenderInfo();
-        this.tasks.addTask(0, (EntityAIBase)new EntityAISwimming((EntityLiving)this));
-        this.tasks.addTask(1, (EntityAIBase)new EntityAIMoveThroughVillage((EntityCreature)this, 0.8999999761581421, false));
-        this.tasks.addTask(2, (EntityAIBase)new MyEntityAIWanderALot((EntityCreature)this, 14, 1.0));
-        this.tasks.addTask(3, (EntityAIBase)new EntityAIWatchClosest((EntityLiving)this, EntityPlayer.class, 10.0f));
-        this.tasks.addTask(4, (EntityAIBase)new EntityAILookIdle((EntityLiving)this));
-        this.targetTasks.addTask(1, (EntityAIBase)new EntityAIHurtByTarget((EntityCreature)this, false));
+        this.goalSelector.addGoal(0, new SwimGoal(this));
+        this.goalSelector.addGoal(1, new MoveThroughVillageGoal((CreatureEntity)(Object)this, 0.8999999761581421, false, 32, () -> true));
+        this.goalSelector.addGoal(2, new MyEntityAIWanderALot(this, 14, 1.0));
+        this.goalSelector.addGoal(3, new LookAtGoal(this, PlayerEntity.class, 10.0f));
+        this.goalSelector.addGoal(4, new LookRandomlyGoal(this));
+        this.targetSelector.addGoal(1, new HurtByTargetGoal(this));
     }
 
-    protected void entityInit() {
-        super.entityInit();
-        this.getDataManager().register(ATTACKING, (byte)0);
+    @Override
+    public boolean fireImmune() {
+        return false;
+    }
+
+    protected void defineSynchedData() {
+        super.defineSynchedData();
+        this.entityData.define(ATTACKING, (byte)0);
         if (this.renderdata == null) {
             this.renderdata = new RenderInfo();
         }
@@ -153,25 +165,26 @@ extends EntityMob {
         this.force_sync = 50;
     }
 
-    protected void applyEntityAttributes() {
-        super.applyEntityAttributes();
-        this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue((double)this.mygetMaxHealth());
-        this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue((double)this.moveSpeed);
-        this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue((double)ChaosPersists.TrooperBug_stats.attack);
+    public static AttributeModifierMap createAttributes() {
+        return MonsterEntity.createMonsterAttributes()
+                .add(Attributes.MAX_HEALTH, ChaosPersists.TrooperBug_stats.health)
+                .add(Attributes.MOVEMENT_SPEED, 0.4)
+                .add(Attributes.ATTACK_DAMAGE, ChaosPersists.TrooperBug_stats.attack)
+                .build();
     }
 
-    protected boolean canDespawn() {
-        if (this.isNoDespawnRequired()) {
+    protected boolean canDespawn(double distanceToClosestPlayerEntity) {
+        if (this.isPersistenceRequired()) {
             return false;
         }
         return true;
     }
 
-    public void onUpdate() {
-        this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue((double)this.moveSpeed);
-        super.onUpdate();
-        if (this.isAirBorne) {
-            this.getNavigator().setPath(null, 0.0);
+    public void tick() {
+        this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue((double)this.moveSpeed);
+        super.tick();
+        if (this.onGround) {
+            this.getNavigation().stop();
         }
     }
 
@@ -194,7 +207,7 @@ extends EntityMob {
         this.renderdata.ri4 = r.ri4;
     }
 
-    public int getTotalArmorValue() {
+    public int getArmorValue() {
         return ChaosPersists.TrooperBug_stats.defense;
     }
 
@@ -202,27 +215,23 @@ extends EntityMob {
         return true;
     }
 
-    public void onLivingUpdate() {
-        super.onLivingUpdate();
-    }
-
     protected void jump() {
-        this.motionY += 1.149999976158142;
-        this.posY += 1.5;
-        float f = 0.2f + Math.abs(this.world.rand.nextFloat() * 0.45f);
-        this.motionX -= (double)f * Math.sin(Math.toRadians(this.rotationYawHead));
-        this.motionZ += (double)f * Math.cos(Math.toRadians(this.rotationYawHead));
-        this.isAirBorne = true;
+        com.astryxion.chaospersists.util.MyUtils.addDeltaMovement(this, 0.0, 1.149999976158142, 0.0);
+        this.setPos(this.getX(), this.getY() + 1.5, this.getZ());
+        float f = 0.2f + Math.abs(this.level.random.nextFloat() * 0.45f);
+        com.astryxion.chaospersists.util.MyUtils.addDeltaMovement(this, -((double)f * Math.sin(Math.toRadians(this.yHeadRot))), 0.0, 0.0);
+        com.astryxion.chaospersists.util.MyUtils.addDeltaMovement(this, 0.0, 0.0, (double)f * Math.cos(Math.toRadians(this.yHeadRot)));
+        this.setOnGround(false);
     }
 
-    protected void jumpAtEntity(EntityLivingBase e) {
-        this.motionY += 1.25;
-        this.posY += 1.25;
-        float f = 0.3f + Math.abs(this.world.rand.nextFloat() * 0.25f);
-        float d = (float)Math.atan2(e.posX - this.posX, e.posZ - this.posZ);
-        this.motionX += (double)f * Math.sin(d);
-        this.motionZ += (double)f * Math.cos(d);
-        this.isAirBorne = true;
+    protected void jumpAtEntity(LivingEntity e) {
+        com.astryxion.chaospersists.util.MyUtils.addDeltaMovement(this, 0.0, 1.25, 0.0);
+        this.setPos(this.getX(), this.getY() + 1.25, this.getZ());
+        float f = 0.3f + Math.abs(this.level.random.nextFloat() * 0.25f);
+        float d = (float)Math.atan2(e.getX() - this.getX(), e.getZ() - this.getZ());
+        com.astryxion.chaospersists.util.MyUtils.addDeltaMovement(this, (double)f * Math.sin(d), 0.0, 0.0);
+        com.astryxion.chaospersists.util.MyUtils.addDeltaMovement(this, 0.0, 0.0, (double)f * Math.cos(d));
+        this.setOnGround(false);
     }
 
     public int getTrooperBugHealth() {
@@ -230,7 +239,7 @@ extends EntityMob {
     }
 
     protected net.minecraft.util.SoundEvent getAmbientSound() {
-        if (this.rand.nextInt(4) == 0) {
+        if (this.random.nextInt(4) == 0) {
             return com.astryxion.chaospersists.core.ChaosSounds.CLATTER;
         }
         return null;
@@ -248,7 +257,7 @@ extends EntityMob {
         return 1.5f;
     }
 
-    protected float getSoundPitch() {
+    protected float getVoicePitch() {
         return 1.0f;
     }
 
@@ -257,26 +266,26 @@ extends EntityMob {
     }
 
     private ItemStack dropItemRand(Item index, int par1) {
-        EntityItem var3 = null;
-        ItemStack is = new ItemStack(index, par1, 0);
-        var3 = new EntityItem(this.world, this.posX + (double)ChaosPersists.ChaosRand.nextInt(5) - (double)ChaosPersists.ChaosRand.nextInt(5), this.posY + 1.0, this.posZ + (double)ChaosPersists.ChaosRand.nextInt(5) - (double)ChaosPersists.ChaosRand.nextInt(5), is);
+        ItemEntity var3 = null;
+        ItemStack is = new ItemStack(index, par1);
+        var3 = new ItemEntity(this.level, this.getX() + (double)ChaosPersists.ChaosRand.nextInt(5) - (double)ChaosPersists.ChaosRand.nextInt(5), this.getY() + 1.0, this.getZ() + (double)ChaosPersists.ChaosRand.nextInt(5) - (double)ChaosPersists.ChaosRand.nextInt(5), is);
         if (var3 != null) {
-            this.world.spawnEntity((Entity)var3);
+            this.level.addFreshEntity((Entity)var3);
         }
         return is;
     }
 
-    protected void dropFewItems(boolean par1, int par2) {
+    protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
         int var4;
         this.dropItemRand(ChaosPersists.MyJumpyBugScale, 1);
         this.dropItemRand(Items.ITEM_FRAME, 1);
-        int i = 2 + this.world.rand.nextInt(5);
+        int i = 2 + this.level.random.nextInt(5);
         for (var4 = 0; var4 < i; ++var4) {
             this.dropItemRand(ChaosPersists.MyAmethyst, 1);
         }
-        i = 1 + this.world.rand.nextInt(5);
+        i = 1 + this.level.random.nextInt(5);
         block16 : for (var4 = 0; var4 < i; ++var4) {
-            int var3 = this.world.rand.nextInt(14);
+            int var3 = this.level.random.nextInt(14);
             ItemStack is;
             switch (var3) {
                 case 0: {
@@ -286,139 +295,139 @@ extends EntityMob {
                     continue block16;
                 }
                 case 2: {
-                    is = this.dropItemRand(Item.getItemFromBlock((Block)ChaosPersists.MyBlockAmethystBlock), 1);
+                    is = this.dropItemRand(Item.byBlock((Block)ChaosPersists.MyBlockAmethystBlock), 1);
                     continue block16;
                 }
                 case 3: {
                     is = this.dropItemRand(ChaosPersists.MyAmethystSword, 1);
-                    if (this.world.rand.nextInt(6) == 1) {
-                        is.addEnchantment(Enchantment.getEnchantmentByID(16), 1 + this.world.rand.nextInt(5));
+                    if (this.level.random.nextInt(6) == 1) {
+                        com.astryxion.chaospersists.core.ChaosPersists.enchantItemStack(is, com.astryxion.chaospersists.core.ChaosPersists.legacyEnchantment(16), 1 + this.level.random.nextInt(5));
                     }
-                    if (this.world.rand.nextInt(6) == 1) {
-                        is.addEnchantment(Enchantment.getEnchantmentByID(18), 1 + this.world.rand.nextInt(5));
+                    if (this.level.random.nextInt(6) == 1) {
+                        com.astryxion.chaospersists.core.ChaosPersists.enchantItemStack(is, com.astryxion.chaospersists.core.ChaosPersists.legacyEnchantment(18), 1 + this.level.random.nextInt(5));
                     }
-                    if (this.world.rand.nextInt(6) == 1) {
-                        is.addEnchantment(Enchantment.getEnchantmentByID(19), 1 + this.world.rand.nextInt(5));
+                    if (this.level.random.nextInt(6) == 1) {
+                        com.astryxion.chaospersists.core.ChaosPersists.enchantItemStack(is, com.astryxion.chaospersists.core.ChaosPersists.legacyEnchantment(19), 1 + this.level.random.nextInt(5));
                     }
-                    if (this.world.rand.nextInt(6) == 1) {
-                        is.addEnchantment(Enchantment.getEnchantmentByID(21), 1 + this.world.rand.nextInt(5));
+                    if (this.level.random.nextInt(6) == 1) {
+                        com.astryxion.chaospersists.core.ChaosPersists.enchantItemStack(is, com.astryxion.chaospersists.core.ChaosPersists.legacyEnchantment(21), 1 + this.level.random.nextInt(5));
                     }
-                    if (this.world.rand.nextInt(2) == 1) {
-                        is.addEnchantment(Enchantment.getEnchantmentByID(34), 2 + this.world.rand.nextInt(4));
+                    if (this.level.random.nextInt(2) == 1) {
+                        com.astryxion.chaospersists.core.ChaosPersists.enchantItemStack(is, com.astryxion.chaospersists.core.ChaosPersists.legacyEnchantment(34), 2 + this.level.random.nextInt(4));
                     }
-                    if (this.world.rand.nextInt(6) == 1) {
-                        is.addEnchantment(Enchantment.getEnchantmentByID(20), 1 + this.world.rand.nextInt(5));
+                    if (this.level.random.nextInt(6) == 1) {
+                        com.astryxion.chaospersists.core.ChaosPersists.enchantItemStack(is, com.astryxion.chaospersists.core.ChaosPersists.legacyEnchantment(20), 1 + this.level.random.nextInt(5));
                     }
-                    if (this.world.rand.nextInt(6) != 1) continue block16;
-                    is.addEnchantment(Enchantment.getEnchantmentByID(16), 1 + this.world.rand.nextInt(5));
+                    if (this.level.random.nextInt(6) != 1) continue block16;
+                    com.astryxion.chaospersists.core.ChaosPersists.enchantItemStack(is, com.astryxion.chaospersists.core.ChaosPersists.legacyEnchantment(16), 1 + this.level.random.nextInt(5));
                     continue block16;
                 }
                 case 4: {
                     is = this.dropItemRand(ChaosPersists.MyAmethystShovel, 1);
-                    if (this.world.rand.nextInt(2) == 1) {
-                        is.addEnchantment(Enchantment.getEnchantmentByID(34), 2 + this.world.rand.nextInt(4));
+                    if (this.level.random.nextInt(2) == 1) {
+                        com.astryxion.chaospersists.core.ChaosPersists.enchantItemStack(is, com.astryxion.chaospersists.core.ChaosPersists.legacyEnchantment(34), 2 + this.level.random.nextInt(4));
                     }
-                    if (this.world.rand.nextInt(6) != 1) continue block16;
-                    is.addEnchantment(Enchantment.getEnchantmentByID(32), 1 + this.world.rand.nextInt(5));
+                    if (this.level.random.nextInt(6) != 1) continue block16;
+                    com.astryxion.chaospersists.core.ChaosPersists.enchantItemStack(is, com.astryxion.chaospersists.core.ChaosPersists.legacyEnchantment(32), 1 + this.level.random.nextInt(5));
                     continue block16;
                 }
                 case 5: {
                     is = this.dropItemRand(ChaosPersists.MyAmethystPickaxe, 1);
-                    if (this.world.rand.nextInt(2) == 1) {
-                        is.addEnchantment(Enchantment.getEnchantmentByID(34), 2 + this.world.rand.nextInt(4));
+                    if (this.level.random.nextInt(2) == 1) {
+                        com.astryxion.chaospersists.core.ChaosPersists.enchantItemStack(is, com.astryxion.chaospersists.core.ChaosPersists.legacyEnchantment(34), 2 + this.level.random.nextInt(4));
                     }
-                    if (this.world.rand.nextInt(6) == 1) {
-                        is.addEnchantment(Enchantment.getEnchantmentByID(32), 1 + this.world.rand.nextInt(5));
+                    if (this.level.random.nextInt(6) == 1) {
+                        com.astryxion.chaospersists.core.ChaosPersists.enchantItemStack(is, com.astryxion.chaospersists.core.ChaosPersists.legacyEnchantment(32), 1 + this.level.random.nextInt(5));
                     }
-                    if (this.world.rand.nextInt(6) != 1) continue block16;
-                    is.addEnchantment(Enchantment.getEnchantmentByID(35), 1 + this.world.rand.nextInt(5));
+                    if (this.level.random.nextInt(6) != 1) continue block16;
+                    com.astryxion.chaospersists.core.ChaosPersists.enchantItemStack(is, com.astryxion.chaospersists.core.ChaosPersists.legacyEnchantment(35), 1 + this.level.random.nextInt(5));
                     continue block16;
                 }
                 case 6: {
                     is = this.dropItemRand(ChaosPersists.MyAmethystAxe, 1);
-                    if (this.world.rand.nextInt(2) == 1) {
-                        is.addEnchantment(Enchantment.getEnchantmentByID(34), 2 + this.world.rand.nextInt(4));
+                    if (this.level.random.nextInt(2) == 1) {
+                        com.astryxion.chaospersists.core.ChaosPersists.enchantItemStack(is, com.astryxion.chaospersists.core.ChaosPersists.legacyEnchantment(34), 2 + this.level.random.nextInt(4));
                     }
-                    if (this.world.rand.nextInt(6) != 1) continue block16;
-                    is.addEnchantment(Enchantment.getEnchantmentByID(32), 1 + this.world.rand.nextInt(5));
+                    if (this.level.random.nextInt(6) != 1) continue block16;
+                    com.astryxion.chaospersists.core.ChaosPersists.enchantItemStack(is, com.astryxion.chaospersists.core.ChaosPersists.legacyEnchantment(32), 1 + this.level.random.nextInt(5));
                     continue block16;
                 }
                 case 7: {
                     is = this.dropItemRand(ChaosPersists.MyAmethystHoe, 1);
-                    if (this.world.rand.nextInt(2) == 1) {
-                        is.addEnchantment(Enchantment.getEnchantmentByID(34), 2 + this.world.rand.nextInt(4));
+                    if (this.level.random.nextInt(2) == 1) {
+                        com.astryxion.chaospersists.core.ChaosPersists.enchantItemStack(is, com.astryxion.chaospersists.core.ChaosPersists.legacyEnchantment(34), 2 + this.level.random.nextInt(4));
                     }
-                    if (this.world.rand.nextInt(6) != 1) continue block16;
-                    is.addEnchantment(Enchantment.getEnchantmentByID(32), 1 + this.world.rand.nextInt(5));
+                    if (this.level.random.nextInt(6) != 1) continue block16;
+                    com.astryxion.chaospersists.core.ChaosPersists.enchantItemStack(is, com.astryxion.chaospersists.core.ChaosPersists.legacyEnchantment(32), 1 + this.level.random.nextInt(5));
                     continue block16;
                 }
                 case 8: {
                     is = this.dropItemRand((Item)ChaosPersists.AmethystHelmet, 1);
-                    if (this.world.rand.nextInt(6) == 1) {
-                        is.addEnchantment(Enchantment.getEnchantmentByID(0), 1 + this.world.rand.nextInt(5));
+                    if (this.level.random.nextInt(6) == 1) {
+                        com.astryxion.chaospersists.core.ChaosPersists.enchantItemStack(is, com.astryxion.chaospersists.core.ChaosPersists.legacyEnchantment(0), 1 + this.level.random.nextInt(5));
                     }
-                    if (this.world.rand.nextInt(6) == 1) {
-                        is.addEnchantment(Enchantment.getEnchantmentByID(3), 1 + this.world.rand.nextInt(5));
+                    if (this.level.random.nextInt(6) == 1) {
+                        com.astryxion.chaospersists.core.ChaosPersists.enchantItemStack(is, com.astryxion.chaospersists.core.ChaosPersists.legacyEnchantment(3), 1 + this.level.random.nextInt(5));
                     }
-                    if (this.world.rand.nextInt(6) == 1) {
-                        is.addEnchantment(Enchantment.getEnchantmentByID(1), 1 + this.world.rand.nextInt(5));
+                    if (this.level.random.nextInt(6) == 1) {
+                        com.astryxion.chaospersists.core.ChaosPersists.enchantItemStack(is, com.astryxion.chaospersists.core.ChaosPersists.legacyEnchantment(1), 1 + this.level.random.nextInt(5));
                     }
-                    if (this.world.rand.nextInt(6) == 1) {
-                        is.addEnchantment(Enchantment.getEnchantmentByID(4), 1 + this.world.rand.nextInt(5));
+                    if (this.level.random.nextInt(6) == 1) {
+                        com.astryxion.chaospersists.core.ChaosPersists.enchantItemStack(is, com.astryxion.chaospersists.core.ChaosPersists.legacyEnchantment(4), 1 + this.level.random.nextInt(5));
                     }
-                    if (this.world.rand.nextInt(2) == 1) {
-                        is.addEnchantment(Enchantment.getEnchantmentByID(34), 2 + this.world.rand.nextInt(4));
+                    if (this.level.random.nextInt(2) == 1) {
+                        com.astryxion.chaospersists.core.ChaosPersists.enchantItemStack(is, com.astryxion.chaospersists.core.ChaosPersists.legacyEnchantment(34), 2 + this.level.random.nextInt(4));
                     }
-                    if (this.world.rand.nextInt(6) == 1) {
-                        is.addEnchantment(Enchantment.getEnchantmentByID(5), 1 + this.world.rand.nextInt(2));
+                    if (this.level.random.nextInt(6) == 1) {
+                        com.astryxion.chaospersists.core.ChaosPersists.enchantItemStack(is, com.astryxion.chaospersists.core.ChaosPersists.legacyEnchantment(5), 1 + this.level.random.nextInt(2));
                     }
-                    if (this.world.rand.nextInt(6) != 1) continue block16;
-                    is.addEnchantment(Enchantment.getEnchantmentByID(6), 1 + this.world.rand.nextInt(5));
+                    if (this.level.random.nextInt(6) != 1) continue block16;
+                    com.astryxion.chaospersists.core.ChaosPersists.enchantItemStack(is, com.astryxion.chaospersists.core.ChaosPersists.legacyEnchantment(6), 1 + this.level.random.nextInt(5));
                     continue block16;
                 }
                 case 9: {
                     is = this.dropItemRand((Item)ChaosPersists.AmethystBody, 1);
-                    if (this.world.rand.nextInt(6) == 1) {
-                        is.addEnchantment(Enchantment.getEnchantmentByID(0), 1 + this.world.rand.nextInt(5));
+                    if (this.level.random.nextInt(6) == 1) {
+                        com.astryxion.chaospersists.core.ChaosPersists.enchantItemStack(is, com.astryxion.chaospersists.core.ChaosPersists.legacyEnchantment(0), 1 + this.level.random.nextInt(5));
                     }
-                    if (this.world.rand.nextInt(6) == 1) {
-                        is.addEnchantment(Enchantment.getEnchantmentByID(3), 1 + this.world.rand.nextInt(5));
+                    if (this.level.random.nextInt(6) == 1) {
+                        com.astryxion.chaospersists.core.ChaosPersists.enchantItemStack(is, com.astryxion.chaospersists.core.ChaosPersists.legacyEnchantment(3), 1 + this.level.random.nextInt(5));
                     }
-                    if (this.world.rand.nextInt(6) == 1) {
-                        is.addEnchantment(Enchantment.getEnchantmentByID(1), 1 + this.world.rand.nextInt(5));
+                    if (this.level.random.nextInt(6) == 1) {
+                        com.astryxion.chaospersists.core.ChaosPersists.enchantItemStack(is, com.astryxion.chaospersists.core.ChaosPersists.legacyEnchantment(1), 1 + this.level.random.nextInt(5));
                     }
-                    if (this.world.rand.nextInt(6) == 1) {
-                        is.addEnchantment(Enchantment.getEnchantmentByID(4), 1 + this.world.rand.nextInt(5));
+                    if (this.level.random.nextInt(6) == 1) {
+                        com.astryxion.chaospersists.core.ChaosPersists.enchantItemStack(is, com.astryxion.chaospersists.core.ChaosPersists.legacyEnchantment(4), 1 + this.level.random.nextInt(5));
                     }
-                    if (this.world.rand.nextInt(2) != 1) continue block16;
-                    is.addEnchantment(Enchantment.getEnchantmentByID(34), 2 + this.world.rand.nextInt(4));
+                    if (this.level.random.nextInt(2) != 1) continue block16;
+                    com.astryxion.chaospersists.core.ChaosPersists.enchantItemStack(is, com.astryxion.chaospersists.core.ChaosPersists.legacyEnchantment(34), 2 + this.level.random.nextInt(4));
                     continue block16;
                 }
                 case 10: {
                     is = this.dropItemRand((Item)ChaosPersists.AmethystLegs, 1);
-                    if (this.world.rand.nextInt(6) == 1) {
-                        is.addEnchantment(Enchantment.getEnchantmentByID(0), 1 + this.world.rand.nextInt(5));
+                    if (this.level.random.nextInt(6) == 1) {
+                        com.astryxion.chaospersists.core.ChaosPersists.enchantItemStack(is, com.astryxion.chaospersists.core.ChaosPersists.legacyEnchantment(0), 1 + this.level.random.nextInt(5));
                     }
-                    if (this.world.rand.nextInt(6) == 1) {
-                        is.addEnchantment(Enchantment.getEnchantmentByID(3), 1 + this.world.rand.nextInt(5));
+                    if (this.level.random.nextInt(6) == 1) {
+                        com.astryxion.chaospersists.core.ChaosPersists.enchantItemStack(is, com.astryxion.chaospersists.core.ChaosPersists.legacyEnchantment(3), 1 + this.level.random.nextInt(5));
                     }
-                    if (this.world.rand.nextInt(6) == 1) {
-                        is.addEnchantment(Enchantment.getEnchantmentByID(1), 1 + this.world.rand.nextInt(5));
+                    if (this.level.random.nextInt(6) == 1) {
+                        com.astryxion.chaospersists.core.ChaosPersists.enchantItemStack(is, com.astryxion.chaospersists.core.ChaosPersists.legacyEnchantment(1), 1 + this.level.random.nextInt(5));
                     }
-                    if (this.world.rand.nextInt(6) == 1) {
-                        is.addEnchantment(Enchantment.getEnchantmentByID(4), 1 + this.world.rand.nextInt(5));
+                    if (this.level.random.nextInt(6) == 1) {
+                        com.astryxion.chaospersists.core.ChaosPersists.enchantItemStack(is, com.astryxion.chaospersists.core.ChaosPersists.legacyEnchantment(4), 1 + this.level.random.nextInt(5));
                     }
-                    if (this.world.rand.nextInt(2) != 1) continue block16;
-                    is.addEnchantment(Enchantment.getEnchantmentByID(34), 2 + this.world.rand.nextInt(4));
+                    if (this.level.random.nextInt(2) != 1) continue block16;
+                    com.astryxion.chaospersists.core.ChaosPersists.enchantItemStack(is, com.astryxion.chaospersists.core.ChaosPersists.legacyEnchantment(34), 2 + this.level.random.nextInt(4));
                     continue block16;
                 }
                 case 11: {
                     is = this.dropItemRand((Item)ChaosPersists.AmethystBoots, 1);
-                    if (this.world.rand.nextInt(6) == 1) {
-                        is.addEnchantment(Enchantment.getEnchantmentByID(2), 5 + this.world.rand.nextInt(5));
+                    if (this.level.random.nextInt(6) == 1) {
+                        com.astryxion.chaospersists.core.ChaosPersists.enchantItemStack(is, com.astryxion.chaospersists.core.ChaosPersists.legacyEnchantment(2), 5 + this.level.random.nextInt(5));
                     }
-                    if (this.world.rand.nextInt(2) != 1) continue block16;
-                    is.addEnchantment(Enchantment.getEnchantmentByID(34), 2 + this.world.rand.nextInt(4));
+                    if (this.level.random.nextInt(2) != 1) continue block16;
+                    com.astryxion.chaospersists.core.ChaosPersists.enchantItemStack(is, com.astryxion.chaospersists.core.ChaosPersists.legacyEnchantment(34), 2 + this.level.random.nextInt(4));
                     continue block16;
                 }
                 case 12: {
@@ -431,93 +440,94 @@ extends EntityMob {
     public void initCreature() {
     }
 
-    public boolean interact(EntityPlayer par1EntityPlayer) {
+    public boolean interact(PlayerEntity par1PlayerEntityEntity) {
         return false;
     }
 
-    public boolean attackEntityAsMob(Entity par1Entity) {
+    public boolean doHurtTarget(LivingEntity par1Entity) {
         double ks = 1.8;
         double inair = 0.2;
         int var2 = 6;
-        if (super.attackEntityAsMob(par1Entity)) {
-            if (par1Entity != null && par1Entity instanceof EntityLivingBase) {
-                float f3 = (float)Math.atan2(par1Entity.posZ - this.posZ, par1Entity.posX - this.posX);
-                if (par1Entity.isDead || par1Entity instanceof EntityPlayer) {
+        if (super.doHurtTarget(par1Entity)) {
+            if (par1Entity != null && par1Entity instanceof LivingEntity) {
+                float f3 = (float)Math.atan2(par1Entity.getZ() - this.getZ(), par1Entity.getX() - this.getX());
+                if (!par1Entity.isAlive() || par1Entity instanceof PlayerEntity) {
                     inair *= 2.0;
                 }
-                par1Entity.addVelocity(Math.cos(f3) * ks, inair, Math.sin(f3) * ks);
+                par1Entity.push(Math.cos(f3) * ks, inair, Math.sin(f3) * ks);
             }
             return true;
         }
         return false;
     }
 
-    public boolean attackEntityFrom(DamageSource par1DamageSource, float par2) {
+    @Override
+    public boolean hurt(DamageSource par1DamageSource, float par2) {
         boolean ret = false;
         if (this.hurt_timer > 0) {
             return false;
         }
-        if (!par1DamageSource.getDamageType().equals("cactus") && !par1DamageSource.getDamageType().equals("fall")) {
-            ret = super.attackEntityFrom(par1DamageSource, par2);
+        if (!par1DamageSource.getMsgId().equals("cactus") && !par1DamageSource.getMsgId().equals("fall")) {
+            ret = super.hurt(par1DamageSource, par2);
             this.hurt_timer = 20;
-            Entity e = par1DamageSource.getTrueSource();
-            if (e != null && e instanceof EntityLiving) {
-                this.setAttackTarget((EntityLivingBase)((EntityLiving)e));
-                this.getNavigator().tryMoveToEntityLiving((Entity)((EntityLiving)e), 1.2);
+            Entity e = par1DamageSource.getEntity();
+            if (e != null && e instanceof MobEntity) {
+                this.setTarget((LivingEntity)((MobEntity)e));
+                this.getNavigation().moveTo((Entity)((MobEntity)e), 1.2);
                 ret = true;
             }
         }
         return ret;
     }
 
-    protected void updateAITasks() {
-        EntityLivingBase e = null;
-        if (this.isDead) {
+    protected void customServerAiStep() {
+        LivingEntity e = null;
+        if (!this.isAlive()) {
             return;
         }
-        super.updateAITasks();
+        super.customServerAiStep();
         if (this.hurt_timer > 0) {
             --this.hurt_timer;
         }
-        if (this.world.rand.nextInt(5) == 0) {
-            e = this.getAttackTarget();
-            if (e != null && !e.isEntityAlive()) {
-                this.setAttackTarget(null);
+        if (this.level.random.nextInt(5) == 0) {
+            e = this.getTarget();
+            if (e != null && !e.isAlive()) {
+                this.setTarget(null);
                 e = null;
             }
             if (e == null) {
                 e = this.findSomethingToAttack();
                 if (e != null) {
-                    this.setAttackTarget(e);
+                    this.setTarget(e);
                 }
             }
             if (e != null) {
-                this.faceEntity((Entity)e, 10.0f, 10.0f);
-                if (this.world.rand.nextInt(10) == 1 && !this.isAirBorne) {
+                this.lookAt((Entity)e, 10.0f, 10.0f);
+                if (this.level.random.nextInt(10) == 1 && !this.onGround) {
                     this.jumpAtEntity(e);
-                } else if (this.getDistanceSq((Entity)e) < (double)((5.0f + e.width / 2.0f) * (5.0f + e.width / 2.0f))) {
+                } else if (this.distanceToSqr((Entity)e) < (double)((5.0f + e.getBbWidth() / 2.0f) * (5.0f + e.getBbWidth() / 2.0f))) {
                     this.setAttacking(1);
-                    if (this.world.rand.nextInt(6) == 0 || this.world.rand.nextInt(7) == 1) {
-                        this.attackEntityAsMob((Entity)e);
-                        if (!this.world.isRemote) {
-                            if (this.world.rand.nextInt(3) == 1) {
-                                this.world.playSound(null, e.posX, e.posY, e.posZ, com.astryxion.chaospersists.core.ChaosSounds.SCORPION_ATTACK, this.getSoundCategory(), 1.4f, 1.0f);
+                    if (this.level.random.nextInt(6) == 0 || this.level.random.nextInt(7) == 1) {
+                        this.doHurtTarget((LivingEntity)e);
+                        if (!this.level.isClientSide) {
+                            if (this.level.random.nextInt(3) == 1) {
+                                this.level.playSound(null, e.getX(), e.getY(), e.getZ(), com.astryxion.chaospersists.core.ChaosSounds.SCORPION_ATTACK, this.getSoundSource(), 1.4f, 1.0f);
                             } else {
-                                this.world.playSound(null, e.posX, e.posY, e.posZ, com.astryxion.chaospersists.core.ChaosSounds.CLATTER, this.getSoundCategory(), 1.0f, 1.0f);
+                                this.level.playSound(null, e.getX(), e.getY(), e.getZ(), com.astryxion.chaospersists.core.ChaosSounds.CLATTER, this.getSoundSource(), 1.0f, 1.0f);
                             }
                         }
                     }
-                } else if (!this.isAirBorne) {
-                    this.getNavigator().tryMoveToEntityLiving((Entity)e, 1.2);
+                } else if (!this.onGround) {
+                    this.getNavigation().moveTo((Entity)e, 1.2);
                 }
-                if (this.world.rand.nextInt(30) == 1) {
-                    EntityCreature newent = (EntityCreature)TrooperBug.spawnCreature((World)this.world, (String)"chaospersists:spit_bug", (double)((this.posX + e.posX) / 2.0 + (double)this.world.rand.nextInt(5) - (double)this.world.rand.nextInt(5)), (double)((this.posY + e.posY) / 2.0 + 1.01), (double)((this.posZ + e.posZ) / 2.0 + (double)this.world.rand.nextInt(5) - (double)this.world.rand.nextInt(5)));
+                if (this.level.random.nextInt(30) == 1) {
+                    CreatureEntity newent = (CreatureEntity)TrooperBug.spawnCreature((World)this.level, (String)"chaospersists:spit_bug", (double)((this.getX() + e.getX()) / 2.0 + (double)this.level.random.nextInt(5) - (double)this.level.random.nextInt(5)), (double)((this.getY() + e.getY()) / 2.0 + 1.01), (double)((this.getZ() + e.getZ()) / 2.0 + (double)this.level.random.nextInt(5) - (double)this.level.random.nextInt(5)));
                 }
             } else {
                 this.setAttacking(0);
             }
         }
-        if (this.world.rand.nextInt(150) == 1 && this.getHealth() < (float)this.mygetMaxHealth()) {
+        if (this.level.random.nextInt(150) == 1 && this.getHealth() < (float)this.mygetMaxHealth()) {
             this.heal(1.0f);
         }
     }
@@ -525,73 +535,78 @@ extends EntityMob {
     public static Entity spawnCreature(World par0World, String par1, double par2, double par4, double par6) {
         Entity var8 = null;
         net.minecraft.util.ResourceLocation res = par1.contains(":") ? new net.minecraft.util.ResourceLocation(par1) : new net.minecraft.util.ResourceLocation("chaospersists", par1);
-        var8 = EntityList.createEntityByIDFromName(res, par0World);
+        net.minecraft.entity.EntityType<?> entityType = ForgeRegistries.ENTITIES.getValue(res);
+        if (entityType != null) {
+            var8 = entityType.create(par0World);
+        }
         if (var8 != null) {
-            var8.setLocationAndAngles(par2, par4, par6, par0World.rand.nextFloat() * 360.0f, 0.0f);
-            par0World.spawnEntity(var8);
-            ((EntityLiving)var8).playLivingSound();
+            var8.moveTo(par2, par4, par6, par0World.random.nextFloat() * 360.0f, 0.0f);
+            par0World.addFreshEntity(var8);
+            if (var8 instanceof MobEntity) {
+                com.astryxion.chaospersists.entity.RockBase.playSpawnAmbientSound((LivingEntity) var8);
+            }
         }
         return var8;
     }
 
-    private boolean isSuitableTarget(EntityLivingBase par1EntityLiving, boolean par2) {
-        if (par1EntityLiving == null) {
+    private boolean isSuitableTarget(LivingEntity par1Mob, boolean par2) {
+        if (par1Mob == null) {
             return false;
         }
-        if (par1EntityLiving == this) {
+        if (par1Mob == this) {
             return false;
         }
-        if (!par1EntityLiving.isEntityAlive()) {
+        if (!par1Mob.isAlive()) {
             return false;
         }
-        if (MyUtils.isIgnoreable((EntityLivingBase)par1EntityLiving)) {
+        if (MyUtils.isIgnoreable((LivingEntity)par1Mob)) {
             return false;
         }
-        if (!this.getEntitySenses().canSee((Entity)par1EntityLiving)) {
+        if (!this.getSensing().canSee((Entity)par1Mob)) {
             return false;
         }
-        if (par1EntityLiving instanceof Hydrolisc) {
+        if (par1Mob instanceof Hydrolisc) {
             return false;
         }
-        if (par1EntityLiving instanceof EnderReaper) {
+        if (par1Mob instanceof EnderReaper) {
             return false;
         }
-        if (par1EntityLiving instanceof EnderKnight) {
+        if (par1Mob instanceof EnderKnight) {
             return false;
         }
-        if (par1EntityLiving instanceof EntityEnderman) {
+        if (par1Mob instanceof EndermanEntity) {
             return false;
         }
-        if (par1EntityLiving instanceof EntityCreeper) {
+        if (par1Mob instanceof CreeperEntity) {
             return false;
         }
-        if (par1EntityLiving instanceof TrooperBug) {
+        if (par1Mob instanceof TrooperBug) {
             return false;
         }
-        if (par1EntityLiving instanceof SpitBug) {
+        if (par1Mob instanceof SpitBug) {
             return false;
         }
-        if (par1EntityLiving instanceof EntityPlayer) {
-            EntityPlayer p = (EntityPlayer)par1EntityLiving;
-            if (p.capabilities.isCreativeMode) {
+        if (par1Mob instanceof PlayerEntity) {
+            PlayerEntity p = (PlayerEntity)par1Mob;
+            if (p.isCreative()) {
                 return false;
             }
         }
         return true;
     }
 
-    private EntityLivingBase findSomethingToAttack() {
+    private LivingEntity findSomethingToAttack() {
         if (ChaosPersists.PlayNicely != 0) {
             return null;
         }
-        List var5 = this.world.getEntitiesWithinAABB(EntityLivingBase.class, this.getEntityBoundingBox().expand(12.0, 7.0, 12.0));
+        List var5 = this.level.getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(12.0, 7.0, 12.0));
         Collections.sort(var5, this.TargetSorter);
         Iterator var2 = var5.iterator();
         Entity var3 = null;
-        EntityLivingBase var4 = null;
+        LivingEntity var4 = null;
         while (var2.hasNext()) {
             var3 = (Entity)var2.next();
-            var4 = (EntityLivingBase)var3;
+            var4 = (LivingEntity)var3;
             if (!this.isSuitableTarget(var4, false)) continue;
             return var4;
         }
@@ -599,14 +614,23 @@ extends EntityMob {
     }
 
     public final int getAttacking() {
-        return this.getDataManager().get(ATTACKING).intValue();
+        return this.entityData.get(ATTACKING).intValue();
     }
 
     public final void setAttacking(int par1) {
-        this.getDataManager().set(ATTACKING, (byte)par1);
+        this.entityData.set(ATTACKING, (byte)par1);
     }
 
-    public boolean getCanSpawnHere() {
+    protected boolean isValidLightLevel() {
+        net.minecraft.util.math.BlockPos pos = new net.minecraft.util.math.BlockPos(MathHelper.floor(this.getX()), MathHelper.floor(this.getBoundingBox().minY), MathHelper.floor(this.getZ()));
+        if (this.level.getBrightness(LightType.SKY, pos) > this.random.nextInt(32)) {
+            return false;
+        }
+        int l = this.level.getBrightness(LightType.BLOCK, pos);
+        return l <= this.random.nextInt(8);
+    }
+
+    public boolean checkSpawnRules(net.minecraft.world.IWorldReader level, net.minecraft.entity.SpawnReason reason) {
         Block bid;
         int j;
         int i;
@@ -614,12 +638,12 @@ extends EntityMob {
         for (k = -3; k < 3; ++k) {
             for (j = -3; j < 3; ++j) {
                 for (i = 0; i < 5; ++i) {
-                    bid = this.world.getBlockState(new net.minecraft.util.math.BlockPos((int)this.posX + j, (int)this.posY + i, (int)this.posZ + k)).getBlock();
-                    if (bid != Blocks.MOB_SPAWNER) continue;
-                    TileEntityMobSpawner tileentitymobspawner = null;
-                    tileentitymobspawner = (TileEntityMobSpawner)this.world.getTileEntity(new net.minecraft.util.math.BlockPos((int)this.posX + j, (int)this.posY + i, (int)this.posZ + k));
+                    bid = this.level.getBlockState(new net.minecraft.util.math.BlockPos((int)this.getX() + j, (int)this.getY() + i, (int)this.getZ() + k)).getBlock();
+                    if (bid != Blocks.SPAWNER) continue;
+                    MobSpawnerTileEntity tileentitymobspawner = null;
+                    tileentitymobspawner = (MobSpawnerTileEntity)this.level.getBlockEntity(new net.minecraft.util.math.BlockPos((int)this.getX() + j, (int)this.getY() + i, (int)this.getZ() + k));
                                         String s = null;
-                    net.minecraft.util.ResourceLocation id = com.astryxion.chaospersists.util.SpawnerFixHelper.getMobSpawnerEntityId(tileentitymobspawner.getSpawnerBaseLogic());
+                    net.minecraft.util.ResourceLocation id = com.astryxion.chaospersists.util.SpawnerFixHelper.getMobSpawnerEntityId(tileentitymobspawner.getSpawner());
                     if (id != null) s = id.getPath();
                     if (s == null || !s.equals("Jumpy Bug")) continue;
                     return true;
@@ -629,13 +653,13 @@ extends EntityMob {
         if (!this.isValidLightLevel()) {
             return false;
         }
-        if (this.world.isDaytime() && this.world.rand.nextInt(20) > 1) {
+        if (this.level.isDay() && this.level.random.nextInt(20) > 1) {
             return false;
         }
         for (k = -2; k < 2; ++k) {
             for (j = -2; j < 2; ++j) {
                 for (i = 1; i < 5; ++i) {
-                    bid = this.world.getBlockState(new net.minecraft.util.math.BlockPos((int)this.posX + j, (int)this.posY + i, (int)this.posZ + k)).getBlock();
+                    bid = this.level.getBlockState(new net.minecraft.util.math.BlockPos((int)this.getX() + j, (int)this.getY() + i, (int)this.getZ() + k)).getBlock();
                     if (bid == Blocks.AIR) continue;
                     return false;
                 }

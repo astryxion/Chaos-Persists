@@ -1,139 +1,137 @@
-/*
- * Decompiled with CFR 0_125.
- * 
- * Could not load the following classes:
- *  net.minecraftforge.fml.relauncher.Side
- *  net.minecraftforge.fml.relauncher.SideOnly
- *  com.astryxion.chaospersists.Lavafoam
- *  net.minecraft.block.Block
- *  net.minecraft.block.material.Material
- *  net.minecraft.client.renderer.texture.IIconRegister
- *  net.minecraft.creativetab.CreativeTabs
- *  net.minecraft.entity.Entity
- *  net.minecraft.entity.EntityLivingBase
- *  net.minecraft.util.math.AxisAlignedBB
- *  net.minecraft.util.DamageSource
- *  net.minecraft.util.IIcon
- *  net.minecraft.world.World
- *  net.minecraft.world.WorldProvider
- */
 package com.astryxion.chaospersists.block;
 
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+
 import java.util.Random;
+
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.material.Material;
-import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.item.ItemGroup;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.math.shapes.VoxelShape;
+import net.minecraft.util.math.shapes.VoxelShapes;
+import net.minecraft.particles.ParticleTypes;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldProvider;
+import net.minecraft.world.server.ServerWorld;
 
-public class Lavafoam
-extends Block {
-    public Lavafoam() { super(Material.ROCK);
-        this.setHardness(5.0f);
-        this.setResistance(5.0f);
-        this.setCreativeTab(CreativeTabs.BUILDING_BLOCKS);
-        this.setTickRandomly(true);
-        this.slipperiness = 1.1f;
+public class Lavafoam extends Block {
+
+    public Lavafoam() {
+        super(AbstractBlock.Properties.of(Material.STONE)
+                .strength(5.0f, 5.0f)
+                
+                .randomTicks()
+                .friction(1.1f));
     }
 
-    public int tickRate() {
-        return 10;
-    }
-
-    @SideOnly(value=Side.CLIENT)
-    public void randomDisplayTick(World par1World, int par2, int par3, int par4, Random par5Random) {
-        if (par1World.rand.nextInt(20) == 0) {
-            this.sparkle(par1World, par2, par3, par4);
+    @OnlyIn(Dist.CLIENT)
+    @Override
+    public void animateTick(BlockState state, World world, BlockPos pos, Random rand) {
+        if (world.random.nextInt(20) == 0) {
+            sparkle(world, pos, rand);
         }
     }
 
-    private void sparkle(World par1World, int par2, int par3, int par4) {
-        Random var5 = par1World.rand;
-        double var6 = 0.0625;
-        for (int var8 = 0; var8 < 6; ++var8) {
-            double var9 = (float)par2 + var5.nextFloat();
-            double var11 = (float)par3 + var5.nextFloat();
-            double var13 = (float)par4 + var5.nextFloat();
-            if (var8 == 0 && !par1World.getBlockState(new net.minecraft.util.math.BlockPos(par2, par3 + 1, par4)).getBlock().isFullCube(par1World.getBlockState(new net.minecraft.util.math.BlockPos(par2, par3 + 1, par4)))) {
-                var11 = (double)(par3 + 1) + var6;
+    @OnlyIn(Dist.CLIENT)
+    private void sparkle(World world, BlockPos pos, Random rand) {
+        double offset = 0.0625;
+        for (int i = 0; i < 6; ++i) {
+            double x = (double) pos.getX() + rand.nextFloat();
+            double y = (double) pos.getY() + rand.nextFloat();
+            double z = (double) pos.getZ() + rand.nextFloat();
+            BlockState up = world.getBlockState(pos.above());
+            if (i == 0 && !up.isSolidRender(world, pos.above())) {
+                y = (double) (pos.getY() + 1) + offset;
             }
-            if (var8 == 1 && !par1World.getBlockState(new net.minecraft.util.math.BlockPos(par2, par3 - 1, par4)).getBlock().isFullCube(par1World.getBlockState(new net.minecraft.util.math.BlockPos(par2, par3 - 1, par4)))) {
-                var11 = (double)(par3 + 0) - var6;
+            BlockState down = world.getBlockState(pos.below());
+            if (i == 1 && !down.isSolidRender(world, pos.below())) {
+                y = (double) pos.getY() - offset;
             }
-            if (var8 == 2 && !par1World.getBlockState(new net.minecraft.util.math.BlockPos(par2, par3, par4 + 1)).getBlock().isFullCube(par1World.getBlockState(new net.minecraft.util.math.BlockPos(par2, par3, par4 + 1)))) {
-                var13 = (double)(par4 + 1) + var6;
+            BlockState south = world.getBlockState(pos.south());
+            if (i == 2 && !south.isSolidRender(world, pos.south())) {
+                z = (double) (pos.getZ() + 1) + offset;
             }
-            if (var8 == 3 && !par1World.getBlockState(new net.minecraft.util.math.BlockPos(par2, par3, par4 - 1)).getBlock().isFullCube(par1World.getBlockState(new net.minecraft.util.math.BlockPos(par2, par3, par4 - 1)))) {
-                var13 = (double)(par4 + 0) - var6;
+            BlockState north = world.getBlockState(pos.north());
+            if (i == 3 && !north.isSolidRender(world, pos.north())) {
+                z = (double) pos.getZ() - offset;
             }
-            if (var8 == 4 && !par1World.getBlockState(new net.minecraft.util.math.BlockPos(par2 + 1, par3, par4)).getBlock().isFullCube(par1World.getBlockState(new net.minecraft.util.math.BlockPos(par2 + 1, par3, par4)))) {
-                var9 = (double)(par2 + 1) + var6;
+            BlockState east = world.getBlockState(pos.east());
+            if (i == 4 && !east.isSolidRender(world, pos.east())) {
+                x = (double) (pos.getX() + 1) + offset;
             }
-            if (var8 == 5 && !par1World.getBlockState(new net.minecraft.util.math.BlockPos(par2 - 1, par3, par4)).getBlock().isFullCube(par1World.getBlockState(new net.minecraft.util.math.BlockPos(par2 - 1, par3, par4)))) {
-                var9 = (double)(par2 + 0) - var6;
+            BlockState west = world.getBlockState(pos.west());
+            if (i == 5 && !west.isSolidRender(world, pos.west())) {
+                x = (double) pos.getX() - offset;
             }
-            if (var9 >= (double)par2 && var9 <= (double)(par2 + 1) && var11 >= 0.0 && var11 <= (double)(par3 + 1) && var13 >= (double)par4 && var13 <= (double)(par4 + 1)) continue;
-            int which = par1World.rand.nextInt(10);
+            if (x >= (double) pos.getX() && x <= (double) (pos.getX() + 1)
+                    && y >= 0.0 && y <= (double) (pos.getY() + 1)
+                    && z >= (double) pos.getZ() && z <= (double) (pos.getZ() + 1)) {
+                continue;
+            }
+            int which = world.random.nextInt(10);
             if (which == 1) {
-                par1World.spawnParticle(net.minecraft.util.EnumParticleTypes.SMOKE_NORMAL, var9, var11, var13, 0.0, 0.0, 0.0);
+                world.addParticle(ParticleTypes.SMOKE, x, y, z, 0.0, 0.0, 0.0);
             }
-            if (which != 2) continue;
-            par1World.spawnParticle(net.minecraft.util.EnumParticleTypes.REDSTONE, var9, var11, var13, 0.0, 0.0, 0.0);
+            if (which == 2) {
+                world.addParticle(new net.minecraft.particles.RedstoneParticleData(1.0F, 0.0F, 0.0F, 1.0F), x, y, z, 0.0, 0.0, 0.0);
+            }
         }
     }
 
-    public void onEntityCollidedWithBlock(World par1World, net.minecraft.util.math.BlockPos pos, net.minecraft.block.state.IBlockState state, Entity par5Entity) {
+    @Override
+    public void entityInside(BlockState state, World world, BlockPos pos, Entity entity) {
+        if (!(entity instanceof LivingEntity)) {
+            return;
+        }
         double pi = 3.14159;
         double pi2 = pi / 2.0;
         double pi4 = pi / 4.0;
         int par2 = pos.getX();
-        int par3 = pos.getY();
         int par4 = pos.getZ();
-        if (par5Entity == null) {
-            return;
-        }
-        if (!(par5Entity instanceof EntityLivingBase)) {
-            return;
-        }
-        double d = Math.atan2(par5Entity.posX - (double)((float)par2 + 0.5f), par5Entity.posZ - (double)((float)par4 + 0.5f));
+        double d = Math.atan2(entity.getX() - (double) ((float) par2 + 0.5f), entity.getZ() - (double) ((float) par4 + 0.5f));
         if (d < 0.0) {
             d = pi * 2.0 + d;
         }
+        double mx = entity.getDeltaMovement().x;
+        double mz = entity.getDeltaMovement().z;
         if (d > pi2 - pi4 && d < pi2 + pi4) {
-            par5Entity.motionX = 0.44999998807907104;
-            par5Entity.motionZ *= 1.350000023841858;
+            mx = 0.44999998807907104;
+            mz *= 1.350000023841858;
         } else if (d > pi - pi4 && d < pi + pi4) {
-            par5Entity.motionZ = -0.44999998807907104;
-            par5Entity.motionX *= 1.350000023841858;
+            mz = -0.44999998807907104;
+            mx *= 1.350000023841858;
         } else if (d > pi + pi2 - pi4 && d < pi + pi2 + pi4) {
-            par5Entity.motionX = -0.44999998807907104;
-            par5Entity.motionZ *= 1.350000023841858;
+            mx = -0.44999998807907104;
+            mz *= 1.350000023841858;
         } else {
-            par5Entity.motionZ = 0.44999998807907104;
-            par5Entity.motionX *= 1.350000023841858;
+            mz = 0.44999998807907104;
+            mx *= 1.350000023841858;
         }
-        d = Math.sqrt(par5Entity.motionZ * par5Entity.motionZ + par5Entity.motionX * par5Entity.motionX);
+        entity.setDeltaMovement(mx, entity.getDeltaMovement().y, mz);
+        d = Math.sqrt(mz * mz + mx * mx);
         if (d > 1.0) {
-            par5Entity.attackEntityFrom(DamageSource.FALL, (float)d);
+            entity.hurt(DamageSource.FALL, (float) d);
         }
     }
 
-    public void dropBlockAsItemWithChance(World par1World, int par2, int par3, int par4, int par5, float par6, int par7) {
-        super.dropBlockAsItemWithChance(par1World, new net.minecraft.util.math.BlockPos(par2, par3, par4), par1World.getBlockState(new net.minecraft.util.math.BlockPos(par2, par3, par4)), par6, par7);
-        int j1 = 5 + par1World.rand.nextInt(5) + par1World.rand.nextInt(5);
-        if (par1World.provider.getDimension() == -1) {
-            this.dropXpOnBlockBreak(par1World, new net.minecraft.util.math.BlockPos(par2, par3, par4), j1);
-        }
-    }
-
-    public AxisAlignedBB getCollisionBoundingBoxFromPool(World par1World, int par2, int par3, int par4) {
+    @Override
+    public VoxelShape getCollisionShape(BlockState state, net.minecraft.world.IBlockReader world, BlockPos pos, net.minecraft.util.math.shapes.ISelectionContext context) {
         float f = 0.0125f;
-        return new AxisAlignedBB((double)((float)par2 + f), (double)par3, (double)((float)par4 + f), (double)((float)(par2 + 1) - f), (double)(par3 + 1), (double)((float)(par4 + 1) - f));
-    }}
+        return VoxelShapes.box(f, 0.0D, f, 1.0D - f, 1.0D, 1.0D - f);
+    }
 
+    @Override
+    public void spawnAfterBreak(BlockState state, ServerWorld world, BlockPos pos, net.minecraft.item.ItemStack stack) {
+        super.spawnAfterBreak(state, world, pos, stack);
+        if (world.dimension() == World.NETHER) {
+            int j1 = 5 + world.random.nextInt(5) + world.random.nextInt(5);
+            popExperience(world, pos, j1);
+        }
+    }
+}

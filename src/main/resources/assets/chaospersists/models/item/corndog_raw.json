@@ -1,6 +1,6 @@
-{
+﻿{
   "parent": "item/generated",
   "textures": {
-    "layer0": "chaospersists:items/corndog_raw"
+    "layer0": "chaospersists:item/corndog_raw"
   }
 }

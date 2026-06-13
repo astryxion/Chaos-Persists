@@ -14,69 +14,67 @@
  *  net.minecraft.enchantment.Enchantment
  *  net.minecraft.enchantment.EnchantmentHelper
  *  net.minecraft.entity.Entity
- *  net.minecraft.entity.EntityLivingBase
- *  net.minecraft.entity.item.EntityItem
- *  net.minecraft.entity.passive.EntityTameable
- *  net.minecraft.entity.player.EntityPlayer
- *  net.minecraft.init.Blocks
- *  net.minecraft.init.Items
+ *  net.minecraft.entity.LivingEntity
+ *  net.minecraft.entity.item.ItemEntity
+ *  net.minecraft.entity.passive.TameableEntity
+ *  net.minecraft.entity.player.PlayerEntity
+ *  net.minecraft.block.Blocks
+ *  net.minecraft.item.Items
  *  net.minecraft.item.Item
  *  net.minecraft.item.Item$ToolMaterial
- *  net.minecraft.item.ItemPickaxe
+ *  net.minecraft.item.PickaxeItem
  *  net.minecraft.item.ItemStack
  *  net.minecraft.util.IIcon
  *  net.minecraft.world.World
  */
 package com.astryxion.chaospersists.item;
 
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import com.astryxion.chaospersists.entity.Boyfriend;
 import com.astryxion.chaospersists.entity.Girlfriend;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import java.util.Random;
 import net.minecraft.block.Block;
-import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.item.ItemGroup;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.item.EntityItem;
-import net.minecraft.entity.passive.EntityTameable;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.item.ItemEntity;
+import net.minecraft.entity.passive.TameableEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.block.Blocks;
+import net.minecraft.item.Items;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemPickaxe;
+import net.minecraft.item.IItemTier;
+import net.minecraft.item.PickaxeItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 
 public class UltimatePickaxe
-extends ItemPickaxe {
+extends PickaxeItem {
     private int weaponDamage = 15;
 
-    public UltimatePickaxe(Item.ToolMaterial par2) {
-        super(par2);
-        this.maxStackSize = 1;
-        this.setMaxDamage(3000);
-        this.setCreativeTab(CreativeTabs.TOOLS);
+    public UltimatePickaxe(IItemTier par2) {
+        super(par2, 1, -2.0F, new net.minecraft.item.Item.Properties().stacksTo(1).durability(3000).tab(net.minecraft.item.ItemGroup.TAB_TOOLS));
     }
 
-    public void onCreated(ItemStack par1ItemStack, World par2World, EntityPlayer par3EntityPlayer) {
-        par1ItemStack.addEnchantment(Enchantment.getEnchantmentByID(32), 5);
-        par1ItemStack.addEnchantment(Enchantment.getEnchantmentByID(35), 5);
+    public void onCraftedBy(ItemStack par1ItemStack, World par2World, PlayerEntity par3PlayerEntity) {
+        par1ItemStack.enchant(com.astryxion.chaospersists.core.ChaosPersists.legacyEnchantment(32), 5);
+        par1ItemStack.enchant(com.astryxion.chaospersists.core.ChaosPersists.legacyEnchantment(35), 5);
     }
 
-    public void onUsingTick(ItemStack stack, EntityPlayer player, int count) {
-        int lvl = EnchantmentHelper.getEnchantmentLevel(Enchantment.getEnchantmentByID(32), (ItemStack)stack);
+    public void onUseTick(World world, PlayerEntity player, ItemStack stack, int count) {
+        int lvl = EnchantmentHelper.getItemEnchantmentLevel(com.astryxion.chaospersists.core.ChaosPersists.legacyEnchantment(32), (ItemStack)stack);
         if (lvl <= 0) {
-            stack.addEnchantment(Enchantment.getEnchantmentByID(32), 5);
-            stack.addEnchantment(Enchantment.getEnchantmentByID(35), 5);
+            stack.enchant(com.astryxion.chaospersists.core.ChaosPersists.legacyEnchantment(32), 5);
+            stack.enchant(com.astryxion.chaospersists.core.ChaosPersists.legacyEnchantment(35), 5);
         }
     }
 
-    public void onUpdate(ItemStack stack, World par2World, Entity par3Entity, int par4, boolean par5) {
-        this.onUsingTick(stack, (EntityPlayer)null, 0);
+    public void inventoryTick(ItemStack stack, World par2World, Entity par3Entity, int par4, boolean par5) {
+        this.onUseTick(par2World, (PlayerEntity)null, stack, 0);
     }
 
     public boolean canHarvestBlock(Block par1Block) {
@@ -90,19 +88,19 @@ extends ItemPickaxe {
         if (par1Entity instanceof Boyfriend) {
             return 1;
         }
-        if (par1Entity instanceof EntityPlayer) {
+        if (par1Entity instanceof PlayerEntity) {
             return 1;
         }
         return this.weaponDamage;
     }
 
-    public boolean onLeftClickEntity(ItemStack stack, EntityPlayer player, Entity entity) {
+    public boolean onLeftClickEntity(ItemStack stack, PlayerEntity player, Entity entity) {
         if (entity != null && ChaosPersists.ultimate_sword_pvp == 0) {
-            EntityTameable t;
-            if (entity instanceof EntityPlayer || entity instanceof Girlfriend || entity instanceof Boyfriend) {
+            TameableEntity t;
+            if (entity instanceof PlayerEntity || entity instanceof Girlfriend || entity instanceof Boyfriend) {
                 return true;
             }
-            if (entity instanceof EntityTameable && (t = (EntityTameable)entity).isTamed()) {
+            if (entity instanceof TameableEntity && (t = (TameableEntity)entity).isTame()) {
                 return true;
             }
         }
@@ -110,30 +108,30 @@ extends ItemPickaxe {
     }
 
     private ItemStack dropItemAnItem(World world, int x, int y, int z, Item index, int par1) {
-        EntityItem var3 = null;
-        ItemStack is = new ItemStack(index, par1, 0);
-        var3 = new EntityItem(world, (double)x, (double)y, (double)z, is);
+        ItemEntity var3 = null;
+        ItemStack is = new ItemStack(index, par1);
+        var3 = new ItemEntity(world, (double)x, (double)y, (double)z, is);
         if (var3 != null) {
-            world.spawnEntity((Entity)var3);
+            world.addFreshEntity((Entity)var3);
         }
         return is;
     }
 
-    public boolean onBlockDestroyed(ItemStack par1ItemStack, World par2World, Block par3, int par4, int par5, int par6, EntityLivingBase par7EntityLivingBase) {
+    public boolean onBlockDestroyed(ItemStack par1ItemStack, World par2World, Block par3, int par4, int par5, int par6, LivingEntity par7LivingEntity) {
         net.minecraft.util.math.BlockPos pos = new net.minecraft.util.math.BlockPos(par4, par5, par6);
-        net.minecraft.block.state.IBlockState state = par2World.getBlockState(pos);
-        if ((double)par3.getBlockHardness(state, par2World, pos) != 0.0) {
-            par1ItemStack.damageItem(1, par7EntityLivingBase);
+        net.minecraft.block.BlockState state = par2World.getBlockState(pos);
+        if ((double)state.getDestroySpeed(par2World, pos) != 0.0) {
+            par1ItemStack.hurtAndBreak(1, par7LivingEntity, (e) -> e.broadcastBreakEvent(net.minecraft.util.Hand.MAIN_HAND));
         }
-        if (!par2World.isRemote) {
-            if (par3 == Blocks.IRON_ORE && par2World.rand.nextInt(2) != 0) {
-                this.dropItemAnItem(par2World, par4, par5, par6, Items.IRON_INGOT, 1 + par2World.rand.nextInt(2));
+        if (!par2World.isClientSide) {
+            if (par3 == Blocks.IRON_ORE && par2World.random.nextInt(2) != 0) {
+                this.dropItemAnItem(par2World, par4, par5, par6, Items.IRON_INGOT, 1 + par2World.random.nextInt(2));
             }
-            if (par3 == Blocks.GOLD_ORE && par2World.rand.nextInt(2) != 0) {
-                this.dropItemAnItem(par2World, par4, par5, par6, Items.GOLD_INGOT, 1 + par2World.rand.nextInt(2));
+            if (par3 == Blocks.GOLD_ORE && par2World.random.nextInt(2) != 0) {
+                this.dropItemAnItem(par2World, par4, par5, par6, Items.GOLD_INGOT, 1 + par2World.random.nextInt(2));
             }
-            if (par3 == Blocks.STONE && par2World.rand.nextInt(100) == 2) {
-                int i = par2World.rand.nextInt(10);
+            if (par3 == Blocks.STONE && par2World.random.nextInt(100) == 2) {
+                int i = par2World.random.nextInt(10);
                 if (i == 0) {
                     this.dropItemAnItem(par2World, par4, par5, par6, Items.DIAMOND, 1);
                 }

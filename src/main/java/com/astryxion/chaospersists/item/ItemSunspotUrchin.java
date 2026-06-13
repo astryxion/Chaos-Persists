@@ -9,9 +9,9 @@
  *  net.minecraft.client.renderer.texture.IIconRegister
  *  net.minecraft.creativetab.CreativeTabs
  *  net.minecraft.entity.Entity
- *  net.minecraft.entity.EntityLivingBase
- *  net.minecraft.entity.player.EntityPlayer
- *  net.minecraft.entity.player.PlayerCapabilities
+ *  net.minecraft.entity.LivingEntity
+ *  net.minecraft.entity.player.PlayerEntity
+ *  net.minecraft.entity.player.PlayerEntityCapabilities
  *  net.minecraft.item.Item
  *  net.minecraft.item.ItemStack
  *  net.minecraft.util.IIcon
@@ -20,42 +20,48 @@
 package com.astryxion.chaospersists.item;
 
 import com.astryxion.chaospersists.entity.SunspotUrchin;
-import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.entity.EntityType;
+import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.item.ItemGroup;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.SoundEvents;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.SoundEvents;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ActionResult;
-import net.minecraft.util.EnumActionResult;
-import net.minecraft.util.EnumHand;
+import net.minecraft.util.Hand;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.world.World;
 
 public class ItemSunspotUrchin
 extends Item {
-    public ItemSunspotUrchin(int i) {
-        this.maxStackSize = 64;
-        this.setCreativeTab(CreativeTabs.COMBAT);
-    }
+    public ItemSunspotUrchin(int i) { super(new Item.Properties()); }
 
     @Override
-    public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, EnumHand hand) {
-        ItemStack stack = player.getHeldItem(hand);
-        if (!player.capabilities.isCreativeMode) {
+    public ActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
+        ItemStack stack = player.getItemInHand(hand);
+        if (!player.isCreative()) {
             stack.shrink(1);
         }
-        world.playSound(null, player.posX, player.posY, player.posZ,
-                SoundEvents.ENTITY_SNOWBALL_THROW, SoundCategory.PLAYERS,
-                0.5F, 0.4F / (itemRand.nextFloat() * 0.4F + 0.8F));
-        if (!world.isRemote) {
-            SunspotUrchin e = new SunspotUrchin(world, (EntityLivingBase) player);
-            e.shoot(player, player.rotationPitch, player.rotationYaw, 0.0F, 1.5F, 1.0F);
-            world.spawnEntity((Entity) e);
+        world.playSound(null, player.getX(), player.getY(), player.getZ(),
+                SoundEvents.SNOWBALL_THROW, SoundCategory.PLAYERS,
+                0.5F, 0.4F / (world.random.nextFloat() * 0.4F + 0.8F));
+        if (!world.isClientSide) {
+            EntityType<? extends SunspotUrchin> type = resolveSunspotUrchinType();
+            SunspotUrchin e = new SunspotUrchin(type, world, (LivingEntity) player);
+            e.shootFromRotation(player, player.xRot, player.yRot, 0.0F, 1.5F, 1.0F);
+            world.addFreshEntity((Entity) e);
         }
-        player.swingArm(hand);
-        return new ActionResult<>(EnumActionResult.SUCCESS, stack);
+        player.swing(hand);
+        return ActionResult.success(stack);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static EntityType<? extends SunspotUrchin> resolveSunspotUrchinType() {
+        EntityType<?> type = ForgeRegistries.ENTITIES.getValue(new ResourceLocation("chaospersists", "sunspot_urchin"));
+        return type != null ? (EntityType<? extends SunspotUrchin>) type : (EntityType<? extends SunspotUrchin>)(EntityType<?>)EntityType.SNOWBALL;
     }
 }
 

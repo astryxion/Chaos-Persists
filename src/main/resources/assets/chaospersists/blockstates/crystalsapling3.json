@@ -1,6 +1,5 @@
 {
   "variants": {
-    "": { "model": "chaospersists:crystalsapling3" },
-    "normal": { "model": "chaospersists:crystalsapling3" }
+    "": { "model": "chaospersists:block/crystalsapling3" }
   }
 }

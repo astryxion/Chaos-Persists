@@ -1,58 +1,34 @@
 package com.astryxion.chaospersists.world.ore;
 
 import java.util.Random;
-
-import net.minecraft.block.BlockFalling;
+import net.minecraft.block.AbstractBlock;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.FallingBlock;
 import net.minecraft.block.SoundType;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.util.BlockRenderLayer;
+import net.minecraft.block.material.Material;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
-public class OreGenericEgg extends BlockFalling {
+public class OreGenericEgg extends FallingBlock {
 
     public OreGenericEgg() {
         this(0);
     }
 
     public OreGenericEgg(int oldid) {
-        super();
-        this.setHardness(0.6f);
-        this.setResistance(3.0f);
-        this.setSoundType(SoundType.GROUND);
-        this.setHarvestLevel("shovel", 0);
-        this.setCreativeTab(CreativeTabs.BUILDING_BLOCKS);
+        super(AbstractBlock.Properties.of(Material.SAND).strength(0.6f, 3.0f).sound(SoundType.GRAVEL).noOcclusion());
     }
 
-    // ===== XP DROP =====
-
-    public void dropBlockAsItemWithChance(World world, BlockPos pos,
-                                          IBlockState state, float chance, int fortune) {
-
-        super.dropBlockAsItemWithChance(world, pos, state, chance, fortune);
-
-        int xp = 5 + world.rand.nextInt(3) + world.rand.nextInt(3);
-
-        if (world.rand.nextInt(2) == 1) {
-            this.dropXpOnBlockBreak(world, pos, xp);
+    @Override
+    public void spawnAfterBreak(BlockState state, net.minecraft.world.server.ServerWorld world, BlockPos pos, net.minecraft.item.ItemStack stack) {
+        super.spawnAfterBreak(state, world, pos, stack);
+        if (world.random.nextInt(2) == 1) {
+            int xp = 5 + world.random.nextInt(3) + world.random.nextInt(3);
+            popExperience((net.minecraft.world.server.ServerWorld) world, pos, xp);
         }
-    }
-
-    // ===== RENDERING (1.12.2 FIX) =====
-
-    public boolean isOpaqueCube(IBlockState state) {
-        return false;
-    }
-
-    public boolean isFullCube(IBlockState state) {
-        return false;
-    }
-
-    @SideOnly(Side.CLIENT)
-    public BlockRenderLayer getRenderLayer() {
-        return BlockRenderLayer.CUTOUT;
     }
 }

@@ -1,47 +1,33 @@
-/*
- * Decompiled with CFR 0_125.
- * 
- * Could not load the following classes:
- *  net.minecraftforge.fml.common.eventhandler.SubscribeEvent
- *  net.minecraftforge.fml.common.gameevent.TickEvent
- *  net.minecraftforge.fml.common.gameevent.TickEvent$ClientTickEvent
- *  net.minecraftforge.fml.common.network.simpleimpl.IMessage
- *  net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper
- *  com.astryxion.chaospersists.KeyHandler
- *  com.astryxion.chaospersists.RiderControl
- *  com.astryxion.chaospersists.RiderControlMessage
- *  net.minecraft.client.settings.KeyBinding
- */
 package com.astryxion.chaospersists.network;
 
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
-import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import com.astryxion.chaospersists.util.KeyHandler;
-import com.astryxion.chaospersists.network.RiderControlMessage;
-import net.minecraft.client.settings.KeyBinding;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.network.PacketDistributor;
+import net.minecraftforge.fml.network.simple.SimpleChannel;
 
 public class RiderControl {
     private final RiderControlMessage rcm = new RiderControlMessage();
-    private final SimpleNetworkWrapper network;
+    private final SimpleChannel network;
     private int keystate = 0;
 
-    public RiderControl(SimpleNetworkWrapper network) {
+    public RiderControl(SimpleChannel network) {
         this.network = network;
     }
 
     @SubscribeEvent
     public void onTick(TickEvent.ClientTickEvent evt) {
+        if (evt.phase != TickEvent.Phase.END) {
+            return;
+        }
         int newkeystate = 0;
-        if (KeyHandler.KEY_FLY_UP.isKeyDown()) {
+        if (KeyHandler.KEY_FLY_UP.isDown()) {
             newkeystate = 1;
         }
         if (this.keystate != newkeystate) {
             this.rcm.keystate = newkeystate;
-            this.network.sendToServer((IMessage)this.rcm);
+            this.network.send(PacketDistributor.SERVER.noArg(), this.rcm);
             this.keystate = newkeystate;
         }
     }
 }
-

@@ -1,65 +1,50 @@
-/*
- * Decompiled with CFR 0_125.
- * 
- * Could not load the following classes:
- *  net.minecraftforge.fml.relauncher.Side
- *  net.minecraftforge.fml.relauncher.SideOnly
- *  com.astryxion.chaospersists.OreTitanium
- *  net.minecraft.block.Block
- *  net.minecraft.block.material.Material
- *  net.minecraft.client.renderer.texture.IIconRegister
- *  net.minecraft.creativetab.CreativeTabs
- *  net.minecraft.entity.Entity
- *  net.minecraft.entity.player.EntityPlayer
- *  net.minecraft.util.IIcon
- *  net.minecraft.world.World
- */
 package com.astryxion.chaospersists.world.ore;
 
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 import java.util.Random;
+import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
 import net.minecraft.block.material.Material;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.EnumParticleTypes;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.particles.RedstoneParticleData;
+import net.minecraft.util.ActionResultType;
+import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.BlockRayTraceResult;
+import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
+import net.minecraft.world.server.ServerWorld;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
-public class OreTitanium
-extends Block {
+public class OreTitanium extends Block {
     private boolean glowing = false;
     private int glowcount = 0;
 
-    public OreTitanium() { super(Material.ROCK);
-        this.setHardness(15.0f);
-        this.setResistance(5.0f);
-        this.setCreativeTab(CreativeTabs.BUILDING_BLOCKS);
-        this.setTickRandomly(true);
+    public OreTitanium() {
+        super(AbstractBlock.Properties.of(Material.STONE).strength(15.0f, 5.0f).randomTicks());
         this.glowing = false;
     }
 
-    public int tickRate() {
-        return 30;
+    @Override
+    public void attack(BlockState state, World world, BlockPos pos, PlayerEntity player) {
+        this.glow(world, pos.getX(), pos.getY(), pos.getZ());
+        super.attack(state, world, pos, player);
     }
 
-    public void onBlockClicked(World par1World, BlockPos pos, EntityPlayer par5EntityPlayer) {
-        this.glow(par1World, pos.getX(), pos.getY(), pos.getZ());
-        super.onBlockClicked(par1World, pos, par5EntityPlayer);
+    @Override
+    public void stepOn(World world, BlockPos pos, Entity entity) {
+        this.glow(world, pos.getX(), pos.getY(), pos.getZ());
+        super.stepOn(world, pos, entity);
     }
 
-    public void onEntityWalk(World par1World, BlockPos pos, Entity par5Entity) {
-        this.glow(par1World, pos.getX(), pos.getY(), pos.getZ());
-        super.onEntityWalk(par1World, pos, par5Entity);
-    }
-
-    public boolean onBlockActivated(World par1World, BlockPos pos, IBlockState state, EntityPlayer par5EntityPlayer, EnumHand hand, net.minecraft.util.EnumFacing facing, float par7, float par8, float par9) {
-        this.glow(par1World, pos.getX(), pos.getY(), pos.getZ());
-        return super.onBlockActivated(par1World, pos, state, par5EntityPlayer, hand, facing, par7, par8, par9);
+    @Override
+    public ActionResultType use(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand,
+            BlockRayTraceResult hit) {
+        this.glow(world, pos.getX(), pos.getY(), pos.getZ());
+        return super.use(state, world, pos, player, hand, hit);
     }
 
     private void glow(World par1World, int par2, int par3, int par4) {
@@ -68,12 +53,16 @@ extends Block {
         this.sparkle(par1World, par2, par3, par4);
     }
 
-    public void updateTick(World par1World, BlockPos pos, IBlockState state, Random par5Random) {
+    @Override
+    public void randomTick(BlockState state, ServerWorld world, BlockPos pos, Random random) {
     }
 
-    @SideOnly(value=Side.CLIENT)
-    public void randomDisplayTick(IBlockState stateIn, World par1World, BlockPos pos, Random par5Random) {
-        int par2 = pos.getX(), par3 = pos.getY(), par4 = pos.getZ();
+    @OnlyIn(Dist.CLIENT)
+    @Override
+    public void animateTick(BlockState stateIn, World par1World, BlockPos pos, Random par5Random) {
+        int par2 = pos.getX();
+        int par3 = pos.getY();
+        int par4 = pos.getZ();
         if (this.glowing) {
             this.sparkle(par1World, par2, par3, par4);
             if (this.glowcount > 0) {
@@ -85,40 +74,50 @@ extends Block {
     }
 
     private void sparkle(World par1World, int par2, int par3, int par4) {
-        Random var5 = par1World.rand;
+        Random var5 = par1World.random;
         double var6 = 0.0625;
         for (int var8 = 0; var8 < 6; ++var8) {
             double var9 = (float)par2 + var5.nextFloat();
             double var11 = (float)par3 + var5.nextFloat();
             double var13 = (float)par4 + var5.nextFloat();
-            if (var8 == 0 && !par1World.getBlockState(new BlockPos(par2, par3 + 1, par4)).isFullCube()) {
+            if (var8 == 0 && !par1World.getBlockState(new BlockPos(par2, par3 + 1, par4)).isSolidRender(par1World,
+                    new BlockPos(par2, par3 + 1, par4))) {
                 var11 = (double)(par3 + 1) + var6;
             }
-            if (var8 == 1 && !par1World.getBlockState(new BlockPos(par2, par3 - 1, par4)).isFullCube()) {
+            if (var8 == 1 && !par1World.getBlockState(new BlockPos(par2, par3 - 1, par4)).isSolidRender(par1World,
+                    new BlockPos(par2, par3 - 1, par4))) {
                 var11 = (double)(par3 + 0) - var6;
             }
-            if (var8 == 2 && !par1World.getBlockState(new BlockPos(par2, par3, par4 + 1)).isFullCube()) {
+            if (var8 == 2 && !par1World.getBlockState(new BlockPos(par2, par3, par4 + 1)).isSolidRender(par1World,
+                    new BlockPos(par2, par3, par4 + 1))) {
                 var13 = (double)(par4 + 1) + var6;
             }
-            if (var8 == 3 && !par1World.getBlockState(new BlockPos(par2, par3, par4 - 1)).isFullCube()) {
+            if (var8 == 3 && !par1World.getBlockState(new BlockPos(par2, par3, par4 - 1)).isSolidRender(par1World,
+                    new BlockPos(par2, par3, par4 - 1))) {
                 var13 = (double)(par4 + 0) - var6;
             }
-            if (var8 == 4 && !par1World.getBlockState(new BlockPos(par2 + 1, par3, par4)).isFullCube()) {
+            if (var8 == 4 && !par1World.getBlockState(new BlockPos(par2 + 1, par3, par4)).isSolidRender(par1World,
+                    new BlockPos(par2 + 1, par3, par4))) {
                 var9 = (double)(par2 + 1) + var6;
             }
-            if (var8 == 5 && !par1World.getBlockState(new BlockPos(par2 - 1, par3, par4)).isFullCube()) {
+            if (var8 == 5 && !par1World.getBlockState(new BlockPos(par2 - 1, par3, par4)).isSolidRender(par1World,
+                    new BlockPos(par2 - 1, par3, par4))) {
                 var9 = (double)(par2 + 0) - var6;
             }
-            if (var9 >= (double)par2 && var9 <= (double)(par2 + 1) && var11 >= 0.0 && var11 <= (double)(par3 + 1) && var13 >= (double)par4 && var13 <= (double)(par4 + 1)) continue;
-            par1World.spawnParticle(EnumParticleTypes.REDSTONE, var9, var11, var13, 0.0, 0.0, 0.0);
+            if (var9 >= (double)par2 && var9 <= (double)(par2 + 1) && var11 >= 0.0 && var11 <= (double)(par3 + 1)
+                    && var13 >= (double)par4 && var13 <= (double)(par4 + 1)) {
+                continue;
+            }
+            par1World.addParticle(RedstoneParticleData.REDSTONE, var9, var11, var13, 0.0, 0.0, 0.0);
         }
     }
 
-    public void dropBlockAsItemWithChance(World par1World, BlockPos pos, IBlockState state, float par6, int par7) {
-        super.dropBlockAsItemWithChance(par1World, pos, state, par6, par7);
-        int j1 = 5 + par1World.rand.nextInt(5) + par1World.rand.nextInt(10);
+    @Override
+    public void spawnAfterBreak(BlockState state, net.minecraft.world.server.ServerWorld world, BlockPos pos, ItemStack stack) {
+        super.spawnAfterBreak(state, world, pos, stack);
         if (pos.getY() < 40) {
-            this.dropXpOnBlockBreak(par1World, pos, j1);
+            int xp = 5 + world.random.nextInt(5) + world.random.nextInt(10);
+            popExperience(world, pos, xp);
         }
-    }}
-
+    }
+}

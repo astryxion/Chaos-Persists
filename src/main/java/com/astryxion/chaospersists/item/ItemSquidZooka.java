@@ -1,11 +1,11 @@
 package com.astryxion.chaospersists.item;
 
 import com.astryxion.chaospersists.entity.AttackSquid;
-import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.item.ItemGroup;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.EntityList;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.LivingEntity;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.*;
@@ -14,44 +14,40 @@ import net.minecraft.world.World;
 
 public class ItemSquidZooka extends Item {
 
-    public ItemSquidZooka(int i) {
-        this.maxStackSize = 1;
-        this.setMaxDamage(100);
-        this.setCreativeTab(CreativeTabs.COMBAT);
-    }
+    public ItemSquidZooka(int i) { super(new Item.Properties().stacksTo(1).durability(100)); }
 
     @Override
-    public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, EnumHand hand) {
+    public ActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
 
-        ItemStack stack = player.getHeldItem(hand);
+        ItemStack stack = player.getItemInHand(hand);
 
         // Prevent breaking
-        if (stack.getMaxDamage() - stack.getItemDamage() <= 1) {
-            return new ActionResult<>(EnumActionResult.FAIL, stack);
+        if (stack.getMaxDamage() - stack.getDamageValue() <= 1) {
+            return ActionResult.fail(stack);
         }
 
         // Play explosion sound
         world.playSound(
                 player,
-                player.posX,
-                player.posY,
-                player.posZ,
-                net.minecraft.init.SoundEvents.ENTITY_GENERIC_EXPLODE,
+                player.getX(),
+                player.getY(),
+                player.getZ(),
+                net.minecraft.util.SoundEvents.GENERIC_EXPLODE,
                 SoundCategory.PLAYERS,
                 0.5f,
                 0.5f
         );
 
-        if (!world.isRemote) {
+        if (!world.isClientSide) {
 
             double xzoff = 2.5;
             double yoff = 1.65;
 
             Entity e = spawnCreature(
                     world,
-                    player.posX - xzoff * Math.sin(Math.toRadians(player.rotationYawHead + 15.0f)),
-                    player.posY + yoff,
-                    player.posZ + xzoff * Math.cos(Math.toRadians(player.rotationYawHead + 15.0f))
+                    player.getX() - xzoff * Math.sin(Math.toRadians(player.yHeadRot + 15.0f)),
+                    player.getY() + yoff,
+                    player.getZ() + xzoff * Math.cos(Math.toRadians(player.yHeadRot + 15.0f))
             );
 
             if (e != null) {
@@ -62,49 +58,46 @@ public class ItemSquidZooka extends Item {
 
                 float f = 3.6f;
 
-                e.motionX = (-MathHelper.sin(player.rotationYaw * 0.017453292F))
-                        * MathHelper.cos(player.rotationPitch * 0.017453292F) * f;
+                e.setDeltaMovement((-MathHelper.sin(player.yRot * 0.017453292F))
+                        * MathHelper.cos(player.xRot * 0.017453292F) * f, e.getDeltaMovement().y, e.getDeltaMovement().z);
 
-                e.motionZ = (MathHelper.cos(player.rotationYaw * 0.017453292F))
-                        * MathHelper.cos(player.rotationPitch * 0.017453292F) * f;
+                e.setDeltaMovement(e.getDeltaMovement().x, e.getDeltaMovement().y, (MathHelper.cos(player.yRot * 0.017453292F))
+                        * MathHelper.cos(player.xRot * 0.017453292F) * f);
 
-                e.motionY = (-MathHelper.sin(player.rotationPitch * 0.017453292F)) * f;
+                e.setDeltaMovement(e.getDeltaMovement().x, (-MathHelper.sin(player.xRot * 0.017453292F)) * f, e.getDeltaMovement().z);
 
                 // Add slight randomness
-                e.motionX += (world.rand.nextFloat() - world.rand.nextFloat()) * 0.05;
-                e.motionY += (world.rand.nextFloat() - world.rand.nextFloat()) * 0.05;
-                e.motionZ += (world.rand.nextFloat() - world.rand.nextFloat()) * 0.05;
+com.astryxion.chaospersists.util.MyUtils.addDeltaMovement(e, (world.random.nextFloat() - world.random.nextFloat()) * 0.05, (world.random.nextFloat() - world.random.nextFloat()) * 0.05, (world.random.nextFloat() - world.random.nextFloat()) * 0.05);
 
-                e.velocityChanged = true;
+                e.hasImpulse = true;
             } else {
                 System.out.println("SquidZooka failed to spawn AttackSquid");
             }
         }
 
-        player.swingArm(hand);
+        player.swing(hand);
 
         // Apply recoil
-        player.addVelocity(
-                Math.cos(Math.toRadians(player.rotationYawHead - 90.0f)) * 0.45,
+        player.setDeltaMovement(player.getDeltaMovement().add(
+                Math.cos(Math.toRadians(player.yHeadRot - 90.0f)) * 0.45,
                 0.1,
-                Math.sin(Math.toRadians(player.rotationYawHead - 90.0f)) * 0.45
-        );
+                Math.sin(Math.toRadians(player.yHeadRot - 90.0f)) * 0.45
+        ));
 
-        stack.damageItem(1, player);
+        stack.hurtAndBreak(1, player, (broken) -> broken.broadcastBreakEvent(hand));
 
-        return new ActionResult<>(EnumActionResult.SUCCESS, stack);
+        return ActionResult.success(stack);
     }
 
     public static Entity spawnCreature(World world, double x, double y, double z) {
 
-        Entity entity = EntityList.createEntityByIDFromName(
-                new ResourceLocation("chaospersists", "attack_squid"),
-                world
-        );
+        net.minecraft.entity.EntityType<?> spawnType = net.minecraftforge.registries.ForgeRegistries.ENTITIES.getValue(
+                new ResourceLocation("chaospersists", "attack_squid"));
+        Entity entity = spawnType != null ? spawnType.create(world) : null;
 
         if (entity != null) {
-            entity.setLocationAndAngles(x, y, z, world.rand.nextFloat() * 360.0f, 0.0f);
-            world.spawnEntity(entity);
+            entity.moveTo(x, y, z, world.random.nextFloat() * 360.0f, 0.0f);
+            world.addFreshEntity(entity);
         }
 
         return entity;

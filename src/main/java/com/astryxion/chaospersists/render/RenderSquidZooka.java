@@ -1,31 +1,19 @@
 /*
  * Decompiled with CFR 0_125.
- * 
- * Could not load the following classes:
- *  net.minecraftforge.fml.client.FMLClientHandler
- *  com.astryxion.chaospersists.ModelSquidZooka
- *  com.astryxion.chaospersists.RenderSquidZooka
- *  com.astryxion.chaospersists.RenderSquidZooka$1
- *  net.minecraft.client.Minecraft
- *  net.minecraft.client.renderer.texture.TextureManager
- *  net.minecraft.item.ItemStack
- *  net.minecraft.util.ResourceLocation
- *  net.minecraftforge.client.IItemRenderer
- *  net.minecraftforge.client.IItemRenderer$ItemRenderType
- *  net.minecraftforge.client.IItemRenderer$ItemRendererHelper
- *  org.lwjgl.opengl.GL11
  */
 package com.astryxion.chaospersists.render;
 
 import com.astryxion.chaospersists.util.IItemRenderer;
-import net.minecraftforge.fml.client.FMLClientHandler;
-import com.astryxion.chaospersists.model.ModelSquidZooka;
-import com.astryxion.chaospersists.render.RenderSquidZooka;
+import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.IVertexBuilder;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.texture.TextureManager;
+import com.astryxion.chaospersists.model.ModelSquidZooka;
+import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
-import org.lwjgl.opengl.GL11;
+import net.minecraft.util.math.vector.Vector3f;
 
 public class RenderSquidZooka
 implements IItemRenderer {
@@ -44,11 +32,11 @@ implements IItemRenderer {
         return false;
     }
 
-    public boolean shouldUseRenderHelper(IItemRenderer.ItemRenderType type, ItemStack item, IItemRenderer.ItemRendererHelper helper) {
+public boolean shouldUseRenderHelper(IItemRenderer.ItemRenderType type, ItemStack item, IItemRenderer.ItemRendererHelper helper) {
         return true;
     }
 
-    public /* varargs */ void renderItem(IItemRenderer.ItemRenderType type, ItemStack item, Object ... data) {
+public /* varargs */ void renderItem(IItemRenderer.ItemRenderType type, ItemStack item, Object ... data) {
         switch (type.ordinal()) {
             case 1: {
                 this.renderSwordF5(2.0f, 8.0f, 2.0f, 0.35f);
@@ -62,23 +50,30 @@ implements IItemRenderer {
     }
 
     private void renderSword(float x, float y, float z, float scale) {
-        GL11.glPushMatrix();
-        GL11.glRotatef((float)-30.0f, (float)0.0f, (float)1.0f, (float)0.0f);
-        GL11.glScalef((float)scale, (float)scale, (float)scale);
-        GL11.glTranslatef((float)x, (float)y, (float)z);
-        FMLClientHandler.instance().getClient().renderEngine.bindTexture(texture);
-        this.modelSquidZooka.render();
-        GL11.glPopMatrix();
+        MatrixStack matrixStack = new MatrixStack();
+        matrixStack.pushPose();
+        matrixStack.mulPose(Vector3f.YP.rotationDegrees(-30F));
+        matrixStack.scale(scale, scale, scale);
+        matrixStack.translate(x, y, z);
+        this.drawModel(matrixStack);
+        matrixStack.popPose();
     }
 
     private void renderSwordF5(float x, float y, float z, float scale) {
-        GL11.glPushMatrix();
-        GL11.glRotatef((float)30.0f, (float)0.0f, (float)1.0f, (float)0.0f);
-        GL11.glScalef((float)scale, (float)scale, (float)scale);
-        GL11.glTranslatef((float)x, (float)y, (float)z);
-        FMLClientHandler.instance().getClient().renderEngine.bindTexture(texture);
-        this.modelSquidZooka.render();
-        GL11.glPopMatrix();
+        MatrixStack matrixStack = new MatrixStack();
+        matrixStack.pushPose();
+        matrixStack.mulPose(Vector3f.YP.rotationDegrees(30F));
+        matrixStack.scale(scale, scale, scale);
+        matrixStack.translate(x, y, z);
+        this.drawModel(matrixStack);
+        matrixStack.popPose();
+    }
+
+    private void drawModel(MatrixStack matrixStack) {
+        Minecraft mc = Minecraft.getInstance();
+        mc.getTextureManager().bind(texture);
+        IVertexBuilder vertexBuilder = mc.renderBuffers().bufferSource().getBuffer(RenderType.entityCutoutNoCull(texture));
+        this.modelSquidZooka.renderToBuffer(matrixStack, vertexBuilder, 15728880, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
+        mc.renderBuffers().bufferSource().endBatch();
     }
 }
-

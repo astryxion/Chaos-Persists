@@ -1,22 +1,7 @@
 {
   "variants": {
-    "facing=east": {
-      "model": "chaospersists:extremetorch_wall"
-    },
-    "facing=south": {
-      "y": 90,
-      "model": "chaospersists:extremetorch_wall"
-    },
-    "facing=north": {
-      "y": 270,
-      "model": "chaospersists:extremetorch_wall"
-    },
-    "facing=up": {
-      "model": "chaospersists:extremetorch"
-    },
-    "facing=west": {
-      "y": 180,
-      "model": "chaospersists:extremetorch_wall"
+    "": {
+      "model": "chaospersists:block/extremetorch"
     }
   }
 }

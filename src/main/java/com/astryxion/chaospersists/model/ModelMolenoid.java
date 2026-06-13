@@ -4,21 +4,25 @@
  * Could not load the following classes:
  *  com.astryxion.chaospersists.ModelMolenoid
  *  com.astryxion.chaospersists.Molenoid
- *  net.minecraft.client.model.ModelBase
- *  net.minecraft.client.model.ModelRenderer
+ *  net.minecraft.client.renderer.entity.model.Model
+ *  net.minecraft.client.renderer.model.ModelRenderer
  *  net.minecraft.entity.Entity
- *  net.minecraft.util.MathHelper
+ *  net.minecraft.util.math.MathHelper
  */
 package com.astryxion.chaospersists.model;
 
+import com.mojang.blaze3d.vertex.IVertexBuilder;
+
+import com.mojang.blaze3d.matrix.MatrixStack;
+
 import com.astryxion.chaospersists.entity.Molenoid;
-import net.minecraft.client.model.ModelBase;
-import net.minecraft.client.model.ModelRenderer;
+import net.minecraft.client.renderer.entity.model.EntityModel;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.model.ModelRenderer;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.MathHelper;
 
-public class ModelMolenoid
-extends ModelBase {
+public class ModelMolenoid extends EntityModel<Molenoid> {
     private float wingspeed = 1.0f;
     ModelRenderer body;
     ModelRenderer shoulders;
@@ -59,357 +63,368 @@ extends ModelBase {
     ModelRenderer rtoe4;
 
     public ModelMolenoid(float f1) {
+        super(RenderType::entityCutoutNoCull);
         this.wingspeed = f1;
-        this.textureWidth = 256;
-        this.textureHeight = 256;
-        this.body = new ModelRenderer((ModelBase)this, 0, 176);
+        // textureWidth = 256;
+        // textureHeight = 256;
+        this.body = new ModelRenderer(this, 0, 176);
         this.body.addBox(-16.0f, 0.0f, 0.0f, 32, 20, 56);
-        this.body.setRotationPoint(0.0f, 1.0f, 6.0f);
-        this.body.setTextureSize(64, 32);
+        this.body.setPos(0.0f, 1.0f, 6.0f);
         this.body.mirror = true;
         this.setRotation(this.body, 0.0f, 0.0f, 0.0f);
-        this.shoulders = new ModelRenderer((ModelBase)this, 0, 143);
+        this.shoulders = new ModelRenderer(this, 0, 143);
         this.shoulders.addBox(-17.0f, 0.0f, 0.0f, 34, 17, 10);
-        this.shoulders.setRotationPoint(0.0f, 3.0f, -4.0f);
-        this.shoulders.setTextureSize(64, 32);
+        this.shoulders.setPos(0.0f, 3.0f, -4.0f);
         this.shoulders.mirror = true;
         this.setRotation(this.shoulders, 0.0f, 0.0f, 0.0f);
-        this.head1 = new ModelRenderer((ModelBase)this, 0, 114);
+        this.head1 = new ModelRenderer(this, 0, 114);
         this.head1.addBox(-14.0f, 0.0f, 0.0f, 28, 14, 10);
-        this.head1.setRotationPoint(0.0f, 5.0f, -14.0f);
-        this.head1.setTextureSize(64, 32);
+        this.head1.setPos(0.0f, 5.0f, -14.0f);
         this.head1.mirror = true;
         this.setRotation(this.head1, 0.0f, 0.0f, 0.0f);
-        this.head2 = new ModelRenderer((ModelBase)this, 0, 89);
+        this.head2 = new ModelRenderer(this, 0, 89);
         this.head2.addBox(-11.0f, 0.0f, 0.0f, 22, 10, 10);
-        this.head2.setRotationPoint(0.0f, 6.0f, -24.0f);
-        this.head2.setTextureSize(64, 32);
+        this.head2.setPos(0.0f, 6.0f, -24.0f);
         this.head2.mirror = true;
         this.setRotation(this.head2, 0.0f, 0.0f, 0.0f);
-        this.head3 = new ModelRenderer((ModelBase)this, 0, 67);
+        this.head3 = new ModelRenderer(this, 0, 67);
         this.head3.addBox(-4.0f, 0.0f, 0.0f, 8, 8, 10);
-        this.head3.setRotationPoint(0.0f, 7.0f, -34.0f);
-        this.head3.setTextureSize(64, 32);
+        this.head3.setPos(0.0f, 7.0f, -34.0f);
         this.head3.mirror = true;
         this.setRotation(this.head3, 0.0f, 0.0f, 0.0f);
-        this.nosestar1 = new ModelRenderer((ModelBase)this, 0, 32);
+        this.nosestar1 = new ModelRenderer(this, 0, 32);
         this.nosestar1.addBox(-0.5f, -8.0f, 0.0f, 1, 16, 1);
-        this.nosestar1.setRotationPoint(0.0f, 11.0f, -35.0f);
-        this.nosestar1.setTextureSize(64, 32);
+        this.nosestar1.setPos(0.0f, 11.0f, -35.0f);
         this.nosestar1.mirror = true;
         this.setRotation(this.nosestar1, 0.0f, 0.0f, 0.0f);
-        this.nosestar2 = new ModelRenderer((ModelBase)this, 20, 32);
+        this.nosestar2 = new ModelRenderer(this, 20, 32);
         this.nosestar2.addBox(-0.5f, -8.0f, 0.0f, 1, 16, 1);
-        this.nosestar2.setRotationPoint(0.0f, 11.0f, -35.0f);
-        this.nosestar2.setTextureSize(64, 32);
+        this.nosestar2.setPos(0.0f, 11.0f, -35.0f);
         this.nosestar2.mirror = true;
         this.setRotation(this.nosestar2, 0.0f, 0.0f, 1.047198f);
-        this.nosestar3 = new ModelRenderer((ModelBase)this, 40, 32);
+        this.nosestar3 = new ModelRenderer(this, 40, 32);
         this.nosestar3.addBox(-0.5f, -8.0f, 0.0f, 1, 16, 1);
-        this.nosestar3.setRotationPoint(0.0f, 11.0f, -35.0f);
-        this.nosestar3.setTextureSize(64, 32);
+        this.nosestar3.setPos(0.0f, 11.0f, -35.0f);
         this.nosestar3.mirror = true;
         this.setRotation(this.nosestar3, 0.0f, 0.0f, -1.047198f);
-        this.larm = new ModelRenderer((ModelBase)this, 80, 0);
+        this.larm = new ModelRenderer(this, 80, 0);
         this.larm.addBox(0.0f, 0.0f, -2.0f, 17, 11, 5);
-        this.larm.setRotationPoint(13.0f, 8.0f, 0.0f);
-        this.larm.setTextureSize(64, 32);
+        this.larm.setPos(13.0f, 8.0f, 0.0f);
         this.larm.mirror = true;
         this.setRotation(this.larm, 0.0f, 0.6283185f, 0.0f);
-        this.lhand = new ModelRenderer((ModelBase)this, 80, 20);
+        this.lhand = new ModelRenderer(this, 80, 20);
         this.lhand.addBox(0.0f, 0.0f, -2.0f, 12, 14, 4);
-        this.lhand.setRotationPoint(25.0f, 7.0f, -9.0f);
-        this.lhand.setTextureSize(64, 32);
+        this.lhand.setPos(25.0f, 7.0f, -9.0f);
         this.lhand.mirror = true;
         this.setRotation(this.lhand, 0.0f, 0.0f, 0.0f);
-        this.lclaw1 = new ModelRenderer((ModelBase)this, 80, 42);
+        this.lclaw1 = new ModelRenderer(this, 80, 42);
         this.lclaw1.addBox(0.0f, 0.0f, -1.0f, 13, 3, 2);
-        this.lclaw1.setRotationPoint(35.0f, 20.0f, -9.0f);
-        this.lclaw1.setTextureSize(64, 32);
+        this.lclaw1.setPos(35.0f, 20.0f, -9.0f);
         this.lclaw1.mirror = true;
         this.setRotation(this.lclaw1, 0.0f, -0.1745329f, 0.0f);
-        this.lclaw2 = new ModelRenderer((ModelBase)this, 80, 52);
+        this.lclaw2 = new ModelRenderer(this, 80, 52);
         this.lclaw2.addBox(0.0f, 0.0f, -1.0f, 13, 3, 2);
-        this.lclaw2.setRotationPoint(35.0f, 15.0f, -9.0f);
-        this.lclaw2.setTextureSize(64, 32);
+        this.lclaw2.setPos(35.0f, 15.0f, -9.0f);
         this.lclaw2.mirror = true;
         this.setRotation(this.lclaw2, 0.0f, -0.1745329f, 0.0f);
-        this.lclaw3 = new ModelRenderer((ModelBase)this, 80, 62);
+        this.lclaw3 = new ModelRenderer(this, 80, 62);
         this.lclaw3.addBox(0.0f, 0.0f, -1.0f, 13, 3, 2);
-        this.lclaw3.setRotationPoint(35.0f, 10.0f, -9.0f);
-        this.lclaw3.setTextureSize(64, 32);
+        this.lclaw3.setPos(35.0f, 10.0f, -9.0f);
         this.lclaw3.mirror = true;
         this.setRotation(this.lclaw3, 0.0f, -0.1745329f, 0.0f);
-        this.lclaw4 = new ModelRenderer((ModelBase)this, 80, 72);
+        this.lclaw4 = new ModelRenderer(this, 80, 72);
         this.lclaw4.addBox(0.0f, 0.0f, -1.0f, 13, 3, 2);
-        this.lclaw4.setRotationPoint(35.0f, 5.0f, -9.0f);
-        this.lclaw4.setTextureSize(64, 32);
+        this.lclaw4.setPos(35.0f, 5.0f, -9.0f);
         this.lclaw4.mirror = true;
         this.setRotation(this.lclaw4, 0.0f, -0.1745329f, 0.0f);
-        this.nosestar4 = new ModelRenderer((ModelBase)this, 10, 32);
+        this.nosestar4 = new ModelRenderer(this, 10, 32);
         this.nosestar4.addBox(-0.5f, -8.0f, 0.0f, 1, 16, 1);
-        this.nosestar4.setRotationPoint(0.0f, 11.0f, -35.0f);
-        this.nosestar4.setTextureSize(64, 32);
+        this.nosestar4.setPos(0.0f, 11.0f, -35.0f);
         this.nosestar4.mirror = true;
         this.setRotation(this.nosestar4, 0.0f, 0.0f, 0.5235988f);
-        this.nosestar5 = new ModelRenderer((ModelBase)this, 30, 32);
+        this.nosestar5 = new ModelRenderer(this, 30, 32);
         this.nosestar5.addBox(-0.5f, -8.0f, 0.0f, 1, 16, 1);
-        this.nosestar5.setRotationPoint(0.0f, 11.0f, -35.0f);
-        this.nosestar5.setTextureSize(64, 32);
+        this.nosestar5.setPos(0.0f, 11.0f, -35.0f);
         this.nosestar5.mirror = true;
         this.setRotation(this.nosestar5, 0.0f, 0.0f, 1.570796f);
-        this.nosestar6 = new ModelRenderer((ModelBase)this, 50, 32);
+        this.nosestar6 = new ModelRenderer(this, 50, 32);
         this.nosestar6.addBox(-0.5f, -8.0f, 0.0f, 1, 16, 1);
-        this.nosestar6.setRotationPoint(0.0f, 11.0f, -35.0f);
-        this.nosestar6.setTextureSize(64, 32);
+        this.nosestar6.setPos(0.0f, 11.0f, -35.0f);
         this.nosestar6.mirror = true;
         this.setRotation(this.nosestar6, 0.0f, 0.0f, -0.5235988f);
-        this.butt = new ModelRenderer((ModelBase)this, 196, 215);
+        this.butt = new ModelRenderer(this, 196, 215);
         this.butt.addBox(-11.0f, 0.0f, 0.0f, 22, 11, 5);
-        this.butt.setRotationPoint(0.0f, 6.0f, 62.0f);
-        this.butt.setTextureSize(64, 32);
+        this.butt.setPos(0.0f, 6.0f, 62.0f);
         this.butt.mirror = true;
         this.setRotation(this.butt, 0.0f, 0.0f, 0.0f);
-        this.tail = new ModelRenderer((ModelBase)this, 196, 200);
+        this.tail = new ModelRenderer(this, 196, 200);
         this.tail.addBox(-2.0f, 0.0f, 0.0f, 4, 3, 5);
-        this.tail.setRotationPoint(0.0f, 7.0f, 67.0f);
-        this.tail.setTextureSize(64, 32);
+        this.tail.setPos(0.0f, 7.0f, 67.0f);
         this.tail.mirror = true;
         this.setRotation(this.tail, 0.0f, 0.0f, 0.0f);
-        this.lleg = new ModelRenderer((ModelBase)this, 90, 80);
+        this.lleg = new ModelRenderer(this, 90, 80);
         this.lleg.addBox(0.0f, 0.0f, -2.0f, 17, 11, 5);
-        this.lleg.setRotationPoint(14.0f, 9.0f, 58.0f);
-        this.lleg.setTextureSize(64, 32);
+        this.lleg.setPos(14.0f, 9.0f, 58.0f);
         this.lleg.mirror = true;
         this.setRotation(this.lleg, 0.0f, 0.6283185f, 0.0f);
-        this.lfoot = new ModelRenderer((ModelBase)this, 90, 100);
+        this.lfoot = new ModelRenderer(this, 90, 100);
         this.lfoot.addBox(0.0f, 0.0f, -2.0f, 12, 14, 4);
-        this.lfoot.setRotationPoint(26.0f, 8.0f, 49.0f);
-        this.lfoot.setTextureSize(64, 32);
+        this.lfoot.setPos(26.0f, 8.0f, 49.0f);
         this.lfoot.mirror = true;
         this.setRotation(this.lfoot, 0.0f, 0.0f, 0.0f);
-        this.ltoe1 = new ModelRenderer((ModelBase)this, 90, 120);
+        this.ltoe1 = new ModelRenderer(this, 90, 120);
         this.ltoe1.addBox(0.0f, 0.0f, -1.0f, 13, 3, 2);
-        this.ltoe1.setRotationPoint(36.0f, 21.0f, 48.0f);
-        this.ltoe1.setTextureSize(64, 32);
+        this.ltoe1.setPos(36.0f, 21.0f, 48.0f);
         this.ltoe1.mirror = true;
         this.setRotation(this.ltoe1, 0.0f, -0.2617994f, 0.0f);
-        this.ltoe2 = new ModelRenderer((ModelBase)this, 90, 130);
+        this.ltoe2 = new ModelRenderer(this, 90, 130);
         this.ltoe2.addBox(0.0f, 0.0f, -1.0f, 13, 3, 2);
-        this.ltoe2.setRotationPoint(36.0f, 16.0f, 48.0f);
-        this.ltoe2.setTextureSize(64, 32);
+        this.ltoe2.setPos(36.0f, 16.0f, 48.0f);
         this.ltoe2.mirror = true;
         this.setRotation(this.ltoe2, 0.0f, -0.2617994f, 0.0f);
-        this.ltoe3 = new ModelRenderer((ModelBase)this, 90, 140);
+        this.ltoe3 = new ModelRenderer(this, 90, 140);
         this.ltoe3.addBox(0.0f, 0.0f, -1.0f, 13, 3, 2);
-        this.ltoe3.setRotationPoint(36.0f, 11.0f, 48.0f);
-        this.ltoe3.setTextureSize(64, 32);
+        this.ltoe3.setPos(36.0f, 11.0f, 48.0f);
         this.ltoe3.mirror = true;
         this.setRotation(this.ltoe3, 0.0f, -0.2617994f, 0.0f);
-        this.ltoe4 = new ModelRenderer((ModelBase)this, 90, 150);
+        this.ltoe4 = new ModelRenderer(this, 90, 150);
         this.ltoe4.addBox(0.0f, 0.0f, -1.0f, 13, 3, 2);
-        this.ltoe4.setRotationPoint(36.0f, 6.0f, 48.0f);
-        this.ltoe4.setTextureSize(64, 32);
+        this.ltoe4.setPos(36.0f, 6.0f, 48.0f);
         this.ltoe4.mirror = true;
         this.setRotation(this.ltoe4, 0.0f, -0.2617994f, 0.0f);
-        this.rarm = new ModelRenderer((ModelBase)this, 130, 0);
+        this.rarm = new ModelRenderer(this, 130, 0);
         this.rarm.addBox(-17.0f, 0.0f, -2.0f, 17, 11, 5);
-        this.rarm.setRotationPoint(-14.0f, 8.0f, 0.0f);
-        this.rarm.setTextureSize(64, 32);
+        this.rarm.setPos(-14.0f, 8.0f, 0.0f);
         this.rarm.mirror = true;
         this.setRotation(this.rarm, 0.0f, -0.6283185f, 0.0f);
-        this.rhand = new ModelRenderer((ModelBase)this, 130, 20);
+        this.rhand = new ModelRenderer(this, 130, 20);
         this.rhand.addBox(-12.0f, 0.0f, -2.0f, 12, 14, 4);
-        this.rhand.setRotationPoint(-26.0f, 7.0f, -9.0f);
-        this.rhand.setTextureSize(64, 32);
+        this.rhand.setPos(-26.0f, 7.0f, -9.0f);
         this.rhand.mirror = true;
         this.setRotation(this.rhand, 0.0f, 0.0f, 0.0f);
-        this.rclaw1 = new ModelRenderer((ModelBase)this, 130, 42);
+        this.rclaw1 = new ModelRenderer(this, 130, 42);
         this.rclaw1.addBox(-13.0f, 0.0f, -1.0f, 13, 3, 2);
-        this.rclaw1.setRotationPoint(-36.0f, 20.0f, -9.0f);
-        this.rclaw1.setTextureSize(64, 32);
+        this.rclaw1.setPos(-36.0f, 20.0f, -9.0f);
         this.rclaw1.mirror = true;
         this.setRotation(this.rclaw1, 0.0f, 0.1745329f, 0.0f);
-        this.rclaw2 = new ModelRenderer((ModelBase)this, 130, 52);
+        this.rclaw2 = new ModelRenderer(this, 130, 52);
         this.rclaw2.addBox(-13.0f, 0.0f, -1.0f, 13, 3, 2);
-        this.rclaw2.setRotationPoint(-36.0f, 15.0f, -9.0f);
-        this.rclaw2.setTextureSize(64, 32);
+        this.rclaw2.setPos(-36.0f, 15.0f, -9.0f);
         this.rclaw2.mirror = true;
         this.setRotation(this.rclaw2, 0.0f, 0.1745329f, 0.0f);
-        this.rclaw3 = new ModelRenderer((ModelBase)this, 130, 62);
+        this.rclaw3 = new ModelRenderer(this, 130, 62);
         this.rclaw3.addBox(-13.0f, 0.0f, -1.0f, 13, 3, 2);
-        this.rclaw3.setRotationPoint(-36.0f, 10.0f, -9.0f);
-        this.rclaw3.setTextureSize(64, 32);
+        this.rclaw3.setPos(-36.0f, 10.0f, -9.0f);
         this.rclaw3.mirror = true;
         this.setRotation(this.rclaw3, 0.0f, 0.1745329f, 0.0f);
-        this.rclaw4 = new ModelRenderer((ModelBase)this, 130, 72);
+        this.rclaw4 = new ModelRenderer(this, 130, 72);
         this.rclaw4.addBox(-13.0f, 0.0f, -1.0f, 13, 3, 2);
-        this.rclaw4.setRotationPoint(-36.0f, 5.0f, -9.0f);
-        this.rclaw4.setTextureSize(64, 32);
+        this.rclaw4.setPos(-36.0f, 5.0f, -9.0f);
         this.rclaw4.mirror = true;
         this.setRotation(this.rclaw4, 0.0f, 0.1745329f, 0.0f);
-        this.rleg = new ModelRenderer((ModelBase)this, 150, 80);
+        this.rleg = new ModelRenderer(this, 150, 80);
         this.rleg.addBox(-17.0f, 0.0f, -2.0f, 17, 11, 5);
-        this.rleg.setRotationPoint(-14.0f, 9.0f, 58.0f);
-        this.rleg.setTextureSize(64, 32);
+        this.rleg.setPos(-14.0f, 9.0f, 58.0f);
         this.rleg.mirror = true;
         this.setRotation(this.rleg, 0.0f, -0.6283185f, 0.0f);
-        this.rfoot = new ModelRenderer((ModelBase)this, 150, 100);
+        this.rfoot = new ModelRenderer(this, 150, 100);
         this.rfoot.addBox(-12.0f, 0.0f, -2.0f, 12, 14, 4);
-        this.rfoot.setRotationPoint(-26.0f, 8.0f, 49.0f);
-        this.rfoot.setTextureSize(64, 32);
+        this.rfoot.setPos(-26.0f, 8.0f, 49.0f);
         this.rfoot.mirror = true;
         this.setRotation(this.rfoot, 0.0f, 0.0f, 0.0f);
-        this.rtoe1 = new ModelRenderer((ModelBase)this, 150, 120);
+        this.rtoe1 = new ModelRenderer(this, 150, 120);
         this.rtoe1.addBox(-13.0f, 0.0f, -1.0f, 13, 3, 2);
-        this.rtoe1.setRotationPoint(-36.0f, 21.0f, 48.0f);
-        this.rtoe1.setTextureSize(64, 32);
+        this.rtoe1.setPos(-36.0f, 21.0f, 48.0f);
         this.rtoe1.mirror = true;
         this.setRotation(this.rtoe1, 0.0f, 0.2617994f, 0.0f);
-        this.rtoe2 = new ModelRenderer((ModelBase)this, 150, 130);
+        this.rtoe2 = new ModelRenderer(this, 150, 130);
         this.rtoe2.addBox(-13.0f, 0.0f, -1.0f, 13, 3, 2);
-        this.rtoe2.setRotationPoint(-36.0f, 16.0f, 48.0f);
-        this.rtoe2.setTextureSize(64, 32);
+        this.rtoe2.setPos(-36.0f, 16.0f, 48.0f);
         this.rtoe2.mirror = true;
         this.setRotation(this.rtoe2, 0.0f, 0.2617994f, 0.0f);
-        this.rtoe3 = new ModelRenderer((ModelBase)this, 150, 140);
+        this.rtoe3 = new ModelRenderer(this, 150, 140);
         this.rtoe3.addBox(-13.0f, 0.0f, -1.0f, 13, 3, 2);
-        this.rtoe3.setRotationPoint(-36.0f, 11.0f, 48.0f);
-        this.rtoe3.setTextureSize(64, 32);
+        this.rtoe3.setPos(-36.0f, 11.0f, 48.0f);
         this.rtoe3.mirror = true;
         this.setRotation(this.rtoe3, 0.0f, 0.2617994f, 0.0f);
-        this.rtoe4 = new ModelRenderer((ModelBase)this, 150, 150);
+        this.rtoe4 = new ModelRenderer(this, 150, 150);
         this.rtoe4.addBox(-13.0f, 0.0f, -1.0f, 13, 3, 2);
-        this.rtoe4.setRotationPoint(-36.0f, 6.0f, 48.0f);
-        this.rtoe4.setTextureSize(64, 32);
+        this.rtoe4.setPos(-36.0f, 6.0f, 48.0f);
         this.rtoe4.mirror = true;
         this.setRotation(this.rtoe4, 0.0f, 0.2617994f, 0.0f);
     }
+    @Override
+    public void setupAnim(Molenoid entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
+        float f = limbSwing;
+        float f1 = limbSwingAmount;
+        float f2 = ageInTicks;
+        float f3 = netHeadYaw;
+        float f4 = headPitch;
+        float f5 = 0.0F;
 
-    public void render(Entity entity, float f, float f1, float f2, float f3, float f4, float f5) {
         Molenoid e = (Molenoid)entity;
-        super.render(entity, f, f1, f2, f3, f4, f5);
         this.setRotationAngles(f, f1, f2, f3, f4, f5, entity);
         float newangle = 0.0f;
         newangle = e.getAttacking() != 0 ? MathHelper.cos((float)(f2 * 1.7f * this.wingspeed)) * 3.1415927f * 0.25f : (f1 > 0.1f ? MathHelper.cos((float)(f2 * 1.3f * this.wingspeed)) * 3.1415927f * 0.25f * f1 : 0.0f);
-        this.larm.rotateAngleY = newangle + 0.628f;
-        this.lhand.rotationPointZ = this.larm.rotationPointZ - (float)Math.sin(this.larm.rotateAngleY) * 15.0f;
-        this.lhand.rotationPointX = this.larm.rotationPointX + (float)Math.cos(this.larm.rotateAngleY) * 15.0f;
-        this.lhand.rotateAngleY = newangle * 1.25f;
-        this.lclaw1.rotationPointZ = this.lhand.rotationPointZ - (float)Math.sin(this.lhand.rotateAngleY) * 10.0f;
-        this.lclaw1.rotationPointX = this.lhand.rotationPointX + (float)Math.cos(this.lhand.rotateAngleY) * 10.0f;
-        this.lclaw1.rotateAngleY = newangle * 1.5f - 0.174f;
-        this.lclaw2.rotationPointZ = this.lclaw1.rotationPointZ;
-        this.lclaw2.rotationPointX = this.lclaw1.rotationPointX;
-        this.lclaw2.rotateAngleY = this.lclaw1.rotateAngleY;
-        this.lclaw3.rotationPointZ = this.lclaw1.rotationPointZ;
-        this.lclaw3.rotationPointX = this.lclaw1.rotationPointX;
-        this.lclaw3.rotateAngleY = this.lclaw1.rotateAngleY;
-        this.lclaw4.rotationPointZ = this.lclaw1.rotationPointZ;
-        this.lclaw4.rotationPointX = this.lclaw1.rotationPointX;
-        this.lclaw4.rotateAngleY = this.lclaw1.rotateAngleY;
-        this.rarm.rotateAngleY = newangle - 0.628f;
-        this.rhand.rotationPointZ = this.rarm.rotationPointZ + (float)Math.sin(this.rarm.rotateAngleY) * 15.0f;
-        this.rhand.rotationPointX = this.rarm.rotationPointX - (float)Math.cos(this.rarm.rotateAngleY) * 15.0f;
-        this.rhand.rotateAngleY = newangle * 1.25f;
-        this.rclaw1.rotationPointZ = this.rhand.rotationPointZ + (float)Math.sin(this.rhand.rotateAngleY) * 10.0f;
-        this.rclaw1.rotationPointX = this.rhand.rotationPointX - (float)Math.cos(this.rhand.rotateAngleY) * 10.0f;
-        this.rclaw1.rotateAngleY = newangle * 1.5f + 0.174f;
-        this.rclaw2.rotationPointZ = this.rclaw1.rotationPointZ;
-        this.rclaw2.rotationPointX = this.rclaw1.rotationPointX;
-        this.rclaw2.rotateAngleY = this.rclaw1.rotateAngleY;
-        this.rclaw3.rotationPointZ = this.rclaw1.rotationPointZ;
-        this.rclaw3.rotationPointX = this.rclaw1.rotationPointX;
-        this.rclaw3.rotateAngleY = this.rclaw1.rotateAngleY;
-        this.rclaw4.rotationPointZ = this.rclaw1.rotationPointZ;
-        this.rclaw4.rotationPointX = this.rclaw1.rotationPointX;
-        this.rclaw4.rotateAngleY = this.rclaw1.rotateAngleY;
+        this.larm.yRot = newangle + 0.628f;
+        this.lhand.z = this.larm.z - (float)Math.sin(this.larm.yRot) * 15.0f;
+        this.lhand.x = this.larm.x + (float)Math.cos(this.larm.yRot) * 15.0f;
+        this.lhand.yRot = newangle * 1.25f;
+        this.lclaw1.z = this.lhand.z - (float)Math.sin(this.lhand.yRot) * 10.0f;
+        this.lclaw1.x = this.lhand.x + (float)Math.cos(this.lhand.yRot) * 10.0f;
+        this.lclaw1.yRot = newangle * 1.5f - 0.174f;
+        this.lclaw2.z = this.lclaw1.z;
+        this.lclaw2.x = this.lclaw1.x;
+        this.lclaw2.yRot = this.lclaw1.yRot;
+        this.lclaw3.z = this.lclaw1.z;
+        this.lclaw3.x = this.lclaw1.x;
+        this.lclaw3.yRot = this.lclaw1.yRot;
+        this.lclaw4.z = this.lclaw1.z;
+        this.lclaw4.x = this.lclaw1.x;
+        this.lclaw4.yRot = this.lclaw1.yRot;
+        this.rarm.yRot = newangle - 0.628f;
+        this.rhand.z = this.rarm.z + (float)Math.sin(this.rarm.yRot) * 15.0f;
+        this.rhand.x = this.rarm.x - (float)Math.cos(this.rarm.yRot) * 15.0f;
+        this.rhand.yRot = newangle * 1.25f;
+        this.rclaw1.z = this.rhand.z + (float)Math.sin(this.rhand.yRot) * 10.0f;
+        this.rclaw1.x = this.rhand.x - (float)Math.cos(this.rhand.yRot) * 10.0f;
+        this.rclaw1.yRot = newangle * 1.5f + 0.174f;
+        this.rclaw2.z = this.rclaw1.z;
+        this.rclaw2.x = this.rclaw1.x;
+        this.rclaw2.yRot = this.rclaw1.yRot;
+        this.rclaw3.z = this.rclaw1.z;
+        this.rclaw3.x = this.rclaw1.x;
+        this.rclaw3.yRot = this.rclaw1.yRot;
+        this.rclaw4.z = this.rclaw1.z;
+        this.rclaw4.x = this.rclaw1.x;
+        this.rclaw4.yRot = this.rclaw1.yRot;
         newangle = f1 > 0.1f ? MathHelper.cos((float)(f2 * 1.3f * this.wingspeed)) * 3.1415927f * 0.25f * f1 : 0.0f;
-        this.lleg.rotateAngleY = - newangle + 0.628f;
-        this.lfoot.rotationPointZ = this.lleg.rotationPointZ - (float)Math.sin(this.lleg.rotateAngleY) * 15.0f;
-        this.lfoot.rotationPointX = this.lleg.rotationPointX + (float)Math.cos(this.lleg.rotateAngleY) * 15.0f;
-        this.lfoot.rotateAngleY = (- newangle) * 1.25f;
-        this.ltoe1.rotationPointZ = this.lfoot.rotationPointZ - (float)Math.sin(this.lfoot.rotateAngleY) * 10.0f;
-        this.ltoe1.rotationPointX = this.lfoot.rotationPointX + (float)Math.cos(this.lfoot.rotateAngleY) * 10.0f;
-        this.ltoe1.rotateAngleY = (- newangle) * 1.5f - 0.261f;
-        this.ltoe2.rotationPointZ = this.ltoe1.rotationPointZ;
-        this.ltoe2.rotationPointX = this.ltoe1.rotationPointX;
-        this.ltoe2.rotateAngleY = this.ltoe1.rotateAngleY;
-        this.ltoe3.rotationPointZ = this.ltoe1.rotationPointZ;
-        this.ltoe3.rotationPointX = this.ltoe1.rotationPointX;
-        this.ltoe3.rotateAngleY = this.ltoe1.rotateAngleY;
-        this.ltoe4.rotationPointZ = this.ltoe1.rotationPointZ;
-        this.ltoe4.rotationPointX = this.ltoe1.rotationPointX;
-        this.ltoe4.rotateAngleY = this.ltoe1.rotateAngleY;
-        this.rleg.rotateAngleY = - newangle - 0.628f;
-        this.rfoot.rotationPointZ = this.rleg.rotationPointZ + (float)Math.sin(this.rleg.rotateAngleY) * 15.0f;
-        this.rfoot.rotationPointX = this.rleg.rotationPointX - (float)Math.cos(this.rleg.rotateAngleY) * 15.0f;
-        this.rfoot.rotateAngleY = (- newangle) * 1.25f;
-        this.rtoe1.rotationPointZ = this.rfoot.rotationPointZ + (float)Math.sin(this.rfoot.rotateAngleY) * 10.0f;
-        this.rtoe1.rotationPointX = this.rfoot.rotationPointX - (float)Math.cos(this.rfoot.rotateAngleY) * 10.0f;
-        this.rtoe1.rotateAngleY = (- newangle) * 1.5f + 0.261f;
-        this.rtoe2.rotationPointZ = this.rtoe1.rotationPointZ;
-        this.rtoe2.rotationPointX = this.rtoe1.rotationPointX;
-        this.rtoe2.rotateAngleY = this.rtoe1.rotateAngleY;
-        this.rtoe3.rotationPointZ = this.rtoe1.rotationPointZ;
-        this.rtoe3.rotationPointX = this.rtoe1.rotationPointX;
-        this.rtoe3.rotateAngleY = this.rtoe1.rotateAngleY;
-        this.rtoe4.rotationPointZ = this.rtoe1.rotationPointZ;
-        this.rtoe4.rotationPointX = this.rtoe1.rotationPointX;
-        this.rtoe4.rotateAngleY = this.rtoe1.rotateAngleY;
-        this.nosestar1.rotateAngleZ = newangle = MathHelper.cos((float)(f2 * 0.1f * this.wingspeed)) * 3.1415927f;
-        this.nosestar2.rotateAngleZ = newangle + 0.523f;
-        this.nosestar3.rotateAngleZ = newangle + 1.047f;
-        this.nosestar4.rotateAngleZ = newangle + 1.57f;
-        this.nosestar5.rotateAngleZ = newangle - 1.047f;
-        this.nosestar6.rotateAngleZ = newangle - 0.523f;
-        this.body.render(f5);
-        this.shoulders.render(f5);
-        this.head1.render(f5);
-        this.head2.render(f5);
-        this.head3.render(f5);
-        this.nosestar1.render(f5);
-        this.nosestar2.render(f5);
-        this.nosestar3.render(f5);
-        this.larm.render(f5);
-        this.lhand.render(f5);
-        this.lclaw1.render(f5);
-        this.lclaw2.render(f5);
-        this.lclaw3.render(f5);
-        this.lclaw4.render(f5);
-        this.nosestar4.render(f5);
-        this.nosestar5.render(f5);
-        this.nosestar6.render(f5);
-        this.butt.render(f5);
-        this.tail.render(f5);
-        this.lleg.render(f5);
-        this.lfoot.render(f5);
-        this.ltoe1.render(f5);
-        this.ltoe2.render(f5);
-        this.ltoe3.render(f5);
-        this.ltoe4.render(f5);
-        this.rarm.render(f5);
-        this.rhand.render(f5);
-        this.rclaw1.render(f5);
-        this.rclaw2.render(f5);
-        this.rclaw3.render(f5);
-        this.rclaw4.render(f5);
-        this.rleg.render(f5);
-        this.rfoot.render(f5);
-        this.rtoe1.render(f5);
-        this.rtoe2.render(f5);
-        this.rtoe3.render(f5);
-        this.rtoe4.render(f5);
+        this.lleg.yRot = - newangle + 0.628f;
+        this.lfoot.z = this.lleg.z - (float)Math.sin(this.lleg.yRot) * 15.0f;
+        this.lfoot.x = this.lleg.x + (float)Math.cos(this.lleg.yRot) * 15.0f;
+        this.lfoot.yRot = (- newangle) * 1.25f;
+        this.ltoe1.z = this.lfoot.z - (float)Math.sin(this.lfoot.yRot) * 10.0f;
+        this.ltoe1.x = this.lfoot.x + (float)Math.cos(this.lfoot.yRot) * 10.0f;
+        this.ltoe1.yRot = (- newangle) * 1.5f - 0.261f;
+        this.ltoe2.z = this.ltoe1.z;
+        this.ltoe2.x = this.ltoe1.x;
+        this.ltoe2.yRot = this.ltoe1.yRot;
+        this.ltoe3.z = this.ltoe1.z;
+        this.ltoe3.x = this.ltoe1.x;
+        this.ltoe3.yRot = this.ltoe1.yRot;
+        this.ltoe4.z = this.ltoe1.z;
+        this.ltoe4.x = this.ltoe1.x;
+        this.ltoe4.yRot = this.ltoe1.yRot;
+        this.rleg.yRot = - newangle - 0.628f;
+        this.rfoot.z = this.rleg.z + (float)Math.sin(this.rleg.yRot) * 15.0f;
+        this.rfoot.x = this.rleg.x - (float)Math.cos(this.rleg.yRot) * 15.0f;
+        this.rfoot.yRot = (- newangle) * 1.25f;
+        this.rtoe1.z = this.rfoot.z + (float)Math.sin(this.rfoot.yRot) * 10.0f;
+        this.rtoe1.x = this.rfoot.x - (float)Math.cos(this.rfoot.yRot) * 10.0f;
+        this.rtoe1.yRot = (- newangle) * 1.5f + 0.261f;
+        this.rtoe2.z = this.rtoe1.z;
+        this.rtoe2.x = this.rtoe1.x;
+        this.rtoe2.yRot = this.rtoe1.yRot;
+        this.rtoe3.z = this.rtoe1.z;
+        this.rtoe3.x = this.rtoe1.x;
+        this.rtoe3.yRot = this.rtoe1.yRot;
+        this.rtoe4.z = this.rtoe1.z;
+        this.rtoe4.x = this.rtoe1.x;
+        this.rtoe4.yRot = this.rtoe1.yRot;
+        this.nosestar1.zRot = newangle = MathHelper.cos((float)(f2 * 0.1f * this.wingspeed)) * 3.1415927f;
+        this.nosestar2.zRot = newangle + 0.523f;
+        this.nosestar3.zRot = newangle + 1.047f;
+        this.nosestar4.zRot = newangle + 1.57f;
+        this.nosestar5.zRot = newangle - 1.047f;
+        this.nosestar6.zRot = newangle - 0.523f;
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    }
+
+    @Override
+    public void renderToBuffer(MatrixStack matrixStack, IVertexBuilder buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
+        this.body.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.shoulders.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.head1.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.head2.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.head3.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.nosestar1.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.nosestar2.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.nosestar3.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.larm.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.lhand.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.lclaw1.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.lclaw2.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.lclaw3.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.lclaw4.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.nosestar4.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.nosestar5.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.nosestar6.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.butt.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.tail.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.lleg.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.lfoot.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.ltoe1.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.ltoe2.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.ltoe3.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.ltoe4.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.rarm.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.rhand.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.rclaw1.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.rclaw2.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.rclaw3.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.rclaw4.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.rleg.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.rfoot.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.rtoe1.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.rtoe2.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.rtoe3.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.rtoe4.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
     }
 
     private void setRotation(ModelRenderer model, float x, float y, float z) {
-        model.rotateAngleX = x;
-        model.rotateAngleY = y;
-        model.rotateAngleZ = z;
+        model.xRot = x;
+        model.yRot = y;
+        model.zRot = z;
     }
 
     public void setRotationAngles(float par1, float par2, float par3, float par4, float par5, float par6, Entity par7Entity) {
-        super.setRotationAngles(par1, par2, par3, par4, par5, par6, par7Entity);
+        
     }
 }
 

@@ -1,6 +1,6 @@
-{
+﻿{
   "parent": "item/generated",
   "textures": {
-    "layer0": "chaospersists:items/popcorn_buttered_salted"
+    "layer0": "chaospersists:item/popcorn_buttered_salted"
   }
 }

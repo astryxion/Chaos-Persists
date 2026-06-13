@@ -3,17 +3,17 @@ package com.astryxion.chaospersists.item;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.entity.AntRobot;
 import com.astryxion.chaospersists.entity.SpiderRobot;
-import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.item.ItemGroup;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.item.EntityItem;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.SoundEvents;
+import net.minecraft.entity.MobEntity;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.item.ItemEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.SoundEvents;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.EnumParticleTypes;
+import net.minecraft.util.Hand;
+import net.minecraft.particles.ParticleTypes;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.world.World;
 
@@ -22,14 +22,11 @@ import net.minecraft.world.World;
  */
 public class ItemWrench extends Item {
 
-    public ItemWrench(int i) {
-        this.setCreativeTab(CreativeTabs.TOOLS);
-        this.setMaxDamage(100);
-    }
+    public ItemWrench(int i) { super(new Item.Properties()); }
 
     @Override
-    public boolean onLeftClickEntity(ItemStack stack, EntityPlayer player, Entity entity) {
-        if (entity == null || entity instanceof EntityPlayer) {
+    public boolean onLeftClickEntity(ItemStack stack, PlayerEntity player, Entity entity) {
+        if (entity == null || entity instanceof PlayerEntity) {
             return false;
         }
 
@@ -47,70 +44,70 @@ public class ItemWrench extends Item {
             }
         }
 
-        if (!player.world.isRemote) {
+        if (!player.level.isClientSide) {
             if (ant) {
                 AntRobot e = (AntRobot) entity;
                 if (e.getOwned() == 0) {
                     e.setOwned();
                 }
             }
-            EntityLiving e = (EntityLiving) entity;
+            MobEntity e = (MobEntity) entity;
             float damageTaken = e.getMaxHealth() - e.getHealth();
-            e.setDead();
+            e.remove();
             if (spider) {
-                dropKit(player.world, e, ChaosPersists.SpiderRobotKit, damageTaken);
+                dropKit(player.level, e, ChaosPersists.SpiderRobotKit, damageTaken);
             } else {
-                dropKit(player.world, e, ChaosPersists.AntRobotKit, damageTaken);
+                dropKit(player.level, e, ChaosPersists.AntRobotKit, damageTaken);
             }
-            stack.damageItem(2, player);
+            stack.hurtAndBreak(2, player, (p) -> p.broadcastBreakEvent(net.minecraft.util.Hand.MAIN_HAND));
             clearSlotIfBroken(player, stack);
         }
 
-        playDismantleEffects(player.world, entity);
+        playDismantleEffects(player.level, entity);
         return true;
     }
 
     private static void playDismantleEffects(World world, Entity entity) {
         for (int i = 0; i < 8; ++i) {
-            float f1 = world.rand.nextFloat() * 3.0f - world.rand.nextFloat() * 3.0f;
-            float f2 = 0.25f + world.rand.nextFloat() * 2.0f;
-            float f3 = world.rand.nextFloat() * 3.0f - world.rand.nextFloat() * 3.0f;
-            world.spawnParticle(EnumParticleTypes.SMOKE_NORMAL,
-                    entity.posX + f1, entity.posY + f2, entity.posZ + f3, 0.0, 0.0, 0.0);
-            f1 = world.rand.nextFloat() * 3.0f - world.rand.nextFloat() * 3.0f;
-            f2 = 0.25f + world.rand.nextFloat() * 2.0f;
-            f3 = world.rand.nextFloat() * 3.0f - world.rand.nextFloat() * 3.0f;
-            world.spawnParticle(EnumParticleTypes.EXPLOSION_NORMAL,
-                    entity.posX + f1, entity.posY + f2, entity.posZ + f3, 0.0, 0.0, 0.0);
-            f1 = world.rand.nextFloat() * 3.0f - world.rand.nextFloat() * 3.0f;
-            f2 = 0.25f + world.rand.nextFloat() * 2.0f;
-            f3 = world.rand.nextFloat() * 3.0f - world.rand.nextFloat() * 3.0f;
-            world.spawnParticle(EnumParticleTypes.REDSTONE,
-                    entity.posX + f1, entity.posY + f2, entity.posZ + f3, 0.0, 0.0, 0.0);
+            float f1 = world.random.nextFloat() * 3.0f - world.random.nextFloat() * 3.0f;
+            float f2 = 0.25f + world.random.nextFloat() * 2.0f;
+            float f3 = world.random.nextFloat() * 3.0f - world.random.nextFloat() * 3.0f;
+            world.addParticle(ParticleTypes.SMOKE,
+                    entity.getX() + f1, entity.getY() + f2, entity.getZ() + f3, 0.0, 0.0, 0.0);
+            f1 = world.random.nextFloat() * 3.0f - world.random.nextFloat() * 3.0f;
+            f2 = 0.25f + world.random.nextFloat() * 2.0f;
+            f3 = world.random.nextFloat() * 3.0f - world.random.nextFloat() * 3.0f;
+            world.addParticle(ParticleTypes.EXPLOSION,
+                    entity.getX() + f1, entity.getY() + f2, entity.getZ() + f3, 0.0, 0.0, 0.0);
+            f1 = world.random.nextFloat() * 3.0f - world.random.nextFloat() * 3.0f;
+            f2 = 0.25f + world.random.nextFloat() * 2.0f;
+            f3 = world.random.nextFloat() * 3.0f - world.random.nextFloat() * 3.0f;
+            world.addParticle(new net.minecraft.particles.RedstoneParticleData(1.0F, 0.0F, 0.0F, 1.0F),
+                    entity.getX() + f1, entity.getY() + f2, entity.getZ() + f3, 0.0, 0.0, 0.0);
         }
-        world.playSound(null, entity.posX, entity.posY, entity.posZ,
-                SoundEvents.ENTITY_GENERIC_EXPLODE, SoundCategory.PLAYERS, 0.5f, 1.5f);
+        world.playSound(null, entity.getX(), entity.getY(), entity.getZ(),
+                SoundEvents.GENERIC_EXPLODE, SoundCategory.PLAYERS, 0.5f, 1.5f);
     }
 
-    private static void dropKit(World world, EntityLiving e, Item kit, float damageMeta) {
-        if (world.isRemote) {
+    private static void dropKit(World world, MobEntity e, Item kit, float damageMeta) {
+        if (world.isClientSide) {
             return;
         }
-        ItemStack drop = new ItemStack(kit, 1, 0);
-        drop.setItemDamage((int) damageMeta);
-        world.spawnEntity(new EntityItem(world, e.posX, e.posY + 1.0, e.posZ, drop));
+        ItemStack drop = new ItemStack(kit, 1);
+        drop.setDamageValue((int) damageMeta);
+        world.addFreshEntity(new ItemEntity(world, e.getX(), e.getY() + 1.0, e.getZ(), drop));
     }
 
-    private static void clearSlotIfBroken(EntityPlayer player, ItemStack stack) {
+    private static void clearSlotIfBroken(PlayerEntity player, ItemStack stack) {
         if (stack.getCount() > 0) {
             return;
         }
-        if (player.getHeldItemMainhand() == stack) {
-            player.setHeldItem(EnumHand.MAIN_HAND, ItemStack.EMPTY);
-        } else if (player.getHeldItemOffhand() == stack) {
-            player.setHeldItem(EnumHand.OFF_HAND, ItemStack.EMPTY);
+        if (player.getMainHandItem() == stack) {
+            player.setItemInHand(Hand.MAIN_HAND, ItemStack.EMPTY);
+        } else if (player.getOffhandItem() == stack) {
+            player.setItemInHand(Hand.OFF_HAND, ItemStack.EMPTY);
         } else {
-            player.inventory.setInventorySlotContents(player.inventory.currentItem, ItemStack.EMPTY);
+            player.inventory.setItem(player.inventory.selected, ItemStack.EMPTY);
         }
     }
 }

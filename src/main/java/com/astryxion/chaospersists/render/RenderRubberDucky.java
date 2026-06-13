@@ -5,64 +5,47 @@
  *  com.astryxion.chaospersists.ModelRubberDucky
  *  com.astryxion.chaospersists.RenderRubberDucky
  *  com.astryxion.chaospersists.RubberDucky
- *  net.minecraft.client.model.ModelBase
+ *  net.minecraft.client.renderer.entity.model.Model
  *  net.minecraft.client.renderer.entity.RenderLiving
  *  net.minecraft.entity.Entity
- *  net.minecraft.entity.EntityLiving
- *  net.minecraft.entity.EntityLivingBase
+ *  net.minecraft.entity.LivingEntity
+ *  net.minecraft.entity.LivingEntity
  *  net.minecraft.util.ResourceLocation
  *  org.lwjgl.opengl.GL11
  */
 package com.astryxion.chaospersists.render;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
+import net.minecraft.client.renderer.entity.LivingRenderer;
+import net.minecraft.client.renderer.entity.EntityRendererManager;
 import com.astryxion.chaospersists.model.ModelRubberDucky;
 import com.astryxion.chaospersists.entity.RubberDucky;
-import net.minecraft.client.model.ModelBase;
-import net.minecraft.client.renderer.entity.RenderLiving;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.ResourceLocation;
-import org.lwjgl.opengl.GL11;
 
 public class RenderRubberDucky
-extends RenderLiving {
+extends LivingRenderer<RubberDucky, ModelRubberDucky> {
     protected ModelRubberDucky model;
     private float scale = 1.0f;
     private static final ResourceLocation texture = new ResourceLocation("chaospersists", "textures/entity/rubberduckytexture.png");
     private static final ResourceLocation texture2 = new ResourceLocation("chaospersists", "textures/entity/evilrubberduckytexture.png");
 
-    public RenderRubberDucky(net.minecraft.client.renderer.entity.RenderManager manager, ModelRubberDucky par1ModelBase, float par2, float par3) {
-        super(manager, (ModelBase)par1ModelBase, par2 * par3);
-        this.model = (ModelRubberDucky)this.mainModel;
+    public RenderRubberDucky(EntityRendererManager manager, ModelRubberDucky par1Model, float par2, float par3) {
+        super(manager, par1Model, par2 * par3);
+        this.model = this.getModel();
         this.scale = par3;
     }
-
-    public void renderRubberDucky(RubberDucky par1EntityRubberDucky, double par2, double par4, double par6, float par8, float par9) {
-        super.doRender((EntityLiving)par1EntityRubberDucky, par2, par4, par6, par8, par9);
-    }
-
-    public void doRender(EntityLiving par1EntityLiving, double par2, double par4, double par6, float par8, float par9) {
-        this.renderRubberDucky((RubberDucky)par1EntityLiving, par2, par4, par6, par8, par9);
-    }
-
-    public void doRender(Entity par1Entity, double par2, double par4, double par6, float par8, float par9) {
-        this.renderRubberDucky((RubberDucky)par1Entity, par2, par4, par6, par8, par9);
-    }
-
-    protected void preRenderScale(RubberDucky par1Entity, float par2) {
-        if (par1Entity != null && par1Entity.isChild()) {
-            GL11.glScalef((float)(this.scale / 2.0f), (float)(this.scale / 2.0f), (float)(this.scale / 2.0f));
-            return;
+@Override
+    protected void scale(RubberDucky entity, MatrixStack matrixStack, float partialTick) {
+        float s = this.scale;
+        if (entity != null && entity.isBaby()) {
+            s = this.scale / 2.0f;
         }
-        GL11.glScalef((float)this.scale, (float)this.scale, (float)this.scale);
+        matrixStack.scale(s, s, s);
     }
 
-    protected void preRenderCallback(EntityLivingBase par1EntityLiving, float par2) {
-        this.preRenderScale((RubberDucky)par1EntityLiving, par2);
-    }
 
-    protected ResourceLocation getEntityTexture(Entity entity) {
+    @Override
+    public ResourceLocation getTextureLocation(RubberDucky entity) {
         RubberDucky d;
         if (entity instanceof RubberDucky && (d = (RubberDucky)entity).getKillCount() >= 5) {
             return texture2;

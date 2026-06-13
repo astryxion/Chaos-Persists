@@ -1,6 +1,3 @@
-{
-  "parent": "item/generated",
-  "textures": {
-    "layer0": "chaospersists:items/quinoa_2"
-  }
+﻿{
+  "parent": "chaospersists:block/quinoa_2"
 }

@@ -1,5 +1,5 @@
 /*
- * 1.12.2: throwable items use {@code onItemRightClick(World, EntityPlayer, EnumHand)} and must call
+ * 1.12.2: throwable items use {@code use(World, PlayerEntity, Hand)} and must call
  * {@link net.minecraft.entity.projectile.EntityThrowable#shoot} after construction (same as snowballs / eggs).
  */
 package com.astryxion.chaospersists.item;
@@ -7,18 +7,20 @@ package com.astryxion.chaospersists.item;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.entity.EntityThrownRock;
 import com.astryxion.chaospersists.entity.RockBase;
-import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.item.ItemGroup;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityList;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.SoundEvents;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.entity.MobEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.SoundEvents;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemUseContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ActionResult;
-import net.minecraft.util.EnumActionResult;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.util.ActionResultType;
+import net.minecraft.util.Direction;
+import net.minecraft.util.Hand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
@@ -26,10 +28,7 @@ import net.minecraft.world.World;
 
 public class ItemRock extends Item {
 
-    public ItemRock(int i) {
-        this.maxStackSize = 64;
-        this.setCreativeTab(CreativeTabs.COMBAT);
-    }
+    public ItemRock(int i) { super(new Item.Properties()); }
 
     private int rockTypeForStack(ItemStack stack) {
         Item it = stack.getItem();
@@ -80,35 +79,43 @@ public class ItemRock extends Item {
     }
 
     @Override
-    public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, EnumHand hand) {
-        ItemStack stack = player.getHeldItem(hand);
+    public ActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
+        ItemStack stack = player.getItemInHand(hand);
         int type = rockTypeForStack(stack);
         if (type == 0) {
-            return new ActionResult<>(EnumActionResult.PASS, stack);
+            return ActionResult.pass(stack);
         }
 
-        if (!player.capabilities.isCreativeMode) {
+        if (!player.isCreative()) {
             stack.shrink(1);
         }
 
-        world.playSound(null, player.posX, player.posY, player.posZ,
-                SoundEvents.ENTITY_SNOWBALL_THROW,
+        world.playSound(null, player.getX(), player.getY(), player.getZ(),
+                SoundEvents.SNOWBALL_THROW,
                 SoundCategory.NEUTRAL,
                 0.5F,
-                0.4F / (itemRand.nextFloat() * 0.4F + 0.8F));
+                0.4F / (world.random.nextFloat() * 0.4F + 0.8F));
 
-        if (!world.isRemote) {
+        if (!world.isClientSide) {
             EntityThrownRock rock = new EntityThrownRock(world, player, type);
-            rock.shoot(player, player.rotationPitch, player.rotationYaw, 0.0F, 1.5F, 1.0F);
-            world.spawnEntity(rock);
+            rock.shootFromRotation(player, player.xRot, player.yRot, 0.0F, 1.5F, 1.0F);
+            world.addFreshEntity(rock);
         }
 
-        return new ActionResult<>(EnumActionResult.SUCCESS, stack);
+        return ActionResult.success(stack);
     }
 
     @Override
-    public EnumActionResult onItemUse(EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
-        ItemStack stack = player.getHeldItem(hand);
+    public ActionResultType useOn(ItemUseContext context) {
+        PlayerEntity player = context.getPlayer();
+        if (player == null) {
+            return ActionResultType.FAIL;
+        }
+        World world = context.getLevel();
+        BlockPos pos = context.getClickedPos();
+        Hand hand = context.getHand();
+        Direction facing = context.getClickedFace();
+        ItemStack stack = player.getItemInHand(hand);
         int x = pos.getX();
         int z = pos.getZ();
         if (x < 0) {
@@ -118,23 +125,24 @@ public class ItemRock extends Item {
             ++z;
         }
 
-        if (!world.isRemote) {
+        if (!world.isClientSide) {
             Entity e = spawnPlacedRock(world, (double) x, (double) pos.getY() + 1.01, (double) z);
             if (e instanceof RockBase) {
                 applyRockTypeToMob((RockBase) e, stack);
             }
         }
 
-        if (!player.capabilities.isCreativeMode) {
+        if (!player.isCreative()) {
             stack.shrink(1);
         }
 
-        return EnumActionResult.SUCCESS;
+        return ActionResultType.SUCCESS;
     }
 
     /** Same centering as 1.7.10 {@code spawnCreature}; registry id {@code chaospersists:rock}. */
     private Entity spawnPlacedRock(World world, double par2, double par4, double par6) {
-        Entity entity = EntityList.createEntityByIDFromName(new ResourceLocation("chaospersists", "rock"), world);
+        net.minecraft.entity.EntityType<?> spawnType = net.minecraftforge.registries.ForgeRegistries.ENTITIES.getValue(new ResourceLocation("chaospersists", "rock"));
+        Entity entity = spawnType != null ? spawnType.create(world) : null;
         if (entity == null) {
             return null;
         }
@@ -150,10 +158,10 @@ public class ItemRock extends Item {
         if (par6 < 0.0) {
             par6 -= 0.5;
         }
-        entity.setLocationAndAngles(par2, par4 + 0.01, par6, world.rand.nextFloat() * 360.0F, 0.0F);
-        world.spawnEntity(entity);
-        if (entity instanceof EntityLiving) {
-            ((EntityLiving) entity).playLivingSound();
+        entity.moveTo(par2, par4 + 0.01, par6, world.random.nextFloat() * 360.0F, 0.0F);
+        world.addFreshEntity(entity);
+        if (entity instanceof MobEntity) {
+            com.astryxion.chaospersists.entity.RockBase.playSpawnAmbientSound((LivingEntity) entity);
         }
         return entity;
     }

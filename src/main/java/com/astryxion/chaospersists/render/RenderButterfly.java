@@ -7,42 +7,44 @@
  *  com.astryxion.chaospersists.ModelButterfly
  *  com.astryxion.chaospersists.Mothra
  *  com.astryxion.chaospersists.RenderButterfly
- *  net.minecraft.client.model.ModelBase
+ *  net.minecraft.client.renderer.entity.model.Model
  *  net.minecraft.client.renderer.entity.RenderLiving
  *  net.minecraft.entity.Entity
- *  net.minecraft.entity.EntityLiving
- *  net.minecraft.entity.EntityLivingBase
+ *  net.minecraft.entity.LivingEntity
+ *  net.minecraft.entity.LivingEntity
  *  net.minecraft.util.ResourceLocation
  *  org.lwjgl.opengl.GL11
  */
 package com.astryxion.chaospersists.render;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.renderer.IRenderTypeBuffer;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.entity.LivingRenderer;
+import net.minecraft.client.renderer.entity.EntityRendererManager;
 import com.astryxion.chaospersists.entity.EntityButterfly;
 import com.astryxion.chaospersists.entity.EntityLunaMoth;
 import com.astryxion.chaospersists.model.ModelButterfly;
 import com.astryxion.chaospersists.entity.Mothra;
-import net.minecraft.client.model.ModelBase;
-import net.minecraft.client.renderer.entity.RenderLiving;
 import net.minecraft.client.renderer.entity.layers.LayerRenderer;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl.opengl.GL11;
 
 public class RenderButterfly
-extends RenderLiving {
+extends LivingRenderer<EntityButterfly, ModelButterfly> {
     protected ModelButterfly model;
     private float scale = 1.0f;
     private static final ResourceLocation texture = new ResourceLocation("textures/entity/creeper/creeper_armor.png");
 
-    public RenderButterfly(net.minecraft.client.renderer.entity.RenderManager manager, ModelButterfly par1ModelBase, float par2, float par3) {
-        super(manager, (ModelBase)par1ModelBase, par2 * par3);
-        this.model = (ModelButterfly)this.mainModel;
+    public RenderButterfly(EntityRendererManager manager, ModelButterfly par1Model, float par2, float par3) {
+        super(manager, par1Model, par2 * par3);
+        this.model = this.getModel();
         this.scale = par3;
-        this.addLayer(new LayerRenderer<EntityLivingBase>() {
+        this.addLayer(new LayerRenderer<EntityButterfly, ModelButterfly>(this) {
             @Override
-            public void doRenderLayer(EntityLivingBase entity, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch, float scale) {
+            public void render(MatrixStack matrixStack, IRenderTypeBuffer buffer, int packedLight, EntityButterfly entity, float animationPosition, float animationSpeedOld, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch) {
                 boolean doit = false;
                 if (entity instanceof Mothra) {
                     doit = true;
@@ -50,54 +52,42 @@ extends RenderLiving {
                     doit = true;
                 }
                 if (doit) {
-                    RenderButterfly.this.bindTexture(RenderButterfly.texture);
-                    GL11.glMatrixMode(GL11.GL_TEXTURE);
-                    GL11.glLoadIdentity();
-                    float var5 = (entity.ticksExisted + partialTicks) * 0.01f;
-                    GL11.glTranslatef(var5, var5, 0.0f);
-                    GL11.glMatrixMode(GL11.GL_MODELVIEW);
-                    GL11.glEnable(GL11.GL_BLEND);
-                    GL11.glColor4f(0.5f, 0.5f, 0.5f, 1.0f);
-                    GL11.glDisable(GL11.GL_LIGHTING);
-                    GL11.glBlendFunc(GL11.GL_ONE, GL11.GL_ONE);
-                    RenderButterfly.this.getMainModel().render(entity, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scale);
-                    GL11.glMatrixMode(GL11.GL_TEXTURE);
-                    GL11.glLoadIdentity();
-                    GL11.glMatrixMode(GL11.GL_MODELVIEW);
-                    GL11.glEnable(GL11.GL_LIGHTING);
-                    GL11.glDisable(GL11.GL_BLEND);
+                    RenderButterfly.this.entityRenderDispatcher.textureManager.bind(texture);
+                    RenderSystem.enableBlend();
+                    RenderSystem.depthMask(false);
+                    RenderSystem.depthFunc(GL11.GL_EQUAL);
+                    com.mojang.blaze3d.platform.GlStateManager._disableLighting();
+                    RenderSystem.blendFunc(GL11.GL_ONE, GL11.GL_ONE);
+                    RenderSystem.color4f(0.5f, 0.5f, 0.5f, 1.0f);
+                    matrixStack.pushPose();
+                    float scroll = (entity.tickCount + partialTicks) * 0.01f;
+                    matrixStack.translate(scroll, scroll, 0.0f);
+                    RenderButterfly.this.getModel().renderToBuffer(matrixStack, buffer.getBuffer(RenderType.entityCutoutNoCull(texture)), packedLight, OverlayTexture.NO_OVERLAY, 0.5f, 0.5f, 0.5f, 1.0f);
+                    matrixStack.popPose();
+                    RenderSystem.color4f(1.0f, 1.0f, 1.0f, 1.0f);
+                    RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+                    com.mojang.blaze3d.platform.GlStateManager._enableLighting();
+                    RenderSystem.depthMask(true);
+                    RenderSystem.depthFunc(GL11.GL_LEQUAL);
+                    RenderSystem.disableBlend();
                 }
-            }
-            @Override
-            public boolean shouldCombineTextures() {
-                return false;
             }
         });
     }
 
-    public void renderButterfly(EntityButterfly par1EntityButterfly, double par2, double par4, double par6, float par8, float par9) {
-        super.doRender((EntityLiving)par1EntityButterfly, par2, par4, par6, par8, par9);
+    protected void applyScale(MatrixStack matrixStack) {
+        float s = this.scale;
+        matrixStack.scale(s, s, s);
     }
 
-    public void doRender(EntityLiving par1EntityLiving, double par2, double par4, double par6, float par8, float par9) {
-        this.renderButterfly((EntityButterfly)par1EntityLiving, par2, par4, par6, par8, par9);
+    @Override
+    protected void scale(EntityButterfly entity, MatrixStack matrixStack, float partialTick) {
+        this.applyScale(matrixStack);
     }
 
-    public void doRender(Entity par1Entity, double par2, double par4, double par6, float par8, float par9) {
-        this.renderButterfly((EntityButterfly)par1Entity, par2, par4, par6, par8, par9);
-    }
-
-    protected void preRenderScale(EntityButterfly par1Entity, float par2) {
-        GL11.glScalef((float)this.scale, (float)this.scale, (float)this.scale);
-    }
-
-    protected void preRenderCallback(EntityLivingBase par1EntityLiving, float par2) {
-        this.preRenderScale((EntityButterfly)par1EntityLiving, par2);
-    }
-
-    protected ResourceLocation getEntityTexture(Entity entity) {
+    @Override
+    public ResourceLocation getTextureLocation(EntityButterfly entity) {
         EntityButterfly a = (EntityButterfly)entity;
         return a.getTexture(a);
     }
 }
-

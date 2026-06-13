@@ -5,6 +5,8 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.WeightedRandom;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -29,32 +31,27 @@ public class WeightedRandomChestContent extends WeightedRandom.Item {
     public WeightedRandomChestContent(ItemStack stack, int minChance, int maxChance, int weight) {
         super(weight);
         this.item = stack.getItem();
-        this.metadata = stack.getMetadata();
+        this.metadata = 0;
         this.minStackSize = minChance;
         this.maxStackSize = maxChance;
     }
 
     public static void generateChestContents(Random random, WeightedRandomChestContent[] content, IInventory inv, int max) {
-        for (int i = 0; i < max; i++) {
-            WeightedRandomChestContent entry = (WeightedRandomChestContent) WeightedRandom.getRandomItem(random, java.util.Arrays.asList(content));
-            if (entry == null) continue;
-            int count = entry.minStackSize + (entry.maxStackSize > entry.minStackSize ? random.nextInt(entry.maxStackSize - entry.minStackSize + 1) : 0);
-            int limit = entry.item.getItemStackLimit(new ItemStack(entry.item, 1, entry.metadata));
-            ItemStack stack = new ItemStack(entry.item, Math.min(count, limit), entry.metadata);
-            int slot = random.nextInt(inv.getSizeInventory());
-            inv.setInventorySlotContents(slot, stack);
-        }
+        generateChestContents(random, Arrays.asList(content), inv, max);
     }
 
-    public static void generateChestContents(Random random, java.util.List<WeightedRandomChestContent> content, IInventory inv, int max) {
+    public static void generateChestContents(Random random, List<WeightedRandomChestContent> content, IInventory inv, int max) {
         for (int i = 0; i < max; i++) {
             WeightedRandomChestContent entry = (WeightedRandomChestContent) WeightedRandom.getRandomItem(random, content);
-            if (entry == null) continue;
-            int count = entry.minStackSize + (entry.maxStackSize > entry.minStackSize ? random.nextInt(entry.maxStackSize - entry.minStackSize + 1) : 0);
-            int limit = entry.item.getItemStackLimit(new ItemStack(entry.item, 1, entry.metadata));
-            ItemStack stack = new ItemStack(entry.item, Math.min(count, limit), entry.metadata);
-            int slot = random.nextInt(inv.getSizeInventory());
-            inv.setInventorySlotContents(slot, stack);
+            if (entry == null) {
+                continue;
+            }
+            int count = entry.minStackSize
+                    + (entry.maxStackSize > entry.minStackSize ? random.nextInt(entry.maxStackSize - entry.minStackSize + 1) : 0);
+            int limit = entry.item.getMaxStackSize();
+            ItemStack stack = new ItemStack(entry.item, Math.min(count, limit));
+            int slot = random.nextInt(inv.getContainerSize());
+            inv.setItem(slot, stack);
         }
     }
 }

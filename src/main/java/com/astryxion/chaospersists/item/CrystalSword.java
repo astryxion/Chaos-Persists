@@ -1,39 +1,25 @@
-/*
- * Decompiled with CFR 0_125.
- * 
- * Could not load the following classes:
- *  net.minecraftforge.fml.relauncher.Side
- *  net.minecraftforge.fml.relauncher.SideOnly
- *  com.astryxion.chaospersists.CrystalSword
- *  net.minecraft.client.renderer.texture.IIconRegister
- *  net.minecraft.creativetab.CreativeTabs
- *  net.minecraft.item.Item
- *  net.minecraft.item.Item$ToolMaterial
- *  net.minecraft.item.ItemStack
- *  net.minecraft.item.ItemSword
- *  net.minecraft.util.IIcon
- */
 package com.astryxion.chaospersists.item;
 
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
-import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.item.ItemGroup;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemSword;
+import net.minecraft.item.SwordItem;
+import net.minecraft.item.IItemTier;
 
-public class CrystalSword
-extends ItemSword {
-    private final Item.ToolMaterial toolMaterial;
+public class CrystalSword extends SwordItem {
+    private final IItemTier toolMaterial;
 
-    public CrystalSword(Item.ToolMaterial par2EnumToolMaterial) {
-        super(par2EnumToolMaterial);
-        this.toolMaterial = par2EnumToolMaterial;
-        this.maxStackSize = 1;
-        this.setCreativeTab(CreativeTabs.COMBAT);
+    public CrystalSword(IItemTier tier) {
+        this(tier, new Item.Properties().stacksTo(1));
     }
 
-    public int getMaxItemUseDuration(ItemStack par1ItemStack) {
-        return 300;
-    }}
+    public CrystalSword(IItemTier tier, Item.Properties properties) {
+        super(tier, 3, -2.4F, properties);
+        this.toolMaterial = tier;
+    }
 
+    @Override
+    public int getUseDuration(ItemStack stack) {
+        return 300;
+    }
+}

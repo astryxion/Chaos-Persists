@@ -1,122 +1,101 @@
 package com.astryxion.chaospersists.block;
 
+import com.astryxion.chaospersists.core.ChaosPersists;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.common.IForgeShearable;
+import net.minecraftforge.common.IPlantable;
+import net.minecraftforge.common.PlantType;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
-import com.astryxion.chaospersists.core.ChaosPersists;
-
+import net.minecraft.entity.item.ExperienceBottleEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockLeaves;
+import net.minecraft.block.LeavesBlock;
 import net.minecraft.block.SoundType;
-import net.minecraft.block.state.BlockStateContainer;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.item.EntityExpBottle;
-import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.AbstractBlock;
+import net.minecraft.block.Blocks;
+import net.minecraft.item.Items;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.BlockRenderLayer;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumParticleTypes;
-import net.minecraft.util.NonNullList;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.particles.ParticleTypes;
+import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockAccess;
+import net.minecraft.world.IBlockReader;
+import net.minecraft.world.IWorldReader;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraft.world.server.ServerWorld;
 
-public class BlockExperienceLeaves extends BlockLeaves {
+public class BlockExperienceLeaves extends LeavesBlock implements IForgeShearable, IPlantable {
 
     public BlockExperienceLeaves() {
-        this.setSoundType(SoundType.PLANT);
-        this.setTickRandomly(true);
-        this.setCreativeTab(CreativeTabs.DECORATIONS);
-        this.setDefaultState(
-                this.blockState.getBaseState()
-                        .withProperty(DECAYABLE, true)
-                        .withProperty(CHECK_DECAY, true)
-        );
+        super(AbstractBlock.Properties.copy(Blocks.OAK_LEAVES)
+                .randomTicks()
+                .strength(0.2F)
+                .sound(SoundType.GRASS)
+                .noOcclusion());
+        this.registerDefaultState(this.stateDefinition.any()
+                .setValue(PERSISTENT, false)
+                .setValue(DISTANCE, 7));
     }
 
     @Override
-    protected BlockStateContainer createBlockState() {
-        return new BlockStateContainer(this, DECAYABLE, CHECK_DECAY);
+    public boolean isShearable(ItemStack item, World world, BlockPos pos) {
+        return true;
     }
 
     @Override
-    public IBlockState getStateFromMeta(int meta) {
-        return this.getDefaultState()
-                .withProperty(DECAYABLE, (meta & 8) != 0)
-                .withProperty(CHECK_DECAY, (meta & 4) != 0);
-    }
-
-    @Override
-    public int getMetaFromState(IBlockState state) {
-        int i = 0;
-        if (state.getValue(CHECK_DECAY)) i |= 4;
-        if (state.getValue(DECAYABLE)) i |= 8;
-        return i;
-    }
-
-    @Override
-    public net.minecraft.block.BlockPlanks.EnumType getWoodType(int meta) {
-        return net.minecraft.block.BlockPlanks.EnumType.OAK;
-    }
-
-    @Override
-    public void getSubBlocks(CreativeTabs tab, NonNullList<ItemStack> items) {
-        items.add(new ItemStack(this));
-    }
-
-    @Override
-    public List<ItemStack> onSheared(ItemStack item, IBlockAccess world, BlockPos pos, int fortune) {
+    public List<ItemStack> onSheared(PlayerEntity player, ItemStack item, World world, BlockPos pos, int fortune) {
         return Collections.singletonList(new ItemStack(this));
     }
 
     @Override
-    public int quantityDropped(Random random) {
+    public int getExpDrop(BlockState state, IWorldReader world, BlockPos pos, int fortune, int silktouch) {
         return 1;
     }
 
     @Override
-    public void updateTick(World world, BlockPos pos, IBlockState state, Random rand) {
-        int par2 = pos.getX(), par3 = pos.getY(), par4 = pos.getZ();
+    public void randomTick(BlockState state, ServerWorld world, BlockPos pos, Random rand) {
+        int par2 = pos.getX();
+        int par3 = pos.getY();
+        int par4 = pos.getZ();
         int var7 = 2;
-        if (!world.isRemote && world.isAreaLoaded(pos.add(-var7, -var7, -var7), pos.add(var7, var7, var7))) {
+        if (world.hasChunksAt(pos.offset(-var7, -var7, -var7), pos.offset(var7, var7, var7))) {
             for (int var12 = -var7; var12 <= var7; ++var12) {
                 for (int var13 = -var7; var13 <= 0; ++var13) {
                     for (int var14 = -var7; var14 <= var7; ++var14) {
-                        Block bid;
                         BlockPos off = new BlockPos(par2 + var12, par3 + var13, par4 + var14);
                         int totaldist = Math.abs(var12) + Math.abs(var13) + Math.abs(var14);
+                        BlockState offState = world.getBlockState(off);
+                        Block bid = offState.getBlock();
                         if (totaldist > 3
-                                || (bid = world.getBlockState(off).getBlock()) == null
-                                || !bid.canSustainLeaves(world.getBlockState(off), world, off)) {
+                                || bid == Blocks.AIR
+                                || !offState.canSustainPlant(world, off, net.minecraft.util.Direction.UP, this)) {
                             continue;
                         }
-                        long t = world.getWorldTime();
-                        if ((t %= 24000L) < 14000L || t > 22000L) {
+                        long t = world.getDayTime();
+                        if ((t % 24000L) < 14000L || t > 22000L) {
                             return;
                         }
-                        if (world.rand.nextInt(65) == 1
+                        if (world.random.nextInt(65) == 1
                                 && world.getBlockState(new BlockPos(par2, par3 + 1, par4)).getBlock() == Blocks.AIR) {
-                            BlockPos dropPos = new BlockPos(par2, par3 + 2, par4);
-                            Block.spawnAsEntity(world, dropPos, new ItemStack(Items.EXPERIENCE_BOTTLE));
+                            Block.popResource(world, new BlockPos(par2, par3 + 2, par4), new ItemStack(Items.EXPERIENCE_BOTTLE));
                         }
-                        if (world.rand.nextInt(75) == 1
+                        if (world.random.nextInt(75) == 1
                                 && world.getBlockState(new BlockPos(par2, par3 - 1, par4)).getBlock() == Blocks.AIR) {
-                            EntityExpBottle entity = new EntityExpBottle(world, (double) par2, (double) (par3 - 1), (double) par4);
-                            entity.setLocationAndAngles((double) par2, (double) (par3 - 1), (double) par4, 0.0f, 0.0f);
+                            ExperienceBottleEntity entity = new ExperienceBottleEntity(world, par2, par3 - 1, par4);
+                            entity.setPos(par2, par3 - 1, par4);
                             entity.shoot(
-                                    (double) ((world.rand.nextFloat() - world.rand.nextFloat()) / 2.0f),
+                                    (double) ((world.random.nextFloat() - world.random.nextFloat()) / 2.0f),
                                     -0.10000000149011612,
-                                    (double) ((world.rand.nextFloat() - world.rand.nextFloat()) / 2.0f),
+                                    (double) ((world.random.nextFloat() - world.random.nextFloat()) / 2.0f),
                                     0.4f,
                                     5.0f
                             );
-                            world.spawnEntity(entity);
+                            world.addFreshEntity(entity);
                         }
                         return;
                     }
@@ -126,12 +105,11 @@ public class BlockExperienceLeaves extends BlockLeaves {
         }
     }
 
+    @OnlyIn(Dist.CLIENT)
     @Override
-    @SideOnly(Side.CLIENT)
-    public void randomDisplayTick(IBlockState stateIn, World worldIn, BlockPos pos, Random rand) {
-        int par2 = pos.getX(), par3 = pos.getY(), par4 = pos.getZ();
-        long t = worldIn.getWorldTime();
-        if ((t %= 24000L) < 13000L || t > 23000L) {
+    public void animateTick(BlockState state, World world, BlockPos pos, Random rand) {
+        long t = world.getDayTime();
+        if ((t % 24000L) < 13000L || t > 23000L) {
             return;
         }
         int rate = 0;
@@ -141,56 +119,62 @@ public class BlockExperienceLeaves extends BlockLeaves {
         if (t > 22000L) {
             rate = (int) (t - 22000L) / 2;
         }
-        if (worldIn.rand.nextInt(200 + rate) == 1
-                && worldIn.getBlockState(new BlockPos(par2, par3 + 1, par4)).getBlock() == Blocks.AIR) {
+        if (world.random.nextInt(200 + rate) == 1
+                && world.getBlockState(pos.above()).getBlock() == Blocks.AIR) {
             for (int i = 0; i < 10; ++i) {
-                worldIn.spawnParticle(
-                        EnumParticleTypes.FIREWORKS_SPARK,
-                        (double) par2,
-                        (double) par3 + 1.25,
-                        (double) par4,
-                        worldIn.rand.nextGaussian(),
-                        Math.abs(worldIn.rand.nextGaussian()),
-                        worldIn.rand.nextGaussian()
-                );
+                world.addParticle(ParticleTypes.FIREWORK,
+                        (double) pos.getX(),
+                        (double) pos.getY() + 1.25,
+                        (double) pos.getZ(),
+                        world.random.nextGaussian(),
+                        Math.abs(world.random.nextGaussian()),
+                        world.random.nextGaussian());
             }
         }
-        if (worldIn.rand.nextInt(40 + rate) == 1
-                && worldIn.getBlockState(new BlockPos(par2, par3 - 1, par4)).getBlock() == Blocks.AIR) {
+        if (world.random.nextInt(40 + rate) == 1
+                && world.getBlockState(pos.below()).getBlock() == Blocks.AIR) {
             for (int i = 0; i < 4; ++i) {
-                worldIn.spawnParticle(
-                        EnumParticleTypes.FIREWORKS_SPARK,
-                        (double) par2,
-                        (double) par3 - 1.25,
-                        (double) par4,
-                        (double) (worldIn.rand.nextFloat() - worldIn.rand.nextFloat()),
-                        (double) (-Math.abs(worldIn.rand.nextFloat())),
-                        (double) (worldIn.rand.nextFloat() - worldIn.rand.nextFloat())
-                );
+                world.addParticle(ParticleTypes.FIREWORK,
+                        (double) pos.getX(),
+                        (double) pos.getY() - 1.25,
+                        (double) pos.getZ(),
+                        (double) (world.random.nextFloat() - world.random.nextFloat()),
+                        (double) (-Math.abs(world.random.nextFloat())),
+                        (double) (world.random.nextFloat() - world.random.nextFloat()));
             }
         }
     }
 
-    private void removeLeaves(World world, int par2, int par3, int par4) {
+    private void removeLeaves(ServerWorld world, int par2, int par3, int par4) {
         BlockPos pos = new BlockPos(par2, par3, par4);
-        this.dropBlockAsItem(world, pos, world.getBlockState(pos), 0);
-        world.setBlockState(pos, Blocks.AIR.getDefaultState(), 2);
+        BlockState st = world.getBlockState(pos);
+        Block.dropResources(st, world, pos);
+        world.setBlock(pos, Blocks.AIR.defaultBlockState(), 2);
     }
 
     @Override
-    public boolean isOpaqueCube(IBlockState state) {
+    public boolean propagatesSkylightDown(BlockState state, IBlockReader reader, BlockPos pos) {
         return ChaosPersists.FastGraphicsLeaves != 0;
     }
 
+    @OnlyIn(Dist.CLIENT)
     @Override
-    public boolean shouldSideBeRendered(IBlockState state, IBlockAccess world, BlockPos pos, EnumFacing side) {
-        Block block = world.getBlockState(pos.offset(side)).getBlock();
-        return ChaosPersists.FastGraphicsLeaves == 0 || block != this;
+    public boolean skipRendering(BlockState state, BlockState adjacentState, Direction side) {
+        return ChaosPersists.FastGraphicsLeaves == 0 || adjacentState.getBlock() != this;
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
+    public RenderType getRenderType(BlockState state) {
+        return RenderType.translucent();
+    }
+
     @Override
-    public BlockRenderLayer getRenderLayer() {
-        return BlockRenderLayer.TRANSLUCENT;
+    public PlantType getPlantType(IBlockReader world, BlockPos pos) {
+        return PlantType.PLAINS;
+    }
+
+    @Override
+    public BlockState getPlant(IBlockReader world, BlockPos pos) {
+        return this.defaultBlockState();
     }
 }

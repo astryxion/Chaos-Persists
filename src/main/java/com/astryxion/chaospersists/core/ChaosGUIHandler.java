@@ -1,60 +1,60 @@
-/*
- * Decompiled with CFR 0_125.
- * 
- * Could not load the following classes:
- *  net.minecraftforge.fml.common.network.IGuiHandler
- *  com.astryxion.chaospersists.ContainerCrystalFurnace
- *  com.astryxion.chaospersists.ContainerCrystalWorkbench
- *  com.astryxion.chaospersists.CrystalFurnaceGUI
- *  com.astryxion.chaospersists.CrystalWorkbenchGUI
- *  com.astryxion.chaospersists.ChaosGUIHandler
- *  com.astryxion.chaospersists.TileEntityCrystalFurnace
- *  net.minecraft.entity.player.EntityPlayer
- *  net.minecraft.entity.player.InventoryPlayer
- *  net.minecraft.tileentity.TileEntity
- *  net.minecraft.world.World
- */
 package com.astryxion.chaospersists.core;
 
-import net.minecraftforge.fml.common.network.IGuiHandler;
+import com.astryxion.chaospersists.container.ContainerCrystalFurnace;
 import com.astryxion.chaospersists.container.ContainerCrystalWorkbench;
-import com.astryxion.chaospersists.util.CrystalWorkbenchGUI;
 import com.astryxion.chaospersists.tileentity.TileEntityCrystalFurnace;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.inventory.ContainerFurnace;
+import com.astryxion.chaospersists.util.CrystalFurnaceGUI;
+import com.astryxion.chaospersists.util.CrystalWorkbenchGUI;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.inventory.container.Container;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
-import net.minecraft.client.gui.inventory.GuiFurnace;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
-public class ChaosGUIHandler
-implements IGuiHandler {
-    public Object getServerGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z) {
-        TileEntity tileEntity = world.getTileEntity(new net.minecraft.util.math.BlockPos(x, y, z));
-        switch (ID) {
-            case 0: {
-                if (!(tileEntity instanceof TileEntityCrystalFurnace)) break;
-                return new ContainerFurnace(player.inventory, (TileEntityCrystalFurnace)tileEntity);
-            }
-            case 1: {
-                return new ContainerCrystalWorkbench(player.inventory, world, x, y, z);
-            }
+/**
+ * Legacy GUI id routing retained for parity with 1.12.2 gui ids 0 (furnace) and 1 (workbench).
+ * Crystal furnace and workbench blocks open menus directly on 1.16.5; these helpers remain for any
+ * code paths that still reference the old handler ids.
+ */
+public class ChaosGUIHandler {
+
+    public static Container getServerGuiElement(int id, PlayerEntity player, World world, int x, int y, int z) {
+        TileEntity tileEntity = world.getBlockEntity(new BlockPos(x, y, z));
+        switch (id) {
+            case 0:
+                if (tileEntity instanceof TileEntityCrystalFurnace) {
+                    return new ContainerCrystalFurnace(player.inventory, (TileEntityCrystalFurnace) tileEntity);
+                }
+                break;
+            case 1:
+                return new ContainerCrystalWorkbench(0, player.inventory, world, x, y, z);
+            default:
+                break;
         }
         return null;
     }
 
-    public Object getClientGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z) {
-        TileEntity tileEntity = world.getTileEntity(new net.minecraft.util.math.BlockPos(x, y, z));
-        switch (ID) {
-            case 0: {
-                if (!(tileEntity instanceof TileEntityCrystalFurnace)) break;
-                return new GuiFurnace(player.inventory, (TileEntityCrystalFurnace)tileEntity);
-            }
-            case 1: {
-                return new CrystalWorkbenchGUI(player.inventory, world, x, y, z);
-            }
+    @OnlyIn(Dist.CLIENT)
+    public static Object getClientGuiElement(int id, PlayerEntity player, World world, int x, int y, int z) {
+        TileEntity tileEntity = world.getBlockEntity(new BlockPos(x, y, z));
+        switch (id) {
+            case 0:
+                if (tileEntity instanceof TileEntityCrystalFurnace) {
+                    return new CrystalFurnaceGUI(player.inventory, (TileEntityCrystalFurnace) tileEntity);
+                }
+                break;
+            case 1:
+                return new CrystalWorkbenchGUI(
+                        new ContainerCrystalWorkbench(0, player.inventory, world, x, y, z),
+                        player.inventory,
+                        new TranslationTextComponent("container.crafting"));
+            default:
+                break;
         }
         return null;
     }
 }
-

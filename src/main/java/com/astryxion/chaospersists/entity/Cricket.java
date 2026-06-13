@@ -1,103 +1,82 @@
-/*
- * Decompiled with CFR 0_125.
- * 
- * Could not load the following classes:
- *  com.astryxion.chaospersists.Cricket
- *  com.astryxion.chaospersists.MyEntityAIWanderALot
- *  net.minecraft.entity.DataWatcher
- *  net.minecraft.entity.EntityAgeable
- *  net.minecraft.entity.EntityCreature
- *  net.minecraft.entity.SharedMonsterAttributes
- *  net.minecraft.entity.ai.EntityAIBase
- *  net.minecraft.entity.ai.EntityAIPanic
- *  net.minecraft.entity.ai.EntityAITasks
- *  net.minecraft.entity.ai.attributes.BaseAttributeMap
- *  net.minecraft.entity.ai.attributes.IAttribute
- *  net.minecraft.entity.ai.attributes.IAttributeInstance
- *  net.minecraft.entity.passive.EntityAnimal
- *  net.minecraft.pathfinding.PathNavigate
- *  net.minecraft.util.math.AxisAlignedBB
- *  net.minecraft.world.World
- */
 package com.astryxion.chaospersists.entity;
+import net.minecraft.entity.MobEntity;
 
+import com.astryxion.chaospersists.core.ChaosSounds;
 import com.astryxion.chaospersists.util.MyEntityAIWanderALot;
 import java.util.List;
-import java.util.Random;
-import net.minecraft.network.datasync.EntityDataManager;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
-import net.minecraft.entity.EntityAgeable;
-import net.minecraft.entity.EntityCreature;
-import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.ai.EntityAIBase;
-import net.minecraft.entity.ai.EntityAIPanic;
-import net.minecraft.entity.ai.EntityAITasks;
-import net.minecraft.entity.ai.attributes.AbstractAttributeMap;
-import net.minecraft.entity.ai.attributes.IAttribute;
-import net.minecraft.entity.ai.attributes.IAttributeInstance;
-import net.minecraft.entity.passive.EntityAnimal;
-import net.minecraft.pathfinding.PathNavigate;
-import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.network.datasync.EntityDataManager;
+import net.minecraft.util.SoundEvent;
+import net.minecraft.util.DamageSource;
+import net.minecraft.entity.AgeableEntity;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.SpawnReason;
+import net.minecraft.entity.ai.attributes.AttributeModifierMap;
+import net.minecraft.entity.ai.attributes.Attributes;
+import net.minecraft.entity.ai.goal.PanicGoal;
+import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.world.World;
+import net.minecraft.world.IWorldReader;
+import net.minecraft.block.BlockState;
 
-public class Cricket
-extends EntityAnimal {
-    private static final DataParameter<Byte> ATTACKING = EntityDataManager.createKey(Cricket.class, DataSerializers.BYTE);
+public class Cricket extends AnimalEntity {
+    private static final DataParameter<Byte> ATTACKING = EntityDataManager.defineId(Cricket.class, DataSerializers.BYTE);
     public double moveSpeed = 0.15000000596046448;
     private int singing = 0;
     private int jumpcount = 0;
 
-    public Cricket(World par1World) {
-        super(par1World);
-        this.setSize(0.1f, 0.1f);
-        this.experienceValue = 1;
-                this.tasks.addTask(0, (EntityAIBase)new EntityAIPanic((EntityCreature)this, 1.4));
-        this.tasks.addTask(1, (EntityAIBase)new MyEntityAIWanderALot((EntityCreature)this, 8, 1.0));
+    public Cricket(EntityType<? extends Cricket> type, World par1World) {
+        super(type, par1World);
+        // EntityType registration: width=0.1f, height=0.1f
+        this.xpReward = 1;
+        this.goalSelector.addGoal(0, new PanicGoal(this, 1.4));
+        this.goalSelector.addGoal(1, new MyEntityAIWanderALot(this, 8, 1.0));
     }
 
-    protected void applyEntityAttributes() {
-        super.applyEntityAttributes();
-        this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue((double)this.mygetMaxHealth());
-        this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(this.moveSpeed);
-        this.getAttributeMap().registerAttribute(SharedMonsterAttributes.ATTACK_DAMAGE);
-        this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(0.0);
+    public static AttributeModifierMap createAttributes() {
+        return MobEntity.createMobAttributes()
+                .add(Attributes.MAX_HEALTH, 3.0)
+                .add(Attributes.MOVEMENT_SPEED, 0.15000000596046448)
+                .add(Attributes.ATTACK_DAMAGE, 0.0)
+                .build();
     }
 
-    protected void entityInit() {
-        super.entityInit();
-        this.getDataManager().register(ATTACKING, (byte)0);
+    @Override
+    protected void defineSynchedData() {
+        super.defineSynchedData();
+        this.entityData.define(ATTACKING, (byte) 0);
     }
-
-    protected boolean canDespawn() {
-        if (this.isNoDespawnRequired()) {
+    protected boolean canDespawn(double distanceToClosestPlayerEntity) {
+        if (this.isPersistenceRequired()) {
             return false;
         }
         return true;
     }
 
     public int getSinging() {
-        return this.getDataManager().get(ATTACKING).intValue();
+        return this.entityData.get(ATTACKING).intValue();
     }
 
     public void setSinging(int par1) {
-        this.getDataManager().set(ATTACKING, (byte)par1);
+        this.entityData.set(ATTACKING, (byte) par1);
     }
 
     private void jumpAround() {
-        this.motionY += (double)(0.55f + Math.abs(this.world.rand.nextFloat() * 0.35f));
-        this.posY += 0.25;
-        float f = 0.3f + Math.abs(this.world.rand.nextFloat() * 0.25f);
-        float d = (float)((double)this.world.rand.nextFloat() * 3.141592653589793 * 2.0);
-        this.motionX += (double)f * Math.sin(d);
-        this.motionZ += (double)f * Math.cos(d);
-        this.isAirBorne = true;
+        this.setDeltaMovement(this.getDeltaMovement().x, this.getDeltaMovement().y + (double) (0.55f + Math.abs(this.level.random.nextFloat() * 0.35f)), this.getDeltaMovement().z);
+        this.setPos(this.getX(), this.getY() + 0.25, this.getZ());
+        float f = 0.3f + Math.abs(this.level.random.nextFloat() * 0.25f);
+        float d = (float) ((double) this.level.random.nextFloat() * 3.141592653589793 * 2.0);
+        this.setDeltaMovement(this.getDeltaMovement().x + (double) f * Math.sin(d), this.getDeltaMovement().y, this.getDeltaMovement().z + (double) f * Math.cos(d));
+        this.hasImpulse = true;
     }
 
-    public void onUpdate() {
-        this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(this.moveSpeed);
-        super.onUpdate();
-        if (!this.world.isRemote) {
+    @Override
+    public void tick() {
+        this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(this.moveSpeed);
+        super.tick();
+        if (!this.level.isClientSide) {
             if (this.singing != 0) {
                 --this.singing;
                 if (this.singing <= 0) {
@@ -107,67 +86,72 @@ extends EntityAnimal {
             if (this.jumpcount > 0) {
                 --this.jumpcount;
             }
-            if (this.jumpcount == 0 && this.world.rand.nextInt(50) == 1) {
+            if (this.jumpcount == 0 && this.level.random.nextInt(50) == 1) {
                 this.jumpAround();
                 this.jumpcount = 50;
             }
         }
     }
 
-    public boolean isAIEnabled() {
-        return true;
-    }
-
     public int mygetMaxHealth() {
         return 3;
     }
 
-    protected net.minecraft.util.SoundEvent getAmbientSound() {
-        if (!this.world.isRemote) {
-            if (this.world.rand.nextInt(2) == 0) {
+    @Override
+    protected SoundEvent getAmbientSound() {
+        if (!this.level.isClientSide) {
+            if (this.level.random.nextInt(2) == 0) {
                 return null;
             }
             this.singing = 40;
             this.setSinging(this.singing);
         }
-        return com.astryxion.chaospersists.core.ChaosSounds.CRICKET;
+        return ChaosSounds.CRICKET;
     }
 
-    protected net.minecraft.util.SoundEvent getHurtSound(net.minecraft.util.DamageSource damageSource) {
+    @Override
+    protected SoundEvent getHurtSound(DamageSource damageSource) {
         return null;
     }
 
-    protected net.minecraft.util.SoundEvent getDeathSound() {
+    @Override
+    protected SoundEvent getDeathSound() {
         return null;
     }
 
+    @Override
     protected float getSoundVolume() {
         return 0.7f;
     }
 
-    protected void playStepSound(int par1, int par2, int par3, int par4) {
+    @Override
+    protected void playStepSound(BlockPos par1, BlockState par2) {
     }
 
-    protected void dropFewItems(boolean par1, int par2) {
+    @Override
+    protected void dropCustomDeathLoot(DamageSource par1, int par2, boolean par3) {
     }
 
-    protected boolean canTriggerWalking() {
+    @Override
+    protected boolean isMovementNoisy() {
         return true;
     }
 
-    public void fall(float distance, float damageMultiplier) {
-    }
+    @Override
+    public boolean causeFallDamage(float distance, float damageMultiplier) { return false; }
 
-    protected void updateFallState(double y, boolean onGroundIn, net.minecraft.block.state.IBlockState state, net.minecraft.util.math.BlockPos pos) {
+    @Override
+    protected void checkFallDamage(double y, boolean onGroundIn, BlockState state, BlockPos pos) {
         fallDistance = 0.0f;
     }
 
-    public EntityAgeable createChild(EntityAgeable var1) {
+    @Override
+    public AgeableEntity getBreedOffspring(net.minecraft.world.server.ServerWorld level, AgeableEntity mate) {
         return null;
     }
 
-    public boolean getCanSpawnHere() {
-        if (this.posY < 30.0) {
+    public boolean checkSpawnRules(IWorldReader level, SpawnReason reason) {
+        if (this.getY() < 30.0) {
             return false;
         }
         if (this.findBuddies() > 5) {
@@ -177,8 +161,7 @@ extends EntityAnimal {
     }
 
     private int findBuddies() {
-        List var5 = this.world.getEntitiesWithinAABB(Cricket.class, this.getEntityBoundingBox().expand(20.0, 10.0, 20.0));
+        List<Cricket> var5 = this.level.getEntitiesOfClass(Cricket.class, this.getBoundingBox().inflate(20.0, 10.0, 20.0));
         return var5.size();
     }
 }
-

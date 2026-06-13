@@ -1,0 +1,17 @@
+{
+  "type": "chaospersists:chaospersists_type",
+  "generator": {
+    "type": "minecraft:flat",
+    "settings": {
+      "biome": "chaospersists:danger_dimension",
+      "layers": [
+        { "height": 1, "block": "minecraft:bedrock" },
+        { "height": 6, "block": "minecraft:dirt" },
+        { "height": 1, "block": "minecraft:grass_block" }
+      ],
+      "structures": {
+        "structures": {}
+      }
+    }
+  }
+}

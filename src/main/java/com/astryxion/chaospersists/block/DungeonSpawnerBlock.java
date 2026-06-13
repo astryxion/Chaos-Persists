@@ -1,90 +1,76 @@
-/*
- * Decompiled with CFR 0_125.
- * 
- * Could not load the following classes:
- *  net.minecraftforge.fml.relauncher.Side
- *  net.minecraftforge.fml.relauncher.SideOnly
- *  com.astryxion.chaospersists.BasiliskMaze
- *  com.astryxion.chaospersists.DungeonSpawnerBlock
- *  com.astryxion.chaospersists.GenericDungeon
- *  com.astryxion.chaospersists.ChaosPersists
- *  com.astryxion.chaospersists.RubyBirdDungeon
- *  com.astryxion.chaospersists.Trees
- *  net.minecraft.block.Block
- *  net.minecraft.block.BlockReed
- *  net.minecraft.block.material.Material
- *  net.minecraft.client.renderer.texture.IIconRegister
- *  net.minecraft.init.Blocks
- *  net.minecraft.item.Item
- *  net.minecraft.util.IIcon
- *  net.minecraft.world.World
- */
 package com.astryxion.chaospersists.block;
 
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+
+
 import com.astryxion.chaospersists.world.dimension.structure.BasiliskMaze;
 import com.astryxion.chaospersists.world.dimension.structure.GenericDungeon;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.world.dimension.structure.RubyBirdDungeon;
 import com.astryxion.chaospersists.util.Trees;
 import java.util.Random;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockReed;
-import net.minecraft.block.material.Material;
-import net.minecraft.init.Blocks;
-import net.minecraft.item.Item;
-import net.minecraft.world.World;
+
+
+
+import net.minecraft.block.Blocks;
+import net.minecraft.item.Item; import net.minecraft.item.ItemStack;
+import net.minecraft.world.World; import net.minecraft.world.server.ServerWorld; import net.minecraft.block.SugarCaneBlock; import net.minecraft.block.BlockState; import net.minecraft.block.AbstractBlock; import net.minecraft.block.Block; import net.minecraft.util.math.BlockPos; import net.minecraft.util.math.shapes.VoxelShape; import net.minecraft.util.math.shapes.VoxelShapes; import net.minecraft.world.IBlockReader; import net.minecraft.particles.ParticleTypes; import net.minecraftforge.api.distmarker.Dist; import net.minecraftforge.api.distmarker.OnlyIn; import java.util.Collections; import java.util.List; import net.minecraft.loot.LootContext; import net.minecraft.loot.LootParameterSets;
+import net.minecraft.loot.LootParameters;
 
 public class DungeonSpawnerBlock
-extends BlockReed {
+extends SugarCaneBlock {
     private static final float var3 = 0.375f;
 
     public DungeonSpawnerBlock() {
-        this(0);
+        this(0.9F);
+    }
+
+    public DungeonSpawnerBlock(float lightLevel) {
+        super(AbstractBlock.Properties.copy(Blocks.SUGAR_CANE).randomTicks().noCollission()
+                .lightLevel(state -> (int) (lightLevel * 15.0F)));
     }
 
     protected DungeonSpawnerBlock(int par1) {
-        this.setTickRandomly(true);
+        this(0.9F);
     }
 
     @Override
-    public net.minecraft.util.math.AxisAlignedBB getBoundingBox(net.minecraft.block.state.IBlockState state, net.minecraft.world.IBlockAccess source, net.minecraft.util.math.BlockPos pos) {
-        return new net.minecraft.util.math.AxisAlignedBB(0.5 - var3, 0.0, 0.5 - var3, 0.5 + var3, 1.0, 0.5 + var3);
+    public VoxelShape getShape(BlockState state, IBlockReader source, BlockPos pos, net.minecraft.util.math.shapes.ISelectionContext context) { return VoxelShapes.box(0.5 - var3, 0.0, 0.5 - var3, 0.5 + var3, 1.0, 0.5 + var3);
     }
 
-    public boolean canPlaceBlockAt(World par1World, net.minecraft.util.math.BlockPos pos) {
-        net.minecraft.util.math.BlockPos down = pos.down();
-        return par1World.getBlockState(down).getMaterial().isSolid();
+    @Override
+    public boolean canSurvive(BlockState state, net.minecraft.world.IWorldReader world, BlockPos pos) {
+        return world.getBlockState(pos.below()).isFaceSturdy(world, pos.below(), net.minecraft.util.Direction.UP);
     }
 
-    public void randomDisplayTick(net.minecraft.block.state.IBlockState stateIn, World par1World, net.minecraft.util.math.BlockPos pos, Random par5Random) {
+    @OnlyIn(Dist.CLIENT)
+    @Override
+    public void animateTick(BlockState stateIn, World world, BlockPos pos, Random rand) {
         for (int j1 = 0; j1 < 5; ++j1) {
-            par1World.spawnParticle(net.minecraft.util.EnumParticleTypes.FIREWORKS_SPARK, (double)((float)pos.getX() + par1World.rand.nextFloat()), (double)pos.getY() + (double)par1World.rand.nextFloat(), (double)((float)pos.getZ() + par1World.rand.nextFloat()), (double)(par1World.rand.nextFloat() - par1World.rand.nextFloat()) / 4.0, (double)par1World.rand.nextFloat() / 2.0, (double)(par1World.rand.nextFloat() - par1World.rand.nextFloat()) / 4.0);
+            world.addParticle(ParticleTypes.FIREWORK,
+                    (double) ((float) pos.getX() + world.random.nextFloat()),
+                    (double) pos.getY() + (double) world.random.nextFloat(),
+                    (double) ((float) pos.getZ() + world.random.nextFloat()),
+                    (double) (world.random.nextFloat() - world.random.nextFloat()) / 4.0,
+                    (double) world.random.nextFloat() / 2.0,
+                    (double) (world.random.nextFloat() - world.random.nextFloat()) / 4.0);
         }
     }
 
-    public void onBlockAdded(World world, net.minecraft.util.math.BlockPos pos, net.minecraft.block.state.IBlockState state) {
-        if (world.isRemote) {
-            return;
+    @Override
+    public void onPlace(BlockState state, World world, BlockPos pos, BlockState oldState, boolean isMoving) {
+        if (!world.isClientSide) {
+            ((ServerWorld) world).getBlockTicks().scheduleTick(pos, this, 400);
         }
-        world.scheduleBlockUpdate(pos, (Block)this, 400, 0);
     }
 
-    public void onBlockHarvested(World world, net.minecraft.util.math.BlockPos pos, net.minecraft.block.state.IBlockState state, net.minecraft.entity.player.EntityPlayer player) {
-        super.onBlockHarvested(world, pos, state, player);
-    }
-
-    public void updateTick(World world, net.minecraft.util.math.BlockPos pos, net.minecraft.block.state.IBlockState state, Random par5Random) {
-        if (world.isRemote) {
-            return;
-        }
-        world.setBlockState(pos, Blocks.AIR.getDefaultState(), 2);
-        world.setBlockState(pos.up(), Blocks.AIR.getDefaultState(), 2);
+    @Override
+    public void tick(BlockState state, ServerWorld world, BlockPos pos, Random rand) {
+        world.setBlock(pos, Blocks.AIR.defaultBlockState(), 2);
+        world.setBlock(pos.above(), Blocks.AIR.defaultBlockState(), 2);
         int clickedX = pos.getX();
         int clickedY = pos.getY();
         int clickedZ = pos.getZ();
-        int type = world.rand.nextInt(50);
+        int type = world.random.nextInt(50);
         if (type == 0) {
             ChaosPersists.chaospersistsTrees.FairyTree(world, clickedX, clickedY, clickedZ);
         }
@@ -237,20 +223,10 @@ extends BlockReed {
         }
     }
 
-    @SideOnly(value=Side.CLIENT)
-    public Item getItem(World p_149694_1_, int p_149694_2_, int p_149694_3_, int p_149694_4_) {
-        return ChaosPersists.RandomDungeon;
+    @Override
+    public List<ItemStack> getDrops(BlockState state, LootContext.Builder builder) {
+        return Collections.singletonList(new ItemStack(ChaosPersists.RandomDungeon));
     }
+}
 
-    public Item getItemDropped(int par1, Random par2Random, int par3) {
-        return ChaosPersists.RandomDungeon;
-    }
-
-    public int quantityDropped(Random par1Random) {
-        return 1;
-    }
-
-    public boolean canBlockStay(World par1World, int par2, int par3, int par4) {
-        return true;
-    }}
 

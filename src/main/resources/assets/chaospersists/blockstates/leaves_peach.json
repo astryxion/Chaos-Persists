@@ -1,1 +1,9 @@
-{"variants":{"check_decay=false,decayable=false":{"model":"chaospersists:leaves_peach"},"check_decay=false,decayable=true":{"model":"chaospersists:leaves_peach"},"check_decay=true,decayable=false":{"model":"chaospersists:leaves_peach"},"check_decay=true,decayable=true":{"model":"chaospersists:leaves_peach"},"inventory":{"model":"chaospersists:leaves_peach"}}}
+{
+  "multipart": [
+    {
+      "apply": {
+        "model": "chaospersists:block/leaves_peach"
+      }
+    }
+  ]
+}

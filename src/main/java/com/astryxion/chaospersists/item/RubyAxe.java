@@ -1,43 +1,22 @@
-/*
- * Decompiled with CFR 0_125.
- * 
- * Could not load the following classes:
- *  net.minecraftforge.fml.relauncher.Side
- *  net.minecraftforge.fml.relauncher.SideOnly
- *  com.astryxion.chaospersists.RubyAxe
- *  net.minecraft.client.renderer.texture.IIconRegister
- *  net.minecraft.creativetab.CreativeTabs
- *  net.minecraft.entity.Entity
- *  net.minecraft.item.Item
- *  net.minecraft.item.Item$ToolMaterial
- *  net.minecraft.item.ItemAxe
- *  net.minecraft.util.IIcon
- */
 package com.astryxion.chaospersists.item;
 
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.entity.Entity;
+import net.minecraft.item.ItemGroup;
+import net.minecraft.item.AxeItem;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemAxe;
+import net.minecraft.item.IItemTier;
 
-public class RubyAxe
-extends ItemAxe {
-    private int weaponDamage = 12;
+public class RubyAxe extends AxeItem {
+    private final int weaponDamage = 12;
 
-    public RubyAxe(Item.ToolMaterial par2) {
-        super(par2, 8.0F + par2.getAttackDamage(), -3.0F);
-        this.maxStackSize = 1;
-        this.setMaxDamage(1500);
-        this.setCreativeTab(CreativeTabs.TOOLS);
+    public RubyAxe(IItemTier tier) {
+        this(tier, new Item.Properties().stacksTo(1).durability(1500));
     }
 
-    public int getDamageVsEntity(Entity par1Entity) {
-        return this.weaponDamage;
+    public RubyAxe(IItemTier tier, Item.Properties properties) {
+        super(tier, 8.0F + tier.getAttackDamageBonus(), -3.0F, properties);
     }
 
     public String getMaterialName() {
         return "Ruby";
-    }}
-
+    }
+}

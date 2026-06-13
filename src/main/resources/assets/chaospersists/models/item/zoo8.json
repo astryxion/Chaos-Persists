@@ -1,6 +1,6 @@
-{
+﻿{
   "parent": "item/generated",
   "textures": {
-    "layer0": "chaospersists:items/zoo8"
+    "layer0": "chaospersists:item/zoo8"
   }
 }

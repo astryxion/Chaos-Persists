@@ -1,7 +1,7 @@
 {
   "variants": {
-    "normal": {
-      "model": "chaospersists:crystalgrass"
+    "" : {
+      "model": "chaospersists:block/crystalgrass"
     }
   }
 }

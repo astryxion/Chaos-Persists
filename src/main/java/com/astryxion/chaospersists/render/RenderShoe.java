@@ -1,31 +1,22 @@
-/*
- * Decompiled with CFR 0_125.
- * 
- * Could not load the following classes:
- *  com.astryxion.chaospersists.RenderShoe
- *  com.astryxion.chaospersists.RenderSpinner
- *  com.astryxion.chaospersists.Shoes
- *  net.minecraft.entity.Entity
- */
 package com.astryxion.chaospersists.render;
 
-import com.astryxion.chaospersists.render.RenderSpinner;
 import com.astryxion.chaospersists.item.Shoes;
-import net.minecraft.client.renderer.entity.RenderManager;
+import com.mojang.blaze3d.matrix.MatrixStack;
+import net.minecraft.client.renderer.entity.EntityRendererManager;
 import net.minecraft.entity.Entity;
 
-public class RenderShoe
-extends RenderSpinner {
-    public RenderShoe(RenderManager manager) {
+public class RenderShoe extends RenderSpinner {
+    public RenderShoe(EntityRendererManager manager) {
         super(manager);
     }
 
-    public void doRender(Entity par1Entity, double par2, double par4, double par6, float par8, float par9) {
-        if (par1Entity instanceof Shoes) {
-            Shoes var2 = (Shoes)par1Entity;
+    @Override
+    public void render(Entity entity, float entityYaw, float partialTicks, MatrixStack matrixStack,
+            net.minecraft.client.renderer.IRenderTypeBuffer buffer, int packedLight) {
+        if (entity instanceof Shoes) {
+            Shoes var2 = (Shoes) entity;
             this.spinItemIconIndex = var2.getShoeId();
         }
-        super.doRender(par1Entity, par2, par4, par6, par8, par9);
+        super.render(entity, entityYaw, partialTicks, matrixStack, buffer, packedLight);
     }
 }
-

@@ -11,12 +11,12 @@
  *  net.minecraft.creativetab.CreativeTabs
  *  net.minecraft.entity.Entity
  *  net.minecraft.entity.EntityList
- *  net.minecraft.entity.EntityLiving
- *  net.minecraft.entity.IEntityLivingData
- *  net.minecraft.entity.item.EntityItem
- *  net.minecraft.entity.monster.EntitySkeleton
- *  net.minecraft.entity.player.EntityPlayer
- *  net.minecraft.entity.player.PlayerCapabilities
+ *  net.minecraft.entity.Mob
+ *  net.minecraft.entity.IMobData
+ *  net.minecraft.entity.item.ItemEntity
+ *  net.minecraft.entity.monster.SkeletonEntity
+ *  net.minecraft.entity.player.PlayerEntity
+ *  net.minecraft.entity.player.PlayerEntityCapabilities
  *  net.minecraft.item.Item
  *  net.minecraft.item.ItemStack
  *  net.minecraft.util.IIcon
@@ -24,27 +24,29 @@
  */
 package com.astryxion.chaospersists.item;
 
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import com.astryxion.chaospersists.entity.EntityCage;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import java.util.Random;
-import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.item.ItemGroup;
+import net.minecraft.item.Item.Properties;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityList;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.IEntityLivingData;
-import net.minecraft.entity.item.EntityItem;
-import net.minecraft.entity.monster.EntitySkeleton;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.PlayerCapabilities;
-import net.minecraft.init.SoundEvents;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.entity.MobEntity;
+import net.minecraft.entity.SpawnReason;
+import net.minecraft.world.IServerWorld;
+import net.minecraft.entity.item.ItemEntity;
+import net.minecraft.entity.monster.SkeletonEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerAbilities;
+import net.minecraft.util.SoundEvents;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemUseContext;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.EnumActionResult;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
+import net.minecraft.util.ActionResultType;
+import net.minecraft.util.Direction;
+import net.minecraft.util.Hand;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -57,39 +59,46 @@ extends Item {
     public int cage_id = 0;
 
     public CritterCage(int i, int j) {
+        super(new Item.Properties().stacksTo(16).tab(ItemGroup.TAB_MISC));
         this.cage_id = j;
-        this.maxStackSize = 16;
-        this.setCreativeTab(CreativeTabs.MISC);
     }
 
     @Override
-    public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, EnumHand hand) {
-        ItemStack stack = player.getHeldItem(hand);
-        world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.ENTITY_SNOWBALL_THROW, SoundCategory.PLAYERS, 0.5F, 0.4F / (itemRand.nextFloat() * 0.4F + 0.8F));
-        if (!world.isRemote) {
+    public net.minecraft.util.ActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
+        ItemStack stack = player.getItemInHand(hand);
+        world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.SNOWBALL_THROW, SoundCategory.PLAYERS, 0.5F, 0.4F / (world.random.nextFloat() * 0.4F + 0.8F));
+        if (!world.isClientSide) {
             EntityCage cage = new EntityCage(world, player, this.cage_id);
-            cage.shoot(player, player.rotationPitch, player.rotationYaw, 0.0F, 1.5F, 1.0F);
-            world.spawnEntity(cage);
+            cage.shootFromRotation(player, player.xRot, player.yRot, 0.0F, 1.5F, 1.0F);
+            world.addFreshEntity(cage);
         }
-        if (!player.capabilities.isCreativeMode) {
+        if (!player.isCreative()) {
             stack.shrink(1);
         }
-        return new ActionResult<>(EnumActionResult.SUCCESS, stack);
+        return net.minecraft.util.ActionResult.success(stack);
     }
 
     @Override
-    public EnumActionResult onItemUse(EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
-        ItemStack stack = player.getHeldItem(hand);
-        world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.ENTITY_SNOWBALL_THROW, SoundCategory.PLAYERS, 0.5F, 0.4F / (itemRand.nextFloat() * 0.4F + 0.8F));
-        if (!world.isRemote) {
-            EntityCage cage = new EntityCage(world, player, this.cage_id);
-            cage.shoot(player, player.rotationPitch, player.rotationYaw, 0.0F, 1.5F, 1.0F);
-            world.spawnEntity(cage);
+    public ActionResultType useOn(ItemUseContext context) {
+        PlayerEntity player = context.getPlayer();
+        if (player == null) {
+            return ActionResultType.FAIL;
         }
-        if (!player.capabilities.isCreativeMode) {
+        World world = context.getLevel();
+        BlockPos pos = context.getClickedPos();
+        Hand hand = context.getHand();
+        Direction facing = context.getClickedFace();
+        ItemStack stack = player.getItemInHand(hand);
+        world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.SNOWBALL_THROW, SoundCategory.PLAYERS, 0.5F, 0.4F / (world.random.nextFloat() * 0.4F + 0.8F));
+        if (!world.isClientSide) {
+            EntityCage cage = new EntityCage(world, player, this.cage_id);
+            cage.shootFromRotation(player, player.xRot, player.yRot, 0.0F, 1.5F, 1.0F);
+            world.addFreshEntity(cage);
+        }
+        if (!player.isCreative()) {
             stack.shrink(1);
         }
-        return EnumActionResult.SUCCESS;
+        return ActionResultType.SUCCESS;
     }
 
     /** Spawns the mob for the given filled cage_id at the given position. Used by EntityCage.onImpact for release. */
@@ -302,7 +311,7 @@ extends Item {
                 break;
             }
             case 240: {
-                name = "Attack Squid";
+                name = "Attack SquidEntity";
                 break;
             }
             case 242: {
@@ -554,7 +563,7 @@ extends Item {
         }
         Entity ent = spawnCreature(world, entityID, name, x + 0.5, y + 1.1, z + 0.5);
         if (ent != null && entityID == 51 && skelly_type != 0) {
-            EntitySkeleton sk = (EntitySkeleton)ent;
+            SkeletonEntity sk = (SkeletonEntity)ent;
         }
         return ent;
     }
@@ -562,9 +571,9 @@ extends Item {
     public static Entity spawnCreature(World par0World, int par1, String name, double par2, double par4, double par6) {
         Entity var8 = null;
         if (name == null) {
-            net.minecraft.util.ResourceLocation key = EntityList.getKey(EntityList.getClassFromID(par1));
-            if (key != null) {
-                var8 = EntityList.createEntityByIDFromName(key, par0World);
+            net.minecraft.entity.EntityType<?> spawnType = net.minecraft.util.registry.Registry.ENTITY_TYPE.byId(par1);
+            if (spawnType != null) {
+                var8 = spawnType.create(par0World);
             }
         } else {
             net.minecraft.util.ResourceLocation res;
@@ -583,16 +592,17 @@ extends Item {
                 }
                 res = new net.minecraft.util.ResourceLocation("chaospersists", path);
             }
-            var8 = EntityList.createEntityByIDFromName(res, par0World);
+            net.minecraft.entity.EntityType<?> spawnType = net.minecraftforge.registries.ForgeRegistries.ENTITIES.getValue(res);
+            var8 = spawnType != null ? spawnType.create(par0World) : null;
         }
         if (var8 != null) {
-            var8.setLocationAndAngles(par2, par4, par6, par0World.rand.nextFloat() * 360.0f, 0.0f);
-            if ((par1 == 100 || par1 == 120) && var8 instanceof EntityLiving) {
-                EntityLiving sk = (EntityLiving)var8;
-                sk.onInitialSpawn(par0World.getDifficultyForLocation(new BlockPos(sk)), (IEntityLivingData)null);
+            var8.moveTo(par2, par4, par6, par0World.random.nextFloat() * 360.0f, 0.0f);
+            if ((par1 == 100 || par1 == 120) && var8 instanceof MobEntity) {
+                MobEntity sk = (MobEntity)var8;
+                sk.finalizeSpawn((IServerWorld)par0World, par0World.getCurrentDifficultyAt(sk.blockPosition()), SpawnReason.SPAWN_EGG, null, null);
             }
-            par0World.spawnEntity(var8);
-            ((EntityLiving)var8).playLivingSound();
+            par0World.addFreshEntity(var8);
+            com.astryxion.chaospersists.entity.RockBase.playSpawnAmbientSound((net.minecraft.entity.LivingEntity)var8);
         }
         return var8;
     }

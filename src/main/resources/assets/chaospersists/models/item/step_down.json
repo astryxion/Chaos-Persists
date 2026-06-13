@@ -1,6 +1,6 @@
-{
+﻿{
   "parent": "item/generated",
   "textures": {
-    "layer0": "chaospersists:items/step_down"
+    "layer0": "chaospersists:item/step_down"
   }
 }

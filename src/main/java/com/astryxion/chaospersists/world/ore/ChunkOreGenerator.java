@@ -7,19 +7,17 @@
  *  com.astryxion.chaospersists.ChaosPersists
  *  com.astryxion.chaospersists.OreStats
  *  net.minecraft.block.Block
- *  net.minecraft.init.Blocks
- *  net.minecraft.util.MathHelper
+ *  net.minecraft.block.Blocks
+ *  net.minecraft.util.math.MathHelper
  *  net.minecraft.world.World
  *  net.minecraft.world.chunk.Chunk
  */
 package com.astryxion.chaospersists.world.ore;
 
-import com.astryxion.chaospersists.world.ore.OreGenericEgg;
 import com.astryxion.chaospersists.core.ChaosPersists;
-import com.astryxion.chaospersists.util.OreStats;
 import java.util.Random;
 import net.minecraft.block.Block;
-import net.minecraft.init.Blocks;
+import net.minecraft.block.Blocks;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
@@ -79,7 +77,7 @@ public class ChunkOreGenerator {
                             break;
                         }
                     }
-                    this.generateBlockOre(world, random, randPosX, randPosY, randPosZ, chunk, b, ChaosPersists.SpawnOres_stats.clumpsize);
+                    this.generateOreBlock(world, random, randPosX, randPosY, randPosZ, chunk, b, ChaosPersists.SpawnOres_stats.clumpsize);
                     continue;
                 }
                 j = random.nextInt(98);
@@ -478,7 +476,7 @@ public class ChunkOreGenerator {
                         break;
                     }
                 }
-                this.generateBlockOre(world, random, randPosX, randPosY, randPosZ, chunk, b, ChaosPersists.SpawnOres_stats.clumpsize);
+                this.generateOreBlock(world, random, randPosX, randPosY, randPosZ, chunk, b, ChaosPersists.SpawnOres_stats.clumpsize);
             }
         }
         if (ChaosPersists.Uranium_stats.rate > 0) {
@@ -491,7 +489,7 @@ public class ChunkOreGenerator {
                 randPosY = random.nextInt(128);
                 randPosZ = 3 + chunkZ + random.nextInt(10);
                 if (randPosY > ChaosPersists.Uranium_stats.maxdepth || randPosY < ChaosPersists.Uranium_stats.mindepth) continue;
-                this.generateBlockOre(world, random, randPosX, randPosY, randPosZ, chunk, ChaosPersists.MyOreUraniumBlock, ChaosPersists.Uranium_stats.clumpsize);
+                this.generateOreBlock(world, random, randPosX, randPosY, randPosZ, chunk, ChaosPersists.MyOreUraniumBlock, ChaosPersists.Uranium_stats.clumpsize);
             }
         }
         if (ChaosPersists.Titanium_stats.rate > 0) {
@@ -504,7 +502,7 @@ public class ChunkOreGenerator {
                 randPosY = random.nextInt(128);
                 randPosZ = 3 + chunkZ + random.nextInt(10);
                 if (randPosY > ChaosPersists.Titanium_stats.maxdepth || randPosY < ChaosPersists.Titanium_stats.mindepth) continue;
-                this.generateBlockOre(world, random, randPosX, randPosY, randPosZ, chunk, ChaosPersists.MyOreTitaniumBlock, ChaosPersists.Titanium_stats.clumpsize);
+                this.generateOreBlock(world, random, randPosX, randPosY, randPosZ, chunk, ChaosPersists.MyOreTitaniumBlock, ChaosPersists.Titanium_stats.clumpsize);
             }
         }
         if (ChaosPersists.Amethyst_stats.rate > 0) {
@@ -517,7 +515,7 @@ public class ChunkOreGenerator {
                 randPosY = random.nextInt(128);
                 randPosZ = 3 + chunkZ + random.nextInt(10);
                 if (randPosY > ChaosPersists.Amethyst_stats.maxdepth || randPosY < ChaosPersists.Amethyst_stats.mindepth) continue;
-                this.generateBlockOre(world, random, randPosX, randPosY, randPosZ, chunk, ChaosPersists.MyOreAmethystBlock, ChaosPersists.Amethyst_stats.clumpsize);
+                this.generateOreBlock(world, random, randPosX, randPosY, randPosZ, chunk, ChaosPersists.MyOreAmethystBlock, ChaosPersists.Amethyst_stats.clumpsize);
             }
         }
         if (ChaosPersists.Salt_stats.rate > 0) {
@@ -530,7 +528,7 @@ public class ChunkOreGenerator {
                 randPosY = random.nextInt(128);
                 randPosZ = 3 + chunkZ + random.nextInt(10);
                 if (randPosY > ChaosPersists.Salt_stats.maxdepth || randPosY < ChaosPersists.Salt_stats.mindepth) continue;
-                this.generateBlockOre(world, random, randPosX, randPosY, randPosZ, chunk, ChaosPersists.MyOreSaltBlock, ChaosPersists.Salt_stats.clumpsize);
+                this.generateOreBlock(world, random, randPosX, randPosY, randPosZ, chunk, ChaosPersists.MyOreSaltBlock, ChaosPersists.Salt_stats.clumpsize);
             }
         }
         patchy = 4 + random.nextInt(4);
@@ -542,7 +540,7 @@ public class ChunkOreGenerator {
             randPosY = random.nextInt(128);
             randPosZ = 3 + chunkZ + random.nextInt(10);
             if (randPosY > 50 || randPosY < 5) continue;
-            this.generateBlockOre(world, random, randPosX, randPosY, randPosZ, chunk, ChaosPersists.RedAntTroll, 4);
+            this.generateOreBlock(world, random, randPosX, randPosY, randPosZ, chunk, ChaosPersists.RedAntTroll, 4);
         }
         patchy = 4 + random.nextInt(4);
         if (ChaosPersists.LessOre != 0) {
@@ -553,7 +551,7 @@ public class ChunkOreGenerator {
             randPosY = random.nextInt(128);
             randPosZ = 3 + chunkZ + random.nextInt(10);
             if (randPosY > 50 || randPosY < 5) continue;
-            this.generateBlockOre(world, random, randPosX, randPosY, randPosZ, chunk, ChaosPersists.TermiteTroll, 4);
+            this.generateOreBlock(world, random, randPosX, randPosY, randPosZ, chunk, ChaosPersists.TermiteTroll, 4);
         }
         if (ChaosPersists.LessOre == 0) {
             if (ChaosPersists.Diamond_stats.rate > 0) {
@@ -562,7 +560,7 @@ public class ChunkOreGenerator {
                     randPosY = random.nextInt(128);
                     randPosZ = 3 + chunkZ + random.nextInt(10);
                     if (randPosY > ChaosPersists.Diamond_stats.maxdepth || randPosY < ChaosPersists.Diamond_stats.mindepth) continue;
-                    this.generateBlockOre(world, random, randPosX, randPosY, randPosZ, chunk, Blocks.DIAMOND_ORE, ChaosPersists.Diamond_stats.clumpsize);
+                    this.generateOreBlock(world, random, randPosX, randPosY, randPosZ, chunk, Blocks.DIAMOND_ORE, ChaosPersists.Diamond_stats.clumpsize);
                 }
             }
             if (ChaosPersists.BlkDiamond_stats.rate > 0) {
@@ -571,7 +569,7 @@ public class ChunkOreGenerator {
                     randPosY = random.nextInt(128);
                     randPosZ = 3 + chunkZ + random.nextInt(10);
                     if (randPosY > ChaosPersists.BlkDiamond_stats.maxdepth || randPosY < ChaosPersists.BlkDiamond_stats.mindepth) continue;
-                    this.generateBlockOre(world, random, randPosX, randPosY, randPosZ, chunk, Blocks.DIAMOND_BLOCK, ChaosPersists.BlkDiamond_stats.clumpsize);
+                    this.generateOreBlock(world, random, randPosX, randPosY, randPosZ, chunk, Blocks.DIAMOND_BLOCK, ChaosPersists.BlkDiamond_stats.clumpsize);
                 }
             }
             if (ChaosPersists.Emerald_stats.rate > 0) {
@@ -580,7 +578,7 @@ public class ChunkOreGenerator {
                     randPosY = random.nextInt(128);
                     randPosZ = 3 + chunkZ + random.nextInt(10);
                     if (randPosY > ChaosPersists.Emerald_stats.maxdepth || randPosY < ChaosPersists.Emerald_stats.mindepth) continue;
-                    this.generateBlockOre(world, random, randPosX, randPosY, randPosZ, chunk, Blocks.EMERALD_ORE, ChaosPersists.Emerald_stats.clumpsize);
+                    this.generateOreBlock(world, random, randPosX, randPosY, randPosZ, chunk, Blocks.EMERALD_ORE, ChaosPersists.Emerald_stats.clumpsize);
                 }
             }
             if (ChaosPersists.BlkEmerald_stats.rate > 0) {
@@ -589,7 +587,7 @@ public class ChunkOreGenerator {
                     randPosY = random.nextInt(128);
                     randPosZ = 3 + chunkZ + random.nextInt(10);
                     if (randPosY > ChaosPersists.BlkEmerald_stats.maxdepth || randPosY < ChaosPersists.BlkEmerald_stats.mindepth) continue;
-                    this.generateBlockOre(world, random, randPosX, randPosY, randPosZ, chunk, Blocks.EMERALD_BLOCK, ChaosPersists.BlkEmerald_stats.clumpsize);
+                    this.generateOreBlock(world, random, randPosX, randPosY, randPosZ, chunk, Blocks.EMERALD_BLOCK, ChaosPersists.BlkEmerald_stats.clumpsize);
                 }
             }
             if (ChaosPersists.Gold_stats.rate > 0) {
@@ -598,7 +596,7 @@ public class ChunkOreGenerator {
                     randPosY = random.nextInt(128);
                     randPosZ = 3 + chunkZ + random.nextInt(10);
                     if (randPosY > ChaosPersists.Gold_stats.maxdepth || randPosY < ChaosPersists.Gold_stats.mindepth) continue;
-                    this.generateBlockOre(world, random, randPosX, randPosY, randPosZ, chunk, Blocks.GOLD_ORE, ChaosPersists.Gold_stats.clumpsize);
+                    this.generateOreBlock(world, random, randPosX, randPosY, randPosZ, chunk, Blocks.GOLD_ORE, ChaosPersists.Gold_stats.clumpsize);
                 }
             }
             if (ChaosPersists.BlkGold_stats.rate > 0) {
@@ -607,7 +605,7 @@ public class ChunkOreGenerator {
                     randPosY = random.nextInt(128);
                     randPosZ = 3 + chunkZ + random.nextInt(10);
                     if (randPosY > ChaosPersists.BlkGold_stats.maxdepth || randPosY < ChaosPersists.BlkGold_stats.mindepth) continue;
-                    this.generateBlockOre(world, random, randPosX, randPosY, randPosZ, chunk, Blocks.GOLD_BLOCK, ChaosPersists.BlkGold_stats.clumpsize);
+                    this.generateOreBlock(world, random, randPosX, randPosY, randPosZ, chunk, Blocks.GOLD_BLOCK, ChaosPersists.BlkGold_stats.clumpsize);
                 }
             }
             if (ChaosPersists.BlkRuby_stats.rate > 0) {
@@ -616,13 +614,13 @@ public class ChunkOreGenerator {
                     randPosY = random.nextInt(128);
                     randPosZ = 3 + chunkZ + random.nextInt(10);
                     if (randPosY > ChaosPersists.BlkRuby_stats.maxdepth || randPosY < ChaosPersists.BlkRuby_stats.mindepth) continue;
-                    this.generateBlockOre(world, random, randPosX, randPosY, randPosZ, chunk, ChaosPersists.MyBlockRubyBlock, ChaosPersists.BlkRuby_stats.clumpsize);
+                    this.generateOreBlock(world, random, randPosX, randPosY, randPosZ, chunk, ChaosPersists.MyBlockRubyBlock, ChaosPersists.BlkRuby_stats.clumpsize);
                 }
             }
         }
     }
 
-    public boolean generateBlockOre(World par1World, Random par2Random, int par3, int par4, int par5, Chunk chunk, Block newbid, int numberOfBlocks) {
+    public boolean generateOreBlock(World par1World, Random par2Random, int par3, int par4, int par5, Chunk chunk, Block newbid, int numberOfBlocks) {
         float f = par2Random.nextFloat() * 3.1415927f;
         double d0 = (float)(par3 + 8) + MathHelper.sin((float)f) * (float)numberOfBlocks / 8.0f;
         double d1 = (float)(par3 + 8) - MathHelper.sin((float)f) * (float)numberOfBlocks / 8.0f;

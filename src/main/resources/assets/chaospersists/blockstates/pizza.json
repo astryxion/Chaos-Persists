@@ -1,10 +1,10 @@
 {
   "variants": {
-    "slices=0": { "model": "chaospersists:pizza_0" },
-    "slices=1": { "model": "chaospersists:pizza_1" },
-    "slices=2": { "model": "chaospersists:pizza_2" },
-    "slices=3": { "model": "chaospersists:pizza_3" },
-    "slices=4": { "model": "chaospersists:pizza_4" },
-    "slices=5": { "model": "chaospersists:pizza_5" }
+    "slices=0": { "model": "chaospersists:block/pizza_0" },
+    "slices=1": { "model": "chaospersists:block/pizza_1" },
+    "slices=2": { "model": "chaospersists:block/pizza_2" },
+    "slices=3": { "model": "chaospersists:block/pizza_3" },
+    "slices=4": { "model": "chaospersists:block/pizza_4" },
+    "slices=5": { "model": "chaospersists:block/pizza_5" }
   }
 }

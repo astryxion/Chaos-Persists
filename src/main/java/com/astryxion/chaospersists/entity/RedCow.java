@@ -1,65 +1,41 @@
-/*
- * Decompiled with CFR 0_125.
- * 
- * Could not load the following classes:
- *  com.astryxion.chaospersists.RedCow
- *  net.minecraft.entity.EntityAgeable
- *  net.minecraft.entity.EntityLivingBase
- *  net.minecraft.entity.item.EntityItem
- *  net.minecraft.entity.passive.EntityCow
- *  net.minecraft.init.Items
- *  net.minecraft.item.Item
- *  net.minecraft.world.World
- */
 package com.astryxion.chaospersists.entity;
 
-import java.util.Random;
-import net.minecraft.entity.EntityAgeable;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.item.EntityItem;
-import net.minecraft.entity.passive.EntityCow;
-import net.minecraft.init.Items;
-import net.minecraft.item.Item;
+import net.minecraft.entity.AgeableEntity;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.passive.CowEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
+import net.minecraft.world.server.ServerWorld;
 
-public class RedCow
-extends EntityCow {
-    public RedCow(World world) {
-        super(world);
+public class RedCow extends CowEntity {
+    public RedCow(EntityType<? extends RedCow> type, World world) {
+        super(type, world);
+        this.setPersistenceRequired();
     }
 
-    /** Return null so dropFewItems is used instead of the vanilla cow loot table (leather/beef only). */
     @Override
-    protected ResourceLocation getLootTable() {
-        return null;
-    }
-
-    protected void dropFewItems(boolean par1, int par2) {
-        int appleCount = 1 + this.rand.nextInt(2 + par2);
+    protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+        int appleCount = 1 + this.random.nextInt(2 + looting);
         for (int i = 0; i < appleCount; i++) {
-            this.dropItem(Items.APPLE, 1);
+            this.spawnAtLocation(new ItemStack(Items.APPLE));
         }
-        this.dropItem(Items.LEATHER, 1 + this.rand.nextInt(1 + par2));
-        this.dropItem(Items.BEEF, 1 + this.rand.nextInt(2 + par2));
+        this.spawnAtLocation(new ItemStack(Items.LEATHER, 1 + this.random.nextInt(1 + looting)));
+        this.spawnAtLocation(new ItemStack(Items.BEEF, 1 + this.random.nextInt(2 + looting)));
     }
 
-    public EntityCow createChild(EntityAgeable entityageable) {
-        return this.spawnBabyAnimal(entityageable);
+    @Override
+    public CowEntity getBreedOffspring(ServerWorld level, AgeableEntity mate) {
+        return (RedCow) this.getType().create(level);
     }
 
-    public RedCow spawnBabyAnimal(EntityAgeable par1EntityAgeable) {
-        return new RedCow(this.world);
-    }
-
-    protected void updateAITick() {
-        if (this.world.rand.nextInt(200) == 1) {
-            this.setRevengeTarget(null);
+    @Override
+    protected void customServerAiStep() {
+        if (this.level.random.nextInt(200) == 1) {
+            this.setLastHurtByMob(null);
         }
-        super.updateAITasks();
-    }
-
-    protected boolean canDespawn() {
-        return false;
+        super.customServerAiStep();
     }
 }

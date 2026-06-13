@@ -5,22 +5,25 @@
  *  com.astryxion.chaospersists.EntityCannonFodder
  *  com.astryxion.chaospersists.Lizard
  *  com.astryxion.chaospersists.ModelLizard
- *  net.minecraft.client.model.ModelBase
- *  net.minecraft.client.model.ModelRenderer
+ *  net.minecraft.client.renderer.entity.model.Model
+ *  net.minecraft.client.renderer.model.ModelRenderer
  *  net.minecraft.entity.Entity
- *  net.minecraft.util.MathHelper
+ *  net.minecraft.util.math.MathHelper
  */
 package com.astryxion.chaospersists.model;
 
-import com.astryxion.chaospersists.entity.EntityCannonFodder;
+import com.mojang.blaze3d.vertex.IVertexBuilder;
+
+import com.mojang.blaze3d.matrix.MatrixStack;
+
 import com.astryxion.chaospersists.entity.Lizard;
-import net.minecraft.client.model.ModelBase;
-import net.minecraft.client.model.ModelRenderer;
+import net.minecraft.client.renderer.entity.model.EntityModel;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.model.ModelRenderer;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.MathHelper;
 
-public class ModelLizard
-extends ModelBase {
+public class ModelLizard extends EntityModel<Lizard> {
     private float wingspeed = 1.0f;
     ModelRenderer BodyBack;
     ModelRenderer TopBackLeftLeg;
@@ -95,654 +98,665 @@ extends ModelBase {
     ModelRenderer Hat2;
 
     public ModelLizard(float f1) {
+        super(RenderType::entityCutoutNoCull);
         this.wingspeed = f1;
-        this.textureWidth = 128;
-        this.textureHeight = 128;
-        this.BodyBack = new ModelRenderer((ModelBase)this, 92, 48);
+        // textureWidth = 128;
+        // textureHeight = 128;
+        this.BodyBack = new ModelRenderer(this, 92, 48);
         this.BodyBack.addBox(-4.0f, -4.0f, 0.0f, 8, 8, 8);
-        this.BodyBack.setRotationPoint(0.0f, 14.0f, 0.0f);
-        this.BodyBack.setTextureSize(64, 32);
+        this.BodyBack.setPos(0.0f, 14.0f, 0.0f);
         this.BodyBack.mirror = true;
         this.setRotation(this.BodyBack, 0.0f, 0.0f, 0.0f);
-        this.TopBackLeftLeg = new ModelRenderer((ModelBase)this, 54, 32);
+        this.TopBackLeftLeg = new ModelRenderer(this, 54, 32);
         this.TopBackLeftLeg.addBox(0.0f, -2.0f, -2.0f, 8, 3, 3);
-        this.TopBackLeftLeg.setRotationPoint(3.0f, 13.0f, 2.0f);
-        this.TopBackLeftLeg.setTextureSize(64, 32);
+        this.TopBackLeftLeg.setPos(3.0f, 13.0f, 2.0f);
         this.TopBackLeftLeg.mirror = true;
         this.setRotation(this.TopBackLeftLeg, 0.0f, 0.0f, 0.2617994f);
-        this.TailTip = new ModelRenderer((ModelBase)this, 100, 118);
+        this.TailTip = new ModelRenderer(this, 100, 118);
         this.TailTip.addBox(-1.0f, -1.0f, 0.0f, 2, 2, 8);
-        this.TailTip.setRotationPoint(0.0f, 23.0f, 41.0f);
-        this.TailTip.setTextureSize(64, 32);
+        this.TailTip.setPos(0.0f, 23.0f, 41.0f);
         this.TailTip.mirror = true;
         this.setRotation(this.TailTip, 0.0f, 0.0f, 0.0f);
-        this.BodyFront = new ModelRenderer((ModelBase)this, 92, 16);
+        this.BodyFront = new ModelRenderer(this, 92, 16);
         this.BodyFront.addBox(-4.0f, -4.0f, -8.0f, 8, 8, 8);
-        this.BodyFront.setRotationPoint(0.0f, 14.0f, -8.0f);
-        this.BodyFront.setTextureSize(64, 32);
+        this.BodyFront.setPos(0.0f, 14.0f, -8.0f);
         this.BodyFront.mirror = true;
         this.setRotation(this.BodyFront, 0.0f, 0.0f, 0.0f);
-        this.TailBase1 = new ModelRenderer((ModelBase)this, 88, 64);
+        this.TailBase1 = new ModelRenderer(this, 88, 64);
         this.TailBase1.addBox(-3.0f, -3.0f, 0.0f, 6, 6, 14);
-        this.TailBase1.setRotationPoint(0.0f, 14.0f, 7.0f);
-        this.TailBase1.setTextureSize(64, 32);
+        this.TailBase1.setPos(0.0f, 14.0f, 7.0f);
         this.TailBase1.mirror = true;
         this.setRotation(this.TailBase1, -0.2617994f, 0.0f, 0.0f);
-        this.Tail2 = new ModelRenderer((ModelBase)this, 95, 84);
+        this.Tail2 = new ModelRenderer(this, 95, 84);
         this.Tail2.addBox(-2.0f, -2.0f, 0.0f, 4, 4, 10);
-        this.Tail2.setRotationPoint(0.0f, 17.0f, 19.0f);
-        this.Tail2.setTextureSize(64, 32);
+        this.Tail2.setPos(0.0f, 17.0f, 19.0f);
         this.Tail2.mirror = true;
         this.setRotation(this.Tail2, -0.5235988f, 0.0f, 0.0f);
-        this.Tail3 = new ModelRenderer((ModelBase)this, 100, 98);
+        this.Tail3 = new ModelRenderer(this, 100, 98);
         this.Tail3.addBox(-1.0f, -1.0f, 0.0f, 2, 2, 8);
-        this.Tail3.setRotationPoint(0.0f, 21.0f, 26.0f);
-        this.Tail3.setTextureSize(64, 32);
+        this.Tail3.setPos(0.0f, 21.0f, 26.0f);
         this.Tail3.mirror = true;
         this.setRotation(this.Tail3, -0.2617994f, 0.0f, 0.0f);
-        this.Tail4 = new ModelRenderer((ModelBase)this, 100, 108);
+        this.Tail4 = new ModelRenderer(this, 100, 108);
         this.Tail4.addBox(-1.0f, -1.0f, 0.0f, 2, 2, 8);
-        this.Tail4.setRotationPoint(0.0f, 23.0f, 33.0f);
-        this.Tail4.setTextureSize(64, 32);
+        this.Tail4.setPos(0.0f, 23.0f, 33.0f);
         this.Tail4.mirror = true;
         this.setRotation(this.Tail4, 0.0f, 0.0f, 0.0f);
-        this.Neck = new ModelRenderer((ModelBase)this, 100, 9);
+        this.Neck = new ModelRenderer(this, 100, 9);
         this.Neck.addBox(-3.0f, -2.0f, -2.0f, 6, 5, 2);
-        this.Neck.setRotationPoint(0.0f, 12.0f, -16.0f);
-        this.Neck.setTextureSize(64, 32);
+        this.Neck.setPos(0.0f, 12.0f, -16.0f);
         this.Neck.mirror = true;
         this.setRotation(this.Neck, 0.0f, 0.0f, 0.0f);
-        this.TopFrontLeftLeg = new ModelRenderer((ModelBase)this, 26, 12);
+        this.TopFrontLeftLeg = new ModelRenderer(this, 26, 12);
         this.TopFrontLeftLeg.addBox(0.0f, -2.0f, -2.0f, 8, 3, 3);
-        this.TopFrontLeftLeg.setRotationPoint(3.0f, 13.0f, -12.0f);
-        this.TopFrontLeftLeg.setTextureSize(64, 32);
+        this.TopFrontLeftLeg.setPos(3.0f, 13.0f, -12.0f);
         this.TopFrontLeftLeg.mirror = true;
         this.setRotation(this.TopFrontLeftLeg, 0.0f, 0.0f, 0.2617994f);
-        this.TopBackRightLeg = new ModelRenderer((ModelBase)this, 26, 32);
+        this.TopBackRightLeg = new ModelRenderer(this, 26, 32);
         this.TopBackRightLeg.addBox(-8.0f, -2.0f, -2.0f, 8, 3, 3);
-        this.TopBackRightLeg.setRotationPoint(-3.0f, 13.0f, 2.0f);
-        this.TopBackRightLeg.setTextureSize(64, 32);
+        this.TopBackRightLeg.setPos(-3.0f, 13.0f, 2.0f);
         this.TopBackRightLeg.mirror = true;
         this.setRotation(this.TopBackRightLeg, 0.0f, 0.0f, -0.2617994f);
-        this.BottomBackRightLeg = new ModelRenderer((ModelBase)this, 25, 26);
+        this.BottomBackRightLeg = new ModelRenderer(this, 25, 26);
         this.BottomBackRightLeg.addBox(-12.0f, -8.0f, -2.0f, 9, 3, 3);
-        this.BottomBackRightLeg.setRotationPoint(-3.0f, 13.0f, 2.0f);
-        this.BottomBackRightLeg.setTextureSize(64, 32);
+        this.BottomBackRightLeg.setPos(-3.0f, 13.0f, 2.0f);
         this.BottomBackRightLeg.mirror = true;
         this.setRotation(this.BottomBackRightLeg, 0.0f, 0.0f, -1.308997f);
-        this.TopFrontRightLeg = new ModelRenderer((ModelBase)this, 54, 12);
+        this.TopFrontRightLeg = new ModelRenderer(this, 54, 12);
         this.TopFrontRightLeg.addBox(-8.0f, -2.0f, -2.0f, 8, 3, 3);
-        this.TopFrontRightLeg.setRotationPoint(-3.0f, 13.0f, -12.0f);
-        this.TopFrontRightLeg.setTextureSize(64, 32);
+        this.TopFrontRightLeg.setPos(-3.0f, 13.0f, -12.0f);
         this.TopFrontRightLeg.mirror = true;
         this.setRotation(this.TopFrontRightLeg, 0.0f, 0.0f, -0.2617994f);
-        this.BottomBackLeftLeg = new ModelRenderer((ModelBase)this, 53, 26);
+        this.BottomBackLeftLeg = new ModelRenderer(this, 53, 26);
         this.BottomBackLeftLeg.addBox(3.0f, -8.0f, -2.0f, 9, 3, 3);
-        this.BottomBackLeftLeg.setRotationPoint(3.0f, 13.0f, 2.0f);
-        this.BottomBackLeftLeg.setTextureSize(64, 32);
+        this.BottomBackLeftLeg.setPos(3.0f, 13.0f, 2.0f);
         this.BottomBackLeftLeg.mirror = true;
         this.setRotation(this.BottomBackLeftLeg, 0.0f, 0.0f, 1.308997f);
-        this.BottomFrontRightLeg = new ModelRenderer((ModelBase)this, 53, 18);
+        this.BottomFrontRightLeg = new ModelRenderer(this, 53, 18);
         this.BottomFrontRightLeg.addBox(-12.0f, -8.0f, -2.0f, 9, 3, 3);
-        this.BottomFrontRightLeg.setRotationPoint(-3.0f, 13.0f, -12.0f);
-        this.BottomFrontRightLeg.setTextureSize(64, 32);
+        this.BottomFrontRightLeg.setPos(-3.0f, 13.0f, -12.0f);
         this.BottomFrontRightLeg.mirror = true;
         this.setRotation(this.BottomFrontRightLeg, 0.0f, 0.0f, -1.308997f);
-        this.BottomFrontLeftLeg = new ModelRenderer((ModelBase)this, 25, 18);
+        this.BottomFrontLeftLeg = new ModelRenderer(this, 25, 18);
         this.BottomFrontLeftLeg.addBox(3.0f, -8.0f, -2.0f, 9, 3, 3);
-        this.BottomFrontLeftLeg.setRotationPoint(3.0f, 13.0f, -12.0f);
-        this.BottomFrontLeftLeg.setTextureSize(64, 32);
+        this.BottomFrontLeftLeg.setPos(3.0f, 13.0f, -12.0f);
         this.BottomFrontLeftLeg.mirror = true;
         this.setRotation(this.BottomFrontLeftLeg, 0.0f, 0.0f, 1.308997f);
-        this.BodyCenter = new ModelRenderer((ModelBase)this, 92, 32);
+        this.BodyCenter = new ModelRenderer(this, 92, 32);
         this.BodyCenter.addBox(-4.0f, -4.0f, -4.0f, 8, 8, 8);
-        this.BodyCenter.setRotationPoint(0.0f, 14.0f, -4.0f);
-        this.BodyCenter.setTextureSize(64, 32);
+        this.BodyCenter.setPos(0.0f, 14.0f, -4.0f);
         this.BodyCenter.mirror = true;
         this.setRotation(this.BodyCenter, 0.0f, 0.0f, 0.0f);
-        this.Toe7 = new ModelRenderer((ModelBase)this, 104, 0);
+        this.Toe7 = new ModelRenderer(this, 104, 0);
         this.Toe7.addBox(10.0f, 10.0f, -5.0f, 1, 1, 1);
-        this.Toe7.setRotationPoint(3.0f, 13.0f, 2.0f);
-        this.Toe7.setTextureSize(64, 32);
+        this.Toe7.setPos(3.0f, 13.0f, 2.0f);
         this.Toe7.mirror = true;
         this.setRotation(this.Toe7, 0.0f, 0.0f, 0.0f);
-        this.Toe6 = new ModelRenderer((ModelBase)this, 108, 0);
+        this.Toe6 = new ModelRenderer(this, 108, 0);
         this.Toe6.addBox(8.0f, 10.0f, -5.0f, 1, 1, 1);
-        this.Toe6.setRotationPoint(3.0f, 13.0f, 2.0f);
-        this.Toe6.setTextureSize(64, 32);
+        this.Toe6.setPos(3.0f, 13.0f, 2.0f);
         this.Toe6.mirror = true;
         this.setRotation(this.Toe6, 0.0f, 0.0f, 0.0f);
-        this.BackLeftFoot = new ModelRenderer((ModelBase)this, 20, 0);
+        this.BackLeftFoot = new ModelRenderer(this, 20, 0);
         this.BackLeftFoot.addBox(7.0f, 9.0f, -4.0f, 4, 2, 6);
-        this.BackLeftFoot.setRotationPoint(3.0f, 13.0f, 2.0f);
-        this.BackLeftFoot.setTextureSize(64, 32);
+        this.BackLeftFoot.setPos(3.0f, 13.0f, 2.0f);
         this.BackLeftFoot.mirror = true;
         this.setRotation(this.BackLeftFoot, 0.0f, 0.0f, 0.0f);
-        this.Toe4 = new ModelRenderer((ModelBase)this, 80, 0);
+        this.Toe4 = new ModelRenderer(this, 80, 0);
         this.Toe4.addBox(-11.0f, 10.0f, -5.0f, 1, 1, 1);
-        this.Toe4.setRotationPoint(-3.0f, 13.0f, 2.0f);
-        this.Toe4.setTextureSize(64, 32);
+        this.Toe4.setPos(-3.0f, 13.0f, 2.0f);
         this.Toe4.mirror = true;
         this.setRotation(this.Toe4, 0.0f, 0.0f, 0.0f);
-        this.Toe5 = new ModelRenderer((ModelBase)this, 84, 0);
+        this.Toe5 = new ModelRenderer(this, 84, 0);
         this.Toe5.addBox(-9.0f, 10.0f, -5.0f, 1, 1, 1);
-        this.Toe5.setRotationPoint(-3.0f, 13.0f, 2.0f);
-        this.Toe5.setTextureSize(64, 32);
+        this.Toe5.setPos(-3.0f, 13.0f, 2.0f);
         this.Toe5.mirror = true;
         this.setRotation(this.Toe5, 0.0f, 0.0f, 0.0f);
-        this.BackRightFoot = new ModelRenderer((ModelBase)this, 60, 0);
+        this.BackRightFoot = new ModelRenderer(this, 60, 0);
         this.BackRightFoot.addBox(-11.0f, 9.0f, -4.0f, 4, 2, 6);
-        this.BackRightFoot.setRotationPoint(-3.0f, 13.0f, 2.0f);
-        this.BackRightFoot.setTextureSize(64, 32);
+        this.BackRightFoot.setPos(-3.0f, 13.0f, 2.0f);
         this.BackRightFoot.mirror = true;
         this.setRotation(this.BackRightFoot, 0.0f, 0.0f, 0.0f);
-        this.Toe8 = new ModelRenderer((ModelBase)this, 100, 0);
+        this.Toe8 = new ModelRenderer(this, 100, 0);
         this.Toe8.addBox(10.0f, 10.0f, -5.0f, 1, 1, 1);
-        this.Toe8.setRotationPoint(3.0f, 13.0f, -12.0f);
-        this.Toe8.setTextureSize(64, 32);
+        this.Toe8.setPos(3.0f, 13.0f, -12.0f);
         this.Toe8.mirror = true;
         this.setRotation(this.Toe8, 0.0f, 0.0f, 0.0f);
-        this.Toe1 = new ModelRenderer((ModelBase)this, 96, 0);
+        this.Toe1 = new ModelRenderer(this, 96, 0);
         this.Toe1.addBox(8.0f, 10.0f, -5.0f, 1, 1, 1);
-        this.Toe1.setRotationPoint(3.0f, 13.0f, -12.0f);
-        this.Toe1.setTextureSize(64, 32);
+        this.Toe1.setPos(3.0f, 13.0f, -12.0f);
         this.Toe1.mirror = true;
         this.setRotation(this.Toe1, 0.0f, 0.0f, 0.0f);
-        this.FrontLeftFoot = new ModelRenderer((ModelBase)this, 40, 0);
+        this.FrontLeftFoot = new ModelRenderer(this, 40, 0);
         this.FrontLeftFoot.addBox(7.0f, 9.0f, -4.0f, 4, 2, 6);
-        this.FrontLeftFoot.setRotationPoint(3.0f, 13.0f, -12.0f);
-        this.FrontLeftFoot.setTextureSize(64, 32);
+        this.FrontLeftFoot.setPos(3.0f, 13.0f, -12.0f);
         this.FrontLeftFoot.mirror = true;
         this.setRotation(this.FrontLeftFoot, 0.0f, 0.0f, 0.0f);
-        this.Toe3 = new ModelRenderer((ModelBase)this, 88, 0);
+        this.Toe3 = new ModelRenderer(this, 88, 0);
         this.Toe3.addBox(-11.0f, 10.0f, -5.0f, 1, 1, 1);
-        this.Toe3.setRotationPoint(-3.0f, 13.0f, -12.0f);
-        this.Toe3.setTextureSize(64, 32);
+        this.Toe3.setPos(-3.0f, 13.0f, -12.0f);
         this.Toe3.mirror = true;
         this.setRotation(this.Toe3, 0.0f, 0.0f, 0.0f);
-        this.Toe2 = new ModelRenderer((ModelBase)this, 92, 0);
+        this.Toe2 = new ModelRenderer(this, 92, 0);
         this.Toe2.addBox(-9.0f, 10.0f, -5.0f, 1, 1, 1);
-        this.Toe2.setRotationPoint(-3.0f, 13.0f, -12.0f);
-        this.Toe2.setTextureSize(64, 32);
+        this.Toe2.setPos(-3.0f, 13.0f, -12.0f);
         this.Toe2.mirror = true;
         this.setRotation(this.Toe2, 0.0f, 0.0f, 0.0f);
-        this.FrontRightFoot = new ModelRenderer((ModelBase)this, 0, 0);
+        this.FrontRightFoot = new ModelRenderer(this, 0, 0);
         this.FrontRightFoot.addBox(-11.0f, 9.0f, -4.0f, 4, 2, 6);
-        this.FrontRightFoot.setRotationPoint(-3.0f, 13.0f, -12.0f);
-        this.FrontRightFoot.setTextureSize(64, 32);
+        this.FrontRightFoot.setPos(-3.0f, 13.0f, -12.0f);
         this.FrontRightFoot.mirror = true;
         this.setRotation(this.FrontRightFoot, 0.0f, 0.0f, 0.0f);
-        this.FinRidge7 = new ModelRenderer((ModelBase)this, 0, 99);
+        this.FinRidge7 = new ModelRenderer(this, 0, 99);
         this.FinRidge7.addBox(0.0f, -13.0f, 0.0f, 2, 13, 1);
-        this.FinRidge7.setRotationPoint(-1.0f, 10.0f, -4.5f);
-        this.FinRidge7.setTextureSize(64, 32);
+        this.FinRidge7.setPos(-1.0f, 10.0f, -4.5f);
         this.FinRidge7.mirror = true;
         this.setRotation(this.FinRidge7, -0.9666439f, 0.0f, 0.0f);
-        this.FinRidge6 = new ModelRenderer((ModelBase)this, 6, 98);
+        this.FinRidge6 = new ModelRenderer(this, 6, 98);
         this.FinRidge6.addBox(0.0f, -13.0f, 0.0f, 2, 13, 1);
-        this.FinRidge6.setRotationPoint(-1.0f, 10.0f, -4.0f);
-        this.FinRidge6.setTextureSize(64, 32);
+        this.FinRidge6.setPos(-1.0f, 10.0f, -4.0f);
         this.FinRidge6.mirror = true;
         this.setRotation(this.FinRidge6, -0.5205006f, 0.0f, 0.0f);
-        this.FinRidge5 = new ModelRenderer((ModelBase)this, 12, 99);
+        this.FinRidge5 = new ModelRenderer(this, 12, 99);
         this.FinRidge5.addBox(0.0f, -13.0f, 0.0f, 2, 13, 1);
-        this.FinRidge5.setRotationPoint(-1.0f, 10.0f, -4.0f);
-        this.FinRidge5.setTextureSize(64, 32);
+        this.FinRidge5.setPos(-1.0f, 10.0f, -4.0f);
         this.FinRidge5.mirror = true;
         this.setRotation(this.FinRidge5, 0.0f, 0.0f, 0.0f);
-        this.FinRidge4 = new ModelRenderer((ModelBase)this, 6, 114);
+        this.FinRidge4 = new ModelRenderer(this, 6, 114);
         this.FinRidge4.addBox(0.0f, -13.0f, 0.0f, 2, 13, 1);
-        this.FinRidge4.setRotationPoint(-1.0f, 10.0f, -3.5f);
-        this.FinRidge4.setTextureSize(64, 32);
+        this.FinRidge4.setPos(-1.0f, 10.0f, -3.5f);
         this.FinRidge4.mirror = true;
         this.setRotation(this.FinRidge4, 0.9666439f, 0.0f, 0.0f);
-        this.FinRidge3 = new ModelRenderer((ModelBase)this, 12, 115);
+        this.FinRidge3 = new ModelRenderer(this, 12, 115);
         this.FinRidge3.addBox(0.0f, -13.0f, 0.0f, 2, 13, 1);
-        this.FinRidge3.setRotationPoint(-1.0f, 10.0f, -4.0f);
-        this.FinRidge3.setTextureSize(64, 32);
+        this.FinRidge3.setPos(-1.0f, 10.0f, -4.0f);
         this.FinRidge3.mirror = true;
         this.setRotation(this.FinRidge3, 0.5205006f, 0.0f, 0.0f);
-        this.FinRidge2 = new ModelRenderer((ModelBase)this, 0, 84);
+        this.FinRidge2 = new ModelRenderer(this, 0, 84);
         this.FinRidge2.addBox(0.0f, -13.0f, 0.0f, 2, 13, 1);
-        this.FinRidge2.setRotationPoint(-1.0f, 10.0f, -4.5f);
-        this.FinRidge2.setTextureSize(64, 32);
+        this.FinRidge2.setPos(-1.0f, 10.0f, -4.5f);
         this.FinRidge2.mirror = true;
         this.setRotation(this.FinRidge2, -1.375609f, 0.0f, 0.0f);
-        this.FinRidge1 = new ModelRenderer((ModelBase)this, 0, 114);
+        this.FinRidge1 = new ModelRenderer(this, 0, 114);
         this.FinRidge1.addBox(0.0f, -13.0f, 0.0f, 2, 13, 1);
-        this.FinRidge1.setRotationPoint(-1.0f, 10.0f, -3.5f);
-        this.FinRidge1.setTextureSize(64, 32);
+        this.FinRidge1.setPos(-1.0f, 10.0f, -3.5f);
         this.FinRidge1.mirror = true;
         this.setRotation(this.FinRidge1, 1.412787f, 0.0f, 0.0f);
-        this.Fin10 = new ModelRenderer((ModelBase)this, 0, 58);
+        this.Fin10 = new ModelRenderer(this, 0, 58);
         this.Fin10.addBox(0.0f, -13.0f, -2.0f, 0, 11, 6);
-        this.Fin10.setRotationPoint(0.0f, 10.5f, -5.0f);
-        this.Fin10.setTextureSize(64, 32);
+        this.Fin10.setPos(0.0f, 10.5f, -5.0f);
         this.Fin10.mirror = true;
         this.setRotation(this.Fin10, 0.2094395f, 0.0f, 0.0f);
-        this.Fin9 = new ModelRenderer((ModelBase)this, 7, 84);
+        this.Fin9 = new ModelRenderer(this, 7, 84);
         this.Fin9.addBox(0.0f, -11.0f, 0.0f, 0, 11, 3);
-        this.Fin9.setRotationPoint(0.0f, 10.0f, -5.0f);
-        this.Fin9.setTextureSize(64, 32);
+        this.Fin9.setPos(0.0f, 10.0f, -5.0f);
         this.Fin9.mirror = true;
         this.setRotation(this.Fin9, 1.570796f, 0.0f, 0.0f);
-        this.Fin8 = new ModelRenderer((ModelBase)this, 12, 34);
+        this.Fin8 = new ModelRenderer(this, 12, 34);
         this.Fin8.addBox(0.0f, -7.0f, -4.0f, 0, 7, 4);
-        this.Fin8.setRotationPoint(0.0f, 10.0f, 1.0f);
-        this.Fin8.setTextureSize(64, 32);
+        this.Fin8.setPos(0.0f, 10.0f, 1.0f);
         this.Fin8.mirror = true;
         this.setRotation(this.Fin8, -1.570796f, 0.0f, 0.0f);
-        this.Fin7 = new ModelRenderer((ModelBase)this, 12, 46);
+        this.Fin7 = new ModelRenderer(this, 12, 46);
         this.Fin7.addBox(0.0f, -8.0f, -4.0f, 0, 8, 4);
-        this.Fin7.setRotationPoint(0.0f, 10.0f, 1.0f);
-        this.Fin7.setTextureSize(64, 32);
+        this.Fin7.setPos(0.0f, 10.0f, 1.0f);
         this.Fin7.mirror = true;
         this.setRotation(this.Fin7, -1.033256f, 0.0f, 0.0f);
-        this.Fin6 = new ModelRenderer((ModelBase)this, 0, 31);
+        this.Fin6 = new ModelRenderer(this, 0, 31);
         this.Fin6.addBox(0.0f, -10.0f, -4.0f, 0, 10, 4);
-        this.Fin6.setRotationPoint(0.0f, 10.0f, -1.0f);
-        this.Fin6.setTextureSize(64, 32);
+        this.Fin6.setPos(0.0f, 10.0f, -1.0f);
         this.Fin6.mirror = true;
         this.setRotation(this.Fin6, -0.7267386f, 0.0f, 0.0f);
-        this.Fin5 = new ModelRenderer((ModelBase)this, 30, 59);
+        this.Fin5 = new ModelRenderer(this, 30, 59);
         this.Fin5.addBox(0.0f, -12.0f, -5.0f, 0, 11, 6);
-        this.Fin5.setRotationPoint(0.0f, 10.0f, -2.0f);
-        this.Fin5.setTextureSize(64, 32);
+        this.Fin5.setPos(0.0f, 10.0f, -2.0f);
         this.Fin5.mirror = true;
         this.setRotation(this.Fin5, -0.3003206f, 0.0f, 0.0f);
-        this.Fin3 = new ModelRenderer((ModelBase)this, 14, 60);
+        this.Fin3 = new ModelRenderer(this, 14, 60);
         this.Fin3.addBox(0.0f, -12.0f, -3.0f, 0, 12, 6);
-        this.Fin3.setRotationPoint(0.0f, 10.0f, -4.0f);
-        this.Fin3.setTextureSize(64, 32);
+        this.Fin3.setPos(0.0f, 10.0f, -4.0f);
         this.Fin3.mirror = true;
         this.setRotation(this.Fin3, 0.7073231f, 0.0f, 0.0f);
-        this.Fin2 = new ModelRenderer((ModelBase)this, 14, 79);
+        this.Fin2 = new ModelRenderer(this, 14, 79);
         this.Fin2.addBox(0.0f, -12.0f, -4.0f, 0, 11, 6);
-        this.Fin2.setRotationPoint(0.0f, 10.0f, -4.0f);
-        this.Fin2.setTextureSize(64, 32);
+        this.Fin2.setPos(0.0f, 10.0f, -4.0f);
         this.Fin2.mirror = true;
         this.setRotation(this.Fin2, 1.048747f, 0.0f, 0.0f);
-        this.Tooth11 = new ModelRenderer((ModelBase)this, 24, 110);
+        this.Tooth11 = new ModelRenderer(this, 24, 110);
         this.Tooth11.addBox(3.0f, 3.0f, -8.0f, 1, 1, 1);
-        this.Tooth11.setRotationPoint(0.0f, 12.0f, -18.0f);
-        this.Tooth11.setTextureSize(64, 32);
+        this.Tooth11.setPos(0.0f, 12.0f, -18.0f);
         this.Tooth11.mirror = true;
         this.setRotation(this.Tooth11, 0.0f, 0.0f, 0.0f);
-        this.Tooth10 = new ModelRenderer((ModelBase)this, 24, 106);
+        this.Tooth10 = new ModelRenderer(this, 24, 106);
         this.Tooth10.addBox(3.0f, 3.0f, -10.0f, 1, 1, 1);
-        this.Tooth10.setRotationPoint(0.0f, 12.0f, -18.0f);
-        this.Tooth10.setTextureSize(64, 32);
+        this.Tooth10.setPos(0.0f, 12.0f, -18.0f);
         this.Tooth10.mirror = true;
         this.setRotation(this.Tooth10, 0.0f, 0.0f, 0.0f);
-        this.Tooth8 = new ModelRenderer((ModelBase)this, 28, 95);
+        this.Tooth8 = new ModelRenderer(this, 28, 95);
         this.Tooth8.addBox(3.0f, 3.0f, -14.0f, 1, 1, 1);
-        this.Tooth8.setRotationPoint(0.0f, 12.0f, -18.0f);
-        this.Tooth8.setTextureSize(64, 32);
+        this.Tooth8.setPos(0.0f, 12.0f, -18.0f);
         this.Tooth8.mirror = true;
         this.setRotation(this.Tooth8, 0.0f, 0.0f, 0.0f);
-        this.Tooth7 = new ModelRenderer((ModelBase)this, 70, 106);
+        this.Tooth7 = new ModelRenderer(this, 70, 106);
         this.Tooth7.addBox(-4.0f, 3.0f, -10.0f, 1, 1, 1);
-        this.Tooth7.setRotationPoint(0.0f, 12.0f, -18.0f);
-        this.Tooth7.setTextureSize(64, 32);
+        this.Tooth7.setPos(0.0f, 12.0f, -18.0f);
         this.Tooth7.mirror = true;
         this.setRotation(this.Tooth7, 0.0f, 0.0f, 0.0f);
-        this.Tooth6 = new ModelRenderer((ModelBase)this, 70, 102);
+        this.Tooth6 = new ModelRenderer(this, 70, 102);
         this.Tooth6.addBox(-4.0f, 3.0f, -12.0f, 1, 1, 1);
-        this.Tooth6.setRotationPoint(0.0f, 12.0f, -18.0f);
-        this.Tooth6.setTextureSize(64, 32);
+        this.Tooth6.setPos(0.0f, 12.0f, -18.0f);
         this.Tooth6.mirror = true;
         this.setRotation(this.Tooth6, 0.0f, 0.0f, 0.0f);
-        this.Tooth5 = new ModelRenderer((ModelBase)this, 66, 95);
+        this.Tooth5 = new ModelRenderer(this, 66, 95);
         this.Tooth5.addBox(-4.0f, 3.0f, -14.0f, 1, 1, 1);
-        this.Tooth5.setRotationPoint(0.0f, 12.0f, -18.0f);
-        this.Tooth5.setTextureSize(64, 32);
+        this.Tooth5.setPos(0.0f, 12.0f, -18.0f);
         this.Tooth5.mirror = true;
         this.setRotation(this.Tooth5, 0.0f, 0.0f, 0.0f);
-        this.Tooth4 = new ModelRenderer((ModelBase)this, 60, 95);
+        this.Tooth4 = new ModelRenderer(this, 60, 95);
         this.Tooth4.addBox(1.0f, 3.0f, -14.0f, 1, 1, 1);
-        this.Tooth4.setRotationPoint(0.0f, 12.0f, -18.0f);
-        this.Tooth4.setTextureSize(64, 32);
+        this.Tooth4.setPos(0.0f, 12.0f, -18.0f);
         this.Tooth4.mirror = true;
         this.setRotation(this.Tooth4, 0.0f, 0.0f, 0.0f);
-        this.Tooth3 = new ModelRenderer((ModelBase)this, 34, 95);
+        this.Tooth3 = new ModelRenderer(this, 34, 95);
         this.Tooth3.addBox(-2.0f, 3.0f, -14.0f, 1, 1, 1);
-        this.Tooth3.setRotationPoint(0.0f, 12.0f, -18.0f);
-        this.Tooth3.setTextureSize(64, 32);
+        this.Tooth3.setPos(0.0f, 12.0f, -18.0f);
         this.Tooth3.mirror = true;
         this.setRotation(this.Tooth3, 0.0f, 0.0f, 0.0f);
-        this.Tooth2 = new ModelRenderer((ModelBase)this, 70, 110);
+        this.Tooth2 = new ModelRenderer(this, 70, 110);
         this.Tooth2.addBox(-4.0f, 3.0f, -8.0f, 1, 1, 1);
-        this.Tooth2.setRotationPoint(0.0f, 12.0f, -18.0f);
-        this.Tooth2.setTextureSize(64, 32);
+        this.Tooth2.setPos(0.0f, 12.0f, -18.0f);
         this.Tooth2.mirror = true;
         this.setRotation(this.Tooth2, 0.0f, 0.0f, 0.0f);
-        this.CenterRightNose = new ModelRenderer((ModelBase)this, 40, 88);
+        this.CenterRightNose = new ModelRenderer(this, 40, 88);
         this.CenterRightNose.addBox(-4.0f, 0.0f, -14.0f, 1, 1, 1);
-        this.CenterRightNose.setRotationPoint(0.0f, 12.0f, -18.0f);
-        this.CenterRightNose.setTextureSize(64, 32);
+        this.CenterRightNose.setPos(0.0f, 12.0f, -18.0f);
         this.CenterRightNose.mirror = true;
         this.setRotation(this.CenterRightNose, 0.0f, 0.0f, 0.0f);
-        this.CenterLeftNose = new ModelRenderer((ModelBase)this, 54, 88);
+        this.CenterLeftNose = new ModelRenderer(this, 54, 88);
         this.CenterLeftNose.addBox(3.0f, 0.0f, -14.0f, 1, 1, 1);
-        this.CenterLeftNose.setRotationPoint(0.0f, 12.0f, -18.0f);
-        this.CenterLeftNose.setTextureSize(64, 32);
+        this.CenterLeftNose.setPos(0.0f, 12.0f, -18.0f);
         this.CenterLeftNose.mirror = true;
         this.setRotation(this.CenterLeftNose, 0.0f, 0.0f, 0.0f);
-        this.Tooth1 = new ModelRenderer((ModelBase)this, 24, 102);
+        this.Tooth1 = new ModelRenderer(this, 24, 102);
         this.Tooth1.addBox(3.0f, 3.0f, -12.0f, 1, 1, 1);
-        this.Tooth1.setRotationPoint(0.0f, 12.0f, -18.0f);
-        this.Tooth1.setTextureSize(64, 32);
+        this.Tooth1.setPos(0.0f, 12.0f, -18.0f);
         this.Tooth1.mirror = true;
         this.setRotation(this.Tooth1, 0.0f, 0.0f, 0.0f);
-        this.BottomNose = new ModelRenderer((ModelBase)this, 40, 90);
+        this.BottomNose = new ModelRenderer(this, 40, 90);
         this.BottomNose.addBox(-4.0f, 1.0f, -14.0f, 8, 2, 1);
-        this.BottomNose.setRotationPoint(0.0f, 12.0f, -18.0f);
-        this.BottomNose.setTextureSize(64, 32);
+        this.BottomNose.setPos(0.0f, 12.0f, -18.0f);
         this.BottomNose.mirror = true;
         this.setRotation(this.BottomNose, 0.0f, 0.0f, 0.0f);
-        this.TopNose = new ModelRenderer((ModelBase)this, 40, 84);
+        this.TopNose = new ModelRenderer(this, 40, 84);
         this.TopNose.addBox(-4.0f, -3.0f, -14.0f, 8, 3, 1);
-        this.TopNose.setRotationPoint(0.0f, 12.0f, -18.0f);
-        this.TopNose.setTextureSize(64, 32);
+        this.TopNose.setPos(0.0f, 12.0f, -18.0f);
         this.TopNose.mirror = true;
         this.setRotation(this.TopNose, 0.0f, 0.0f, 0.0f);
-        this.JawTop = new ModelRenderer((ModelBase)this, 28, 97);
+        this.JawTop = new ModelRenderer(this, 28, 97);
         this.JawTop.addBox(-4.0f, -3.0f, -13.0f, 8, 6, 13);
-        this.JawTop.setRotationPoint(0.0f, 12.0f, -18.0f);
-        this.JawTop.setTextureSize(64, 32);
+        this.JawTop.setPos(0.0f, 12.0f, -18.0f);
         this.JawTop.mirror = true;
         this.setRotation(this.JawTop, 0.0f, 0.0f, 0.0f);
-        this.CenterMiddleNose = new ModelRenderer((ModelBase)this, 46, 88);
+        this.CenterMiddleNose = new ModelRenderer(this, 46, 88);
         this.CenterMiddleNose.addBox(-1.0f, 0.0f, -14.0f, 2, 1, 1);
-        this.CenterMiddleNose.setRotationPoint(0.0f, 12.0f, -18.0f);
-        this.CenterMiddleNose.setTextureSize(64, 32);
+        this.CenterMiddleNose.setPos(0.0f, 12.0f, -18.0f);
         this.CenterMiddleNose.mirror = true;
         this.setRotation(this.CenterMiddleNose, 0.0f, 0.0f, 0.0f);
-        this.RightEye = new ModelRenderer((ModelBase)this, 116, 10);
+        this.RightEye = new ModelRenderer(this, 116, 10);
         this.RightEye.addBox(-2.0f, -4.0f, -4.0f, 2, 2, 1);
-        this.RightEye.setRotationPoint(0.0f, 12.0f, -18.0f);
-        this.RightEye.setTextureSize(64, 32);
+        this.RightEye.setPos(0.0f, 12.0f, -18.0f);
         this.RightEye.mirror = true;
         this.setRotation(this.RightEye, 0.0f, 0.7853982f, 0.3490659f);
-        this.LeftEye = new ModelRenderer((ModelBase)this, 94, 10);
+        this.LeftEye = new ModelRenderer(this, 94, 10);
         this.LeftEye.addBox(0.0f, -4.0f, -4.0f, 2, 2, 1);
-        this.LeftEye.setRotationPoint(0.0f, 12.0f, -18.0f);
-        this.LeftEye.setTextureSize(64, 32);
+        this.LeftEye.setPos(0.0f, 12.0f, -18.0f);
         this.LeftEye.mirror = true;
         this.setRotation(this.LeftEye, 0.0f, -0.7853982f, -0.3490659f);
-        this.Tooth16 = new ModelRenderer((ModelBase)this, 24, 97);
+        this.Tooth16 = new ModelRenderer(this, 24, 97);
         this.Tooth16.addBox(3.0f, -1.0f, -10.0f, 1, 1, 1);
-        this.Tooth16.setRotationPoint(0.0f, 14.0f, -19.0f);
-        this.Tooth16.setTextureSize(64, 32);
+        this.Tooth16.setPos(0.0f, 14.0f, -19.0f);
         this.Tooth16.mirror = true;
         this.setRotation(this.Tooth16, 0.5235988f, 0.0f, 0.0f);
-        this.Tooth15 = new ModelRenderer((ModelBase)this, 70, 97);
+        this.Tooth15 = new ModelRenderer(this, 70, 97);
         this.Tooth15.addBox(-4.0f, -1.0f, -10.0f, 1, 1, 1);
-        this.Tooth15.setRotationPoint(0.0f, 14.0f, -19.0f);
-        this.Tooth15.setTextureSize(64, 32);
+        this.Tooth15.setPos(0.0f, 14.0f, -19.0f);
         this.Tooth15.mirror = true;
         this.setRotation(this.Tooth15, 0.5235988f, 0.0f, 0.0f);
-        this.Tooth14 = new ModelRenderer((ModelBase)this, 42, 95);
+        this.Tooth14 = new ModelRenderer(this, 42, 95);
         this.Tooth14.addBox(-2.0f, -1.0f, -10.0f, 1, 1, 1);
-        this.Tooth14.setRotationPoint(0.0f, 14.0f, -19.0f);
-        this.Tooth14.setTextureSize(64, 32);
+        this.Tooth14.setPos(0.0f, 14.0f, -19.0f);
         this.Tooth14.mirror = true;
         this.setRotation(this.Tooth14, 0.5235988f, 0.0f, 0.0f);
-        this.Tooth13 = new ModelRenderer((ModelBase)this, 52, 95);
+        this.Tooth13 = new ModelRenderer(this, 52, 95);
         this.Tooth13.addBox(1.0f, -1.0f, -10.0f, 1, 1, 1);
-        this.Tooth13.setRotationPoint(0.0f, 14.0f, -19.0f);
-        this.Tooth13.setTextureSize(64, 32);
+        this.Tooth13.setPos(0.0f, 14.0f, -19.0f);
         this.Tooth13.mirror = true;
         this.setRotation(this.Tooth13, 0.5235988f, 0.0f, 0.0f);
-        this.Tooth12 = new ModelRenderer((ModelBase)this, 24, 114);
+        this.Tooth12 = new ModelRenderer(this, 24, 114);
         this.Tooth12.addBox(3.0f, -1.0f, -7.0f, 1, 1, 1);
-        this.Tooth12.setRotationPoint(0.0f, 14.0f, -19.0f);
-        this.Tooth12.setTextureSize(64, 32);
+        this.Tooth12.setPos(0.0f, 14.0f, -19.0f);
         this.Tooth12.mirror = true;
         this.setRotation(this.Tooth12, 0.5235988f, 0.0f, 0.0f);
-        this.Tooth9 = new ModelRenderer((ModelBase)this, 70, 114);
+        this.Tooth9 = new ModelRenderer(this, 70, 114);
         this.Tooth9.addBox(-4.0f, -1.0f, -7.0f, 1, 1, 1);
-        this.Tooth9.setRotationPoint(0.0f, 14.0f, -19.0f);
-        this.Tooth9.setTextureSize(64, 32);
+        this.Tooth9.setPos(0.0f, 14.0f, -19.0f);
         this.Tooth9.mirror = true;
         this.setRotation(this.Tooth9, 0.5235988f, 0.0f, 0.0f);
-        this.BottomJaw = new ModelRenderer((ModelBase)this, 31, 116);
+        this.BottomJaw = new ModelRenderer(this, 31, 116);
         this.BottomJaw.addBox(-4.0f, 0.0f, -10.0f, 8, 2, 10);
-        this.BottomJaw.setRotationPoint(0.0f, 14.0f, -19.0f);
-        this.BottomJaw.setTextureSize(64, 32);
+        this.BottomJaw.setPos(0.0f, 14.0f, -19.0f);
         this.BottomJaw.mirror = true;
         this.setRotation(this.BottomJaw, 0.5235988f, 0.0f, 0.0f);
-        this.Hat1 = new ModelRenderer((ModelBase)this, 30, 40);
+        this.Hat1 = new ModelRenderer(this, 30, 40);
         this.Hat1.addBox(-2.0f, -4.0f, -6.0f, 4, 1, 6);
-        this.Hat1.setRotationPoint(0.0f, 12.0f, -18.0f);
-        this.Hat1.setTextureSize(128, 128);
+        this.Hat1.setPos(0.0f, 12.0f, -18.0f);
         this.Hat1.mirror = true;
         this.setRotation(this.Hat1, 0.0f, 0.0f, 0.0f);
-        this.Hat2 = new ModelRenderer((ModelBase)this, 30, 40);
+        this.Hat2 = new ModelRenderer(this, 30, 40);
         this.Hat2.addBox(-1.5f, -6.0f, -4.0f, 3, 2, 4);
-        this.Hat2.setRotationPoint(0.0f, 12.0f, -18.0f);
-        this.Hat2.setTextureSize(128, 128);
+        this.Hat2.setPos(0.0f, 12.0f, -18.0f);
         this.Hat2.mirror = true;
         this.setRotation(this.Hat2, 0.0f, 0.0f, 0.0f);
     }
+    @Override
+    public void setupAnim(Lizard entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
+        float f = limbSwing;
+        float f1 = limbSwingAmount;
+        float f2 = ageInTicks;
+        float f3 = netHeadYaw;
+        float f4 = headPitch;
+        float f5 = 0.0F;
 
-    public void render(Entity entity, float f, float f1, float f2, float f3, float f4, float f5) {
         Lizard e = (Lizard)entity;
         float newangle = 0.0f;
-        super.render(entity, f, f1, f2, f3, f4, f5);
         this.setRotationAngles(f, f1, f2, f3, f4, f5, entity);
         newangle = (double)f1 > 0.1 ? MathHelper.cos((float)(f2 * 1.0f * this.wingspeed)) * 3.1415927f * 0.25f * f1 : 0.0f;
-        this.TopFrontLeftLeg.rotateAngleY = newangle;
-        this.BottomFrontLeftLeg.rotateAngleX = newangle;
-        this.FrontLeftFoot.rotateAngleY = newangle;
-        this.Toe8.rotateAngleY = newangle;
-        this.Toe1.rotateAngleY = newangle;
-        this.TopFrontRightLeg.rotateAngleY = newangle;
-        this.BottomFrontRightLeg.rotateAngleX = - newangle;
-        this.FrontRightFoot.rotateAngleY = newangle;
-        this.Toe3.rotateAngleY = newangle;
-        this.Toe2.rotateAngleY = newangle;
-        this.TopBackLeftLeg.rotateAngleY = - newangle;
-        this.BottomBackLeftLeg.rotateAngleX = - newangle;
-        this.BackLeftFoot.rotateAngleY = - newangle;
-        this.Toe7.rotateAngleY = - newangle;
-        this.Toe6.rotateAngleY = - newangle;
-        this.TopBackRightLeg.rotateAngleY = - newangle;
-        this.BottomBackRightLeg.rotateAngleX = newangle;
-        this.BackRightFoot.rotateAngleY = - newangle;
-        this.Toe4.rotateAngleY = - newangle;
-        this.Toe5.rotateAngleY = - newangle;
-        this.BottomJaw.rotateAngleX = e.getAttacking() != 0 ? 0.52f + MathHelper.cos((float)(f2 * 0.45f)) * 0.35f : 0.25f;
-        this.Tooth9.rotateAngleX = this.BottomJaw.rotateAngleX;
-        this.Tooth15.rotateAngleX = this.BottomJaw.rotateAngleX;
-        this.Tooth14.rotateAngleX = this.BottomJaw.rotateAngleX;
-        this.Tooth13.rotateAngleX = this.BottomJaw.rotateAngleX;
-        this.Tooth16.rotateAngleX = this.BottomJaw.rotateAngleX;
-        this.Tooth12.rotateAngleX = this.BottomJaw.rotateAngleX;
+        this.TopFrontLeftLeg.yRot = newangle;
+        this.BottomFrontLeftLeg.xRot = newangle;
+        this.FrontLeftFoot.yRot = newangle;
+        this.Toe8.yRot = newangle;
+        this.Toe1.yRot = newangle;
+        this.TopFrontRightLeg.yRot = newangle;
+        this.BottomFrontRightLeg.xRot = - newangle;
+        this.FrontRightFoot.yRot = newangle;
+        this.Toe3.yRot = newangle;
+        this.Toe2.yRot = newangle;
+        this.TopBackLeftLeg.yRot = - newangle;
+        this.BottomBackLeftLeg.xRot = - newangle;
+        this.BackLeftFoot.yRot = - newangle;
+        this.Toe7.yRot = - newangle;
+        this.Toe6.yRot = - newangle;
+        this.TopBackRightLeg.yRot = - newangle;
+        this.BottomBackRightLeg.xRot = newangle;
+        this.BackRightFoot.yRot = - newangle;
+        this.Toe4.yRot = - newangle;
+        this.Toe5.yRot = - newangle;
+        this.BottomJaw.xRot = e.getAttacking() != 0 ? 0.52f + MathHelper.cos((float)(f2 * 0.45f)) * 0.35f : 0.25f;
+        this.Tooth9.xRot = this.BottomJaw.xRot;
+        this.Tooth15.xRot = this.BottomJaw.xRot;
+        this.Tooth14.xRot = this.BottomJaw.xRot;
+        this.Tooth13.xRot = this.BottomJaw.xRot;
+        this.Tooth16.xRot = this.BottomJaw.xRot;
+        this.Tooth12.xRot = this.BottomJaw.xRot;
         newangle = MathHelper.cos((float)(f2 * 0.25f * this.wingspeed)) * 3.1415927f * 0.05f;
         if (e.getAttacking() != 0) {
             newangle = MathHelper.cos((float)(f2 * 1.25f * this.wingspeed)) * 3.1415927f * 0.35f;
         }
-        this.TailBase1.rotateAngleY = newangle * 0.25f;
-        this.Tail2.rotationPointZ = this.TailBase1.rotationPointZ + (float)Math.cos(this.TailBase1.rotateAngleY) * 12.0f;
-        this.Tail2.rotationPointX = this.TailBase1.rotationPointX + (float)Math.sin(this.TailBase1.rotateAngleY) * 12.0f;
-        this.Tail2.rotateAngleY = newangle * 0.5f;
-        this.Tail3.rotationPointZ = this.Tail2.rotationPointZ + (float)Math.cos(this.Tail2.rotateAngleY) * 9.0f;
-        this.Tail3.rotationPointX = this.Tail2.rotationPointX + (float)Math.sin(this.Tail2.rotateAngleY) * 9.0f;
-        this.Tail3.rotateAngleY = newangle * 0.75f;
-        this.Tail4.rotationPointZ = this.Tail3.rotationPointZ + (float)Math.cos(this.Tail3.rotateAngleY) * 7.0f;
-        this.Tail4.rotationPointX = this.Tail3.rotationPointX + (float)Math.sin(this.Tail3.rotateAngleY) * 7.0f;
-        this.Tail4.rotateAngleY = newangle * 1.0f;
-        this.TailTip.rotationPointZ = this.Tail4.rotationPointZ + (float)Math.cos(this.Tail4.rotateAngleY) * 7.0f;
-        this.TailTip.rotationPointX = this.Tail4.rotationPointX + (float)Math.sin(this.Tail4.rotateAngleY) * 7.0f;
-        this.TailTip.rotateAngleY = newangle * 1.25f;
-        this.Neck.rotateAngleY = (float)Math.toRadians(f3) * 0.25f;
-        this.JawTop.rotationPointZ = this.Neck.rotationPointZ - (float)Math.cos(this.Neck.rotateAngleY) * 2.0f;
-        this.JawTop.rotationPointX = this.Neck.rotationPointX - (float)Math.sin(this.Neck.rotateAngleY) * 2.0f;
-        this.JawTop.rotateAngleY = (float)Math.toRadians(f3) * 0.5f;
-        this.TopNose.rotationPointZ = this.JawTop.rotationPointZ;
-        this.TopNose.rotationPointX = this.JawTop.rotationPointX;
-        this.TopNose.rotateAngleY = this.JawTop.rotateAngleY;
-        this.BottomNose.rotationPointZ = this.JawTop.rotationPointZ;
-        this.BottomNose.rotationPointX = this.JawTop.rotationPointX;
-        this.BottomNose.rotateAngleY = this.JawTop.rotateAngleY;
-        this.CenterRightNose.rotationPointZ = this.JawTop.rotationPointZ;
-        this.CenterRightNose.rotationPointX = this.JawTop.rotationPointX;
-        this.CenterRightNose.rotateAngleY = this.JawTop.rotateAngleY;
-        this.CenterMiddleNose.rotationPointZ = this.JawTop.rotationPointZ;
-        this.CenterMiddleNose.rotationPointX = this.JawTop.rotationPointX;
-        this.CenterMiddleNose.rotateAngleY = this.JawTop.rotateAngleY;
-        this.CenterLeftNose.rotationPointZ = this.JawTop.rotationPointZ;
-        this.CenterLeftNose.rotationPointX = this.JawTop.rotationPointX;
-        this.CenterLeftNose.rotateAngleY = this.JawTop.rotateAngleY;
-        this.RightEye.rotationPointZ = this.JawTop.rotationPointZ;
-        this.RightEye.rotationPointX = this.JawTop.rotationPointX;
-        this.RightEye.rotateAngleY = this.JawTop.rotateAngleY + 0.78f;
-        this.LeftEye.rotationPointZ = this.JawTop.rotationPointZ;
-        this.LeftEye.rotationPointX = this.JawTop.rotationPointX;
-        this.LeftEye.rotateAngleY = this.JawTop.rotateAngleY - 0.78f;
-        this.Tooth11.rotationPointZ = this.JawTop.rotationPointZ;
-        this.Tooth11.rotationPointX = this.JawTop.rotationPointX;
-        this.Tooth11.rotateAngleY = this.JawTop.rotateAngleY;
-        this.Tooth10.rotationPointZ = this.JawTop.rotationPointZ;
-        this.Tooth10.rotationPointX = this.JawTop.rotationPointX;
-        this.Tooth10.rotateAngleY = this.JawTop.rotateAngleY;
-        this.Tooth1.rotationPointZ = this.JawTop.rotationPointZ;
-        this.Tooth1.rotationPointX = this.JawTop.rotationPointX;
-        this.Tooth1.rotateAngleY = this.JawTop.rotateAngleY;
-        this.Tooth8.rotationPointZ = this.JawTop.rotationPointZ;
-        this.Tooth8.rotationPointX = this.JawTop.rotationPointX;
-        this.Tooth8.rotateAngleY = this.JawTop.rotateAngleY;
-        this.Tooth4.rotationPointZ = this.JawTop.rotationPointZ;
-        this.Tooth4.rotationPointX = this.JawTop.rotationPointX;
-        this.Tooth4.rotateAngleY = this.JawTop.rotateAngleY;
-        this.Tooth3.rotationPointZ = this.JawTop.rotationPointZ;
-        this.Tooth3.rotationPointX = this.JawTop.rotationPointX;
-        this.Tooth3.rotateAngleY = this.JawTop.rotateAngleY;
-        this.Tooth5.rotationPointZ = this.JawTop.rotationPointZ;
-        this.Tooth5.rotationPointX = this.JawTop.rotationPointX;
-        this.Tooth5.rotateAngleY = this.JawTop.rotateAngleY;
-        this.Tooth6.rotationPointZ = this.JawTop.rotationPointZ;
-        this.Tooth6.rotationPointX = this.JawTop.rotationPointX;
-        this.Tooth6.rotateAngleY = this.JawTop.rotateAngleY;
-        this.Tooth7.rotationPointZ = this.JawTop.rotationPointZ;
-        this.Tooth7.rotationPointX = this.JawTop.rotationPointX;
-        this.Tooth7.rotateAngleY = this.JawTop.rotateAngleY;
-        this.Tooth2.rotationPointZ = this.JawTop.rotationPointZ;
-        this.Tooth2.rotationPointX = this.JawTop.rotationPointX;
-        this.Tooth2.rotateAngleY = this.JawTop.rotateAngleY;
-        this.Hat1.rotationPointZ = this.JawTop.rotationPointZ;
-        this.Hat1.rotationPointX = this.JawTop.rotationPointX;
-        this.Hat1.rotateAngleY = this.JawTop.rotateAngleY;
-        this.Hat2.rotationPointZ = this.JawTop.rotationPointZ;
-        this.Hat2.rotationPointX = this.JawTop.rotationPointX;
-        this.Hat2.rotateAngleY = this.JawTop.rotateAngleY;
-        this.BottomJaw.rotationPointZ = this.Neck.rotationPointZ - (float)Math.cos(this.Neck.rotateAngleY) * 3.0f;
-        this.BottomJaw.rotationPointX = this.Neck.rotationPointX - (float)Math.sin(this.Neck.rotateAngleY) * 3.0f;
-        this.BottomJaw.rotateAngleY = (float)Math.toRadians(f3) * 0.5f;
-        this.Tooth9.rotationPointZ = this.BottomJaw.rotationPointZ;
-        this.Tooth9.rotationPointX = this.BottomJaw.rotationPointX;
-        this.Tooth9.rotateAngleY = this.BottomJaw.rotateAngleY;
-        this.Tooth16.rotationPointZ = this.BottomJaw.rotationPointZ;
-        this.Tooth16.rotationPointX = this.BottomJaw.rotationPointX;
-        this.Tooth16.rotateAngleY = this.BottomJaw.rotateAngleY;
-        this.Tooth15.rotationPointZ = this.BottomJaw.rotationPointZ;
-        this.Tooth15.rotationPointX = this.BottomJaw.rotationPointX;
-        this.Tooth15.rotateAngleY = this.BottomJaw.rotateAngleY;
-        this.Tooth14.rotationPointZ = this.BottomJaw.rotationPointZ;
-        this.Tooth14.rotationPointX = this.BottomJaw.rotationPointX;
-        this.Tooth14.rotateAngleY = this.BottomJaw.rotateAngleY;
-        this.Tooth13.rotationPointZ = this.BottomJaw.rotationPointZ;
-        this.Tooth13.rotationPointX = this.BottomJaw.rotationPointX;
-        this.Tooth13.rotateAngleY = this.BottomJaw.rotateAngleY;
-        this.Tooth12.rotationPointZ = this.BottomJaw.rotationPointZ;
-        this.Tooth12.rotationPointX = this.BottomJaw.rotationPointX;
-        this.Tooth12.rotateAngleY = this.BottomJaw.rotateAngleY;
-        this.BodyBack.render(f5);
-        this.TopBackLeftLeg.render(f5);
-        this.TailTip.render(f5);
-        this.BodyFront.render(f5);
-        this.TailBase1.render(f5);
-        this.Tail2.render(f5);
-        this.Tail3.render(f5);
-        this.Tail4.render(f5);
-        this.Neck.render(f5);
-        this.TopFrontLeftLeg.render(f5);
-        this.TopBackRightLeg.render(f5);
-        this.BottomBackRightLeg.render(f5);
-        this.TopFrontRightLeg.render(f5);
-        this.BottomBackLeftLeg.render(f5);
-        this.BottomFrontRightLeg.render(f5);
-        this.BottomFrontLeftLeg.render(f5);
-        this.BodyCenter.render(f5);
-        this.Toe7.render(f5);
-        this.Toe6.render(f5);
-        this.BackLeftFoot.render(f5);
-        this.Toe4.render(f5);
-        this.Toe5.render(f5);
-        this.BackRightFoot.render(f5);
-        this.Toe8.render(f5);
-        this.Toe1.render(f5);
-        this.FrontLeftFoot.render(f5);
-        this.Toe3.render(f5);
-        this.Toe2.render(f5);
-        this.FrontRightFoot.render(f5);
-        this.FinRidge7.render(f5);
-        this.FinRidge6.render(f5);
-        this.FinRidge5.render(f5);
-        this.FinRidge4.render(f5);
-        this.FinRidge3.render(f5);
-        this.FinRidge2.render(f5);
-        this.FinRidge1.render(f5);
-        this.Tooth11.render(f5);
-        this.Tooth10.render(f5);
-        this.Tooth8.render(f5);
-        this.Tooth7.render(f5);
-        this.Tooth6.render(f5);
-        this.Tooth5.render(f5);
-        this.Tooth4.render(f5);
-        this.Tooth3.render(f5);
-        this.Tooth2.render(f5);
-        this.CenterRightNose.render(f5);
-        this.CenterLeftNose.render(f5);
-        this.Tooth1.render(f5);
-        this.BottomNose.render(f5);
-        this.TopNose.render(f5);
-        this.JawTop.render(f5);
-        this.CenterMiddleNose.render(f5);
-        this.RightEye.render(f5);
-        this.LeftEye.render(f5);
-        this.Tooth16.render(f5);
-        this.Tooth15.render(f5);
-        this.Tooth14.render(f5);
-        this.Tooth13.render(f5);
-        this.Tooth12.render(f5);
-        this.Tooth9.render(f5);
-        this.BottomJaw.render(f5);
-        if (e instanceof EntityCannonFodder && e.get_is_activated() != 0) {
-            this.Hat1.render(f5);
-            if (e.get_is_activated() > 1) {
-                this.Hat2.render(f5);
+        this.TailBase1.yRot = newangle * 0.25f;
+        this.Tail2.z = this.TailBase1.z + (float)Math.cos(this.TailBase1.yRot) * 12.0f;
+        this.Tail2.x = this.TailBase1.x + (float)Math.sin(this.TailBase1.yRot) * 12.0f;
+        this.Tail2.yRot = newangle * 0.5f;
+        this.Tail3.z = this.Tail2.z + (float)Math.cos(this.Tail2.yRot) * 9.0f;
+        this.Tail3.x = this.Tail2.x + (float)Math.sin(this.Tail2.yRot) * 9.0f;
+        this.Tail3.yRot = newangle * 0.75f;
+        this.Tail4.z = this.Tail3.z + (float)Math.cos(this.Tail3.yRot) * 7.0f;
+        this.Tail4.x = this.Tail3.x + (float)Math.sin(this.Tail3.yRot) * 7.0f;
+        this.Tail4.yRot = newangle * 1.0f;
+        this.TailTip.z = this.Tail4.z + (float)Math.cos(this.Tail4.yRot) * 7.0f;
+        this.TailTip.x = this.Tail4.x + (float)Math.sin(this.Tail4.yRot) * 7.0f;
+        this.TailTip.yRot = newangle * 1.25f;
+        this.Neck.yRot = (float)Math.toRadians(f3) * 0.25f;
+        this.JawTop.z = this.Neck.z - (float)Math.cos(this.Neck.yRot) * 2.0f;
+        this.JawTop.x = this.Neck.x - (float)Math.sin(this.Neck.yRot) * 2.0f;
+        this.JawTop.yRot = (float)Math.toRadians(f3) * 0.5f;
+        this.TopNose.z = this.JawTop.z;
+        this.TopNose.x = this.JawTop.x;
+        this.TopNose.yRot = this.JawTop.yRot;
+        this.BottomNose.z = this.JawTop.z;
+        this.BottomNose.x = this.JawTop.x;
+        this.BottomNose.yRot = this.JawTop.yRot;
+        this.CenterRightNose.z = this.JawTop.z;
+        this.CenterRightNose.x = this.JawTop.x;
+        this.CenterRightNose.yRot = this.JawTop.yRot;
+        this.CenterMiddleNose.z = this.JawTop.z;
+        this.CenterMiddleNose.x = this.JawTop.x;
+        this.CenterMiddleNose.yRot = this.JawTop.yRot;
+        this.CenterLeftNose.z = this.JawTop.z;
+        this.CenterLeftNose.x = this.JawTop.x;
+        this.CenterLeftNose.yRot = this.JawTop.yRot;
+        this.RightEye.z = this.JawTop.z;
+        this.RightEye.x = this.JawTop.x;
+        this.RightEye.yRot = this.JawTop.yRot + 0.78f;
+        this.LeftEye.z = this.JawTop.z;
+        this.LeftEye.x = this.JawTop.x;
+        this.LeftEye.yRot = this.JawTop.yRot - 0.78f;
+        this.Tooth11.z = this.JawTop.z;
+        this.Tooth11.x = this.JawTop.x;
+        this.Tooth11.yRot = this.JawTop.yRot;
+        this.Tooth10.z = this.JawTop.z;
+        this.Tooth10.x = this.JawTop.x;
+        this.Tooth10.yRot = this.JawTop.yRot;
+        this.Tooth1.z = this.JawTop.z;
+        this.Tooth1.x = this.JawTop.x;
+        this.Tooth1.yRot = this.JawTop.yRot;
+        this.Tooth8.z = this.JawTop.z;
+        this.Tooth8.x = this.JawTop.x;
+        this.Tooth8.yRot = this.JawTop.yRot;
+        this.Tooth4.z = this.JawTop.z;
+        this.Tooth4.x = this.JawTop.x;
+        this.Tooth4.yRot = this.JawTop.yRot;
+        this.Tooth3.z = this.JawTop.z;
+        this.Tooth3.x = this.JawTop.x;
+        this.Tooth3.yRot = this.JawTop.yRot;
+        this.Tooth5.z = this.JawTop.z;
+        this.Tooth5.x = this.JawTop.x;
+        this.Tooth5.yRot = this.JawTop.yRot;
+        this.Tooth6.z = this.JawTop.z;
+        this.Tooth6.x = this.JawTop.x;
+        this.Tooth6.yRot = this.JawTop.yRot;
+        this.Tooth7.z = this.JawTop.z;
+        this.Tooth7.x = this.JawTop.x;
+        this.Tooth7.yRot = this.JawTop.yRot;
+        this.Tooth2.z = this.JawTop.z;
+        this.Tooth2.x = this.JawTop.x;
+        this.Tooth2.yRot = this.JawTop.yRot;
+        this.Hat1.z = this.JawTop.z;
+        this.Hat1.x = this.JawTop.x;
+        this.Hat1.yRot = this.JawTop.yRot;
+        this.Hat2.z = this.JawTop.z;
+        this.Hat2.x = this.JawTop.x;
+        this.Hat2.yRot = this.JawTop.yRot;
+        this.BottomJaw.z = this.Neck.z - (float)Math.cos(this.Neck.yRot) * 3.0f;
+        this.BottomJaw.x = this.Neck.x - (float)Math.sin(this.Neck.yRot) * 3.0f;
+        this.BottomJaw.yRot = (float)Math.toRadians(f3) * 0.5f;
+        this.Tooth9.z = this.BottomJaw.z;
+        this.Tooth9.x = this.BottomJaw.x;
+        this.Tooth9.yRot = this.BottomJaw.yRot;
+        this.Tooth16.z = this.BottomJaw.z;
+        this.Tooth16.x = this.BottomJaw.x;
+        this.Tooth16.yRot = this.BottomJaw.yRot;
+        this.Tooth15.z = this.BottomJaw.z;
+        this.Tooth15.x = this.BottomJaw.x;
+        this.Tooth15.yRot = this.BottomJaw.yRot;
+        this.Tooth14.z = this.BottomJaw.z;
+        this.Tooth14.x = this.BottomJaw.x;
+        this.Tooth14.yRot = this.BottomJaw.yRot;
+        this.Tooth13.z = this.BottomJaw.z;
+        this.Tooth13.x = this.BottomJaw.x;
+        this.Tooth13.yRot = this.BottomJaw.yRot;
+        this.Tooth12.z = this.BottomJaw.z;
+        this.Tooth12.x = this.BottomJaw.x;
+        this.Tooth12.yRot = this.BottomJaw.yRot;
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        if (entity.get_is_activated() != 0) {
+            
+            if (entity.get_is_activated() > 1) {
+                
             }
         }
-        this.Fin10.render(f5);
-        this.Fin9.render(f5);
-        this.Fin8.render(f5);
-        this.Fin7.render(f5);
-        this.Fin6.render(f5);
-        this.Fin5.render(f5);
-        this.Fin3.render(f5);
-        this.Fin2.render(f5);
+        
+        
+        
+        
+        
+        
+        
+        
+    }
+
+    @Override
+    public void renderToBuffer(MatrixStack matrixStack, IVertexBuilder buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
+        this.BodyBack.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.TopBackLeftLeg.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.TailTip.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.BodyFront.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.TailBase1.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Tail2.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Tail3.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Tail4.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Neck.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.TopFrontLeftLeg.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.TopBackRightLeg.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.BottomBackRightLeg.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.TopFrontRightLeg.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.BottomBackLeftLeg.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.BottomFrontRightLeg.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.BottomFrontLeftLeg.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.BodyCenter.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Toe7.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Toe6.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.BackLeftFoot.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Toe4.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Toe5.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.BackRightFoot.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Toe8.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Toe1.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.FrontLeftFoot.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Toe3.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Toe2.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.FrontRightFoot.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.FinRidge7.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.FinRidge6.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.FinRidge5.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.FinRidge4.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.FinRidge3.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.FinRidge2.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.FinRidge1.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Tooth11.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Tooth10.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Tooth8.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Tooth7.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Tooth6.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Tooth5.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Tooth4.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Tooth3.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Tooth2.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.CenterRightNose.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.CenterLeftNose.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Tooth1.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.BottomNose.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.TopNose.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.JawTop.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.CenterMiddleNose.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.RightEye.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.LeftEye.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Tooth16.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Tooth15.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Tooth14.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Tooth13.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Tooth12.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Tooth9.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.BottomJaw.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Hat1.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Hat2.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Fin10.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Fin9.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Fin8.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Fin7.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Fin6.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Fin5.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Fin3.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Fin2.render(matrixStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
     }
 
     private void setRotation(ModelRenderer model, float x, float y, float z) {
-        model.rotateAngleX = x;
-        model.rotateAngleY = y;
-        model.rotateAngleZ = z;
+        model.xRot = x;
+        model.yRot = y;
+        model.zRot = z;
     }
 
     public void setRotationAngles(float par1, float par2, float par3, float par4, float par5, float par6, Entity par7Entity) {
-        super.setRotationAngles(par1, par2, par3, par4, par5, par6, par7Entity);
+        
     }
 }
 

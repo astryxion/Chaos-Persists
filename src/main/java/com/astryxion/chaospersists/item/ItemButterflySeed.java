@@ -1,13 +1,12 @@
 package com.astryxion.chaospersists.item;
 
 import net.minecraft.block.Block;
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.item.ItemSeeds;
+import net.minecraft.item.Item;
+import net.minecraft.item.BlockItem;
 
-public class ItemButterflySeed extends ItemSeeds {
+public class ItemButterflySeed extends BlockItem {
 
     public ItemButterflySeed(Block cropBlock, Block soilBlock) {
-        super(cropBlock, soilBlock);
-        this.setCreativeTab(CreativeTabs.DECORATIONS);
+        super(cropBlock, new Item.Properties());
     }
 }

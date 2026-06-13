@@ -1,14 +1,15 @@
 package com.astryxion.chaospersists.item;
 
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
-import net.minecraft.init.SoundEvents;
+import net.minecraft.item.ItemGroup;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.block.Blocks;
+import net.minecraft.util.SoundEvents;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumActionResult;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
+import net.minecraft.util.ActionResultType;
+import net.minecraft.util.Direction;
+import net.minecraft.util.Hand;
+import net.minecraft.item.ItemUseContext;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -16,14 +17,20 @@ public class ZooCage extends Item {
     private int cage_size = 2;
 
     public ZooCage(int i, int j) {
-        this.setMaxStackSize(16);
-        this.setCreativeTab(CreativeTabs.DECORATIONS);
+        super(new Item.Properties());
         this.cage_size = j;
     }
 
     @Override
-    public EnumActionResult onItemUse(EntityPlayer Player, World world, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
-        ItemStack stack = Player.getHeldItem(hand);
+    public ActionResultType useOn(ItemUseContext context) {
+        PlayerEntity PlayerEntity = context.getPlayer();
+        if (PlayerEntity == null) {
+            return ActionResultType.FAIL;
+        }
+        World world = context.getLevel();
+        BlockPos pos = context.getClickedPos();
+        Hand hand = context.getHand();
+        ItemStack stack = PlayerEntity.getItemInHand(hand);
         int length;
         int dirx = 0;
         int dirz = 0;
@@ -37,36 +44,36 @@ public class ZooCage extends Item {
         if (cposz < 0) {
             dirz = -1;
         }
-        int x = (int) (Player.posX + 0.99 * (double) dirx);
-        int y = (int) Player.posY - 1;
-        int z = (int) (Player.posZ + 0.99 * (double) dirz);
-        world.playSound(null, Player.posX, Player.posY, Player.posZ, SoundEvents.ENTITY_GENERIC_EXPLODE, Player.getSoundCategory(), 1.0f, 1.5f);
-        if (world.isRemote) {
-            return EnumActionResult.SUCCESS;
+        int x = (int) (PlayerEntity.getX() + 0.99 * (double) dirx);
+        int y = (int) PlayerEntity.getY() - 1;
+        int z = (int) (PlayerEntity.getZ() + 0.99 * (double) dirz);
+        world.playSound(null, PlayerEntity.getX(), PlayerEntity.getY(), PlayerEntity.getZ(), SoundEvents.GENERIC_EXPLODE, PlayerEntity.getSoundSource(), 1.0f, 1.5f);
+        if (world.isClientSide) {
+            return ActionResultType.SUCCESS;
         }
         for (int i = -width; i <= width; ++i) {
             for (int j = -length; j <= length; ++j) {
                 for (int k = 0; k <= height + 1; ++k) {
                     BlockPos bp = new BlockPos(x + i, y + k, z + j);
                     if (k == height + 1) {
-                        world.setBlockState(bp, Blocks.QUARTZ_BLOCK.getDefaultState());
+                        world.setBlock(bp, Blocks.QUARTZ_BLOCK.defaultBlockState(), 3);
                         continue;
                     }
                     if (k == 0) {
-                        world.setBlockState(bp, Blocks.QUARTZ_BLOCK.getDefaultState());
+                        world.setBlock(bp, Blocks.QUARTZ_BLOCK.defaultBlockState(), 3);
                         continue;
                     }
                     if (i == width || j == length || i == -width || j == -length) {
-                        world.setBlockState(bp, Blocks.GLASS.getDefaultState());
+                        world.setBlock(bp, Blocks.GLASS.defaultBlockState(), 3);
                         continue;
                     }
-                    world.setBlockState(bp, Blocks.AIR.getDefaultState());
+                    world.setBlock(bp, Blocks.AIR.defaultBlockState(), 3);
                 }
             }
         }
-        if (!Player.capabilities.isCreativeMode) {
+        if (!PlayerEntity.isCreative()) {
             stack.shrink(1);
         }
-        return EnumActionResult.SUCCESS;
+        return ActionResultType.SUCCESS;
     }
 }

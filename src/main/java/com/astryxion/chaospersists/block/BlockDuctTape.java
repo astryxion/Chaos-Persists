@@ -1,159 +1,121 @@
-/*
- * Decompiled with CFR 0_125.
- * 
- * Could not load the following classes:
- *  net.minecraftforge.fml.relauncher.Side
- *  net.minecraftforge.fml.relauncher.SideOnly
- *  com.astryxion.chaospersists.BlockDuctTape
- *  com.astryxion.chaospersists.ChaosPersists
- *  net.minecraft.block.Block
- *  net.minecraft.block.material.Material
- *  net.minecraft.client.renderer.texture.IIconRegister
- *  net.minecraft.entity.player.EntityPlayer
- *  net.minecraft.entity.player.InventoryPlayer
- *  net.minecraft.item.Item
- *  net.minecraft.item.ItemStack
- *  net.minecraft.util.math.AxisAlignedBB
- *  net.minecraft.util.IIcon
- *  net.minecraft.world.IBlockAccess
- *  net.minecraft.world.World
- */
 package com.astryxion.chaospersists.block;
 
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 import com.astryxion.chaospersists.core.ChaosPersists;
-import java.util.Random;
-import net.minecraft.block.Block;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.properties.PropertyInteger;
-import net.minecraft.block.state.BlockStateContainer;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.BlockRenderLayer;
-import net.minecraft.util.EnumBlockRenderType;
-import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockAccess;
+import net.minecraft.util.Direction;
+import net.minecraft.util.Hand;
+import net.minecraft.util.ActionResultType;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.BlockItemUseContext;
+import net.minecraft.item.ItemStack;
+import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
+import net.minecraft.world.IWorldReader;
+import net.minecraft.block.Block;
+import net.minecraft.block.AbstractBlock;
+import net.minecraft.block.BlockState;
+import net.minecraft.state.StateContainer;
+import net.minecraft.state.IntegerProperty;
+import net.minecraft.block.material.Material;
+import net.minecraft.util.math.BlockRayTraceResult;
+import net.minecraft.util.math.shapes.ISelectionContext;
+import net.minecraft.util.math.shapes.VoxelShapes;
+import net.minecraft.util.math.shapes.VoxelShape;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraft.client.renderer.RenderType;
 
-public class BlockDuctTape
-extends Block {
-    public static final PropertyInteger SLICES = PropertyInteger.create("slices", 0, 5);
+import java.util.Random;
+
+public class BlockDuctTape extends Block {
+
+    public static final IntegerProperty SLICES = IntegerProperty.create("slices", 0, 5);
 
     public BlockDuctTape() {
-        super(Material.IRON);
-        this.setTickRandomly(true);
-        this.setDefaultState(this.blockState.getBaseState().withProperty(SLICES, 0));
+        super(AbstractBlock.Properties.of(Material.METAL).randomTicks());
+        this.registerDefaultState(this.stateDefinition.any().setValue(SLICES, 0));
     }
 
     @Override
-    protected BlockStateContainer createBlockState() {
-        return new BlockStateContainer(this, SLICES);
+    protected void createBlockStateDefinition(StateContainer.Builder<Block, BlockState> builder) {
+        builder.add(SLICES);
     }
 
-    @Override
-    public IBlockState getStateFromMeta(int meta) {
-        return this.getDefaultState().withProperty(SLICES, Math.min(5, meta & 7));
+    public BlockState getStateFromMeta(int meta) {
+        return this.defaultBlockState().setValue(SLICES, Math.min(5, meta & 7));
     }
 
-    @Override
-    public int getMetaFromState(IBlockState state) {
+    public int getMetaFromState(BlockState state) {
         return state.getValue(SLICES);
     }
 
-    public net.minecraft.util.math.AxisAlignedBB getBoundingBox(net.minecraft.block.state.IBlockState state, net.minecraft.world.IBlockAccess source, net.minecraft.util.math.BlockPos pos) {
-        int l = this.getMetaFromState(state);
+    private static VoxelShape shapeForSlices(int l) {
         float f = 0.0625f;
-        float f1 = (float)(1 + l * 2) / 16.0f;
+        float f1 = (float) (1 + l * 2) / 16.0f;
         float f2 = 0.25f;
-        return new net.minecraft.util.math.AxisAlignedBB((double)f1, 0.0, (double)f, (double)(1.0f - f), (double)(f2 - f), (double)(1.0f - f));
-    }
-
-    public AxisAlignedBB getCollisionBoundingBox(net.minecraft.block.state.IBlockState state, net.minecraft.world.IBlockAccess worldIn, net.minecraft.util.math.BlockPos pos) {
-        int l = this.getMetaFromState(state);
-        float f = 0.0625f;
-        float f1 = (float)(1 + l * 2) / 16.0f;
-        float f2 = 0.25f;
-        return new AxisAlignedBB((double)f1, 0.0, (double)f, (double)(1.0f - f), (double)(f2 - f), (double)(1.0f - f));
-    }
-
-    public boolean renderAsNormalBlock() {
-        return false;
-    }
-
-    @SideOnly(value=Side.CLIENT)
-    public AxisAlignedBB getSelectedBoundingBox(net.minecraft.block.state.IBlockState state, World par1World, net.minecraft.util.math.BlockPos pos) {
-        int l = this.getMetaFromState(state);
-        float f = 0.0625f;
-        float f1 = (float)(1 + l * 2) / 16.0f;
-        float f2 = 0.25f;
-        return new AxisAlignedBB((double)f1, 0.0, (double)f, (double)(1.0f - f), (double)f2, (double)(1.0f - f));
+        return VoxelShapes.box(f1, 0.0, f, 1.0f - f, f2 - f, 1.0f - f);
     }
 
     @Override
-    public boolean isOpaqueCube(IBlockState state) {
-        return false;
+    public VoxelShape getShape(BlockState state, IBlockReader source, BlockPos pos, ISelectionContext context) {
+        return shapeForSlices(getMetaFromState(state));
     }
 
     @Override
-    public boolean isFullCube(IBlockState state) {
-        return false;
+    public VoxelShape getCollisionShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context) {
+        return shapeForSlices(getMetaFromState(state));
     }
 
     @Override
-    public EnumBlockRenderType getRenderType(IBlockState state) {
-        return EnumBlockRenderType.MODEL;
-    }
-
-    @SideOnly(value=Side.CLIENT)
-    @Override
-    public BlockRenderLayer getRenderLayer() {
-        return BlockRenderLayer.SOLID;
-    }
-
-    @Override
-    public IBlockState getStateForPlacement(World worldIn, net.minecraft.util.math.BlockPos pos, EnumFacing facing,
-                                              float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer) {
-        // Placement is driven by ItemDuctTape via getStateForPlacement; default to 0 slices.
-        return this.getDefaultState().withProperty(SLICES, 0);
-    }
-
-    @Override
-    public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
-        this.eatDuctTapeSlice(worldIn, pos.getX(), pos.getY(), pos.getZ(), playerIn);
+    public boolean propagatesSkylightDown(BlockState state, IBlockReader reader, BlockPos pos) {
         return true;
     }
 
     @Override
-    public void onBlockClicked(World worldIn, BlockPos pos, EntityPlayer playerIn) {
-        this.eatDuctTapeSlice(worldIn, pos.getX(), pos.getY(), pos.getZ(), playerIn);
+    public boolean useShapeForLightOcclusion(BlockState state) {
+        return false;
     }
 
-    private void eatDuctTapeSlice(World par1World, int par2, int par3, int par4, EntityPlayer par5EntityPlayer) {
+    @OnlyIn(Dist.CLIENT)
+public RenderType getRenderType(BlockState state) {
+        return RenderType.solid();
+    }
+
+    @Override
+    public BlockState getStateForPlacement(BlockItemUseContext context) {
+        return this.defaultBlockState().setValue(SLICES, 0);
+    }
+
+    @Override
+    public ActionResultType use(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockRayTraceResult hit) {
+        this.eatDuctTapeSlice(world, pos.getX(), pos.getY(), pos.getZ(), player);
+        return ActionResultType.SUCCESS;
+    }
+
+    @Override
+    public void attack(BlockState state, World world, BlockPos pos, PlayerEntity player) {
+        this.eatDuctTapeSlice(world, pos.getX(), pos.getY(), pos.getZ(), player);
+    }
+
+    private void eatDuctTapeSlice(World world, int par2, int par3, int par4, PlayerEntity player) {
         ItemStack var2;
-        if (par5EntityPlayer != null && (var2 = par5EntityPlayer.inventory.getCurrentItem()) != null && var2.getCount() == 1) {
+        if (player != null && !(var2 = player.getMainHandItem()).isEmpty() && var2.getCount() == 1) {
             int cd = var2.getMaxDamage();
             int fd = 0;
             if (cd > 0) {
                 if ((cd /= 6) < 1) {
                     cd = 1;
                 }
-                if ((fd = var2.getItemDamage()) > 0) {
+                if ((fd = var2.getDamageValue()) > 0) {
                     fd = fd > cd ? (fd -= cd) : 0;
-                    var2.setItemDamage(fd);
-                    net.minecraft.util.math.BlockPos pos = new net.minecraft.util.math.BlockPos(par2, par3, par4);
-                    int l = this.getMetaFromState(par1World.getBlockState(pos)) + 1;
+                    var2.setDamageValue(fd);
+                    BlockPos blockPos = new BlockPos(par2, par3, par4);
+                    int l = getMetaFromState(world.getBlockState(blockPos)) + 1;
                     if (l >= 6) {
-                        par1World.setBlockToAir(pos);
+                        world.removeBlock(blockPos, false);
                     } else {
-                        par1World.setBlockState(pos, this.getStateFromMeta(l), 2);
+                        world.setBlock(blockPos, this.defaultBlockState().setValue(SLICES, Math.min(5, l)), 2);
                     }
                 }
             }
@@ -161,32 +123,28 @@ extends Block {
     }
 
     @Override
-    public boolean canPlaceBlockAt(World worldIn, BlockPos pos) {
-        return super.canPlaceBlockAt(worldIn, pos) && this.canBlockStay(worldIn, pos.getX(), pos.getY(), pos.getZ());
+    public boolean canSurvive(BlockState state, IWorldReader world, BlockPos pos) {
+        return canBlockStay(world, pos.getX(), pos.getY(), pos.getZ());
     }
 
     @Override
-    public void neighborChanged(IBlockState state, World worldIn, BlockPos pos, Block blockIn, BlockPos fromPos) {
-        if (!this.canBlockStay(worldIn, pos.getX(), pos.getY(), pos.getZ())) {
-            worldIn.setBlockToAir(pos);
+    public void neighborChanged(BlockState state, World world, BlockPos pos, Block blockIn, BlockPos fromPos, boolean isMoving) {
+        if (!canBlockStay(world, pos.getX(), pos.getY(), pos.getZ())) {
+            world.removeBlock(pos, false);
         }
     }
 
-    public boolean canBlockStay(World par1World, int par2, int par3, int par4) {
-        return par1World.getBlockState(new net.minecraft.util.math.BlockPos(par2, par3 - 1, par4)).getBlock().getMaterial(par1World.getBlockState(new net.minecraft.util.math.BlockPos(par2, par3 - 1, par4))).isSolid();
+    public boolean canBlockStay(IWorldReader world, int par2, int par3, int par4) {
+        BlockPos below = new BlockPos(par2, par3 - 1, par4);
+        return world.getBlockState(below).isFaceSturdy(world, below, net.minecraft.util.Direction.UP);
     }
 
     public int quantityDropped(Random par1Random) {
         return 0;
     }
 
-    public Item getItemDropped(int p_149650_1_, Random p_149650_2_, int p_149650_3_) {
-        return null;
-    }
-
-    @SideOnly(value=Side.CLIENT)
-    public Item getItem(World p_149694_1_, int p_149694_2_, int p_149694_3_, int p_149694_4_) {
-        return ChaosPersists.MyDuctTapeItem;
+    @OnlyIn(Dist.CLIENT)
+    public ItemStack getCloneItemStack(IBlockReader world, BlockPos pos, BlockState state) {
+        return new ItemStack(ChaosPersists.MyDuctTapeItem);
     }
 }
-

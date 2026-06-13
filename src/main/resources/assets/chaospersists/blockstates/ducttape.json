@@ -1,10 +1,10 @@
 {
   "variants": {
-    "slices=0": { "model": "chaospersists:ducttape_0" },
-    "slices=1": { "model": "chaospersists:ducttape_1" },
-    "slices=2": { "model": "chaospersists:ducttape_2" },
-    "slices=3": { "model": "chaospersists:ducttape_3" },
-    "slices=4": { "model": "chaospersists:ducttape_4" },
-    "slices=5": { "model": "chaospersists:ducttape_5" }
+    "slices=0": { "model": "chaospersists:block/ducttape_0" },
+    "slices=1": { "model": "chaospersists:block/ducttape_1" },
+    "slices=2": { "model": "chaospersists:block/ducttape_2" },
+    "slices=3": { "model": "chaospersists:block/ducttape_3" },
+    "slices=4": { "model": "chaospersists:block/ducttape_4" },
+    "slices=5": { "model": "chaospersists:block/ducttape_5" }
   }
 }

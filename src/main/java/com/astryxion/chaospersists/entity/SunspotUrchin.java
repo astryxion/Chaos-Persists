@@ -1,82 +1,75 @@
-/*
- * Decompiled with CFR 0_125.
- * 
- * Could not load the following classes:
- *  com.astryxion.chaospersists.SunspotUrchin
- *  net.minecraft.block.Block
- *  net.minecraft.block.BlockFire
- *  net.minecraft.entity.Entity
- *  net.minecraft.entity.EntityLivingBase
- *  net.minecraft.entity.monster.EntityCreeper
- *  net.minecraft.entity.player.EntityPlayer
- *  net.minecraft.entity.projectile.EntityThrowable
- *  net.minecraft.init.Blocks
- *  net.minecraft.util.DamageSource
- *  net.minecraft.util.math.RayTraceResult
- *  net.minecraft.world.World
- */
 package com.astryxion.chaospersists.entity;
 
-import java.util.Random;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockFire;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.monster.EntityCreeper;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.projectile.EntityThrowable;
-import net.minecraft.init.Blocks;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.Direction;
+import net.minecraft.particles.ParticleTypes;
 import net.minecraft.util.DamageSource;
-import static net.minecraft.util.EnumFacing.*;
-import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.monster.CreeperEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.projectile.ThrowableEntity;
 import net.minecraft.world.World;
+import net.minecraft.block.Blocks;
+import net.minecraft.util.math.BlockRayTraceResult;
+import net.minecraft.util.math.EntityRayTraceResult;
+import net.minecraft.util.math.RayTraceResult;
 
-public class SunspotUrchin
-extends EntityThrowable {
+public class SunspotUrchin extends ThrowableEntity {
     private float my_rotation = 0.0f;
     private int my_index = 50;
 
-    public SunspotUrchin(World par1World) {
-        super(par1World);
+    public SunspotUrchin(EntityType<? extends SunspotUrchin> type, World par1World) {
+        super(type, par1World);
     }
 
-    public SunspotUrchin(World par1World, int par2) {
-        super(par1World);
+    public SunspotUrchin(EntityType<? extends SunspotUrchin> type, World par1World, int par2) {
+        super(type, par1World);
     }
 
-    public SunspotUrchin(World par1World, EntityLivingBase par2EntityLiving) {
-        super(par1World, par2EntityLiving);
+    public SunspotUrchin(EntityType<? extends SunspotUrchin> type, World par1World, LivingEntity par2Mob) {
+        super(type, par2Mob, par1World);
     }
 
-    public SunspotUrchin(World par1World, EntityLivingBase par2EntityLiving, int par3) {
-        super(par1World, par2EntityLiving);
+    public SunspotUrchin(EntityType<? extends SunspotUrchin> type, World par1World, LivingEntity par2Mob, int par3) {
+        super(type, par2Mob, par1World);
     }
 
-    public SunspotUrchin(World par1World, double par2, double par4, double par6) {
-        super(par1World, par2, par4, par6);
+    public SunspotUrchin(EntityType<? extends SunspotUrchin> type, World par1World, double par2, double par4, double par6) {
+        super(type, par2, par4, par6, par1World);
+    }
+
+    @Override
+    protected void defineSynchedData() {
     }
 
     public int getUrchinIndex() {
         return this.my_index;
     }
 
-    protected void onImpact(RayTraceResult par1MovingObjectPosition) {
-        if (par1MovingObjectPosition.entityHit != null) {
+    @Override
+    protected void onHit(RayTraceResult par1MovingObjectPosition) {
+        super.onHit(par1MovingObjectPosition);
+        if (par1MovingObjectPosition.getType() == RayTraceResult.Type.ENTITY) {
+            Entity entityHit = ((EntityRayTraceResult) par1MovingObjectPosition).getEntity();
             float var2 = 3.0f;
-            if (par1MovingObjectPosition.entityHit instanceof EntityCreeper) {
+            if (entityHit instanceof CreeperEntity) {
                 var2 = 6.0f;
             }
-            if (!(par1MovingObjectPosition.entityHit instanceof EntityPlayer)) {
-                par1MovingObjectPosition.entityHit.attackEntityFrom(DamageSource.causeThrownDamage((Entity)this, (Entity)this.getThrower()), var2);
-                if (!par1MovingObjectPosition.entityHit.isImmuneToFire()) {
-                    par1MovingObjectPosition.entityHit.setFire(5);
+            if (!(entityHit instanceof PlayerEntity)) {
+                entityHit.hurt(DamageSource.thrown(this, this.getOwner()), var2);
+                if (entityHit instanceof LivingEntity && !((LivingEntity) entityHit).fireImmune()) {
+                    entityHit.setSecondsOnFire(5);
                 }
             }
-        } else {
-            int i = par1MovingObjectPosition.getBlockPos().getX();
-            int j = par1MovingObjectPosition.getBlockPos().getY();
-            int k = par1MovingObjectPosition.getBlockPos().getZ();
-            switch (par1MovingObjectPosition.sideHit) {
+        } else if (par1MovingObjectPosition.getType() == RayTraceResult.Type.BLOCK) {
+            BlockRayTraceResult blockHit = (BlockRayTraceResult) par1MovingObjectPosition;
+            int i = blockHit.getBlockPos().getX();
+            int j = blockHit.getBlockPos().getY();
+            int k = blockHit.getBlockPos().getZ();
+            Direction sideHit = blockHit.getDirection();
+            switch (sideHit) {
                 case DOWN:
                     --j;
                     break;
@@ -98,28 +91,29 @@ extends EntityThrowable {
                 default:
                     break;
             }
-            if (this.world.isAirBlock(new net.minecraft.util.math.BlockPos(i, j, k))) {
-                this.world.setBlockState(new net.minecraft.util.math.BlockPos(i, j, k), Blocks.FIRE.getDefaultState());
+            BlockPos firePos = new BlockPos(i, j, k);
+            if (this.level.isEmptyBlock(firePos)) {
+                this.level.setBlockAndUpdate(firePos, Blocks.FIRE.defaultBlockState());
             }
         }
         for (int var3 = 0; var3 < 5; ++var3) {
-            this.world.spawnParticle(net.minecraft.util.EnumParticleTypes.SMOKE_NORMAL, this.posX, this.posY, this.posZ, (double)this.world.rand.nextFloat(), (double)this.world.rand.nextFloat(), (double)this.world.rand.nextFloat());
-            this.world.spawnParticle(net.minecraft.util.EnumParticleTypes.REDSTONE, this.posX, this.posY, this.posZ, (double)this.world.rand.nextFloat(), (double)this.world.rand.nextFloat(), (double)this.world.rand.nextFloat());
+            this.level.addParticle(ParticleTypes.SMOKE, this.getX(), this.getY(), this.getZ(), (double) this.level.random.nextFloat(), (double) this.level.random.nextFloat(), (double) this.level.random.nextFloat());
+            this.level.addParticle(new net.minecraft.particles.RedstoneParticleData(1.0F, 0.0F, 0.0F, 1.0F), this.getX(), this.getY(), this.getZ(), (double) this.level.random.nextFloat(), (double) this.level.random.nextFloat(), (double) this.level.random.nextFloat());
         }
-        if (!this.world.isRemote) {
-            this.setDead();
+        if (!this.level.isClientSide) {
+            this.remove();
         }
     }
 
-    public void onUpdate() {
-        super.onUpdate();
-        this.setFire(1);
+    @Override
+    public void tick() {
+        super.tick();
+        this.setSecondsOnFire(1);
         this.my_rotation += 30.0f;
         while (this.my_rotation > 360.0f) {
             this.my_rotation -= 360.0f;
         }
-        this.rotationPitch = this.prevRotationPitch = this.my_rotation;
-        this.world.spawnParticle(net.minecraft.util.EnumParticleTypes.SMOKE_NORMAL, this.posX, this.posY, this.posZ, 0.0, 0.0, 0.0);
+        this.xRot = this.xRotO = this.my_rotation;
+        this.level.addParticle(ParticleTypes.SMOKE, this.getX(), this.getY(), this.getZ(), 0.0, 0.0, 0.0);
     }
 }
-

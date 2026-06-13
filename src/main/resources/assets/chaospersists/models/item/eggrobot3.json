@@ -1,6 +1,6 @@
-{
+﻿{
   "parent": "item/generated",
   "textures": {
-    "layer0": "chaospersists:items/eggrobot3"
+    "layer0": "chaospersists:item/eggrobot3"
   }
 }

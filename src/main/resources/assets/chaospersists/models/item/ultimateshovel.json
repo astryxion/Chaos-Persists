@@ -1,6 +1,6 @@
-{
+﻿{
   "parent": "item/handheld",
   "textures": {
-    "layer0": "chaospersists:items/ultimateshovel"
+    "layer0": "chaospersists:item/ultimateshovel"
   }
 }

@@ -1,185 +1,172 @@
-/*
- * Decompiled with CFR 0_125.
- * 
- * Could not load the following classes:
- *  com.astryxion.chaospersists.CliffRacer
- *  com.astryxion.chaospersists.ChaosPersists
- *  net.minecraft.block.Block
- *  net.minecraft.entity.Entity
- *  net.minecraft.entity.EntityAgeable
- *  net.minecraft.entity.SharedMonsterAttributes
- *  net.minecraft.entity.ai.attributes.BaseAttributeMap
- *  net.minecraft.entity.ai.attributes.IAttribute
- *  net.minecraft.entity.ai.attributes.IAttributeInstance
- *  net.minecraft.entity.passive.EntityAnimal
- *  net.minecraft.init.Blocks
- *  net.minecraft.init.Items
- *  net.minecraft.item.Item
- *  net.minecraft.pathfinding.PathNavigate
- *  net.minecraft.util.ChunkCoordinates
- *  net.minecraft.util.MathHelper
- *  net.minecraft.util.math.RayTraceResult
- *  net.minecraft.util.math.Vec3d
- *  net.minecraft.world.World
- */
 package com.astryxion.chaospersists.entity;
+import net.minecraft.entity.MobEntity;
 
 import com.astryxion.chaospersists.core.ChaosPersists;
-import java.util.Random;
-import net.minecraft.block.Block;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityAgeable;
-import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.ai.attributes.AbstractAttributeMap;
-import net.minecraft.entity.ai.attributes.IAttribute;
-import net.minecraft.entity.ai.attributes.IAttributeInstance;
-import net.minecraft.entity.passive.EntityAnimal;
-import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
-import net.minecraft.item.Item;
-import net.minecraft.pathfinding.PathNavigate;
+import com.astryxion.chaospersists.core.ChaosSounds;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.DamageSource;
+import net.minecraft.entity.AgeableEntity;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.SpawnReason;
+import net.minecraft.entity.ai.attributes.AttributeModifierMap;
+import net.minecraft.entity.ai.attributes.Attributes;
+import net.minecraft.entity.passive.AnimalEntity;
+import net.minecraft.item.Item;
+import net.minecraft.item.Items;
+import net.minecraft.util.math.RayTraceContext;
 import net.minecraft.world.World;
+import net.minecraft.world.IWorldReader;
+import net.minecraft.block.Block;
+import net.minecraft.block.Blocks;
+import net.minecraft.block.BlockState;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.vector.Vector3d;
 
-public class CliffRacer
-extends EntityAnimal {
+public class CliffRacer extends AnimalEntity {
     private BlockPos currentFlightTarget = null;
 
-    public CliffRacer(World par1World) {
-        super(par1World);
-        this.setSize(0.75f, 0.5f);
-                this.experienceValue = 5;
-        this.isImmuneToFire = false;
-            }
-
-    protected void applyEntityAttributes() {
-        super.applyEntityAttributes();
-        this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue((double)this.mygetMaxHealth());
-        this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.33000001311302185);
-        this.getAttributeMap().registerAttribute(SharedMonsterAttributes.ATTACK_DAMAGE);
-        this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(1.0);
+    public CliffRacer(EntityType<? extends CliffRacer> type, World par1World) {
+        super(type, par1World);
+        // EntityType registration: width=0.75f, height=0.5f
+        this.xpReward = 5;
+    }
+    @Override
+    public boolean fireImmune() {
+        return true;
     }
 
-    protected boolean canDespawn() {
-        if (this.isNoDespawnRequired()) {
+
+    public static AttributeModifierMap createAttributes() {
+        return MobEntity.createMobAttributes()
+                .add(Attributes.MAX_HEALTH, 5.0)
+                .add(Attributes.MOVEMENT_SPEED, 0.33000001311302185)
+                .add(Attributes.ATTACK_DAMAGE, 1.0)
+                .build();
+    }
+    protected boolean canDespawn(double distanceToClosestPlayerEntity) {
+        if (this.isPersistenceRequired()) {
             return false;
         }
         return true;
     }
 
+    @Override
     protected float getSoundVolume() {
         return 0.45f;
     }
 
-    protected float getSoundPitch() {
+    @Override
+    protected float getVoicePitch() {
         return 1.0f;
     }
 
-    protected net.minecraft.util.SoundEvent getAmbientSound() {
-        return com.astryxion.chaospersists.core.ChaosSounds.CLIFFRACER;
+    @Override
+    protected SoundEvent getAmbientSound() {
+        return ChaosSounds.CLIFFRACER;
     }
 
-    protected net.minecraft.util.SoundEvent getHurtSound(net.minecraft.util.DamageSource damageSource) {
+    @Override
+    protected SoundEvent getHurtSound(DamageSource damageSource) {
         return null;
     }
 
-    protected net.minecraft.util.SoundEvent getDeathSound() {
+    @Override
+    protected SoundEvent getDeathSound() {
         return null;
     }
 
-    public boolean canBePushed() {
+    @Override
+    public boolean isPushable() {
         return true;
-    }
-
-    protected void collideWithEntity(Entity par1Entity) {
     }
 
     public int mygetMaxHealth() {
         return 5;
     }
 
-    protected boolean isAIEnabled() {
-        return true;
-    }
-
-    public void onUpdate() {
-        super.onUpdate();
-        this.motionY *= 0.6;
+    @Override
+    public void tick() {
+        super.tick();
+        this.setDeltaMovement(this.getDeltaMovement().x, this.getDeltaMovement().y * 0.6, this.getDeltaMovement().z);
     }
 
     public boolean canSeeTarget(double pX, double pY, double pZ) {
-        return this.world.rayTraceBlocks(new Vec3d((double)this.posX, (double)(this.posY + 0.75), (double)this.posZ), new Vec3d((double)pX, (double)pY, (double)pZ), false) == null;
+        return this.level.clip(new RayTraceContext(new Vector3d(this.getX(), this.getY() + 0.75, this.getZ()), new Vector3d(pX, pY, pZ), RayTraceContext.BlockMode.COLLIDER, RayTraceContext.FluidMode.NONE, this)).getType() == RayTraceResult.Type.MISS;
     }
 
-    protected void updateAITasks() {
+    @Override
+    protected void customServerAiStep() {
         int xdir = 1;
         int zdir = 1;
         int keep_trying = 50;
-        if (this.isDead) {
+        if (this.removed) {
             return;
         }
-        super.updateAITasks();
+        super.customServerAiStep();
         if (this.currentFlightTarget == null) {
-            this.currentFlightTarget = new BlockPos((int)this.posX, (int)this.posY, (int)this.posZ);
+            this.currentFlightTarget = new BlockPos((int) this.getX(), (int) this.getY(), (int) this.getZ());
         }
-        if (this.rand.nextInt(300) == 0 || this.currentFlightTarget.distanceSq(this.posX, this.posY, this.posZ) < 2.1f) {
+        if (this.random.nextInt(300) == 0 || this.currentFlightTarget.distSqr(this.getX(), this.getY(), this.getZ(), true) < 2.1f) {
             Block bid = Blocks.STONE;
             while (bid != Blocks.AIR && keep_trying != 0) {
-                zdir = this.rand.nextInt(10) + 5;
-                xdir = this.rand.nextInt(10) + 5;
-                if (this.rand.nextInt(2) == 0) {
-                    zdir = - zdir;
+                zdir = this.random.nextInt(10) + 5;
+                xdir = this.random.nextInt(10) + 5;
+                if (this.random.nextInt(2) == 0) {
+                    zdir = -zdir;
                 }
-                if (this.rand.nextInt(2) == 0) {
-                    xdir = - xdir;
+                if (this.random.nextInt(2) == 0) {
+                    xdir = -xdir;
                 }
-                this.currentFlightTarget = new net.minecraft.util.math.BlockPos((int)this.posX + xdir, (int)this.posY + this.rand.nextInt(11) - 5, (int)this.posZ + zdir);
-                bid = this.world.getBlockState(this.currentFlightTarget).getBlock();
-                if (bid == Blocks.AIR && !this.canSeeTarget((double)this.currentFlightTarget.getX(), (double)this.currentFlightTarget.getY(), (double)this.currentFlightTarget.getZ())) {
+                this.currentFlightTarget = new BlockPos((int) this.getX() + xdir, (int) this.getY() + this.random.nextInt(11) - 5, (int) this.getZ() + zdir);
+                bid = this.level.getBlockState(this.currentFlightTarget).getBlock();
+                if (bid == Blocks.AIR && !this.canSeeTarget((double) this.currentFlightTarget.getX(), (double) this.currentFlightTarget.getY(), (double) this.currentFlightTarget.getZ())) {
                     bid = Blocks.STONE;
                 }
                 --keep_trying;
             }
         }
-        double var1 = (double)this.currentFlightTarget.getX() + 0.4 - this.posX;
-        double var3 = (double)this.currentFlightTarget.getY() + 0.1 - this.posY;
-        double var5 = (double)this.currentFlightTarget.getZ() + 0.4 - this.posZ;
-        this.motionX += (Math.signum(var1) * 0.4 - this.motionX) * 0.3;
-        this.motionY += (Math.signum(var3) * 0.7 - this.motionY) * 0.2;
-        this.motionZ += (Math.signum(var5) * 0.4 - this.motionZ) * 0.3;
-        float var7 = (float)(Math.atan2(this.motionZ, this.motionX) * 180.0 / 3.141592653589793) - 90.0f;
-        float var8 = MathHelper.wrapDegrees((float)(var7 - this.rotationYaw));
-        this.moveForward = 0.75f;
-        this.rotationYaw += var8 / 6.0f;
+        double var1 = (double) this.currentFlightTarget.getX() + 0.4 - this.getX();
+        double var3 = (double) this.currentFlightTarget.getY() + 0.1 - this.getY();
+        double var5 = (double) this.currentFlightTarget.getZ() + 0.4 - this.getZ();
+        double mx = this.getDeltaMovement().x + (Math.signum(var1) * 0.4 - this.getDeltaMovement().x) * 0.3;
+        double my = this.getDeltaMovement().y + (Math.signum(var3) * 0.7 - this.getDeltaMovement().y) * 0.2;
+        double mz = this.getDeltaMovement().z + (Math.signum(var5) * 0.4 - this.getDeltaMovement().z) * 0.3;
+        this.setDeltaMovement(mx, my, mz);
+        float var7 = (float) (Math.atan2(mz, mx) * 180.0 / 3.141592653589793) - 90.0f;
+        float var8 = MathHelper.wrapDegrees(var7 - this.yRot);
+        this.zza = 0.75f;
+        this.yRot += var8 / 6.0f;
     }
 
-    protected boolean canTriggerWalking() {
+    @Override
+    protected boolean isMovementNoisy() {
         return true;
     }
 
-    public void fall(float distance, float damageMultiplier) {
-    }
+    @Override
+    public boolean causeFallDamage(float distance, float damageMultiplier) { return false; }
 
-    protected void updateFallState(double y, boolean onGroundIn, net.minecraft.block.state.IBlockState state, net.minecraft.util.math.BlockPos pos) {
+    @Override
+    protected void checkFallDamage(double y, boolean onGroundIn, BlockState state, BlockPos pos) {
         fallDistance = 0.0f;
     }
 
-    public boolean doesEntityNotTriggerPressurePlate() {
+    @Override
+    public boolean canChangeDimensions() {
         return false;
     }
 
-    public boolean getCanSpawnHere() {
-        if (this.posY < 50.0) {
+    public boolean checkSpawnRules(IWorldReader level, SpawnReason reason) {
+        if (this.getY() < 50.0) {
             return false;
         }
         return true;
     }
 
     protected Item getDropItem() {
-        int i = this.world.rand.nextInt(8);
+        int i = this.level.random.nextInt(8);
         if (i == 0) {
             return Items.CHICKEN;
         }
@@ -192,8 +179,8 @@ extends EntityAnimal {
         return null;
     }
 
-    public EntityAgeable createChild(EntityAgeable var1) {
+    @Override
+    public AgeableEntity getBreedOffspring(net.minecraft.world.server.ServerWorld level, AgeableEntity mate) {
         return null;
     }
 }
-

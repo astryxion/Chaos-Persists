@@ -566,6 +566,7 @@ import com.astryxion.chaospersists.util.MyDispenserBehaviorDeadIrukandji;
 import com.astryxion.chaospersists.util.MyDispenserBehaviorLaserball;
 import com.astryxion.chaospersists.util.MyDispenserBehaviorRock;
 import com.astryxion.chaospersists.command.CommandChaos;
+import com.astryxion.chaospersists.command.CommandChaosStructures;
 import com.astryxion.chaospersists.command.CommandCrystal;
 import com.astryxion.chaospersists.command.CommandDanger;
 import com.astryxion.chaospersists.command.CommandMining;
@@ -713,6 +714,8 @@ public class ChaosPersists
     MENU_TYPES.register(modBus);
     CREATIVE_MODE_TABS.register(modBus);
     BIOME_MODIFIER_SERIALIZERS.register(modBus);
+    com.astryxion.chaospersists.world.dimension.structure.ChaosLocateStructures.STRUCTURE_TYPES.register(modBus);
+    com.astryxion.chaospersists.world.dimension.structure.ChaosLocateStructures.STRUCTURE_PIECES.register(modBus);
     registerAllCritterCages();
     registerAllWeaponsAndArmor();
     registerAllFoodItems();
@@ -2331,6 +2334,7 @@ private static void registerAllCritterCages() {
     CommandCrystal.register(event.getDispatcher());
     CommandChaos.register(event.getDispatcher());
     CommandOverworld.register(event.getDispatcher());
+    CommandChaosStructures.register(event.getDispatcher());
     serverStarting(new FMLServerStartingEvent(event));
   }
 

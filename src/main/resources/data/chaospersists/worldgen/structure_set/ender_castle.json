@@ -1,0 +1,14 @@
+{
+  "structures": [
+    {
+      "structure": "chaospersists:ender_castle",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "type": "minecraft:random_spread",
+    "spacing": 14,
+    "separation": 3,
+    "salt": 1212568209
+  }
+}

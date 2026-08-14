@@ -18,9 +18,7 @@
           "height": 1
         }
       ],
-      "structures": {
-        "structures": {}
-      }
+      "structure_overrides": "#chaospersists:danger_locate"
     }
   }
 }

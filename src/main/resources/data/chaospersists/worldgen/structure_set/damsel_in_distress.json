@@ -1,0 +1,14 @@
+{
+  "structures": [
+    {
+      "structure": "chaospersists:damsel_in_distress",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "type": "minecraft:random_spread",
+    "spacing": 16,
+    "separation": 4,
+    "salt": 1254789984
+  }
+}

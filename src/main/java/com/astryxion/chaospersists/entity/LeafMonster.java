@@ -93,14 +93,6 @@ public class LeafMonster extends Monster {
     public void tick() {
         this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue((double) this.moveSpeed);
         super.tick();
-        int py = Mth.floor(this.getY());
-        if (this.getY() != py) {
-            this.setPos(this.getX(), py, this.getZ());
-        }
-        Vec3 motion = this.getDeltaMovement();
-        if (motion.y != 0.0) {
-            this.setDeltaMovement(motion.x, 0.0, motion.z);
-        }
         if (this.getAttacking() == 0) {
             this.snapToBlockCenter();
             this.setXRot(0.0f);
@@ -108,14 +100,16 @@ public class LeafMonster extends Monster {
             head = head / 90 * 90;
             this.setYRot(head);
             this.yHeadRot = head;
-            this.setDeltaMovement(Vec3.ZERO);
             this.getNavigation().stop();
+            Vec3 motion = this.getDeltaMovement();
+            this.setDeltaMovement(0.0, motion.y, 0.0);
         }
     }
 
     @Override
     public void travel(Vec3 travelVector) {
         if (this.getAttacking() == 0) {
+            super.travel(Vec3.ZERO);
             return;
         }
         super.travel(travelVector);
@@ -241,7 +235,8 @@ public class LeafMonster extends Monster {
             this.setDeltaMovement(Vec3.ZERO);
             return;
         }
-        this.setDeltaMovement(step.normalize().scale(this.moveSpeed));
+        Vec3 horiz = step.normalize().scale(this.moveSpeed);
+        this.setDeltaMovement(horiz.x, this.getDeltaMovement().y, horiz.z);
         this.setXRot(0.0f);
         this.yHeadRot = this.getYRot();
     }

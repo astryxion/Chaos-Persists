@@ -1,0 +1,14 @@
+{
+  "structures": [
+    {
+      "structure": "chaospersists:spider_hangout",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "type": "minecraft:random_spread",
+    "spacing": 19,
+    "separation": 4,
+    "salt": 1887668627
+  }
+}

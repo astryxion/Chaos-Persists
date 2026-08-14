@@ -1,0 +1,14 @@
+{
+  "structures": [
+    {
+      "structure": "chaospersists:red_ant_hangout",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "type": "minecraft:random_spread",
+    "spacing": 16,
+    "separation": 4,
+    "salt": 860266179
+  }
+}

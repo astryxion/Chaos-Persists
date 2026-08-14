@@ -63,7 +63,7 @@ public class UltimateBow extends Item {
                 arrow.setKnockbackStrength(punchLevel);
             }
             if (EnchantmentHelper.getItemEnchantmentLevel(Enchantments.FLAMING_ARROWS, stack) > 0) {
-                arrow.setSharedFlagOnFire(true);
+                arrow.setSecondsOnFire(100);
             }
 
             arrow.pickup = AbstractArrow.Pickup.CREATIVE_ONLY;

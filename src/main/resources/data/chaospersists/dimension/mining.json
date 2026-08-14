@@ -5,7 +5,7 @@
     "settings": "chaospersists:chaos_mining_mountains",
     "biome_source": {
       "type": "minecraft:fixed",
-      "biome": "minecraft:windswept_hills"
+        "biome": "minecraft:windswept_hills"
     }
   }
 }

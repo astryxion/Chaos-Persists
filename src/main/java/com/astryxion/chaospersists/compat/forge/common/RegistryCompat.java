@@ -10,8 +10,10 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.ButtonBlock;
 import net.minecraft.world.level.block.LadderBlock;
 import net.minecraft.world.level.block.TrapDoorBlock;
+import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.Half;
 
@@ -109,6 +111,12 @@ public final class RegistryCompat {
       return legacyStainedTerracotta(meta).defaultBlockState();
     }
 
+    // 1.7.10 / 1.12 button metadata, not 1.20 possible-state index.
+    // 0 ceiling, 1 east, 2 west, 3 south, 4 north, 5 floor. Bit 8 = powered.
+    if (block instanceof ButtonBlock) {
+      return legacyButton(block, meta);
+    }
+
     // 1.12 ladder: meta & 3 = EnumFacing.byHorizontalIndex (0=S, 1=W, 2=N, 3=E).
     if (block instanceof LadderBlock) {
       return block.defaultBlockState()
@@ -150,6 +158,35 @@ public final class RegistryCompat {
       return states.get(idx);
     }
     return block.defaultBlockState();
+  }
+
+  /**
+   * 1.12 {@code BlockButton#getStateFromMeta}: 0=ceiling, 1=east, 2=west, 3=south, 4=north, 5=floor.
+   * Robot/triffid buttons sit at {@code cposz - 1} with meta 4, attached to the wall at {@code cposz}.
+   */
+  private static BlockState legacyButton(Block block, int meta) {
+    boolean powered = (meta & 8) != 0;
+    BlockState state = block.defaultBlockState().setValue(BlockStateProperties.POWERED, powered);
+    return switch (meta & 7) {
+      case 0 -> state
+          .setValue(BlockStateProperties.ATTACH_FACE, AttachFace.CEILING)
+          .setValue(BlockStateProperties.HORIZONTAL_FACING, Direction.NORTH);
+      case 1 -> state
+          .setValue(BlockStateProperties.ATTACH_FACE, AttachFace.WALL)
+          .setValue(BlockStateProperties.HORIZONTAL_FACING, Direction.EAST);
+      case 2 -> state
+          .setValue(BlockStateProperties.ATTACH_FACE, AttachFace.WALL)
+          .setValue(BlockStateProperties.HORIZONTAL_FACING, Direction.WEST);
+      case 3 -> state
+          .setValue(BlockStateProperties.ATTACH_FACE, AttachFace.WALL)
+          .setValue(BlockStateProperties.HORIZONTAL_FACING, Direction.SOUTH);
+      case 4 -> state
+          .setValue(BlockStateProperties.ATTACH_FACE, AttachFace.WALL)
+          .setValue(BlockStateProperties.HORIZONTAL_FACING, Direction.NORTH);
+      default -> state
+          .setValue(BlockStateProperties.ATTACH_FACE, AttachFace.FLOOR)
+          .setValue(BlockStateProperties.HORIZONTAL_FACING, Direction.NORTH);
+    };
   }
 
   /** 1.12 {@code Blocks.STAINED_HARDENED_CLAY} dye metadata order. */

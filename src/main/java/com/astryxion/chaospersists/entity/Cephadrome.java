@@ -168,6 +168,8 @@ public class Cephadrome extends PathfinderMob {
         this.goalSelector.addGoal(2, new RandomLookAroundGoal(this));
         this.targetSelector.addGoal(1, new ChaosHurtByTargetGoal(this));
         this.moveControl = new ChaosChaseMoveControl(this);
+        // 1.1 clears a full block via collide() step-up; 1.0 often fails on exact 1-block height.
+        this.setMaxUpStep(1.1F);
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -902,9 +904,7 @@ public class Cephadrome extends PathfinderMob {
         double speed = (double) this.moveSpeed * 1.35;
         double mx = -Math.sin(yawRad) * speed;
         double mz = Math.cos(yawRad) * speed;
-        Vec3 motion = this.getDeltaMovement();
-        this.setDeltaMovement(mx, motion.y, mz);
-        this.move(MoverType.SELF, new Vec3(mx, 0.0, mz));
+        this.moveGroundForward(mx, mz);
     }
 
     private void applyChaseMovement(LivingEntity target) {
@@ -922,9 +922,21 @@ public class Cephadrome extends PathfinderMob {
         double mz = (dz / dist) * speed;
         this.setYRot((float) (Math.toDegrees(Math.atan2(dz, dx)) - 90.0));
         this.yBodyRot = this.getYRot();
+        this.moveGroundForward(mx, mz);
+    }
+
+    /**
+     * Slide on XZ like the original ground walk. If that hits a slab/block, retry with a
+     * slight downward move so {@code Entity.collide} can step up in the same call.
+     * Do not hop — airborne Y is slammed by {@link #tickUnmountedPhysics}.
+     */
+    private void moveGroundForward(double mx, double mz) {
         Vec3 motion = this.getDeltaMovement();
         this.setDeltaMovement(mx, motion.y, mz);
         this.move(MoverType.SELF, new Vec3(mx, 0.0, mz));
+        if (this.horizontalCollision && !this.lacksGroundSupport()) {
+            this.move(MoverType.SELF, new Vec3(mx, -0.08, mz));
+        }
     }
 
     private void tickCombat() {
@@ -969,6 +981,9 @@ public class Cephadrome extends PathfinderMob {
     private boolean lacksGroundSupport() {
         if (this.isNoGravity()) {
             return true;
+        }
+        if (this.onGround()) {
+            return false;
         }
         Level level = this.level();
         if (level == null) {

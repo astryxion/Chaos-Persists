@@ -59,7 +59,9 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
+import net.minecraft.world.level.block.state.properties.ChestType;
 import net.minecraft.world.level.block.entity.SpawnerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import com.astryxion.chaospersists.compat.forge.common.util.EnumHelper;
@@ -158,11 +160,30 @@ public class GenericDungeon {
             int z,
             net.minecraft.core.Direction facing,
             net.minecraft.world.level.block.Block doorBlock) {
+        this.placeLevelDoor(
+                level,
+                x,
+                y,
+                z,
+                facing,
+                doorBlock,
+                net.minecraft.world.level.block.state.properties.DoorHingeSide.LEFT);
+    }
+
+    private void placeLevelDoor(
+            net.minecraft.world.level.Level level,
+            int x,
+            int y,
+            int z,
+            net.minecraft.core.Direction facing,
+            net.minecraft.world.level.block.Block doorBlock,
+            net.minecraft.world.level.block.state.properties.DoorHingeSide hinge) {
         net.minecraft.core.BlockPos pos = new net.minecraft.core.BlockPos(x, y, z);
         net.minecraft.world.level.block.state.BlockState lower =
                 doorBlock
                         .defaultBlockState()
                         .setValue(net.minecraft.world.level.block.DoorBlock.FACING, facing)
+                        .setValue(net.minecraft.world.level.block.DoorBlock.HINGE, hinge)
                         .setValue(
                                 net.minecraft.world.level.block.DoorBlock.HALF,
                                 net.minecraft.world.level.block.state.properties.DoubleBlockHalf.LOWER);
@@ -416,10 +437,51 @@ public class GenericDungeon {
                                 net.minecraft.world.level.block.ChestBlock.FACING,
                                 chestFacingFromLegacyMeta(chestMeta)),
                 3);
-        net.minecraft.world.level.block.entity.BlockEntity blockEntity = level.getBlockEntity(pos);
-        if (blockEntity instanceof net.minecraft.world.level.block.entity.ChestBlockEntity chest) {
+        this.fillExistingChestAt(level, rand, x, y, z, contents, rolls);
+    }
+
+    private void fillExistingChestAt(
+            net.minecraft.world.level.Level level,
+            net.minecraft.util.RandomSource rand,
+            int x,
+            int y,
+            int z,
+            WeightedRandomChestContent[] contents,
+            int rolls) {
+        ChestBlockEntity chest = this.getChestTileEntity(level, x, y, z);
+        if (chest != null) {
             WeightedRandomChestContent.generateChestContents(rand, contents, chest, rolls);
         }
+    }
+
+    private void placeLevelDoubleChest(
+            net.minecraft.world.level.Level level,
+            int x1,
+            int y1,
+            int z1,
+            int x2,
+            int y2,
+            int z2,
+            int chestMeta) {
+        Direction facing = chestFacingFromLegacyMeta(chestMeta);
+        BlockPos pos1 = new BlockPos(x1, y1, z1);
+        BlockPos pos2 = new BlockPos(x2, y2, z2);
+        Direction from1to2 = Direction.fromDelta(x2 - x1, y2 - y1, z2 - z1);
+        ChestType type1 = ChestType.SINGLE;
+        ChestType type2 = ChestType.SINGLE;
+        if (from1to2 != null && from1to2.getAxis().isHorizontal()) {
+            if (from1to2 == facing.getClockWise()) {
+                type1 = ChestType.LEFT;
+                type2 = ChestType.RIGHT;
+            } else if (from1to2 == facing.getCounterClockWise()) {
+                type1 = ChestType.RIGHT;
+                type2 = ChestType.LEFT;
+            }
+        }
+        BlockState base = Blocks.CHEST.defaultBlockState().setValue(ChestBlock.FACING, facing);
+        int flags = 2 | 16;
+        level.setBlock(pos1, base.setValue(ChestBlock.TYPE, type1), flags);
+        level.setBlock(pos2, base.setValue(ChestBlock.TYPE, type2), flags);
     }
 
     public void FastSetBlock(Object world, int ix, int iy, int iz, Object id) {
@@ -2086,15 +2148,8 @@ public class GenericDungeon {
         for (i = 0; i < 4; ++i) {
             this.placeLevelSpawner(level, cposx + i, cposy + 16, cposz, "chaospersists", "attack_squid");
         }
-        level.setBlock(
-                new net.minecraft.core.BlockPos(cposx + 1, cposy + 17, cposz),
-                net.minecraft.world.level.block.Blocks.CHEST.defaultBlockState(),
-                2);
-        level.setBlock(
-                new net.minecraft.core.BlockPos(cposx + 2, cposy + 17, cposz),
-                net.minecraft.world.level.block.Blocks.CHEST.defaultBlockState(),
-                2);
-        this.fillLevelChestAt(level, rand, cposx + 1, cposy + 17, cposz, 2, this.SquidContentsList, 3 + rand.nextInt(5));
+        this.placeLevelDoubleChest(level, cposx + 1, cposy + 17, cposz, cposx + 2, cposy + 17, cposz, 0);
+        this.fillExistingChestAt(level, rand, cposx + 1, cposy + 17, cposz, this.SquidContentsList, 3 + rand.nextInt(5));
         for (i = 0; i < 4; ++i) {
             level.setBlock(
                     new net.minecraft.core.BlockPos(cposx + i, cposy + 18, cposz),
@@ -2389,19 +2444,9 @@ public class GenericDungeon {
         this.placeLevelSpawner(level, cposx + 5, cposy + 10, cposz + 5, "chaospersists", "leaf_monster");
         this.placeLevelSpawner(level, cposx - 2, cposy + 10, cposz + 5, "chaospersists", "leaf_monster");
         this.placeLevelSpawner(level, cposx + 5, cposy + 10, cposz - 2, "chaospersists", "leaf_monster");
-        level.setBlock(
-                new net.minecraft.core.BlockPos(cposx + 2, cposy + 10, cposz + 5),
-                net.minecraft.world.level.block.Blocks.CHEST.defaultBlockState(),
-                2);
-        this.fillLevelChestAt(
-                level,
-                rand,
-                cposx + 1,
-                cposy + 10,
-                cposz + 5,
-                0,
-                this.LeafMonsterContentsList,
-                12 + rand.nextInt(5));
+        this.placeLevelDoubleChest(level, cposx + 1, cposy + 10, cposz + 5, cposx + 2, cposy + 10, cposz + 5, 0);
+        this.fillExistingChestAt(
+                level, rand, cposx + 1, cposy + 10, cposz + 5, this.LeafMonsterContentsList, 12 + rand.nextInt(5));
     }
 
     public void makeMiniDungeon(Object worldObj, int cposx, int cposy, int cposz) {
@@ -4086,14 +4131,16 @@ public class GenericDungeon {
                 cposy + 1,
                 cposz,
                 net.minecraft.core.Direction.SOUTH,
-                net.minecraft.world.level.block.Blocks.IRON_DOOR);
+                net.minecraft.world.level.block.Blocks.IRON_DOOR,
+                net.minecraft.world.level.block.state.properties.DoorHingeSide.LEFT);
         this.placeLevelDoor(
                 level,
                 cposx + width / 2 - 1,
                 cposy + 1,
                 cposz,
                 net.minecraft.core.Direction.SOUTH,
-                net.minecraft.world.level.block.Blocks.IRON_DOOR);
+                net.minecraft.world.level.block.Blocks.IRON_DOOR,
+                net.minecraft.world.level.block.state.properties.DoorHingeSide.RIGHT);
         ChaosPersists.setBlockFast(
                 level, cposx + width / 2 - 2, cposy + 2, cposz - 1, net.minecraft.world.level.block.Blocks.STONE_BUTTON, 4, 2);
         ChaosPersists.setBlockFast(
@@ -5105,14 +5152,16 @@ public class GenericDungeon {
                 cposy + 1,
                 cposz,
                 net.minecraft.core.Direction.SOUTH,
-                net.minecraft.world.level.block.Blocks.IRON_DOOR);
+                net.minecraft.world.level.block.Blocks.IRON_DOOR,
+                net.minecraft.world.level.block.state.properties.DoorHingeSide.LEFT);
         this.placeLevelDoor(
                 level,
                 cposx + width / 2 - 1,
                 cposy + 1,
                 cposz,
                 net.minecraft.core.Direction.SOUTH,
-                net.minecraft.world.level.block.Blocks.IRON_DOOR);
+                net.minecraft.world.level.block.Blocks.IRON_DOOR,
+                net.minecraft.world.level.block.state.properties.DoorHingeSide.RIGHT);
         ChaosPersists.setBlockFast(level, cposx + width / 2 - 2, cposy + 2, cposz, net.minecraft.world.level.block.Blocks.STONE, 0, 2);
         ChaosPersists.setBlockFast(level, cposx + width / 2 + 1, cposy + 2, cposz, net.minecraft.world.level.block.Blocks.STONE, 0, 2);
         ChaosPersists.setBlockFast(level, cposx + width / 2 - 2, cposy + 2, cposz - 1, net.minecraft.world.level.block.Blocks.STONE_BUTTON, 4, 2);
@@ -5320,12 +5369,9 @@ public class GenericDungeon {
         for (i = 0; i < 2; ++i) {
             this.placeLevelSpawner(level, cposx + i, cposy + 6, cposz, "chaospersists", "rubber_ducky");
         }
-        level.setBlock(
-                new net.minecraft.core.BlockPos(cposx, cposy + 5, cposz),
-                net.minecraft.world.level.block.Blocks.CHEST.defaultBlockState(),
-                2);
-        this.fillLevelChestAt(
-                level, rand, cposx + 1, cposy + 5, cposz, 0, this.RubberDuckyContentsList, 8 + rand.nextInt(5));
+        this.placeLevelDoubleChest(level, cposx, cposy + 5, cposz, cposx + 1, cposy + 5, cposz, 0);
+        this.fillExistingChestAt(
+                level, rand, cposx + 1, cposy + 5, cposz, this.RubberDuckyContentsList, 8 + rand.nextInt(5));
         level.setBlock(
                 new net.minecraft.core.BlockPos(cposx, cposy + 4, cposz),
                 net.minecraft.world.level.block.Blocks.GLASS.defaultBlockState(),
@@ -5350,6 +5396,12 @@ public class GenericDungeon {
                 3);
         for (i = 0; i < 12; ++i) {
             for (int k = 0; k < 11; ++k) {
+                this.FastSetBlock(
+                        level,
+                        cposx + i - 5,
+                        cposy - 1,
+                        cposz + k - 5,
+                        net.minecraft.world.level.block.Blocks.SANDSTONE);
                 bid = net.minecraft.world.level.block.Blocks.WATER;
                 if (i == 0 || k == 0 || i == 11 || k == 10) {
                     bid = net.minecraft.world.level.block.Blocks.SAND;
@@ -5983,35 +6035,50 @@ public class GenericDungeon {
 
     public void makeFrogPond(Object worldObj, int cposx, int cposy, int cposz) {
         net.minecraft.world.level.Level level = (net.minecraft.world.level.Level) worldObj;
-        this.placeLevelSpawner(level, cposx, cposy + 2, cposz, "chaospersists", "frog");
-        for (int i = -3; i <= 3; ++i) {
-            for (int j = -3; j <= 3; ++j) {
-                level.setBlock(
-                        new net.minecraft.core.BlockPos(cposx + i, cposy, cposz + j),
-                        net.minecraft.world.level.block.Blocks.WATER.defaultBlockState(),
-                        3);
+        for (int i = -4; i <= 4; ++i) {
+            for (int j = -4; j <= 4; ++j) {
+                boolean rim = i == -4 || i == 4 || j == -4 || j == 4;
+                this.FastSetBlock(
+                        level,
+                        cposx + i,
+                        cposy - 1,
+                        cposz + j,
+                        net.minecraft.world.level.block.Blocks.DIRT);
+                if (rim) {
+                    this.FastSetBlock(
+                            level,
+                            cposx + i,
+                            cposy,
+                            cposz + j,
+                            net.minecraft.world.level.block.Blocks.GRASS_BLOCK);
+                } else {
+                    this.FastSetBlock(
+                            level,
+                            cposx + i,
+                            cposy,
+                            cposz + j,
+                            net.minecraft.world.level.block.Blocks.WATER);
+                }
+                this.FastSetBlock(
+                        level,
+                        cposx + i,
+                        cposy + 1,
+                        cposz + j,
+                        net.minecraft.world.level.block.Blocks.AIR);
+                this.FastSetBlock(
+                        level,
+                        cposx + i,
+                        cposy + 2,
+                        cposz + j,
+                        net.minecraft.world.level.block.Blocks.AIR);
             }
         }
-        level.setBlock(
-                new net.minecraft.core.BlockPos(cposx, cposy + 1, cposz),
-                net.minecraft.world.level.block.Blocks.WATER.defaultBlockState(),
-                3);
-        level.setBlock(
-                new net.minecraft.core.BlockPos(cposx - 1, cposy + 1, cposz),
-                net.minecraft.world.level.block.Blocks.WATER.defaultBlockState(),
-                3);
-        level.setBlock(
-                new net.minecraft.core.BlockPos(cposx + 1, cposy + 1, cposz),
-                net.minecraft.world.level.block.Blocks.WATER.defaultBlockState(),
-                3);
-        level.setBlock(
-                new net.minecraft.core.BlockPos(cposx, cposy + 1, cposz - 1),
-                net.minecraft.world.level.block.Blocks.WATER.defaultBlockState(),
-                3);
-        level.setBlock(
-                new net.minecraft.core.BlockPos(cposx, cposy + 1, cposz + 1),
-                net.minecraft.world.level.block.Blocks.WATER.defaultBlockState(),
-                3);
+        this.FastSetBlock(level, cposx, cposy + 1, cposz, net.minecraft.world.level.block.Blocks.WATER);
+        this.FastSetBlock(level, cposx - 1, cposy + 1, cposz, net.minecraft.world.level.block.Blocks.WATER);
+        this.FastSetBlock(level, cposx + 1, cposy + 1, cposz, net.minecraft.world.level.block.Blocks.WATER);
+        this.FastSetBlock(level, cposx, cposy + 1, cposz - 1, net.minecraft.world.level.block.Blocks.WATER);
+        this.FastSetBlock(level, cposx, cposy + 1, cposz + 1, net.minecraft.world.level.block.Blocks.WATER);
+        this.placeLevelSpawner(level, cposx, cposy + 2, cposz, "chaospersists", "frog");
         level.setBlock(
                 new net.minecraft.core.BlockPos(cposx - 1, cposy + 2, cposz),
                 net.minecraft.world.level.block.Blocks.LILY_PAD.defaultBlockState(),
@@ -6305,8 +6372,9 @@ public class GenericDungeon {
         this.placeLevelSpawner(level, cposx - 3, cposy + j + 1, cposz, "chaospersists", "cloud_shark");
         this.placeLevelSpawner(level, cposx + 2, cposy + j + 2, cposz, "chaospersists", "cloud_shark");
         this.placeLevelSpawner(level, cposx - 3, cposy + j + 2, cposz, "chaospersists", "cloud_shark");
-        this.fillLevelChestAt(level, rand, cposx, cposy + j, cposz, 2, this.RainbowContentsList, 10 + rand.nextInt(5));
-        this.fillLevelChestAt(level, rand, cposx - 1, cposy + j, cposz, 2, this.RainbowContentsList, 10 + rand.nextInt(5));
+        this.placeLevelDoubleChest(level, cposx, cposy + j, cposz, cposx - 1, cposy + j, cposz, 2);
+        this.fillExistingChestAt(level, rand, cposx, cposy + j, cposz, this.RainbowContentsList, 10 + rand.nextInt(5));
+        this.fillExistingChestAt(level, rand, cposx - 1, cposy + j, cposz, this.RainbowContentsList, 10 + rand.nextInt(5));
     }
 
     public void makeEnormousCastleQ(Object worldObj, int cposx, int cposy, int cposz) {

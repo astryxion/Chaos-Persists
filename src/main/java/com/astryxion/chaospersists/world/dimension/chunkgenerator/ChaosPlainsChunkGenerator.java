@@ -207,8 +207,11 @@ public class ChaosPlainsChunkGenerator extends ChaosChunkGeneratorWrapper {
         int zDiv = Math.floorDiv(z, cellWidth);
         int xMod = Math.floorMod(x, cellWidth);
         int zMod = Math.floorMod(z, cellWidth);
-        int xMin = xMod / cellWidth;
-        int zMin = zMod / cellWidth;
+        // Must be a fraction inside the cell (vanilla NoiseBasedChunkGenerator). Integer
+        // xMod/cellWidth is always 0, so villages queried the 4x4 cell corner instead of
+        // the actual column — start Y missed the real surface and pieces floated or buried.
+        double xLerp = (double) xMod / (double) cellWidth;
+        double zLerp = (double) zMod / (double) cellWidth;
         double[][] columns =
                 new double[][] {
                     this.makeAndFillNoiseColumn(random, xDiv, zDiv, min, max),
@@ -229,7 +232,7 @@ public class ChaosPlainsChunkGenerator extends ChaosChunkGeneratorWrapper {
 
             for (int height = cellHeight - 1; height >= 0; height--) {
                 double cellFraction = height / (double) cellHeight;
-                double noiseVal = Mth.lerp3(cellFraction, xMin, zMin, d00, d01, d20, d21, d10, d11, d30, d31);
+                double noiseVal = Mth.lerp3(cellFraction, xLerp, zLerp, d00, d01, d20, d21, d10, d11, d30, d31);
                 noiseVal += this.sampleMicroBump(random, x, z);
                 int layer = cell * cellHeight + height;
                 int blockY = layer + min * cellHeight;

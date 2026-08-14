@@ -1,0 +1,7 @@
+{
+  "type": "chaospersists:locate_marker",
+  "biomes": "#chaospersists:has_structure/ender_knight_dungeon",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

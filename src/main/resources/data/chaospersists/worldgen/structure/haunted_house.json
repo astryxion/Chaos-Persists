@@ -1,0 +1,7 @@
+{
+  "type": "chaospersists:locate_marker",
+  "biomes": "#chaospersists:has_structure/haunted_house",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

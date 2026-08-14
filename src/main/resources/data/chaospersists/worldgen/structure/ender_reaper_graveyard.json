@@ -1,0 +1,7 @@
+{
+  "type": "chaospersists:locate_marker",
+  "biomes": "#minecraft:is_end",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

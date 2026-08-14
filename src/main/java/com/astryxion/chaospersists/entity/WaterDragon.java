@@ -85,6 +85,8 @@ public class WaterDragon extends TamableAnimal {
         this.targetSorter = new GenericTargetSorter(this);
         this.renderdata = new RenderInfo();
         this.getNavigation().setCanFloat(true);
+        // 1.1 clears a full block via collide() step-up; 1.0 often fails on exact 1-block height.
+        this.setMaxUpStep(1.1F);
         // Surface skim via SurfaceWaterFloat — FloatGoal hop-jumps with swim speed.
         this.goalSelector.addGoal(1, new BreedGoal(this, 1.0));
         this.goalSelector.addGoal(2, new MyEntityAIFollowOwner(this, 2.0f, 10.0f, 2.0f));
@@ -699,6 +701,12 @@ public class WaterDragon extends TamableAnimal {
         super.customServerAiStep();
         if (this.hurt_timer > 0) {
             --this.hurt_timer;
+        }
+        if (!this.isInWater()
+                && this.onGround()
+                && this.horizontalCollision
+                && !this.isInSittingPose()) {
+            this.getJumpControl().jump();
         }
         ++this.combat_tick;
         if (!this.isInWater() && this.getRandom().nextInt(25) == 0 && !this.isInSittingPose()) {

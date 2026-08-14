@@ -1511,12 +1511,7 @@ public class ThePrinceTeen extends TamableAnimal {
                 return super.mobInteract(par1EntityPlayer, hand);
             }
             if (var2.isEmpty()) {
-                if (RoyalPetFollowHelper.isStayingPut(this)
-                        && this.isPlayerWithinPrinceReach(par1EntityPlayer, 64.0, 3.0)) {
-                    return this.toggleSitStay(par1EntityPlayer);
-                }
-                if (par1EntityPlayer.isShiftKeyDown()
-                        && this.isPlayerWithinPrinceReach(par1EntityPlayer, 25.0, 1.5)) {
+                if (this.isPlayerWithinPrinceReach(par1EntityPlayer, 25.0, 1.5)) {
                     if (!this.level().isClientSide) {
                         par1EntityPlayer.startRiding(this);
                         this.setActivity(1);
@@ -1524,9 +1519,11 @@ public class ThePrinceTeen extends TamableAnimal {
                     }
                     return InteractionResult.sidedSuccess(this.level().isClientSide);
                 }
-                if (this.isPlayerWithinPrinceReach(par1EntityPlayer, 64.0, 3.0)) {
-                    return this.toggleSitStay(par1EntityPlayer);
-                }
+            }
+            if (!var2.isEmpty()
+                    && var2.is(Items.STICK)
+                    && this.isPlayerWithinPrinceReach(par1EntityPlayer, 64.0, 3.0)) {
+                return this.toggleSitStay(par1EntityPlayer);
             }
             if (!var2.isEmpty() && var2.is(Items.BEEF) && par1EntityPlayer.distanceToSqr(this) < 25.0) {
                 if (this.level().isClientSide) {

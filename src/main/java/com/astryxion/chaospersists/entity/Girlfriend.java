@@ -1009,10 +1009,23 @@ public class Girlfriend extends TamableAnimal implements RangedAttackMob {
 
     @Override
     protected SoundEvent getHurtSound(DamageSource damageSource) {
-        if (this.voice_enable == 0) {
+        // Use synched voice flag. The local field is only copied every 20 ticks after a
+        // 50-tick delay, so client handleDamageEvent would otherwise skip o_ow at random.
+        if (this.entityData.get(VOICE_ENABLE) == 0) {
             return null;
         }
         return ChaosSounds.O_OW;
+    }
+
+    @Override
+    protected void playHurtSound(DamageSource source) {
+        SoundEvent sound = this.getHurtSound(source);
+        if (sound == null) {
+            return;
+        }
+        // Ambient chatter stays at getSoundVolume() (0.3). Hit cries need to cut through
+        // overworld noise; village is quiet enough that 0.3 sometimes sounded fine there.
+        this.playSound(sound, 1.0f, this.getVoicePitch());
     }
 
     @Override

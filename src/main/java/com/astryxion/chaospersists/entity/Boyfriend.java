@@ -228,6 +228,7 @@ public class Boyfriend extends TamableAnimal implements RangedAttackMob {
             this.targetSelector.addGoal(5, new MyEntityAIJealousy(this, Boyfriend.class, 3.0f, 15, true));
         }
         this.xpReward = 0;
+        this.entityData.set(VOICE_ENABLE, this.voice_enable);
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -245,7 +246,8 @@ public class Boyfriend extends TamableAnimal implements RangedAttackMob {
         this.wet_count = 0;
         this.entityData.define(WHICH_WET_GUY, 0);
         this.entityData.define(VOICE, 0);
-        this.entityData.define(VOICE_ENABLE, this.voice_enable);
+        // Literal 1: defineSynchedData runs inside super(), before voice_enable = 1.
+        this.entityData.define(VOICE_ENABLE, 1);
         this.entityData.define(IS_PRINCE, this.is_prince);
         this.auto_heal = 200;
         this.force_sync = 50;
@@ -931,6 +933,17 @@ public class Boyfriend extends TamableAnimal implements RangedAttackMob {
             return null;
         }
         return ChaosSounds.B_OW;
+    }
+
+    @Override
+    protected void playHurtSound(DamageSource source) {
+        SoundEvent sound = this.getHurtSound(source);
+        if (sound == null) {
+            return;
+        }
+        // Ambient chatter stays at getSoundVolume() (0.3). Hit cries need to cut through
+        // overworld noise; village is quiet enough that 0.3 sometimes sounded fine there.
+        this.playSound(sound, 1.0f, this.getVoicePitch());
     }
 
     @Override

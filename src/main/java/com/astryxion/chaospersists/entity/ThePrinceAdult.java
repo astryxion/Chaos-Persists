@@ -40,6 +40,7 @@ import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -175,7 +176,8 @@ public class ThePrinceAdult extends TamableAnimal {
                 if (this.getNavigation() != null) {
                     this.getNavigation().stop();
                 }
-                this.setDeltaMovement(Vec3.ZERO);
+                Vec3 dm = this.getDeltaMovement();
+                this.setDeltaMovement(0.0, Math.min(dm.y, 0.0), 0.0);
             }
         }
     }
@@ -422,13 +424,33 @@ public class ThePrinceAdult extends TamableAnimal {
             }
             return;
         }
+        if (this.getActivity() != 0
+                && this.getPassengers().isEmpty()
+                && !RoyalPetFollowHelper.isStayingPut(this)) {
+            this.setNoGravity(true);
+            return;
+        }
+        if (this.getActivity() == 0 && this.lacksGroundSupport()) {
+            this.setOnGround(false);
+        }
         this.setNoGravity(false);
         super.travel(travelVector);
+    }
+
+    private void resetClientInterpolation() {
+        this.boatPosRotationIncrements = 0;
+        this.boatX = this.getX();
+        this.boatY = this.getY();
+        this.boatZ = this.getZ();
+        this.boatYaw = this.getYRot();
+        this.boatPitch = this.getXRot();
+        this.boatYawHead = this.getYRot();
     }
 
     @Override
     protected void removePassenger(Entity passenger) {
         super.removePassenger(passenger);
+        this.resetClientInterpolation();
         if (!this.level().isClientSide && this.getPassengers().isEmpty()) {
             this.finishDismountLanding();
         }
@@ -440,9 +462,62 @@ public class ThePrinceAdult extends TamableAnimal {
         this.owner_flying = 0;
         this.setNoGravity(false);
         this.noPhysics = false;
+        this.setOnGround(false);
+        MyUtils.clearChaosFlight(this);
+        if (this.getNavigation() != null) {
+            this.getNavigation().stop();
+        }
         Vec3 dm = this.getDeltaMovement();
-        this.setDeltaMovement(dm.x, Math.min(dm.y, -0.25), dm.z);
-        MyUtils.enforceDragonMountGroundSafety(this);
+        if (this.lacksGroundSupport()) {
+            this.setDeltaMovement(dm.x * 0.5, -0.55, dm.z * 0.5);
+        } else {
+            this.setDeltaMovement(dm.x, Math.min(dm.y, -0.25), dm.z);
+            MyUtils.enforceDragonMountGroundSafety(this);
+        }
+    }
+
+    /** True when no solid block is under the hitbox. Do not trust onGround() after noPhysics flight. */
+    private boolean lacksGroundSupport() {
+        if (this.level() == null) {
+            return !this.onGround();
+        }
+        double minY = this.getBoundingBox().minY - 0.05;
+        double half = this.getBbWidth() * 0.35;
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+        for (double xOff : new double[] {0.0, half, -half}) {
+            for (double zOff : new double[] {0.0, half, -half}) {
+                pos.set(this.getX() + xOff, minY, this.getZ() + zOff);
+                if (!this.level().getBlockState(pos).getCollisionShape(this.level(), pos).isEmpty()) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Activity 0 / sit must actually drop. Do not call enforceDragonMountGroundSafety here:
+     * these princes are 4+ blocks tall, so isInWall() is true as they touch the ground and
+     * that helper kept shoving them back up (~2 blocks hover, legs snap, wings keep flapping).
+     */
+    private void applyLandingFallIfNeeded() {
+        if (this.level().isClientSide || !this.getPassengers().isEmpty()) {
+            return;
+        }
+        if (this.getActivity() != 0 && !RoyalPetFollowHelper.isStayingPut(this)) {
+            return;
+        }
+        this.setNoGravity(false);
+        this.noPhysics = false;
+        MyUtils.clearChaosFlight(this);
+        if (!this.lacksGroundSupport()) {
+            return;
+        }
+        this.setOnGround(false);
+        Vec3 motion = this.getDeltaMovement();
+        double vy = Math.min(motion.y - 0.08, -0.22);
+        this.setDeltaMovement(motion.x * 0.98, vy, motion.z * 0.98);
+        this.move(MoverType.SELF, this.getDeltaMovement());
     }
 
     private void princeAdultRiderStrafeAttack(Player pp, double mx, double my, double mz) {
@@ -819,7 +894,7 @@ public class ThePrinceAdult extends TamableAnimal {
             RoyalPetFollowHelper.syncDimensionOnly(this);
         }
         LivingEntity e;
-        if (this.getActivity() == 0 && this.getPassengers().isEmpty()) {
+        if (this.getActivity() == 0 && this.getPassengers().isEmpty() && !this.lacksGroundSupport()) {
             super.customServerAiStep();
         }
         if (!RoyalPetFollowHelper.isStayingPut(this)
@@ -830,12 +905,7 @@ public class ThePrinceAdult extends TamableAnimal {
                 && this.getRandom().nextInt(10) == 1) {
             e = this.findSomethingToAttack();
             if (e != null) {
-                LivingEntity owner = this.getOwner();
-                if (!this.isTame()
-                        || owner == null
-                        || this.distanceToSqr(owner) > 256.0) {
-                    this.setActivity(1);
-                }
+                this.setActivity(1);
             } else {
                 this.setAttacking(0);
             }
@@ -879,6 +949,9 @@ public class ThePrinceAdult extends TamableAnimal {
             }
             return;
         }
+        if (this.dismountCooldown > 0) {
+            return;
+        }
         this.owner_flying = 0;
         if (this.isTame()
                 && this.getOwner() != null
@@ -893,9 +966,7 @@ public class ThePrinceAdult extends TamableAnimal {
                 && !RoyalPetFollowHelper.isStayingPut(this)
                 && !this.target_in_sight
                 && this.getPassengers().isEmpty()) {
-            if (MyUtils.isPrinceAirborne(this)) {
-                this.setActivity(1);
-            } else if (this.getRandom().nextInt(15) == 1) {
+            if (this.getRandom().nextInt(15) == 1 && !this.lacksGroundSupport()) {
                 this.setActivity(1);
             } else {
                 this.setActivity(0);
@@ -1026,6 +1097,15 @@ public class ThePrinceAdult extends TamableAnimal {
     @Override
     public void lerpTo(
             double par1, double par3, double par5, float par7, float par8, int par9, boolean interpolate) {
+        if (this.isControlledByLocalInstance()) {
+            this.boatPosRotationIncrements = 0;
+            return;
+        }
+        if (this.getPassengers().isEmpty()) {
+            super.lerpTo(par1, par3, par5, par7, par8, par9, interpolate);
+            this.resetClientInterpolation();
+            return;
+        }
         this.boatPosRotationIncrements = par9;
         this.boatX = par1;
         this.boatY = par3;
@@ -1038,7 +1118,9 @@ public class ThePrinceAdult extends TamableAnimal {
     @OnlyIn(Dist.CLIENT)
     @Override
     public void lerpMotion(double par1, double par3, double par5) {
-        super.lerpMotion(par1, par3, par5);
+        if (!this.isControlledByLocalInstance()) {
+            super.lerpMotion(par1, par3, par5);
+        }
     }
 
     @Override
@@ -1053,21 +1135,9 @@ public class ThePrinceAdult extends TamableAnimal {
         this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue((double) this.moveSpeed);
         if (!this.level().isClientSide
                 && this.getPassengers().isEmpty()
-                && !RoyalPetFollowHelper.isStayingPut(this)
-                && this.getActivity() == 0
-                && MyUtils.isPrinceAirborne(this)) {
-            this.setActivity(1);
-        }
-        if (!this.level().isClientSide
-                && this.getPassengers().isEmpty()
-                && this.getActivity() == 0
-                && !RoyalPetFollowHelper.isStayingPut(this)) {
+                && this.getActivity() == 0) {
             this.setNoGravity(false);
             this.noPhysics = false;
-            if (!this.onGround()) {
-                Vec3 dm = this.getDeltaMovement();
-                this.setDeltaMovement(dm.x, Math.min(dm.y - 0.04, -0.08), dm.z);
-            }
         }
         super.tick();
         if (RoyalPetFollowHelper.isStayingPut(this) && this.getPassengers().isEmpty()) {
@@ -1147,10 +1217,7 @@ public class ThePrinceAdult extends TamableAnimal {
         if (this.hurt_timer > 0) {
             --this.hurt_timer;
         }
-        if (this.getActivity() != 0
-                && (this.owner_flying != 0
-                        || !this.onGround()
-                        || this.getDeltaMovement().horizontalDistanceSqr() > 1.0E-4)) {
+        if (this.getActivity() == 1 && this.isAirborneForWingSound()) {
             ++this.wing_sound;
             if (this.wing_sound > 30) {
                 if (!this.level().isClientSide && ChaosSounds.MOTHRA_WINGS != null) {
@@ -1177,10 +1244,18 @@ public class ThePrinceAdult extends TamableAnimal {
                 && this.getOwner() != null
                 && !RoyalPetFollowHelper.isStayingPut(this)
                 && this.getPassengers().isEmpty()
+                && this.dismountCooldown == 0
                 && this.distanceToSqr((e = this.getOwner())) > 900.0) {
             this.setActivity(1);
         }
-        MyUtils.enforceDragonMountGroundSafety(this);
+        this.applyLandingFallIfNeeded();
+    }
+
+    private boolean isAirborneForWingSound() {
+        return this.level()
+                .getBlockState(
+                        BlockPos.containing(this.getX(), this.getBoundingBox().minY - 0.4, this.getZ()))
+                .isAir();
     }
 
     private void fly_without_rider() {
@@ -1412,7 +1487,7 @@ public class ThePrinceAdult extends TamableAnimal {
                                     pp.xxa, pp.zza, pp.input.jumping, pp.input.shiftKeyDown));
                 }
             }
-            if (this.boatPosRotationIncrements > 0 && this.getActivity() != 0) {
+            if (this.boatPosRotationIncrements > 0 && !this.getPassengers().isEmpty()) {
                 double d4 = this.getX() + (this.boatX - this.getX()) / (double) this.boatPosRotationIncrements;
                 double d5 = this.getY() + (this.boatY - this.getY()) / (double) this.boatPosRotationIncrements;
                 double d11 = this.getZ() + (this.boatZ - this.getZ()) / (double) this.boatPosRotationIncrements;
@@ -1643,12 +1718,6 @@ public class ThePrinceAdult extends TamableAnimal {
     public void setActivity(int par1) {
         if (this.level() != null && this.level().isClientSide) {
             return;
-        }
-        if (par1 == 0
-                && !RoyalPetFollowHelper.isStayingPut(this)
-                && this.getNavigation() != null
-                && MyUtils.isPrinceAirborne(this)) {
-            par1 = 1;
         }
         if (par1 != 0 && this.getNavigation() != null) {
             this.getNavigation().stop();

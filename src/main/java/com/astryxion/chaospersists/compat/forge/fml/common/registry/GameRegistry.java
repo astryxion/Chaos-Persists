@@ -124,9 +124,10 @@ public final class GameRegistry {
               if ("pizza".equals(path) || "ducttape".equals(path) || "island".equals(path)) {
                 continue;
               }
-              if (!BuiltInRegistries.ITEM.containsKey(rl)) {
-                helper.register(rl, new BlockItem(block, new Properties()));
+              if (BuiltInRegistries.ITEM.containsKey(rl)) {
+                continue;
               }
+              helper.register(rl, new BlockItem(block, new Properties()));
             }
           });
     }

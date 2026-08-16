@@ -17,8 +17,10 @@ import net.minecraft.world.level.saveddata.SavedData;
 public final class ChaosChunkDecorationData extends SavedData {
   private static final String DATA_NAME = "chaospersists_chunk_decoration";
   private static final String TAG_CHUNKS = "chunks";
+  private static final String TAG_RELIT = "relit";
 
   private final Set<Long> decoratedChunks = new HashSet<>();
+  private final Set<Long> relitChunks = new HashSet<>();
 
   public ChaosChunkDecorationData() {}
 
@@ -36,8 +38,18 @@ public final class ChaosChunkDecorationData extends SavedData {
     return decoratedChunks.contains(pack(dimension, chunkX, chunkZ));
   }
 
+  public boolean isRelit(ResourceKey<Level> dimension, int chunkX, int chunkZ) {
+    return relitChunks.contains(pack(dimension, chunkX, chunkZ));
+  }
+
   public void markDecorated(ResourceKey<Level> dimension, int chunkX, int chunkZ) {
     if (decoratedChunks.add(pack(dimension, chunkX, chunkZ))) {
+      setDirty();
+    }
+  }
+
+  public void markRelit(ResourceKey<Level> dimension, int chunkX, int chunkZ) {
+    if (relitChunks.add(pack(dimension, chunkX, chunkZ))) {
       setDirty();
     }
   }
@@ -49,6 +61,11 @@ public final class ChaosChunkDecorationData extends SavedData {
       chunks.add(net.minecraft.nbt.LongTag.valueOf(packed));
     }
     tag.put(TAG_CHUNKS, chunks);
+    ListTag relit = new ListTag();
+    for (Long packed : relitChunks) {
+      relit.add(net.minecraft.nbt.LongTag.valueOf(packed));
+    }
+    tag.put(TAG_RELIT, relit);
     return tag;
   }
 
@@ -57,6 +74,10 @@ public final class ChaosChunkDecorationData extends SavedData {
     ListTag chunks = tag.getList(TAG_CHUNKS, Tag.TAG_LONG);
     for (Tag chunkTag : chunks) {
       data.decoratedChunks.add(((net.minecraft.nbt.LongTag) chunkTag).getAsLong());
+    }
+    ListTag relit = tag.getList(TAG_RELIT, Tag.TAG_LONG);
+    for (Tag chunkTag : relit) {
+      data.relitChunks.add(((net.minecraft.nbt.LongTag) chunkTag).getAsLong());
     }
     return data;
   }

@@ -557,9 +557,6 @@ public class Cephadrome extends PathfinderMob {
 
     @Override
     protected SoundEvent getAmbientSound() {
-        if (this.getActivity() != 1 && this.getRandom().nextInt(6) == 1) {
-            return com.astryxion.chaospersists.core.ChaosSounds.MOTHRA_WINGS;
-        }
         return null;
     }
 
@@ -1226,7 +1223,7 @@ public class Cephadrome extends PathfinderMob {
             this.noPhysics = true;
         }
         super.tick();
-        if (this.getActivity() == 1) {
+        if (this.getActivity() == 1 && this.isAirborneForWingSound()) {
             ++this.wing_sound;
             if (this.wing_sound > 22) {
                 if (!this.level().isClientSide && ChaosSounds.MOTHRA_WINGS != null) {
@@ -1247,6 +1244,13 @@ public class Cephadrome extends PathfinderMob {
         if (!this.level().isClientSide && this.getPassengers().isEmpty() && !this.lacksGroundSupport()) {
             MyUtils.enforceDragonMountGroundSafety(this);
         }
+    }
+
+    private boolean isAirborneForWingSound() {
+        return this.level()
+                .getBlockState(
+                        BlockPos.containing(this.getX(), this.getBoundingBox().minY - 0.4, this.getZ()))
+                .isAir();
     }
 
     private void tickUnmountedPhysics() {

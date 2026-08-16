@@ -33,6 +33,7 @@ import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -238,6 +239,11 @@ public class Spyro extends TamableAnimal {
     public void setActivity(int par1) {
         this.activity = par1;
         this.entityData.set(ACTIVITY, this.activity);
+        if (par1 != 2) {
+            this.setNoGravity(false);
+            this.noPhysics = false;
+            MyUtils.clearChaosFlight(this);
+        }
     }
 
     public int getSpyroFire() {
@@ -259,6 +265,69 @@ public class Spyro extends TamableAnimal {
 
     public int getSpyroHealth() {
         return (int) this.getHealth();
+    }
+
+    /** Keep sitting pose in sync with stay order (1.7.10 EntityTameable.setSitting parity). */
+    @Override
+    public void setOrderedToSit(boolean orderedToSit) {
+        super.setOrderedToSit(orderedToSit);
+        this.setInSittingPose(orderedToSit);
+        if (orderedToSit) {
+            if (this.getNavigation() != null) {
+                this.getNavigation().stop();
+            }
+            this.setTarget(null);
+            this.owner_flying = 0;
+            this.setActivity(1);
+            this.setNoGravity(false);
+            this.noPhysics = false;
+            MyUtils.clearChaosFlight(this);
+            Vec3 dm = this.getDeltaMovement();
+            this.setDeltaMovement(dm.x, Math.min(dm.y, 0.0), dm.z);
+        }
+    }
+
+    private boolean isSittingNow() {
+        return this.isOrderedToSit() || this.isInSittingPose();
+    }
+
+    /** True when no solid block is under the hitbox. Do not trust onGround() after chaos flight. */
+    private boolean lacksGroundSupport() {
+        if (this.level() == null) {
+            return !this.onGround();
+        }
+        double minY = this.getBoundingBox().minY - 0.05;
+        double half = this.getBbWidth() * 0.35;
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+        for (double xOff : new double[] {0.0, half, -half}) {
+            for (double zOff : new double[] {0.0, half, -half}) {
+                pos.set(this.getX() + xOff, minY, this.getZ() + zOff);
+                if (!this.level().getBlockState(pos).getCollisionShape(this.level(), pos).isEmpty()) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /** Sit / land must actually drop. Chaos flight leaves noGravity on if we only stop the fly AI. */
+    private void applyLandFallIfNeeded() {
+        if (this.level().isClientSide) {
+            return;
+        }
+        if (!this.isSittingNow() && this.getActivity() == 2) {
+            return;
+        }
+        this.setNoGravity(false);
+        this.noPhysics = false;
+        MyUtils.clearChaosFlight(this);
+        if (!this.lacksGroundSupport()) {
+            return;
+        }
+        this.setOnGround(false);
+        Vec3 motion = this.getDeltaMovement();
+        this.setDeltaMovement(motion.x * 0.98, Math.min(motion.y - 0.08, -0.22), motion.z * 0.98);
+        this.move(MoverType.SELF, this.getDeltaMovement());
     }
 
     @Override
@@ -401,11 +470,8 @@ public class Spyro extends TamableAnimal {
         if (this.isTame()
                 && par1EntityPlayer.distanceToSqr(this) < 16.0
                 && this.isOwnedBy(par1EntityPlayer)) {
-            if (!this.isInSittingPose()) {
-                this.setOrderedToSit(true);
-            } else {
-                this.setOrderedToSit(false);
-            }
+            // OreSpawn 1.7.10 setSitting toggled one flag; on 1.20 ordered-sit and pose are separate.
+            this.setOrderedToSit(!this.isOrderedToSit());
             return InteractionResult.SUCCESS;
         }
         return super.mobInteract(par1EntityPlayer, hand);
@@ -462,7 +528,7 @@ public class Spyro extends TamableAnimal {
         super.dropCustomDeathLoot(source, looting, recentlyHit);
         if (this.isTame()) {
             int var3 = this.getRandom().nextInt(4);
-            for (int var4 = 0; var4 < ++var3; ++var4) {
+            for (int var4 = 0; var4 < var3; ++var4) {
                 this.spawnAtLocation(Items.BEEF);
             }
         }
@@ -545,6 +611,19 @@ public class Spyro extends TamableAnimal {
     @Override
     public void tick() {
         this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue((double) this.moveSpeed);
+        if (this.isSittingNow()) {
+            if (this.getActivity() != 1) {
+                this.setActivity(1);
+            }
+            this.owner_flying = 0;
+            this.setNoGravity(false);
+            this.noPhysics = false;
+            MyUtils.clearChaosFlight(this);
+        } else if (this.getActivity() != 2) {
+            this.setNoGravity(false);
+            this.noPhysics = false;
+            MyUtils.clearChaosFlight(this);
+        }
         super.tick();
         if (this.isInWater()) {
             this.setDeltaMovement(this.getDeltaMovement().add(0.0, 0.07, 0.0));
@@ -569,7 +648,7 @@ public class Spyro extends TamableAnimal {
                 return;
             }
         }
-        if (this.activity == 2) {
+        if (!this.isSittingNow() && this.activity == 2) {
             Vec3 motion = this.getDeltaMovement();
             if (this.getY() < (double) this.currentFlightTarget.getY() + 2.0) {
                 this.setDeltaMovement(motion.multiply(1.0, 0.7, 1.0));
@@ -579,30 +658,91 @@ public class Spyro extends TamableAnimal {
                 this.setDeltaMovement(motion.multiply(1.0, 0.61, 1.0));
             }
         }
-        if (this.activity == 1
+        if (!this.isSittingNow()
+                && this.activity == 1
                 && this.isTame()
                 && this.getOwner() != null
                 && this.distanceToSqr(this.getOwner()) > 256.0) {
             this.setActivity(2);
         }
         this.doMovement();
+        this.applyLandFallIfNeeded();
     }
 
     @Override
     public void travel(Vec3 travelVector) {
+        if (this.isSittingNow() || this.getActivity() != 2) {
+            this.setNoGravity(false);
+            super.travel(travelVector);
+            return;
+        }
         if (MyUtils.usesChaosFlight(this)) {
             return;
         }
         super.travel(travelVector);
     }
+
     @Override
     protected void customServerAiStep() {
         if (this.isDeadOrDying()) {
             return;
         }
-        super.customServerAiStep();
+        if (this.activity == 1 && !this.isSittingNow()) {
+            super.customServerAiStep();
+        }
         if (this.getRandom().nextInt(100) == 1 && this.getHealth() < (float) this.mygetMaxHealth()) {
             this.heal(1.0f);
+        }
+        if (this.level().isClientSide) {
+            return;
+        }
+        if (this.getRandom().nextInt(200) == 1) {
+            this.setLastHurtByMob(null);
+        }
+        if (this.isSittingNow()) {
+            return;
+        }
+        if (this.activity == 0) {
+            this.setActivity(1);
+        }
+        if (this.getRandom().nextInt(20) == 0) {
+            this.closest = 99999;
+            this.tz = 0;
+            this.ty = 0;
+            this.tx = 0;
+            for (int i = 1; i < 11; ++i) {
+                int j = i;
+                if (j > 4) {
+                    j = 4;
+                }
+                if (this.scan_it((int) this.getX(), (int) this.getY() - 1, (int) this.getZ(), i, j, i)) {
+                    break;
+                }
+                if (i < 6) {
+                    continue;
+                }
+                ++i;
+            }
+            if (this.closest < 99999) {
+                this.setActivity(1);
+                this.getNavigation().moveTo((double) this.tx, (double) (this.ty - 1), (double) this.tz, 1.0);
+                if (this.isInLava()) {
+                    this.heal(1.0f);
+                    this.playSound(SoundEvents.GENERIC_SPLASH, 1.0f, this.getRandom().nextFloat() * 0.2f + 0.9f);
+                }
+            }
+        }
+        if (this.getRandom().nextInt(100) == 1 && !this.target_in_sight) {
+            int next = 1;
+            if (this.getRandom().nextInt(8) == 1) {
+                next = 2;
+            }
+            this.setActivity(next);
+        }
+        this.owner_flying = 0;
+        if (this.isTame() && this.getOwner() instanceof Player owner && owner.getAbilities().flying) {
+            this.owner_flying = 1;
+            this.setActivity(2);
         }
     }
 
@@ -620,7 +760,7 @@ public class Spyro extends TamableAnimal {
             do_new = true;
             this.currentFlightTarget = BlockPos.containing(this.getX(), this.getY(), this.getZ());
         }
-        if (this.isInSittingPose()) {
+        if (this.isSittingNow()) {
             return;
         }
         if (this.activity == 1) {

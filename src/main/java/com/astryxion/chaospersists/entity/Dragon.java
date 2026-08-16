@@ -39,6 +39,7 @@ import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -50,6 +51,7 @@ import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.TemptGoal;
 import com.astryxion.chaospersists.util.ChaosHurtByTargetGoal;
 import com.astryxion.chaospersists.util.ChaosMountHelper;
+import com.astryxion.chaospersists.util.RoyalPetFollowHelper;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Monster;
@@ -160,6 +162,31 @@ public class Dragon extends TamableAnimal {
         return true;
     }
 
+    @Override
+    public void setOrderedToSit(boolean orderedToSit) {
+        super.setOrderedToSit(orderedToSit);
+        this.setInSittingPose(orderedToSit);
+        if (!this.level().isClientSide && orderedToSit) {
+            this.setActivity(0);
+            this.setAttacking(0);
+            this.setTarget(null);
+            this.setLastHurtByMob(null);
+            this.owner_flying = 0;
+            MyUtils.clearChaosFlight(this);
+            this.setNoGravity(false);
+            this.noPhysics = false;
+            if (this.getNavigation() != null) {
+                this.getNavigation().stop();
+            }
+            Vec3 dm = this.getDeltaMovement();
+            this.setDeltaMovement(0.0, Math.min(dm.y, 0.0), 0.0);
+        }
+    }
+
+    private boolean isStayingPut() {
+        return RoyalPetFollowHelper.isStayingPut(this);
+    }
+
     public int getTrackingRange() {
         return 128;
     }
@@ -205,12 +232,9 @@ public class Dragon extends TamableAnimal {
         return new Vec3(x, y, z);
     }
 
+    /** True when no solid block is under the hitbox. Do not trust onGround() after chaos flight. */
     private boolean lacksGroundSupport() {
-        if (this.isNoGravity()) {
-            return true;
-        }
-        Level level = this.level();
-        if (level == null) {
+        if (this.level() == null) {
             return !this.onGround();
         }
         double minY = this.getBoundingBox().minY - 0.05;
@@ -219,7 +243,7 @@ public class Dragon extends TamableAnimal {
         for (double xOff : new double[] {0.0, half, -half}) {
             for (double zOff : new double[] {0.0, half, -half}) {
                 pos.set(this.getX() + xOff, minY, this.getZ() + zOff);
-                if (!level.getBlockState(pos).getCollisionShape(level, pos).isEmpty()) {
+                if (!this.level().getBlockState(pos).getCollisionShape(this.level(), pos).isEmpty()) {
                     return false;
                 }
             }
@@ -227,17 +251,37 @@ public class Dragon extends TamableAnimal {
         return true;
     }
 
-    private void applyAirborneFall() {
+    /**
+     * Land / stay must actually drop. Do not call enforceDragonMountGroundSafety here:
+     * isInWall() while touching the ground shoved princes (and this dragon) back up ~2 blocks.
+     */
+    private void applyLandingFallIfNeeded() {
+        if (this.level().isClientSide || !this.getPassengers().isEmpty()) {
+            return;
+        }
+        if (this.getActivity() != 0 && !this.isStayingPut()) {
+            return;
+        }
         this.setNoGravity(false);
         this.noPhysics = false;
         MyUtils.clearChaosFlight(this);
-        Vec3 motion = this.getDeltaMovement();
-        double vy = Math.min(motion.y - 0.08, -0.22);
-        Vec3 fallMotion = new Vec3(motion.x * 0.98, vy, motion.z * 0.98);
-        this.setDeltaMovement(fallMotion);
-        if (!this.level().isClientSide) {
-            this.move(net.minecraft.world.entity.MoverType.SELF, fallMotion);
+        if (!this.lacksGroundSupport()) {
+            return;
         }
+        this.setOnGround(false);
+        Vec3 motion = this.getDeltaMovement();
+        this.setDeltaMovement(motion.x * 0.98, Math.min(motion.y - 0.08, -0.22), motion.z * 0.98);
+        this.move(MoverType.SELF, this.getDeltaMovement());
+    }
+
+    private void resetClientInterpolation() {
+        this.boatPosRotationIncrements = 0;
+        this.boatX = this.getX();
+        this.boatY = this.getY();
+        this.boatZ = this.getZ();
+        this.boatYaw = this.getYRot();
+        this.boatPitch = this.getXRot();
+        this.boatYawHead = this.getYRot();
     }
 
     public boolean canBeSteered() {
@@ -255,6 +299,14 @@ public class Dragon extends TamableAnimal {
      */
     @Override
     public void travel(Vec3 travelVector) {
+        if (this.isStayingPut() || this.getActivity() == 0) {
+            if (this.lacksGroundSupport()) {
+                this.setOnGround(false);
+            }
+            this.setNoGravity(false);
+            super.travel(travelVector);
+            return;
+        }
         if (MyUtils.usesChaosFlight(this)) {
             return;
         }
@@ -628,10 +680,21 @@ public class Dragon extends TamableAnimal {
 
     @Override
     public void addPassenger(Entity passenger) {
+        if (passenger instanceof LivingEntity living) {
+            this.setYRot(living.getYRot());
+            this.yRotO = this.getYRot();
+            this.yBodyRot = living.getYRot();
+            this.yHeadRot = living.getYRot();
+        }
         super.addPassenger(passenger);
         this.boatPosRotationIncrements = 0;
-        if (passenger != null) {
-            this.positionRider(passenger, Entity::moveTo);
+        if (passenger instanceof LivingEntity living) {
+            living.setDeltaMovement(Vec3.ZERO);
+            living.xxa = 0.0f;
+            living.zza = 0.0f;
+        }
+        if (this.hasPassenger(passenger)) {
+            this.positionRider(passenger, Entity::setPos);
         }
     }
 
@@ -934,12 +997,12 @@ public class Dragon extends TamableAnimal {
         }
         // 1.12: skip wander/follow while ambient-flying or airborne so follow-owner teleport
         // does not snap flyers back to the owner every few seconds.
-        if (this.getActivity() != 0 || !this.onGround()) {
+        if (this.getActivity() != 0 || this.lacksGroundSupport()) {
             return;
         }
         super.customServerAiStep();
         LivingEntity e;
-        if (!this.isInSittingPose()
+        if (!this.isStayingPut()
                 && this.getActivity() == 0
                 && this.getPassengers().isEmpty()
                 && this.level().getDifficulty() != Difficulty.PEACEFUL
@@ -964,14 +1027,14 @@ public class Dragon extends TamableAnimal {
         if (this.getRandom().nextInt(250) == 1 && this.getHealth() < (float) this.mygetMaxHealth()) {
             this.heal(2.0f);
         }
-        if (this.isInSittingPose()) {
+        if (this.isStayingPut()) {
             return;
         }
         this.owner_flying = 0;
         if (this.isTame()
                 && this.getOwner() != null
                 && this.getPassengers().isEmpty()
-                && !this.isInSittingPose()) {
+                && !this.isStayingPut()) {
             p = (Player) this.getOwner();
             if (p.getAbilities().flying) {
                 this.owner_flying = 1;
@@ -980,17 +1043,17 @@ public class Dragon extends TamableAnimal {
         }
         if (this.isTame()
                 && this.getOwner() != null
-                && !this.isInSittingPose()
+                && !this.isStayingPut()
                 && this.distanceToSqr((p = (Player) this.getOwner())) > 400.0) {
             this.setActivity(1);
         }
         if (this.getRandom().nextInt(50) == 1
-                && !this.isInSittingPose()
+                && !this.isStayingPut()
                 && !this.target_in_sight
                 && this.getPassengers().isEmpty()) {
             if (this.getRandom().nextInt(15) == 1) {
                 this.setActivity(1);
-            } else if (!this.lacksGroundSupport() && this.onGround()) {
+            } else {
                 this.setActivity(0);
             }
         }
@@ -1012,7 +1075,7 @@ public class Dragon extends TamableAnimal {
                 }
                 ++i;
             }
-            if (this.closest < 99999 && !this.lacksGroundSupport() && this.onGround()) {
+            if (this.closest < 99999) {
                 this.setActivity(0);
                 this.getNavigation().moveTo(this.tx, this.ty - 1, this.tz, 1.0);
                 if (this.isInLava()) {
@@ -1032,7 +1095,7 @@ public class Dragon extends TamableAnimal {
         if (this.isDeadOrDying()) {
             return;
         }
-        if (this.isInSittingPose()) {
+        if (this.isStayingPut()) {
             return;
         }
         if (this.level().isClientSide) {
@@ -1185,6 +1248,15 @@ public class Dragon extends TamableAnimal {
     @Override
     public void lerpTo(
             double par1, double par3, double par5, float par7, float par8, int par9, boolean interpolate) {
+        if (this.isControlledByLocalInstance()) {
+            this.boatPosRotationIncrements = 0;
+            return;
+        }
+        if (this.getPassengers().isEmpty()) {
+            super.lerpTo(par1, par3, par5, par7, par8, par9, interpolate);
+            this.resetClientInterpolation();
+            return;
+        }
         this.boatPosRotationIncrements = par9;
         this.boatX = par1;
         this.boatY = par3;
@@ -1197,7 +1269,9 @@ public class Dragon extends TamableAnimal {
     @OnlyIn(Dist.CLIENT)
     @Override
     public void lerpMotion(double par1, double par3, double par5) {
-        super.lerpMotion(par1, par3, par5);
+        if (!this.isControlledByLocalInstance()) {
+            super.lerpMotion(par1, par3, par5);
+        }
     }
 
     @Override
@@ -1207,13 +1281,14 @@ public class Dragon extends TamableAnimal {
             --this.dismountCooldown;
         }
         this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue((double) this.moveSpeed);
-        if (!this.level().isClientSide
-                && this.getPassengers().isEmpty()
-                && !this.isInSittingPose()
-                && this.getActivity() == 0
-                && this.lacksGroundSupport()) {
-            // 1.12 never idles on the ground while airborne; resume ambient flight instead of freezing.
-            this.setActivity(1);
+        if (this.isStayingPut() && this.getPassengers().isEmpty()) {
+            if (this.getActivity() != 0) {
+                this.setActivity(0);
+            }
+            this.owner_flying = 0;
+            this.setNoGravity(false);
+            this.noPhysics = false;
+            MyUtils.clearChaosFlight(this);
         }
         if (this.getPassengers().isEmpty()) {
             if (this.getActivity() == 0) {
@@ -1227,21 +1302,8 @@ public class Dragon extends TamableAnimal {
         if (!this.level().isClientSide
                 && this.getActivity() != 0
                 && this.getPassengers().isEmpty()
-                && !this.isInSittingPose()) {
+                && !this.isStayingPut()) {
             this.fly_without_rider();
-        }
-        if (!this.level().isClientSide
-                && this.getPassengers().isEmpty()
-                && this.getActivity() == 0
-                && !this.onGround()) {
-            this.applyAirborneFall();
-        } else if (!this.level().isClientSide
-                && this.getPassengers().isEmpty()
-                && this.getActivity() == 0) {
-            ChaosMountHelper.applyGroundGravityWhenIdle(this);
-            if (!this.onGround() && this.dismountCooldown <= 0) {
-                ChaosMountHelper.snapToNearestGround(this);
-            }
         }
         super.tick();
         if (this.hurt_timer > 0) {
@@ -1274,14 +1336,12 @@ public class Dragon extends TamableAnimal {
         if (this.getActivity() == 0
                 && this.isTame()
                 && this.getOwner() != null
-                && !this.isInSittingPose()
+                && !this.isStayingPut()
                 && this.dismountCooldown <= 0
                 && this.distanceToSqr((e = this.getOwner())) > 144.0) {
             this.setActivity(1);
         }
-        if (!this.level().isClientSide && this.getPassengers().isEmpty() && !this.lacksGroundSupport()) {
-            MyUtils.enforceDragonMountGroundSafety(this);
-        }
+        this.applyLandingFallIfNeeded();
     }
 
     private void fly_without_rider() {
@@ -1316,7 +1376,7 @@ public class Dragon extends TamableAnimal {
             do_new = true;
             this.currentFlightTarget = new BlockPos((int)this.getX(), (int)this.getY(), (int)this.getZ());
         }
-        if (this.isInSittingPose()) {
+        if (this.isStayingPut()) {
             return;
         }
         if ((this.getPassengers().isEmpty() ? null : this.getPassengers().get(0)) != null) {
@@ -1615,7 +1675,9 @@ public class Dragon extends TamableAnimal {
                                     pp.xxa, pp.zza, pp.input.jumping, pp.input.shiftKeyDown));
                 }
             }
-            if (this.boatPosRotationIncrements > 0 && this.getActivity() != 0) {
+            if (this.boatPosRotationIncrements > 0
+                    && this.getActivity() != 0
+                    && !this.isControlledByLocalInstance()) {
                 double d4 = this.getX() + (this.boatX - this.getX()) / (double) this.boatPosRotationIncrements;
                 double d5 = this.getY() + (this.boatY - this.getY()) / (double) this.boatPosRotationIncrements;
                 double d11 = this.getZ() + (this.boatZ - this.getZ()) / (double) this.boatPosRotationIncrements;
@@ -1682,6 +1744,15 @@ public class Dragon extends TamableAnimal {
                     par1EntityPlayer.startRiding(this);
                     this.setActivity(1);
                     ChaosMountHelper.onPlayerMounted(this);
+                }
+                return InteractionResult.sidedSuccess(this.level().isClientSide);
+            }
+            if (!var2.isEmpty()
+                    && var2.is(Items.STICK)
+                    && (par1EntityPlayer.distanceToSqr(this) < 64.0
+                            || this.getBoundingBox().inflate(3.0).contains(par1EntityPlayer.position()))) {
+                if (!this.level().isClientSide) {
+                    this.setOrderedToSit(!this.isOrderedToSit());
                 }
                 return InteractionResult.sidedSuccess(this.level().isClientSide);
             }
@@ -1847,16 +1918,6 @@ public class Dragon extends TamableAnimal {
                 }
                 return InteractionResult.SUCCESS;
             }
-            if (!var2.isEmpty() && par1EntityPlayer.distanceToSqr(this) < 25.0) {
-                if (!this.isInSittingPose()) {
-                    this.setOrderedToSit(true);
-                    this.setActivity(0);
-                } else {
-                    this.setOrderedToSit(false);
-                    this.setActivity(0);
-                }
-                return InteractionResult.SUCCESS;
-            }
         }
         return super.mobInteract(par1EntityPlayer, hand);
     }
@@ -1885,6 +1946,11 @@ public class Dragon extends TamableAnimal {
             return;
         }
         this.entityData.set(STATE2, (byte) par1);
+        if (par1 == 0) {
+            this.setNoGravity(false);
+            this.noPhysics = false;
+            MyUtils.clearChaosFlight(this);
+        }
     }
 
     public int getDragonFire() {

@@ -24,7 +24,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -84,6 +86,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket;
 import net.minecraft.network.protocol.game.ClientboundLightUpdatePacket;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.CreativeModeTab;
@@ -135,6 +138,7 @@ import com.astryxion.chaospersists.util.RoyalPetFollowHelper;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.server.ServerLifecycleHooks;
 import com.astryxion.chaospersists.compat.forge.fml.common.registry.EntityRegistry;
 import com.astryxion.chaospersists.compat.forge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.loading.FMLPaths;
@@ -1338,6 +1342,49 @@ private static void registerAllCritterCages() {
     BLOCKS.register("orewolf", OreGenericEgg::new);
     BLOCKS.register("orezombie", OreGenericEgg::new);
     BLOCKS.register("orezombiepigman", OreGenericEgg::new);
+    BLOCKS.register("oreallay", OreGenericEgg::new);
+    BLOCKS.register("oreaxolotl", OreGenericEgg::new);
+    BLOCKS.register("orecamel", OreGenericEgg::new);
+    BLOCKS.register("orecat", OreGenericEgg::new);
+    BLOCKS.register("orecod", OreGenericEgg::new);
+    BLOCKS.register("oredolphin", OreGenericEgg::new);
+    BLOCKS.register("oredrowned", OreGenericEgg::new);
+    BLOCKS.register("oreelderguardian", OreGenericEgg::new);
+    BLOCKS.register("oreendermite", OreGenericEgg::new);
+    BLOCKS.register("oreevoker", OreGenericEgg::new);
+    BLOCKS.register("orefox", OreGenericEgg::new);
+    BLOCKS.register("oreglowsquid", OreGenericEgg::new);
+    BLOCKS.register("oregoat", OreGenericEgg::new);
+    BLOCKS.register("oreguardian", OreGenericEgg::new);
+    BLOCKS.register("orehoglin", OreGenericEgg::new);
+    BLOCKS.register("orehoneybee", OreGenericEgg::new);
+    BLOCKS.register("orehusk", OreGenericEgg::new);
+    BLOCKS.register("orellama", OreGenericEgg::new);
+    BLOCKS.register("orepanda", OreGenericEgg::new);
+    BLOCKS.register("oreparrot", OreGenericEgg::new);
+    BLOCKS.register("orephantom", OreGenericEgg::new);
+    BLOCKS.register("orepiglin", OreGenericEgg::new);
+    BLOCKS.register("orepiglinbrute", OreGenericEgg::new);
+    BLOCKS.register("orepillager", OreGenericEgg::new);
+    BLOCKS.register("orepolarbear", OreGenericEgg::new);
+    BLOCKS.register("orepufferfish", OreGenericEgg::new);
+    BLOCKS.register("orerabbit", OreGenericEgg::new);
+    BLOCKS.register("oreravager", OreGenericEgg::new);
+    BLOCKS.register("oresalmon", OreGenericEgg::new);
+    BLOCKS.register("oreshulker", OreGenericEgg::new);
+    BLOCKS.register("oresniffer", OreGenericEgg::new);
+    BLOCKS.register("orestray", OreGenericEgg::new);
+    BLOCKS.register("orestrider", OreGenericEgg::new);
+    BLOCKS.register("oretadpole", OreGenericEgg::new);
+    BLOCKS.register("oretraderllama", OreGenericEgg::new);
+    BLOCKS.register("oretropicalfish", OreGenericEgg::new);
+    BLOCKS.register("oreturtle", OreGenericEgg::new);
+    BLOCKS.register("orevanillafrog", OreGenericEgg::new);
+    BLOCKS.register("orevex", OreGenericEgg::new);
+    BLOCKS.register("orevindicator", OreGenericEgg::new);
+    BLOCKS.register("orewanderingtrader", OreGenericEgg::new);
+    BLOCKS.register("orewarden", OreGenericEgg::new);
+    BLOCKS.register("orezoglin", OreGenericEgg::new);
   }
 
   private static void registerAllPreInitItems() {
@@ -3079,6 +3126,49 @@ private static void registerAllCritterCages() {
   public static OreGenericEgg MyFrogSpawnBlock;
   public static OreGenericEgg MySpiderDriverSpawnBlock;
   public static OreGenericEgg MyCrabSpawnBlock;
+  public static OreGenericEgg MyAllaySpawnBlock;
+  public static OreGenericEgg MyAxolotlSpawnBlock;
+  public static OreGenericEgg MyCamelSpawnBlock;
+  public static OreGenericEgg MyCatSpawnBlock;
+  public static OreGenericEgg MyCodSpawnBlock;
+  public static OreGenericEgg MyDolphinSpawnBlock;
+  public static OreGenericEgg MyDrownedSpawnBlock;
+  public static OreGenericEgg MyElderGuardianSpawnBlock;
+  public static OreGenericEgg MyEndermiteSpawnBlock;
+  public static OreGenericEgg MyEvokerSpawnBlock;
+  public static OreGenericEgg MyFoxSpawnBlock;
+  public static OreGenericEgg MyGlowSquidSpawnBlock;
+  public static OreGenericEgg MyGoatSpawnBlock;
+  public static OreGenericEgg MyGuardianSpawnBlock;
+  public static OreGenericEgg MyHoglinSpawnBlock;
+  public static OreGenericEgg MyHoneyBeeSpawnBlock;
+  public static OreGenericEgg MyHuskSpawnBlock;
+  public static OreGenericEgg MyLlamaSpawnBlock;
+  public static OreGenericEgg MyPandaSpawnBlock;
+  public static OreGenericEgg MyParrotSpawnBlock;
+  public static OreGenericEgg MyPhantomSpawnBlock;
+  public static OreGenericEgg MyPiglinSpawnBlock;
+  public static OreGenericEgg MyPiglinBruteSpawnBlock;
+  public static OreGenericEgg MyPillagerSpawnBlock;
+  public static OreGenericEgg MyPolarBearSpawnBlock;
+  public static OreGenericEgg MyPufferfishSpawnBlock;
+  public static OreGenericEgg MyRabbitSpawnBlock;
+  public static OreGenericEgg MyRavagerSpawnBlock;
+  public static OreGenericEgg MySalmonSpawnBlock;
+  public static OreGenericEgg MyShulkerSpawnBlock;
+  public static OreGenericEgg MySnifferSpawnBlock;
+  public static OreGenericEgg MyStraySpawnBlock;
+  public static OreGenericEgg MyStriderSpawnBlock;
+  public static OreGenericEgg MyTadpoleSpawnBlock;
+  public static OreGenericEgg MyTraderLlamaSpawnBlock;
+  public static OreGenericEgg MyTropicalFishSpawnBlock;
+  public static OreGenericEgg MyTurtleSpawnBlock;
+  public static OreGenericEgg MyVanillaFrogSpawnBlock;
+  public static OreGenericEgg MyVexSpawnBlock;
+  public static OreGenericEgg MyVindicatorSpawnBlock;
+  public static OreGenericEgg MyWanderingTraderSpawnBlock;
+  public static OreGenericEgg MyWardenSpawnBlock;
+  public static OreGenericEgg MyZoglinSpawnBlock;
   public static Block MyOreUraniumBlock;
   public static Block MyDeepslateOreUraniumBlock;
   public static Block MyOreTitaniumBlock;
@@ -4593,6 +4683,16 @@ private static void registerAllCritterCages() {
         nextRecipeId(normalizeRegistryPath(name)), normalizeRegistryPath(group), output, ingredients);
   }
 
+  private void addVanillaDriedEggRecipe(String entityId, Block ore)
+  {
+    addShapelessRecipe(
+        cpId("egg_" + entityId),
+        cpId("eggs"),
+        createVanillaSpawnEgg(entityId),
+        Ingredient.of(new ItemStack(Items.WATER_BUCKET)),
+        Ingredient.of(new ItemStack(ore)));
+  }
+
   private ItemStack createVanillaSpawnEgg(String entityId)
   {
     Item spawnEgg =
@@ -4624,6 +4724,49 @@ private static void registerAllCritterCages() {
           case "iron_golem" -> Items.IRON_GOLEM_SPAWN_EGG;
           case "snow_golem" -> Items.SNOW_GOLEM_SPAWN_EGG;
           case "wither_skeleton" -> Items.WITHER_SKELETON_SPAWN_EGG;
+          case "allay" -> Items.ALLAY_SPAWN_EGG;
+          case "axolotl" -> Items.AXOLOTL_SPAWN_EGG;
+          case "bee" -> Items.BEE_SPAWN_EGG;
+          case "camel" -> Items.CAMEL_SPAWN_EGG;
+          case "cat" -> Items.CAT_SPAWN_EGG;
+          case "cod" -> Items.COD_SPAWN_EGG;
+          case "dolphin" -> Items.DOLPHIN_SPAWN_EGG;
+          case "drowned" -> Items.DROWNED_SPAWN_EGG;
+          case "elder_guardian" -> Items.ELDER_GUARDIAN_SPAWN_EGG;
+          case "endermite" -> Items.ENDERMITE_SPAWN_EGG;
+          case "evoker" -> Items.EVOKER_SPAWN_EGG;
+          case "fox" -> Items.FOX_SPAWN_EGG;
+          case "frog" -> Items.FROG_SPAWN_EGG;
+          case "glow_squid" -> Items.GLOW_SQUID_SPAWN_EGG;
+          case "goat" -> Items.GOAT_SPAWN_EGG;
+          case "guardian" -> Items.GUARDIAN_SPAWN_EGG;
+          case "hoglin" -> Items.HOGLIN_SPAWN_EGG;
+          case "husk" -> Items.HUSK_SPAWN_EGG;
+          case "llama" -> Items.LLAMA_SPAWN_EGG;
+          case "panda" -> Items.PANDA_SPAWN_EGG;
+          case "parrot" -> Items.PARROT_SPAWN_EGG;
+          case "phantom" -> Items.PHANTOM_SPAWN_EGG;
+          case "piglin" -> Items.PIGLIN_SPAWN_EGG;
+          case "piglin_brute" -> Items.PIGLIN_BRUTE_SPAWN_EGG;
+          case "pillager" -> Items.PILLAGER_SPAWN_EGG;
+          case "polar_bear" -> Items.POLAR_BEAR_SPAWN_EGG;
+          case "pufferfish" -> Items.PUFFERFISH_SPAWN_EGG;
+          case "rabbit" -> Items.RABBIT_SPAWN_EGG;
+          case "ravager" -> Items.RAVAGER_SPAWN_EGG;
+          case "salmon" -> Items.SALMON_SPAWN_EGG;
+          case "shulker" -> Items.SHULKER_SPAWN_EGG;
+          case "sniffer" -> Items.SNIFFER_SPAWN_EGG;
+          case "stray" -> Items.STRAY_SPAWN_EGG;
+          case "strider" -> Items.STRIDER_SPAWN_EGG;
+          case "tadpole" -> Items.TADPOLE_SPAWN_EGG;
+          case "trader_llama" -> Items.TRADER_LLAMA_SPAWN_EGG;
+          case "tropical_fish" -> Items.TROPICAL_FISH_SPAWN_EGG;
+          case "turtle" -> Items.TURTLE_SPAWN_EGG;
+          case "vex" -> Items.VEX_SPAWN_EGG;
+          case "vindicator" -> Items.VINDICATOR_SPAWN_EGG;
+          case "wandering_trader" -> Items.WANDERING_TRADER_SPAWN_EGG;
+          case "warden" -> Items.WARDEN_SPAWN_EGG;
+          case "zoglin" -> Items.ZOGLIN_SPAWN_EGG;
           default -> null;
         };
     if (spawnEgg == null) {
@@ -5505,6 +5648,50 @@ private static void registerAllCritterCages() {
 
     ItemStack OreHorseEggStack = new ItemStack(MyHorseSpawnBlock);
     addShapelessRecipe(cpId("egg_horse"), cpId("eggs"), createVanillaSpawnEgg("horse"), Ingredient.of(new ItemStack(Items.WATER_BUCKET)), Ingredient.of(OreHorseEggStack));
+
+    addVanillaDriedEggRecipe("allay", MyAllaySpawnBlock);
+    addVanillaDriedEggRecipe("axolotl", MyAxolotlSpawnBlock);
+    addVanillaDriedEggRecipe("camel", MyCamelSpawnBlock);
+    addVanillaDriedEggRecipe("cat", MyCatSpawnBlock);
+    addVanillaDriedEggRecipe("cod", MyCodSpawnBlock);
+    addVanillaDriedEggRecipe("dolphin", MyDolphinSpawnBlock);
+    addVanillaDriedEggRecipe("drowned", MyDrownedSpawnBlock);
+    addVanillaDriedEggRecipe("elder_guardian", MyElderGuardianSpawnBlock);
+    addVanillaDriedEggRecipe("endermite", MyEndermiteSpawnBlock);
+    addVanillaDriedEggRecipe("evoker", MyEvokerSpawnBlock);
+    addVanillaDriedEggRecipe("fox", MyFoxSpawnBlock);
+    addVanillaDriedEggRecipe("glow_squid", MyGlowSquidSpawnBlock);
+    addVanillaDriedEggRecipe("goat", MyGoatSpawnBlock);
+    addVanillaDriedEggRecipe("guardian", MyGuardianSpawnBlock);
+    addVanillaDriedEggRecipe("hoglin", MyHoglinSpawnBlock);
+    addVanillaDriedEggRecipe("bee", MyHoneyBeeSpawnBlock);
+    addVanillaDriedEggRecipe("husk", MyHuskSpawnBlock);
+    addVanillaDriedEggRecipe("llama", MyLlamaSpawnBlock);
+    addVanillaDriedEggRecipe("panda", MyPandaSpawnBlock);
+    addVanillaDriedEggRecipe("parrot", MyParrotSpawnBlock);
+    addVanillaDriedEggRecipe("phantom", MyPhantomSpawnBlock);
+    addVanillaDriedEggRecipe("piglin", MyPiglinSpawnBlock);
+    addVanillaDriedEggRecipe("piglin_brute", MyPiglinBruteSpawnBlock);
+    addVanillaDriedEggRecipe("pillager", MyPillagerSpawnBlock);
+    addVanillaDriedEggRecipe("polar_bear", MyPolarBearSpawnBlock);
+    addVanillaDriedEggRecipe("pufferfish", MyPufferfishSpawnBlock);
+    addVanillaDriedEggRecipe("rabbit", MyRabbitSpawnBlock);
+    addVanillaDriedEggRecipe("ravager", MyRavagerSpawnBlock);
+    addVanillaDriedEggRecipe("salmon", MySalmonSpawnBlock);
+    addVanillaDriedEggRecipe("shulker", MyShulkerSpawnBlock);
+    addVanillaDriedEggRecipe("sniffer", MySnifferSpawnBlock);
+    addVanillaDriedEggRecipe("stray", MyStraySpawnBlock);
+    addVanillaDriedEggRecipe("strider", MyStriderSpawnBlock);
+    addVanillaDriedEggRecipe("tadpole", MyTadpoleSpawnBlock);
+    addVanillaDriedEggRecipe("trader_llama", MyTraderLlamaSpawnBlock);
+    addVanillaDriedEggRecipe("tropical_fish", MyTropicalFishSpawnBlock);
+    addVanillaDriedEggRecipe("turtle", MyTurtleSpawnBlock);
+    addVanillaDriedEggRecipe("frog", MyVanillaFrogSpawnBlock);
+    addVanillaDriedEggRecipe("vex", MyVexSpawnBlock);
+    addVanillaDriedEggRecipe("vindicator", MyVindicatorSpawnBlock);
+    addVanillaDriedEggRecipe("wandering_trader", MyWanderingTraderSpawnBlock);
+    addVanillaDriedEggRecipe("warden", MyWardenSpawnBlock);
+    addVanillaDriedEggRecipe("zoglin", MyZoglinSpawnBlock);
 
     ItemStack OreTrooperBugEggStack = new ItemStack(MyTrooperBugSpawnBlock);
     addShapelessRecipe(cpId("egg_mob"), cpId("eggs"), new ItemStack(TrooperBugEgg), Ingredient.of(new ItemStack(Items.WATER_BUCKET)), Ingredient.of(OreTrooperBugEggStack));
@@ -7333,22 +7520,125 @@ private static void registerAllCritterCages() {
     }
   }
 
-  /** OMG apple trees save with stale skylight; rebuild lighting near the player after relog only. */
+  /**
+   * Chunks written by deferred populate / giant trees after vanilla LIGHT already ran.
+   * Dungeons Arise never hits this: they place in the structure step, then vanilla lights the proto-chunk.
+   */
+  private static final ThreadLocal<Set<Long>> POPULATE_TOUCHED_CHUNKS =
+      ThreadLocal.withInitial(HashSet::new);
+  private static final ThreadLocal<Boolean> COLLECTING_POPULATE_CHUNKS =
+      ThreadLocal.withInitial(() -> Boolean.FALSE);
+  private static final Set<RelightWork> PENDING_CHUNK_RELIGHT = ConcurrentHashMap.newKeySet();
+  private static final Set<RelightWork> RELIGHT_IN_FLIGHT = ConcurrentHashMap.newKeySet();
+  private static final int MAX_CHUNK_RELIGHT_PER_TICK = 1;
+
+  private record RelightWork(ResourceKey<Level> dimension, long chunkKey) {}
+
+  public static void beginPopulateLightCollection() {
+    COLLECTING_POPULATE_CHUNKS.set(Boolean.TRUE);
+    POPULATE_TOUCHED_CHUNKS.get().clear();
+  }
+
+  public static Set<Long> endPopulateLightCollection() {
+    COLLECTING_POPULATE_CHUNKS.set(Boolean.FALSE);
+    Set<Long> touched = new HashSet<>(POPULATE_TOUCHED_CHUNKS.get());
+    POPULATE_TOUCHED_CHUNKS.get().clear();
+    return touched;
+  }
+
+  private static void markPopulateLightChunk(int blockX, int blockZ) {
+    if (Boolean.TRUE.equals(COLLECTING_POPULATE_CHUNKS.get())) {
+      POPULATE_TOUCHED_CHUNKS.get().add(ChunkPos.asLong(blockX >> 4, blockZ >> 4));
+    }
+  }
+
+  public static void queueChunkRelight(ServerLevel level, Iterable<Long> chunkKeys) {
+    if (level == null || chunkKeys == null) {
+      return;
+    }
+    ResourceKey<Level> dimension = level.dimension();
+    for (long chunkKey : chunkKeys) {
+      PENDING_CHUNK_RELIGHT.add(new RelightWork(dimension, chunkKey));
+    }
+  }
+
+  /** Vanilla-style full column relight after post-LIGHT block writes. One pass, then persist. */
+  public static void scheduleSkylightRelight(
+      ServerLevel level, Iterable<Long> chunkKeys, @Nullable ServerPlayer syncTo) {
+    queueChunkRelight(level, chunkKeys);
+  }
+
   @SubscribeEvent
-  public void onPlayerLoggedInRelightNearbyChunks(PlayerEvent.PlayerLoggedInEvent event) {
-    if (!(event.getEntity() instanceof ServerPlayer player)) {
+  public void onServerTickRelightFastPlacedChunks(TickEvent.ServerTickEvent event) {
+    if (event.phase != TickEvent.Phase.END) {
       return;
     }
-    ServerLevel level = player.serverLevel();
-    if (!level.dimensionType().hasSkyLight()) {
+    net.minecraft.server.MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
+    if (server == null) {
       return;
     }
-    level.getServer().tell(new TickTask(level.getServer().getTickCount() + 20, () -> {
-      if (!player.isAlive()) {
-        return;
+    if (!RELIGHT_IN_FLIGHT.isEmpty()) {
+      return;
+    }
+    int budget = MAX_CHUNK_RELIGHT_PER_TICK;
+    java.util.Iterator<RelightWork> iterator = PENDING_CHUNK_RELIGHT.iterator();
+    while (budget > 0 && iterator.hasNext()) {
+      RelightWork work = iterator.next();
+      iterator.remove();
+      ServerLevel level = server.getLevel(work.dimension());
+      if (level == null) {
+        continue;
       }
-      scheduleSkylightRelight(level, chunkKeysAround(player.chunkPosition(), 8), player);
-    }));
+      ChunkPos chunkPos = new ChunkPos(work.chunkKey());
+      if (!level.hasChunk(chunkPos.x, chunkPos.z)) {
+        continue;
+      }
+      if (!RELIGHT_IN_FLIGHT.add(work)) {
+        continue;
+      }
+      relightLoadedChunk(level, chunkPos, work);
+      --budget;
+    }
+  }
+
+  private static void relightLoadedChunk(ServerLevel level, ChunkPos chunkPos, RelightWork work) {
+    LevelChunk chunk = level.getChunk(chunkPos.x, chunkPos.z);
+    chunk.initializeLightSources();
+    ThreadedLevelLightEngine lightEngine = level.getChunkSource().getLightEngine();
+    // Same pair vanilla runs at ChunkStatus.INITIALIZE_LIGHT then ChunkStatus.LIGHT.
+    lightEngine
+        .initializeLight(chunk, false)
+        .thenCompose(lit -> lightEngine.lightChunk(lit, false))
+        .whenComplete(
+            (ignored, error) -> {
+              RELIGHT_IN_FLIGHT.remove(work);
+              if (error != null) {
+                return;
+              }
+              level.getServer()
+                  .execute(
+                      () -> {
+                        if (!level.hasChunk(chunkPos.x, chunkPos.z)) {
+                          return;
+                        }
+                        LevelChunk live = level.getChunk(chunkPos.x, chunkPos.z);
+                        live.setUnsaved(true);
+                        com.astryxion.chaospersists.world.ChaosChunkDecorationData.get(level)
+                            .markRelit(level.dimension(), chunkPos.x, chunkPos.z);
+                        ClientboundLevelChunkWithLightPacket packet =
+                            new ClientboundLevelChunkWithLightPacket(live, lightEngine, null, null);
+                        for (ServerPlayer player : level.players()) {
+                          if (player.chunkPosition().getChessboardDistance(chunkPos)
+                              <= serverViewDistance(level) + 1) {
+                            player.connection.send(packet);
+                          }
+                        }
+                      });
+            });
+  }
+
+  private static int serverViewDistance(ServerLevel level) {
+    return Math.max(8, level.getServer().getPlayerList().getViewDistance());
   }
 
   @SubscribeEvent
@@ -7382,55 +7672,6 @@ private static void registerAllCritterCages() {
       }
     }
     return keys;
-  }
-
-  /**
-   * Deferred skylight rebuild for fast-placed structures. Runs on later ticks so it never blocks
-   * item use; optionally pushes corrected light packets to one player.
-   */
-  public static void scheduleSkylightRelight(
-      ServerLevel level, Iterable<Long> chunkKeys, @Nullable ServerPlayer syncTo) {
-    if (!level.dimensionType().hasSkyLight()) {
-      return;
-    }
-    List<Long> chunks = new ArrayList<>();
-    for (long chunkKey : chunkKeys) {
-      chunks.add(chunkKey);
-    }
-    if (chunks.isEmpty()) {
-      return;
-    }
-    ThreadedLevelLightEngine lightEngine = level.getChunkSource().getLightEngine();
-    int baseTick = level.getServer().getTickCount();
-    int[] delays = {10, 50, 100};
-    for (int pass = 0; pass < delays.length; pass++) {
-      boolean finalPass = pass == delays.length - 1;
-      int delay = delays[pass];
-      level.getServer().tell(new TickTask(baseTick + delay, () -> {
-        CompletableFuture<?>[] futures = new CompletableFuture<?>[chunks.size()];
-        int index = 0;
-        for (long chunkKey : chunks) {
-          ChunkPos chunkPos = new ChunkPos(chunkKey);
-          ChunkAccess chunk = level.getChunk(chunkPos.x, chunkPos.z);
-          chunk.setLightCorrect(false);
-          futures[index++] = lightEngine.lightChunk(chunk, false);
-        }
-        lightEngine.tryScheduleUpdate();
-        if (finalPass && syncTo != null) {
-          CompletableFuture.allOf(futures).thenRun(() -> level.getServer().execute(() -> {
-            if (!syncTo.isAlive()) {
-              return;
-            }
-            for (long chunkKey : chunks) {
-              ChunkPos chunkPos = new ChunkPos(chunkKey);
-              syncTo.connection.send(
-                  new ClientboundLightUpdatePacket(chunkPos, lightEngine, null, null));
-              level.getChunk(chunkPos.x, chunkPos.z).setUnsaved(true);
-            }
-          }));
-        }
-      }));
-    }
   }
 
   @SubscribeEvent
@@ -8393,6 +8634,11 @@ private static void registerAllCritterCages() {
 
       if (flag)
       {
+        markPopulateLightChunk(par1, par3);
+      }
+
+      if (flag)
+      {
         if (!ChaosWorld.isDuringPopulateFeature())
         {
           if (((par6 & 0x2) != 0) && ((!world.isClientSide()) || ((par6 & 0x4) == 0)))
@@ -8446,6 +8692,11 @@ private static void registerAllCritterCages() {
       }
 
       boolean flag = setBlockIDWithMetadataFast(chunk, localX, par2, localZ, par4, par5);
+
+      if (flag)
+      {
+        markPopulateLightChunk(par1, par3);
+      }
 
       if (flag && !ChaosWorld.isDuringPopulateFeature())
       {
@@ -8581,9 +8832,10 @@ private static void registerAllCritterCages() {
     BlockPos pos = new BlockPos(par1, par2, par3);
     if (par4 == Blocks.AIR) {
       chunk.setBlockState(pos, Blocks.AIR.defaultBlockState(), false);
-      return true;
+    } else {
+      chunk.setBlockState(pos, prepareBlockStateForWorldGen(RegistryCompat.getStateFromMeta(par4, par5)), false);
     }
-    chunk.setBlockState(pos, prepareBlockStateForWorldGen(RegistryCompat.getStateFromMeta(par4, par5)), false);
+    markPopulateLightChunk((chunk.getPos().x << 4) + par1, (chunk.getPos().z << 4) + par3);
     return true;
   }
 
@@ -8622,12 +8874,13 @@ private static void registerAllCritterCages() {
       BlockPos pos = new BlockPos(par1, par2, par3);
       if (par4 == Blocks.AIR) {
         chunk.setBlockState(pos, Blocks.AIR.defaultBlockState(), false);
-        return true;
+      } else {
+        chunk.setBlockState(
+            pos,
+            prepareBlockStateForWorldGen(RegistryCompat.getStateFromMeta(par4, par5)),
+            false);
       }
-      chunk.setBlockState(
-          pos,
-          prepareBlockStateForWorldGen(RegistryCompat.getStateFromMeta(par4, par5)),
-          false);
+      markPopulateLightChunk((chunk.getPos().x << 4) + par1, (chunk.getPos().z << 4) + par3);
       return true;
     }
     return false;
@@ -9207,6 +9460,197 @@ private static void registerAllCritterCages() {
     MyFrogSpawnBlock = oreEggBlock("orefrog");
     MySpiderDriverSpawnBlock = oreEggBlock("orespiderdriver");
     MyCrabSpawnBlock = oreEggBlock("orecrab");
+    MyAllaySpawnBlock = oreEggBlock("oreallay");
+    MyAxolotlSpawnBlock = oreEggBlock("oreaxolotl");
+    MyCamelSpawnBlock = oreEggBlock("orecamel");
+    MyCatSpawnBlock = oreEggBlock("orecat");
+    MyCodSpawnBlock = oreEggBlock("orecod");
+    MyDolphinSpawnBlock = oreEggBlock("oredolphin");
+    MyDrownedSpawnBlock = oreEggBlock("oredrowned");
+    MyElderGuardianSpawnBlock = oreEggBlock("oreelderguardian");
+    MyEndermiteSpawnBlock = oreEggBlock("oreendermite");
+    MyEvokerSpawnBlock = oreEggBlock("oreevoker");
+    MyFoxSpawnBlock = oreEggBlock("orefox");
+    MyGlowSquidSpawnBlock = oreEggBlock("oreglowsquid");
+    MyGoatSpawnBlock = oreEggBlock("oregoat");
+    MyGuardianSpawnBlock = oreEggBlock("oreguardian");
+    MyHoglinSpawnBlock = oreEggBlock("orehoglin");
+    MyHoneyBeeSpawnBlock = oreEggBlock("orehoneybee");
+    MyHuskSpawnBlock = oreEggBlock("orehusk");
+    MyLlamaSpawnBlock = oreEggBlock("orellama");
+    MyPandaSpawnBlock = oreEggBlock("orepanda");
+    MyParrotSpawnBlock = oreEggBlock("oreparrot");
+    MyPhantomSpawnBlock = oreEggBlock("orephantom");
+    MyPiglinSpawnBlock = oreEggBlock("orepiglin");
+    MyPiglinBruteSpawnBlock = oreEggBlock("orepiglinbrute");
+    MyPillagerSpawnBlock = oreEggBlock("orepillager");
+    MyPolarBearSpawnBlock = oreEggBlock("orepolarbear");
+    MyPufferfishSpawnBlock = oreEggBlock("orepufferfish");
+    MyRabbitSpawnBlock = oreEggBlock("orerabbit");
+    MyRavagerSpawnBlock = oreEggBlock("oreravager");
+    MySalmonSpawnBlock = oreEggBlock("oresalmon");
+    MyShulkerSpawnBlock = oreEggBlock("oreshulker");
+    MySnifferSpawnBlock = oreEggBlock("oresniffer");
+    MyStraySpawnBlock = oreEggBlock("orestray");
+    MyStriderSpawnBlock = oreEggBlock("orestrider");
+    MyTadpoleSpawnBlock = oreEggBlock("oretadpole");
+    MyTraderLlamaSpawnBlock = oreEggBlock("oretraderllama");
+    MyTropicalFishSpawnBlock = oreEggBlock("oretropicalfish");
+    MyTurtleSpawnBlock = oreEggBlock("oreturtle");
+    MyVanillaFrogSpawnBlock = oreEggBlock("orevanillafrog");
+    MyVexSpawnBlock = oreEggBlock("orevex");
+    MyVindicatorSpawnBlock = oreEggBlock("orevindicator");
+    MyWanderingTraderSpawnBlock = oreEggBlock("orewanderingtrader");
+    MyWardenSpawnBlock = oreEggBlock("orewarden");
+    MyZoglinSpawnBlock = oreEggBlock("orezoglin");
+  }
+
+  /** Main spawn-egg ore pool used by Mining/Chaos/overworld generation. Existing entries keep their original order. */
+  public static Block[] getMainSpawnOreBlocks()
+  {
+    return new Block[] {
+      MySpiderSpawnBlock,
+      MyBatSpawnBlock,
+      MyCowSpawnBlock,
+      MyPigSpawnBlock,
+      MySquidSpawnBlock,
+      MyChickenSpawnBlock,
+      MyCreeperSpawnBlock,
+      MySkeletonSpawnBlock,
+      MyZombieSpawnBlock,
+      MySlimeSpawnBlock,
+      MyGhastSpawnBlock,
+      MyZombiePigmanSpawnBlock,
+      MyEndermanSpawnBlock,
+      MyCaveSpiderSpawnBlock,
+      MySilverfishSpawnBlock,
+      MyMagmaCubeSpawnBlock,
+      MyWitchSpawnBlock,
+      MySheepSpawnBlock,
+      MyWolfSpawnBlock,
+      MyMooshroomSpawnBlock,
+      MyOcelotSpawnBlock,
+      MyBlazeSpawnBlock,
+      MyWitherSkeletonSpawnBlock,
+      MyEnderDragonSpawnBlock,
+      MySnowGolemSpawnBlock,
+      MyIronGolemSpawnBlock,
+      MyWitherBossSpawnBlock,
+      MyGirlfriendSpawnBlock,
+      MyRedCowSpawnBlock,
+      MyGoldCowSpawnBlock,
+      MyEnchantedCowSpawnBlock,
+      MyMOTHRASpawnBlock,
+      MyAloSpawnBlock,
+      MyCryoSpawnBlock,
+      MyCamaSpawnBlock,
+      MyVeloSpawnBlock,
+      MyHydroSpawnBlock,
+      MyBasilSpawnBlock,
+      MyDragonflySpawnBlock,
+      MyEmperorScorpionSpawnBlock,
+      MyScorpionSpawnBlock,
+      MyCaveFisherSpawnBlock,
+      MySpyroSpawnBlock,
+      MyBaryonyxSpawnBlock,
+      MyGammaMetroidSpawnBlock,
+      MyCockateilSpawnBlock,
+      MyKyuubiSpawnBlock,
+      MyAlienSpawnBlock,
+      MyAttackSquidSpawnBlock,
+      MyWaterDragonSpawnBlock,
+      MyKrakenSpawnBlock,
+      MyLizardSpawnBlock,
+      MyCephadromeSpawnBlock,
+      MyDragonSpawnBlock,
+      MyBeeSpawnBlock,
+      MyHorseSpawnBlock,
+      MyTrooperBugSpawnBlock,
+      MySpitBugSpawnBlock,
+      MyStinkBugSpawnBlock,
+      MyOstrichSpawnBlock,
+      MyGazelleSpawnBlock,
+      MyChipmunkSpawnBlock,
+      MyCreepingHorrorSpawnBlock,
+      MyTerribleTerrorSpawnBlock,
+      MyCliffRacerSpawnBlock,
+      MyTriffidSpawnBlock,
+      MyPitchBlackSpawnBlock,
+      MyLurkingTerrorSpawnBlock,
+      MyGodzillaPartSpawnBlock,
+      MyGodzillaSpawnBlock,
+      MySmallWormSpawnBlock,
+      MyMediumWormSpawnBlock,
+      MyLargeWormSpawnBlock,
+      MyCassowarySpawnBlock,
+      MyCloudSharkSpawnBlock,
+      MyGoldFishSpawnBlock,
+      MyLeafMonsterSpawnBlock,
+      MyTshirtSpawnBlock,
+      MyEnderKnightSpawnBlock,
+      MyEnderReaperSpawnBlock,
+      MyBeaverSpawnBlock,
+      MyTRexSpawnBlock,
+      MyHerculesSpawnBlock,
+      MyMantisSpawnBlock,
+      MyStinkySpawnBlock,
+      MyBoyfriendSpawnBlock,
+      MyTheKingPartSpawnBlock,
+      MyEasterBunnySpawnBlock,
+      MyCaterKillerSpawnBlock,
+      MyMolenoidSpawnBlock,
+      MySeaMonsterSpawnBlock,
+      MySeaViperSpawnBlock,
+      MyLeonSpawnBlock,
+      MyHammerheadSpawnBlock,
+      MyRubberDuckySpawnBlock,
+      MyVillagerSpawnBlock,
+      MyCriminalSpawnBlock,
+      MyTheQueenPartSpawnBlock,
+      MyAllaySpawnBlock,
+      MyAxolotlSpawnBlock,
+      MyCamelSpawnBlock,
+      MyCatSpawnBlock,
+      MyCodSpawnBlock,
+      MyDolphinSpawnBlock,
+      MyDrownedSpawnBlock,
+      MyElderGuardianSpawnBlock,
+      MyEndermiteSpawnBlock,
+      MyEvokerSpawnBlock,
+      MyFoxSpawnBlock,
+      MyGlowSquidSpawnBlock,
+      MyGoatSpawnBlock,
+      MyGuardianSpawnBlock,
+      MyHoglinSpawnBlock,
+      MyHoneyBeeSpawnBlock,
+      MyHuskSpawnBlock,
+      MyLlamaSpawnBlock,
+      MyPandaSpawnBlock,
+      MyParrotSpawnBlock,
+      MyPhantomSpawnBlock,
+      MyPiglinSpawnBlock,
+      MyPiglinBruteSpawnBlock,
+      MyPillagerSpawnBlock,
+      MyPolarBearSpawnBlock,
+      MyPufferfishSpawnBlock,
+      MyRabbitSpawnBlock,
+      MyRavagerSpawnBlock,
+      MySalmonSpawnBlock,
+      MyShulkerSpawnBlock,
+      MySnifferSpawnBlock,
+      MyStraySpawnBlock,
+      MyStriderSpawnBlock,
+      MyTadpoleSpawnBlock,
+      MyTraderLlamaSpawnBlock,
+      MyTropicalFishSpawnBlock,
+      MyTurtleSpawnBlock,
+      MyVanillaFrogSpawnBlock,
+      MyVexSpawnBlock,
+      MyVindicatorSpawnBlock,
+      MyWanderingTraderSpawnBlock,
+      MyWardenSpawnBlock,
+      MyZoglinSpawnBlock
+    };
   }
 
   public String getVersion()

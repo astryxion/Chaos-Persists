@@ -269,6 +269,7 @@ public class Girlfriend extends TamableAnimal implements RangedAttackMob {
             this.targetSelector.addGoal(5, new MyEntityAIJealousy(this, Girlfriend.class, 3.0f, 15, true));
         }
         this.xpReward = 0;
+        this.entityData.set(VOICE_ENABLE, this.voice_enable);
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -286,7 +287,8 @@ public class Girlfriend extends TamableAnimal implements RangedAttackMob {
         this.wet_count = 0;
         this.entityData.define(WHICH_WET_GIRL, 0);
         this.entityData.define(VOICE, 0);
-        this.entityData.define(VOICE_ENABLE, this.voice_enable);
+        // Literal 1: defineSynchedData runs inside super(), before voice_enable = 1.
+        this.entityData.define(VOICE_ENABLE, 1);
         this.entityData.define(IS_PRINCESS, this.is_princess);
         this.entityData.define(FEELING_BETTER, this.feelingBetter);
         this.auto_heal = 200;
@@ -1009,9 +1011,7 @@ public class Girlfriend extends TamableAnimal implements RangedAttackMob {
 
     @Override
     protected SoundEvent getHurtSound(DamageSource damageSource) {
-        // Use synched voice flag. The local field is only copied every 20 ticks after a
-        // 50-tick delay, so client handleDamageEvent would otherwise skip o_ow at random.
-        if (this.entityData.get(VOICE_ENABLE) == 0) {
+        if (this.voice_enable == 0) {
             return null;
         }
         return ChaosSounds.O_OW;

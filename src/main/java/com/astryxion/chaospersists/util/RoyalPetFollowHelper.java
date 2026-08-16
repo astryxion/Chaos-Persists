@@ -1,5 +1,6 @@
 package com.astryxion.chaospersists.util;
 
+import com.astryxion.chaospersists.entity.Dragon;
 import com.astryxion.chaospersists.entity.ThePrince;
 import com.astryxion.chaospersists.entity.ThePrinceAdult;
 import com.astryxion.chaospersists.entity.ThePrinceTeen;
@@ -86,7 +87,7 @@ public final class RoyalPetFollowHelper {
                 if (!pet.isTame() || !ownerId.equals(pet.getOwnerUUID())) {
                     continue;
                 }
-                if (isRoyalPet(pet)) {
+                if (isRoyalPet(pet) || pet instanceof Dragon) {
                     continue;
                 }
                 if (isStayingPut(pet)) {

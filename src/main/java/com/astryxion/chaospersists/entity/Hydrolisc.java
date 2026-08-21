@@ -189,7 +189,13 @@ public class Hydrolisc extends TamableAnimal {
         if (this.getRandom().nextInt(200) == 1) {
             this.setLastHurtByMob(null);
         }
-        if (!this.isInSittingPose()
+        boolean followingOwner =
+                this.isTame()
+                        && this.getOwner() != null
+                        && !this.isOrderedToSit()
+                        && this.distanceToSqr(this.getOwner()) > 16.0;
+        if (!followingOwner
+                && !this.isInSittingPose()
                 && (this.getRandom().nextInt(20) == 0 && this.getHydroHealth() < (int) this.getMaxHealth()
                         || this.getRandom().nextInt(100) == 0)) {
             this.closest = 99999;

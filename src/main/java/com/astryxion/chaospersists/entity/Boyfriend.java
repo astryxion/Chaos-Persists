@@ -202,6 +202,11 @@ public class Boyfriend extends TamableAnimal implements RangedAttackMob {
     public Boyfriend(EntityType<? extends Boyfriend> type, Level level) {
         super(type, level);
         this.setOrderedToSit(false);
+        if (this.getNavigation() instanceof net.minecraft.world.entity.ai.navigation.GroundPathNavigation ground) {
+            ground.setCanOpenDoors(true);
+            ground.setCanPassDoors(true);
+            ground.setCanFloat(true);
+        }
         this.goalSelector.addGoal(1, new MyEntityAIFollowOwner(this, 1.4f, 12.0f, 1.5f));
         this.goalSelector.addGoal(2, new TemptGoal(this, 1.25, Ingredient.of(Items.COOKED_BEEF), false));
         this.goalSelector.addGoal(4, new RangedAttackGoal(this, 1.25, 20, 10.0f));

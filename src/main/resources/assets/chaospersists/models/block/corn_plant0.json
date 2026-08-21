@@ -1,6 +1,6 @@
 {
-  "parent": "block/crop",
+  "parent": "block/cross",
   "textures": {
-    "crop": "chaospersists:block/corn_plant0"
+    "cross": "chaospersists:block/corn_plant0"
   }
 }

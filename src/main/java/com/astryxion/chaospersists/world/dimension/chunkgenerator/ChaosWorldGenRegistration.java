@@ -24,5 +24,12 @@ public final class ChaosWorldGenRegistration {
                     ResourceLocation.fromNamespaceAndPath(ChaosPersists.MODID, "sky_islands"),
                     () -> ChaosIslandsChunkGenerator.CODEC);
         }
+        if (event.getRegistryKey().equals(Registries.FEATURE)) {
+            event.register(
+                    Registries.FEATURE,
+                    ResourceLocation.fromNamespaceAndPath(ChaosPersists.MODID, "village_foundation_fill"),
+                    () -> new com.astryxion.chaospersists.world.dimension.structure.VillageFoundationFillFeature(
+                            net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration.CODEC));
+        }
     }
 }

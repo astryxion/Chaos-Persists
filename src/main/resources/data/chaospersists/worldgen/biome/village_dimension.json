@@ -23,7 +23,7 @@
   "carvers": {
     "air": [
       "minecraft:cave",
-      "minecraft:cave_extra_underground"
+      "minecraft:canyon"
     ]
   },
   "features": [
@@ -73,10 +73,12 @@
       "minecraft:spring_lava"
     ],
     [
+      "chaospersists:village_foundation_fill",
       "minecraft:glow_lichen",
       "minecraft:patch_tall_grass_2",
       "minecraft:flower_default",
-      "minecraft:patch_grass_plain"
+      "minecraft:patch_grass_plain",
+      "minecraft:trees_plains"
     ],
     [
       "minecraft:freeze_top_layer"

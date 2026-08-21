@@ -279,14 +279,7 @@ public class ChaosWorld {
                             chunkZ * 16);
                 }
             }
-            this.tryPlaceWaterLake(
-                    level,
-                    net.minecraft.util.RandomSource.create(random.nextLong()),
-                    chunkX * 16,
-                    chunkZ * 16,
-                    chunk,
-                    16, // Utopia: uncommon ponds (1.7 relied more on terrain valleys)
-                    false);
+            // 1.7 {@code ChunkProviderOreSpawn} did not run WorldGenLakes; big ponds are terrain.
             return;
         }
         if (level.dimension().equals(ChaosPersists.getMiningDimensionKey())) {
@@ -447,8 +440,10 @@ public class ChaosWorld {
                     chunkX * 16,
                     chunkZ * 16,
                     chunk,
-                    16, // uncommon extra WorldGenLakes; big water comes from valley sea-level flood
+                    4,
                     false);
+            com.astryxion.chaospersists.world.dimension.structure.VillageFoundationFill.fillChunk(
+                    level, chunkX, chunkZ);
             return;
         }
         if (level.dimension().equals(ChaosPersists.getDangerDimensionKey())) {
@@ -1005,7 +1000,8 @@ public class ChaosWorld {
     }
 
     /**
-     * 1.12 {@code WorldGenLakes} ponds for custom plains dimensions (vanilla removed lake features in 1.20.1).
+     * 1.7 {@code ChunkProviderOreSpawn3} lakes: 16×8 WorldGenLakes, skipped when a village already
+     * occupies the chunk so they cannot carve houses or undercut foundations.
      */
     private void tryPlaceWaterLake(
             Level level,
@@ -1015,20 +1011,29 @@ public class ChaosWorld {
             LevelChunk chunk,
             int chunkRarity,
             boolean crystalTerrain) {
+        if (this.chunkHasVillage(chunk)) {
+            return;
+        }
         if (random.nextInt(chunkRarity) != 0) {
             return;
         }
-        // One classic attempt (plus one retry). Extra retries made Village Mania look flooded.
-        for (int attempt = 0; attempt < 2; ++attempt) {
-            int x = chunkX + random.nextInt(16) + 8;
-            int z = chunkZ + random.nextInt(16) + 8;
-            // Prefer near-surface so lakes settle into the land instead of blasting deep pits.
-            int surfaceY = chunk.getHeight(Heightmap.Types.WORLD_SURFACE_WG, x & 15, z & 15);
-            int y = attempt == 0 ? surfaceY + random.nextInt(4) : random.nextInt(Math.max(8, surfaceY + 1));
-            if (this.placeWaterLakeAt(level, random, new BlockPos(x, y, z), crystalTerrain)) {
-                return;
+        int x = chunkX + random.nextInt(16) + 8;
+        int z = chunkZ + random.nextInt(16) + 8;
+        int y = random.nextInt(256);
+        this.placeWaterLakeAt(level, random, new BlockPos(x, y, z), crystalTerrain);
+    }
+
+    /** 1.7 {@code flag} from {@code MapGenVillage.generateStructuresInChunk}. */
+    private boolean chunkHasVillage(LevelChunk chunk) {
+        for (var entry : chunk.getAllReferences().entrySet()) {
+            if (entry.getKey()
+                            instanceof
+                            com.astryxion.chaospersists.world.dimension.structure.GroundedJigsawStructure
+                    && !entry.getValue().isEmpty()) {
+                return true;
             }
         }
+        return false;
     }
 
     /**

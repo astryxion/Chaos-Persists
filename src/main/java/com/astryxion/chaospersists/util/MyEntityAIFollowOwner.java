@@ -5,23 +5,28 @@ import com.astryxion.chaospersists.entity.Girlfriend;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.ai.goal.Goal;
+import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.level.Level;
 
+/**
+ * OreSpawn 1.7.10 follow: walk when a path exists, teleport only if pathing fails and the owner is
+ * 12+ blocks away. Always-teleport-at-12 made pets blink instead of run.
+ */
 public class MyEntityAIFollowOwner extends Goal {
     private final TamableAnimal thePet;
     private LivingEntity theOwner;
     private final Level theWorld;
-    private final float field_75336_f;
+    private final float followSpeed;
     private final PathNavigation petPathfinder;
-    private int field_75343_h;
+    private int repathDelay;
     private final float maxDist;
     private final float minDist;
 
     public MyEntityAIFollowOwner(TamableAnimal par1EntityTameable, float par2, float par3, float par4) {
         this.thePet = par1EntityTameable;
         this.theWorld = par1EntityTameable.level();
-        this.field_75336_f = par2;
+        this.followSpeed = par2;
         this.petPathfinder = par1EntityTameable.getNavigation();
         this.minDist = par4;
         this.maxDist = par3;
@@ -34,11 +39,11 @@ public class MyEntityAIFollowOwner extends Goal {
 
     @Override
     public boolean canUse() {
-        LivingEntity var1 = this.thePet.getOwner();
-        if (var1 == null) {
+        LivingEntity owner = this.thePet.getOwner();
+        if (owner == null) {
             return false;
         }
-        this.theOwner = var1;
+        this.theOwner = owner;
         if (this.isPetStaying()) {
             return false;
         }
@@ -53,18 +58,12 @@ public class MyEntityAIFollowOwner extends Goal {
                 || distSq <= (double) (this.maxDist / 2.0f * (this.maxDist / 2.0f)))) {
             return true;
         }
-        if (distSq < (double) (this.maxDist * this.maxDist)) {
-            return false;
-        }
-        return true;
+        return distSq >= (double) (this.maxDist * this.maxDist);
     }
 
     @Override
     public boolean canContinueToUse() {
-        if (this.isPetStaying()) {
-            return false;
-        }
-        if (MyUtils.isPrinceFlying(this.thePet)) {
+        if (this.isPetStaying() || MyUtils.isPrinceFlying(this.thePet)) {
             return false;
         }
         LivingEntity owner = this.thePet.getOwner();
@@ -78,18 +77,17 @@ public class MyEntityAIFollowOwner extends Goal {
                 && (int) this.thePet.getY() > (int) owner.getY() - 2) {
             return false;
         }
-        if (this.thePet.distanceToSqr(this.theOwner) <= (double) (this.minDist * this.minDist)) {
-            return false;
-        }
-        if (this.thePet.distanceToSqr(this.theOwner) >= 144.0) {
-            return true;
-        }
-        return !this.petPathfinder.isDone();
+        return this.thePet.distanceToSqr(this.theOwner) > (double) (this.minDist * this.minDist);
     }
 
     @Override
     public void start() {
-        this.field_75343_h = 0;
+        this.repathDelay = 0;
+        this.petPathfinder.setCanFloat(true);
+        if (this.petPathfinder instanceof GroundPathNavigation ground) {
+            ground.setCanOpenDoors(true);
+            ground.setCanPassDoors(true);
+        }
     }
 
     @Override
@@ -99,9 +97,14 @@ public class MyEntityAIFollowOwner extends Goal {
     }
 
     @Override
+    public boolean requiresUpdateEveryTick() {
+        return true;
+    }
+
+    @Override
     public void tick() {
         MyUtils.setChaseTarget(this.thePet, this.theOwner);
-        if (this.isPetStaying()) {
+        if (this.isPetStaying() || this.theOwner == null) {
             return;
         }
         if (this.theOwner.level() != this.thePet.level()) {
@@ -112,16 +115,15 @@ public class MyEntityAIFollowOwner extends Goal {
             }
             return;
         }
-        if (--this.field_75343_h <= 0) {
-            this.field_75343_h = 10;
-            // Vanilla 1.20 FollowOwnerGoal: when >= 12 blocks away, teleport (do not gate on moveTo).
-            // OreSpawn placed pets on solid ground; if owner is flying, use ground under them.
-            if (this.thePet.distanceToSqr(this.theOwner) >= 144.0
-                    && !MyUtils.shouldPrinceSkipFollowTeleport(this.thePet, this.theOwner)) {
-                RoyalPetFollowHelper.teleportToOwnerOnGround(this.thePet, this.theOwner);
-            } else {
-                this.petPathfinder.moveTo(this.theOwner, (double) this.field_75336_f);
-            }
+        if (--this.repathDelay > 0) {
+            return;
+        }
+        this.repathDelay = 10;
+        boolean reached = this.petPathfinder.moveTo(this.theOwner, (double) this.followSpeed);
+        if (!reached
+                && this.thePet.distanceToSqr(this.theOwner) >= 144.0
+                && !MyUtils.shouldPrinceSkipFollowTeleport(this.thePet, this.theOwner)) {
+            RoyalPetFollowHelper.teleportToOwnerOnGround(this.thePet, this.theOwner);
         }
     }
 }

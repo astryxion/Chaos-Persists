@@ -40,9 +40,10 @@ import java.util.concurrent.Executor;
 import java.util.function.Predicate;
 
 /**
- * Twilight Forest-style terrain for Utopia and Village: zeroed noise router plus classic rolling-hill warp.
- * Adds a short-wavelength surface ripple so flats keep 1.7-style 1-up/1-down micro-bumps without
- * changing the large hill shapes.
+ * Twilight Forest-style terrain for Utopia, Village, and Crystal: zeroed noise router plus classic
+ * rolling-hill warp. Optional per-block micro-bump is for Utopia/Crystal only — Village Mania uses
+ * 1.7 {@code ChunkProviderOreSpawn3} settings (vanilla overworld interpolation, no extra ripple)
+ * so jigsaw villages sit on broad slopes instead of choppy 12-block noise.
  */
 public class ChaosPlainsChunkGenerator extends ChaosChunkGeneratorWrapper {
 
@@ -70,7 +71,13 @@ public class ChaosPlainsChunkGenerator extends ChaosChunkGeneratorWrapper {
                                             .forGetter(generator -> generator.terrainHeightOffset),
                                     Codec.DOUBLE
                                             .optionalFieldOf("noise_strength", 1.0D)
-                                            .forGetter(generator -> generator.noiseStrength))
+                                            .forGetter(generator -> generator.noiseStrength),
+                                    Codec.DOUBLE
+                                            .optionalFieldOf("micro_bump_strength", 1.0D)
+                                            .forGetter(generator -> generator.microBumpStrength),
+                                    Codec.DOUBLE
+                                            .optionalFieldOf("depth_noise_strength", 0.0D)
+                                            .forGetter(generator -> generator.depthNoiseStrength))
                             .apply(instance, ChaosPlainsChunkGenerator::new));
 
     private static final BlockState[] EMPTY_COLUMN = new BlockState[0];
@@ -82,6 +89,10 @@ public class ChaosPlainsChunkGenerator extends ChaosChunkGeneratorWrapper {
     private final double densityOffset;
     private final int terrainHeightOffset;
     private final double noiseStrength;
+    /** 0 disables the short-wavelength overlay (Village Mania / 1.7 OreSpawn). */
+    private final double microBumpStrength;
+    /** 1.7 overworld depth noise. 0 off; 1.0 matches {@code ChunkProviderOreSpawn3} lake basins. */
+    private final double depthNoiseStrength;
 
     private final BlockState defaultBlock;
     private final BlockState defaultFluid;
@@ -99,7 +110,9 @@ public class ChaosPlainsChunkGenerator extends ChaosChunkGeneratorWrapper {
             double densityFactor,
             double densityOffset,
             int terrainHeightOffset,
-            double noiseStrength) {
+            double noiseStrength,
+            double microBumpStrength,
+            double depthNoiseStrength) {
         super(delegate);
 
         this.noiseGeneratorSettings = noiseGenSettings;
@@ -109,6 +122,8 @@ public class ChaosPlainsChunkGenerator extends ChaosChunkGeneratorWrapper {
         this.densityOffset = densityOffset;
         this.terrainHeightOffset = terrainHeightOffset;
         this.noiseStrength = noiseStrength;
+        this.microBumpStrength = microBumpStrength;
+        this.depthNoiseStrength = depthNoiseStrength;
 
         if (delegate instanceof NoiseBasedChunkGenerator noiseGen && noiseGen.generatorSettings().isBound()) {
             this.defaultBlock = noiseGen.generatorSettings().value().defaultBlock();
@@ -134,7 +149,8 @@ public class ChaosPlainsChunkGenerator extends ChaosChunkGeneratorWrapper {
                                     densityFactor,
                                     densityOffset,
                                     terrainHeightOffset,
-                                    noiseStrength));
+                                    noiseStrength,
+                                    depthNoiseStrength));
         } else {
             this.warper = Optional.empty();
         }
@@ -403,16 +419,19 @@ public class ChaosPlainsChunkGenerator extends ChaosChunkGeneratorWrapper {
     }
 
     /**
-     * Soft 1.7-style micro-topography on flats: gentle ±1 block patches, not salt-and-pepper.
-     * Longish wavelength + soft clamp so hills stay clean and flats aren't noisy.
+     * Optional short-wavelength overlay. Village Mania sets strength to 0 so the 4×8 noise
+     * cells stay as smooth 1.7 rolling hills. Utopia/Crystal keep the default 1.0.
      */
     private double sampleMicroBump(RandomState random, int blockX, int blockZ) {
+        if (this.microBumpStrength <= 0.0D) {
+            return 0.0D;
+        }
         ImprovedNoise noise = this.getMicroBumpNoise(random);
         // ~12–16 block patches (one octave only — a fine overlay looked harsh).
         double n = noise.noise(blockX * 0.085D, 0.0D, blockZ * 0.085D);
         // tanh keeps extremes near ±1 block instead of spiking 2–3 high.
         double heightBlocks = Math.tanh(n * 1.2D) * 0.75D;
-        return heightBlocks * 7.0D;
+        return heightBlocks * 7.0D * this.microBumpStrength;
     }
 
     private ImprovedNoise getMicroBumpNoise(RandomState random) {
@@ -431,9 +450,9 @@ public class ChaosPlainsChunkGenerator extends ChaosChunkGeneratorWrapper {
     }
 
     /**
-     * Match 1.7/1.12 {@code ChunkProviderChaos3}: stone where density &gt; 0, otherwise water
-     * below sea level and air above. With plains hills sitting mostly above Y 63, valleys become
-     * the large winding lakes/rivers from Village Mania — not WorldGenLakes ponds.
+     * Match 1.7/1.12 {@code ChunkProviderOreSpawn3}: stone where density &gt; 0, otherwise water
+     * below sea level and air above. 1.7 depth noise pulls large basins under Y 63, which become
+     * the winding Village Mania / Utopia ponds — villages then generate on those shores.
      */
     private BlockState generateBaseState(double noiseVal, double level) {
         if (noiseVal > 0.0D) {

@@ -37,6 +37,8 @@ public final class ChaosLocateStructures {
 
     public static final RegistryObject<StructureType<LocateMarkerStructure>> LOCATE_MARKER =
             STRUCTURE_TYPES.register("locate_marker", () -> () -> LocateMarkerStructure.CODEC);
+    public static final RegistryObject<StructureType<GroundedJigsawStructure>> GROUNDED_JIGSAW =
+            STRUCTURE_TYPES.register("grounded_jigsaw", () -> () -> GroundedJigsawStructure.CODEC);
     public static final RegistryObject<StructurePieceType> LOCATE_MARKER_PIECE =
             STRUCTURE_PIECES.register(
                     "locate_marker", () -> (StructurePieceType.ContextlessType) LocateMarkerPiece::new);

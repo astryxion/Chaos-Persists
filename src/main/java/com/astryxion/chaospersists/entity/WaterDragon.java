@@ -709,7 +709,15 @@ public class WaterDragon extends TamableAnimal {
             this.getJumpControl().jump();
         }
         ++this.combat_tick;
-        if (!this.isInWater() && this.getRandom().nextInt(25) == 0 && !this.isInSittingPose()) {
+        boolean followingOwner =
+                this.isTame()
+                        && this.getOwner() != null
+                        && !this.isOrderedToSit()
+                        && this.distanceToSqr(this.getOwner()) > 16.0;
+        if (!followingOwner
+                && !this.isInWater()
+                && this.getRandom().nextInt(25) == 0
+                && !this.isInSittingPose()) {
             this.closest = 99999;
             this.tz = 0;
             this.ty = 0;

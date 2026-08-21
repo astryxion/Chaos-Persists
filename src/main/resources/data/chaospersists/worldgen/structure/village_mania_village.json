@@ -1,5 +1,5 @@
 {
-  "type": "minecraft:jigsaw",
+  "type": "chaospersists:grounded_jigsaw",
   "biomes": "#chaospersists:is_village_dimension",
   "step": "surface_structures",
   "spawn_overrides": {},

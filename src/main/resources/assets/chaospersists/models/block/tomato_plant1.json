@@ -1,1 +1,6 @@
-{"parent":"block/crop","textures":{"crop":"chaospersists:block/tomato_plant1"}}
+{
+  "parent": "block/cross",
+  "textures": {
+    "cross": "chaospersists:block/tomato_plant1"
+  }
+}

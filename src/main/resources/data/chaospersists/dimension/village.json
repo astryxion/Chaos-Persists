@@ -3,12 +3,14 @@
   "generator": {
     "type": "chaospersists:plains_terrain",
     "noise_generation_settings": "chaospersists:chaos_plains_noise_gen",
-    "depth": 0.125,
-    "scale": 0.22,
+    "depth": 0.1,
+    "scale": 0.18,
     "density_factor": 2.5,
     "density_offset": -1.25,
     "terrain_height_offset": 62,
-    "noise_strength": 1.85,
+    "noise_strength": 1.0,
+    "micro_bump_strength": 0.0,
+    "depth_noise_strength": 1.0,
     "wrapped_generator": {
       "type": "minecraft:noise",
       "settings": "chaospersists:chaos_plains_noise_gen",

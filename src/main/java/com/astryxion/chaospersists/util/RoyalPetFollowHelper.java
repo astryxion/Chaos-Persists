@@ -70,8 +70,9 @@ public final class RoyalPetFollowHelper {
     }
 
     /**
-     * Catch-up for loaded non-staying pets (girlfriends, water dragons, etc.). Places them on solid
-     * ground near/under the owner — never midair — so creative flight does not kill them with fall damage.
+     * Catch-up for loaded non-staying pets left in another dimension or stranded 48+ blocks away.
+     * Walking follow is handled by {@code MyEntityAIFollowOwner}; warping at 12 blocks made them
+     * teleport instead of run.
      */
     public static void bringGroundFollowPetsToPlayer(ServerPlayer player) {
         if (player.level().isClientSide) {
@@ -97,7 +98,7 @@ public final class RoyalPetFollowHelper {
                     continue;
                 }
                 boolean far =
-                        pet.level() != player.level() || pet.distanceToSqr(player) >= 144.0;
+                        pet.level() != player.level() || pet.distanceToSqr(player) >= 48.0 * 48.0;
                 if (!far) {
                     continue;
                 }

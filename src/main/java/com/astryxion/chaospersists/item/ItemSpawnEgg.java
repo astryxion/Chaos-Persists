@@ -21,7 +21,12 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.SpawnerBlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraftforge.registries.ForgeRegistries;
+
+import javax.annotation.Nullable;
 
 public class ItemSpawnEgg extends Item {
     public int my_id = 0;
@@ -50,6 +55,22 @@ public class ItemSpawnEgg extends Item {
             return InteractionResult.SUCCESS;
         }
         BlockPos pos = context.getClickedPos();
+        BlockState state = level.getBlockState(pos);
+        // Same path as vanilla SpawnEggItem: configure monster spawners instead of spawning on top.
+        if (level.getBlockEntity(pos) instanceof SpawnerBlockEntity spawner) {
+            EntityType<?> type = resolveEggEntityType(this.my_id);
+            if (type == null) {
+                return InteractionResult.FAIL;
+            }
+            spawner.setEntityId(type, level.getRandom());
+            level.sendBlockUpdated(pos, state, state, 3);
+            level.gameEvent(context.getPlayer(), GameEvent.BLOCK_CHANGE, pos);
+            Player player = context.getPlayer();
+            if (player == null || !player.getAbilities().instabuild) {
+                context.getItemInHand().shrink(1);
+            }
+            return InteractionResult.SUCCESS;
+        }
         double spawnX = pos.getX() + 0.5;
         double spawnY = pos.getY() + 1.0;
         double spawnZ = pos.getZ() + 0.5;
@@ -85,479 +106,156 @@ public class ItemSpawnEgg extends Item {
     }
 
     public static Entity spawn_something(int id, Level level, double d0, double d1, double d2) {
+        return spawnEntityType(level, resolveEggEntityType(id), d0, d1, d2);
+    }
+
+    /** Entity type this egg configures on a monster spawner / spawns in the world. */
+    @Nullable
+    public static EntityType<?> resolveEggEntityType(int id) {
         int entityID = 0;
         int skelly_type = 0;
         String name = null;
         switch (id) {
-            case 192: {
+            case 192 -> {
                 skelly_type = 1;
                 entityID = 51;
-                break;
             }
-            case 193: {
-                entityID = 63;
-                break;
-            }
-            case 194: {
-                entityID = 97;
-                break;
-            }
-            case 195: {
-                entityID = 99;
-                break;
-            }
-            case 196: {
-                entityID = 64;
-                break;
-            }
-            case 197: {
-                name = "girlfriend";
-                break;
-            }
-            case 198: {
-                name = "apple_cow";
-                break;
-            }
-            case 363: {
-                name = "crystal_apple_cow";
-                break;
-            }
-            case 199: {
-                name = "golden_apple_cow";
-                break;
-            }
-            case 200: {
-                name = "enchanted_golden_apple_cow";
-                break;
-            }
-            case 202: {
-                name = "alosaurus";
-                break;
-            }
-            case 203: {
-                name = "cryolophosaurus";
-                break;
-            }
-            case 204: {
-                name = "camarasaurus";
-                break;
-            }
-            case 205: {
-                name = "velocity_raptor";
-                break;
-            }
-            case 206: {
-                name = "hydrolisc";
-                break;
-            }
-            case 207: {
-                name = "basilisk";
-                break;
-            }
-            case 201: {
-                name = "mothra";
-                break;
-            }
-            case 221: {
-                name = "dragonfly";
-                break;
-            }
-            case 223: {
-                name = "emperor_scorpion";
-                break;
-            }
-            case 225: {
-                name = "scorpion";
-                break;
-            }
-            case 227: {
-                name = "cave_fisher";
-                break;
-            }
-            case 229: {
-                name = "baby_dragon";
-                break;
-            }
-            case 231: {
-                name = "baryonyx";
-                break;
-            }
-            case 233: {
-                name = "gamma_metroid";
-                break;
-            }
-            case 235: {
-                name = "bird";
-                break;
-            }
-            case 237: {
-                name = "kyuubi";
-                break;
-            }
-            case 239: {
-                name = "alien";
-                break;
-            }
-            case 241: {
-                name = "attack_squid";
-                break;
-            }
-            case 243: {
-                name = "water_dragon";
-                break;
-            }
-            case 245: {
-                name = "the_kraken";
-                break;
-            }
-            case 247: {
-                name = "lizard";
-                break;
-            }
-            case 249: {
-                name = "cephadrome";
-                break;
-            }
-            case 251: {
-                name = "dragon";
-                break;
-            }
-            case 254: {
-                name = "bee";
-                break;
-            }
-            case 262: {
-                name = "jumpy_bug";
-                break;
-            }
-            case 263: {
-                name = "spit_bug";
-                break;
-            }
-            case 264: {
-                name = "stink_bug";
-                break;
-            }
-            case 265: {
-                name = "ostrich";
-                break;
-            }
-            case 266: {
-                name = "gazelle";
-                break;
-            }
-            case 267: {
-                name = "chipmunk";
-                break;
-            }
-            case 274: {
-                name = "creeping_horror";
-                break;
-            }
-            case 275: {
-                name = "terrible_terror";
-                break;
-            }
-            case 276: {
-                name = "cliff_racer";
-                break;
-            }
-            case 277: {
-                name = "triffid";
-                break;
-            }
-            case 278: {
-                name = "nightmare";
-                break;
-            }
-            case 279: {
-                name = "lurking_terror";
-                break;
-            }
-            case 288: {
-                name = "small_worm";
-                break;
-            }
-            case 289: {
-                name = "medium_worm";
-                break;
-            }
-            case 290: {
-                name = "large_worm";
-                break;
-            }
-            case 291: {
-                name = "cassowary";
-                break;
-            }
-            case 292: {
-                name = "cloud_shark";
-                break;
-            }
-            case 293: {
-                name = "gold_fish";
-                break;
-            }
-            case 294: {
-                name = "leaf_monster";
-                break;
-            }
-            case 295: {
-                name = "tshirt";
-                break;
-            }
-            case 280: {
-                name = "mobzilla";
-                break;
-            }
-            case 298: {
-                name = "ender_knight";
-                break;
-            }
-            case 299: {
-                name = "ender_reaper";
-                break;
-            }
-            case 301: {
-                name = "beaver";
-                break;
-            }
-            case 306: {
-                name = "dungeon_beast";
-                break;
-            }
-            case 303: {
-                name = "vortex";
-                break;
-            }
-            case 302: {
-                name = "rotator";
-                break;
-            }
-            case 304: {
-                name = "peacock";
-                break;
-            }
-            case 305: {
-                name = "fairy";
-                break;
-            }
-            case 307: {
-                name = "rat";
-                break;
-            }
-            case 308: {
-                name = "flounder";
-                break;
-            }
-            case 309: {
-                name = "whale";
-                break;
-            }
-            case 310: {
-                name = "irukandji";
-                break;
-            }
-            case 311: {
-                name = "skate";
-                break;
-            }
-            case 312: {
-                name = "crystal_urchin";
-                break;
-            }
-            case 324: {
-                name = "bomb_omb";
-                break;
-            }
-            case 325: {
-                name = "robo_pounder";
-                break;
-            }
-            case 326: {
-                name = "robo_gunner";
-                break;
-            }
-            case 327: {
-                name = "robo_warrior";
-                break;
-            }
-            case 328: {
-                name = "ghost";
-                break;
-            }
-            case 329: {
-                name = "ghost_pumpkin_skelly";
-                break;
-            }
-            case 330: {
-                name = "ant";
-                break;
-            }
-            case 331: {
-                name = "red_ant";
-                break;
-            }
-            case 332: {
-                name = "rainbow_ant";
-                break;
-            }
-            case 333: {
-                name = "unstable_ant";
-                break;
-            }
-            case 334: {
-                name = "termite";
-                break;
-            }
-            case 335: {
-                name = "butterfly";
-                break;
-            }
-            case 336: {
-                name = "moth";
-                break;
-            }
-            case 337: {
-                name = "mosquito";
-                break;
-            }
-            case 338: {
-                name = "firefly";
-                break;
-            }
-            case 339: {
-                name = "trex";
-                break;
-            }
-            case 340: {
-                name = "hercules_beetle";
-                break;
-            }
-            case 341: {
-                name = "mantis";
-                break;
-            }
-            case 342: {
-                name = "stinky";
-                break;
-            }
-            case 343: {
-                name = "robo_sniper";
-                break;
-            }
-            case 344: {
-                name = "coin";
-                break;
-            }
-            case 349: {
-                name = "boyfriend";
-                break;
-            }
-            case 350: {
-                name = "the_king";
-                break;
-            }
-            case 366: {
-                name = "the_queen";
-                break;
-            }
-            case 351: {
-                name = "the_prince";
-                break;
-            }
-            case 352: {
-                name = "easter_bunny";
-                break;
-            }
-            case 353: {
-                name = "molenoid";
-                break;
-            }
-            case 354: {
-                name = "sea_monster";
-                break;
-            }
-            case 355: {
-                name = "sea_viper";
-                break;
-            }
-            case 356: {
-                name = "caterkiller";
-                break;
-            }
-            case 358: {
-                name = "leonopteryx";
-                break;
-            }
-            case 360: {
-                name = "hammerhead";
-                break;
-            }
-            case 362: {
-                name = "rubber_ducky";
-                break;
-            }
-            case 365: {
-                name = "criminal";
-                break;
-            }
-            case 367: {
-                name = "brutalfly";
-                break;
-            }
-            case 368: {
-                name = "nastysaurus";
-                break;
-            }
-            case 369: {
-                name = "pointysaurus";
-                break;
-            }
-            case 370: {
-                name = "cricket";
-                break;
-            }
-            case 371: {
-                name = "the_princess";
-                break;
-            }
-            case 372: {
-                name = "frog";
-                break;
-            }
-            case 378: {
-                name = "jeffery";
-                break;
-            }
-            case 379: {
-                name = "robot_red_ant";
-                break;
-            }
-            case 380: {
-                name = "robot_spider";
-                break;
-            }
-            case 381: {
-                name = "spider_driver";
-                break;
-            }
-            case 383: {
-                name = "crab";
-                break;
-            }
-            case 385: {
-                name = "rock";
-                break;
+            case 193 -> entityID = 63;
+            case 194 -> entityID = 97;
+            case 195 -> entityID = 99;
+            case 196 -> entityID = 64;
+            case 197 -> name = "girlfriend";
+            case 198 -> name = "apple_cow";
+            case 363 -> name = "crystal_apple_cow";
+            case 199 -> name = "golden_apple_cow";
+            case 200 -> name = "enchanted_golden_apple_cow";
+            case 202 -> name = "alosaurus";
+            case 203 -> name = "cryolophosaurus";
+            case 204 -> name = "camarasaurus";
+            case 205 -> name = "velocity_raptor";
+            case 206 -> name = "hydrolisc";
+            case 207 -> name = "basilisk";
+            case 201 -> name = "mothra";
+            case 221 -> name = "dragonfly";
+            case 223 -> name = "emperor_scorpion";
+            case 225 -> name = "scorpion";
+            case 227 -> name = "cave_fisher";
+            case 229 -> name = "baby_dragon";
+            case 231 -> name = "baryonyx";
+            case 233 -> name = "gamma_metroid";
+            case 235 -> name = "bird";
+            case 237 -> name = "kyuubi";
+            case 239 -> name = "alien";
+            case 241 -> name = "attack_squid";
+            case 243 -> name = "water_dragon";
+            case 245 -> name = "the_kraken";
+            case 247 -> name = "lizard";
+            case 249 -> name = "cephadrome";
+            case 251 -> name = "dragon";
+            case 254 -> name = "bee";
+            case 262 -> name = "jumpy_bug";
+            case 263 -> name = "spit_bug";
+            case 264 -> name = "stink_bug";
+            case 265 -> name = "ostrich";
+            case 266 -> name = "gazelle";
+            case 267 -> name = "chipmunk";
+            case 274 -> name = "creeping_horror";
+            case 275 -> name = "terrible_terror";
+            case 276 -> name = "cliff_racer";
+            case 277 -> name = "triffid";
+            case 278 -> name = "nightmare";
+            case 279 -> name = "lurking_terror";
+            case 288 -> name = "small_worm";
+            case 289 -> name = "medium_worm";
+            case 290 -> name = "large_worm";
+            case 291 -> name = "cassowary";
+            case 292 -> name = "cloud_shark";
+            case 293 -> name = "gold_fish";
+            case 294 -> name = "leaf_monster";
+            case 295 -> name = "tshirt";
+            case 280 -> name = "mobzilla";
+            case 298 -> name = "ender_knight";
+            case 299 -> name = "ender_reaper";
+            case 301 -> name = "beaver";
+            case 306 -> name = "dungeon_beast";
+            case 303 -> name = "vortex";
+            case 302 -> name = "rotator";
+            case 304 -> name = "peacock";
+            case 305 -> name = "fairy";
+            case 307 -> name = "rat";
+            case 308 -> name = "flounder";
+            case 309 -> name = "whale";
+            case 310 -> name = "irukandji";
+            case 311 -> name = "skate";
+            case 312 -> name = "crystal_urchin";
+            case 324 -> name = "bomb_omb";
+            case 325 -> name = "robo_pounder";
+            case 326 -> name = "robo_gunner";
+            case 327 -> name = "robo_warrior";
+            case 328 -> name = "ghost";
+            case 329 -> name = "ghost_pumpkin_skelly";
+            case 330 -> name = "ant";
+            case 331 -> name = "red_ant";
+            case 332 -> name = "rainbow_ant";
+            case 333 -> name = "unstable_ant";
+            case 334 -> name = "termite";
+            case 335 -> name = "butterfly";
+            case 336 -> name = "moth";
+            case 337 -> name = "mosquito";
+            case 338 -> name = "firefly";
+            case 339 -> name = "trex";
+            case 340 -> name = "hercules_beetle";
+            case 341 -> name = "mantis";
+            case 342 -> name = "stinky";
+            case 343 -> name = "robo_sniper";
+            case 344 -> name = "coin";
+            case 349 -> name = "boyfriend";
+            case 350 -> name = "the_king";
+            case 366 -> name = "the_queen";
+            case 351 -> name = "the_prince";
+            case 352 -> name = "easter_bunny";
+            case 353 -> name = "molenoid";
+            case 354 -> name = "sea_monster";
+            case 355 -> name = "sea_viper";
+            case 356 -> name = "caterkiller";
+            case 358 -> name = "leonopteryx";
+            case 360 -> name = "hammerhead";
+            case 362 -> name = "rubber_ducky";
+            case 365 -> name = "criminal";
+            case 367 -> name = "brutalfly";
+            case 368 -> name = "nastysaurus";
+            case 369 -> name = "pointysaurus";
+            case 370 -> name = "cricket";
+            case 371 -> name = "the_princess";
+            case 372 -> name = "frog";
+            case 378 -> name = "jeffery";
+            case 379 -> name = "robot_red_ant";
+            case 380 -> name = "robot_spider";
+            case 381 -> name = "spider_driver";
+            case 383 -> name = "crab";
+            case 385 -> name = "rock";
+            default -> {
             }
         }
-        Entity ent = null;
-        if (entityID == 51 && skelly_type != 0) {
-            ent = spawnVanillaCreature(level, EntityType.WITHER_SKELETON, d0, d1, d2);
-        } else if (entityID != 0 || name != null) {
-            ent = spawnCreature(level, entityID, name, d0, d1, d2);
+        return resolveEggEntityType(entityID, skelly_type, name);
+    }
+
+    @Nullable
+    private static EntityType<?> resolveEggEntityType(int entityId, int skellyType, @Nullable String name) {
+        if (name != null) {
+            ResourceLocation loc = legacySpawnNameToRegistry(name);
+            if (loc != null) {
+                return ForgeRegistries.ENTITY_TYPES.getValue(loc);
+            }
+            return null;
         }
-        return ent;
+        if (entityId == 0) {
+            return null;
+        }
+        if (entityId == 51 && skellyType != 0) {
+            return EntityType.WITHER_SKELETON;
+        }
+        return legacyVanillaEntityType(entityId);
     }
 
     public static Entity spawnCreature(Level level, int entityId, String name, double x, double y, double z) {
@@ -566,19 +264,7 @@ public class ItemSpawnEgg extends Item {
 
     public static Entity spawnCreature(
             Level level, int entityId, String name, int skellyType, double x, double y, double z) {
-        EntityType<?> type = null;
-        if (name != null) {
-            ResourceLocation loc = legacySpawnNameToRegistry(name);
-            if (loc != null) {
-                type = ForgeRegistries.ENTITY_TYPES.getValue(loc);
-            }
-        } else if (entityId != 0) {
-            if (entityId == 51 && skellyType != 0) {
-                type = EntityType.WITHER_SKELETON;
-            } else {
-                type = legacyVanillaEntityType(entityId);
-            }
-        }
+        EntityType<?> type = resolveEggEntityType(entityId, skellyType, name);
         Entity entity = spawnEntityType(level, type, x, y, z);
         if (entity instanceof Mob mob && level instanceof ServerLevel serverLevel) {
             if (entityId == 100 || entityId == 120) {
@@ -673,15 +359,15 @@ public class ItemSpawnEgg extends Item {
         }
         switch (legacyName) {
             case "Rat":
-                return ResourceLocation.fromNamespaceAndPath("chaospersists", "rat");
+                return new ResourceLocation("chaospersists", "rat");
             case "Fairy":
-                return ResourceLocation.fromNamespaceAndPath("chaospersists", "fairy");
+                return new ResourceLocation("chaospersists", "fairy");
             case "Red Ant":
-                return ResourceLocation.fromNamespaceAndPath("chaospersists", "red_ant");
+                return new ResourceLocation("chaospersists", "red_ant");
             case "Termite":
-                return ResourceLocation.fromNamespaceAndPath("chaospersists", "termite");
+                return new ResourceLocation("chaospersists", "termite");
             default:
-                return ResourceLocation.fromNamespaceAndPath(
+                return new ResourceLocation(
                         "chaospersists", legacyName.toLowerCase(java.util.Locale.ROOT).replace(' ', '_'));
         }
     }

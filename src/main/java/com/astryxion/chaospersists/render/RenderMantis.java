@@ -9,7 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderMantis extends MobRenderer<Mantis, ModelMantis> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/mantistexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/mantistexture.png");
     private final float scale;
 
     public RenderMantis(EntityRendererProvider.Context context, ModelMantis model, float shadow, float scale) {

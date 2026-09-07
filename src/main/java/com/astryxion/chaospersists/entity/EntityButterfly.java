@@ -45,23 +45,23 @@ public class EntityButterfly extends AmbientCreature {
     private static final EntityDataAccessor<Integer> BUTTERFLY_TYPE =
             SynchedEntityData.defineId(EntityButterfly.class, EntityDataSerializers.INT);
     private static final ResourceLocation TEXTURE1 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/butterfly.png");
+            new ResourceLocation("chaospersists", "textures/entity/butterfly.png");
     private static final ResourceLocation TEXTURE2 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/butterfly2.png");
+            new ResourceLocation("chaospersists", "textures/entity/butterfly2.png");
     private static final ResourceLocation TEXTURE3 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/butterfly3.png");
+            new ResourceLocation("chaospersists", "textures/entity/butterfly3.png");
     private static final ResourceLocation TEXTURE4 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/butterfly4.png");
+            new ResourceLocation("chaospersists", "textures/entity/butterfly4.png");
     private static final ResourceLocation TEXTURE9 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/vbutterfly1.png");
+            new ResourceLocation("chaospersists", "textures/entity/vbutterfly1.png");
     private static final ResourceLocation TEXTURE_EYEMOTH =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/eyemoth.png");
+            new ResourceLocation("chaospersists", "textures/entity/eyemoth.png");
     private static final ResourceLocation TEXTURE_LUNAMOTH =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/lunamoth.png");
+            new ResourceLocation("chaospersists", "textures/entity/lunamoth.png");
     private static final ResourceLocation TEXTURE_DARKMOTH =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/darkmoth.png");
+            new ResourceLocation("chaospersists", "textures/entity/darkmoth.png");
     private static final ResourceLocation TEXTURE_FIREMOTH =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/firemoth.png");
+            new ResourceLocation("chaospersists", "textures/entity/firemoth.png");
     public int butterfly_type = ChaosPersists.ChaosRand.nextInt(4);
     private final GenericTargetSorter targetSorter;
     private int force_sync = 25;

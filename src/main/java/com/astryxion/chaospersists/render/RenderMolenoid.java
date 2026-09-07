@@ -8,7 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderMolenoid extends MobRenderer<Molenoid, ModelMolenoid> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/molenoidtexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/molenoidtexture.png");
     private final float scale;
 
     public RenderMolenoid(EntityRendererProvider.Context context, ModelMolenoid model, float shadow, float scale) {

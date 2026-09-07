@@ -41,6 +41,17 @@ public class CrystalFurnace extends BaseEntityBlock {
     }
 
     @Override
+    public java.util.List<ItemStack> getDrops(
+            BlockState state, net.minecraft.world.level.storage.loot.LootParams.Builder builder) {
+        return com.astryxion.chaospersists.util.MiningDropHelper.selfDrops(this, builder);
+    }
+
+    @Override
+    public ItemStack getCloneItemStack(BlockGetter level, BlockPos pos, BlockState state) {
+        return new ItemStack(this);
+    }
+
+    @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(FACING, LIT);
     }

@@ -205,7 +205,7 @@ public class TheKing extends Monster {
     private void dropRegistryItem(String path, int par1) {
         Item item =
                 ForgeRegistries.ITEMS.getValue(
-                        ResourceLocation.fromNamespaceAndPath("chaospersists", path));
+                        new ResourceLocation("chaospersists", path));
         if (item != null) {
             this.dropItemRand(item, par1);
         }
@@ -1344,14 +1344,14 @@ public class TheKing extends Monster {
 
     private static ResourceLocation resolveSpawnId(String par1) {
         if (par1.contains(":")) {
-            return ResourceLocation.parse(par1);
+            return new ResourceLocation(par1);
         }
         return switch (par1) {
-            case "KingHead" -> ResourceLocation.fromNamespaceAndPath("chaospersists", "king_head");
-            case "PurplePower" -> ResourceLocation.fromNamespaceAndPath("chaospersists", "purple_power");
-            case "The Prince" -> ResourceLocation.fromNamespaceAndPath("chaospersists", "the_prince");
+            case "KingHead" -> new ResourceLocation("chaospersists", "king_head");
+            case "PurplePower" -> new ResourceLocation("chaospersists", "purple_power");
+            case "The Prince" -> new ResourceLocation("chaospersists", "the_prince");
             default ->
-                    ResourceLocation.fromNamespaceAndPath(
+                    new ResourceLocation(
                             "chaospersists", par1.toLowerCase(Locale.ROOT).replace(' ', '_'));
         };
     }

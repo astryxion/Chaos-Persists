@@ -9,7 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderCaterKiller extends MobRenderer<CaterKiller, ModelCaterKiller> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/caterkillertexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/caterkillertexture.png");
     private final float scale;
 
     public RenderCaterKiller(EntityRendererProvider.Context context, ModelCaterKiller model, float shadow, float scale) {

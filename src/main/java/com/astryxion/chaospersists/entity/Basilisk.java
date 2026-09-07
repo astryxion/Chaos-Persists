@@ -151,7 +151,7 @@ public class Basilisk extends Monster {
     }
 
     private static Item chaosItem(String path) {
-        return ForgeRegistries.ITEMS.getValue(ResourceLocation.fromNamespaceAndPath("chaospersists", path));
+        return ForgeRegistries.ITEMS.getValue(new ResourceLocation("chaospersists", path));
     }
 
     private ItemStack dropItemRand(Item index, int par1) {
@@ -511,7 +511,7 @@ public class Basilisk extends Monster {
             MobSpawnType spawnType,
             BlockPos pos,
             net.minecraft.util.RandomSource random) {
-        ResourceLocation basiliskId = ResourceLocation.fromNamespaceAndPath("chaospersists", "basilisk");
+        ResourceLocation basiliskId = new ResourceLocation("chaospersists", "basilisk");
         BlockPos.MutableBlockPos checkPos = new BlockPos.MutableBlockPos();
         for (int k = -3; k < 3; ++k) {
             for (int j = -3; j < 3; ++j) {
@@ -557,7 +557,7 @@ public class Basilisk extends Monster {
     @Override
     public boolean checkSpawnRules(LevelAccessor level, MobSpawnType spawnReason) {
         BlockPos pos = this.blockPosition();
-        ResourceLocation basiliskId = ResourceLocation.fromNamespaceAndPath("chaospersists", "basilisk");
+        ResourceLocation basiliskId = new ResourceLocation("chaospersists", "basilisk");
         BlockPos.MutableBlockPos checkPos = new BlockPos.MutableBlockPos();
         for (int k = -3; k < 3; ++k) {
             for (int j = -3; j < 3; ++j) {

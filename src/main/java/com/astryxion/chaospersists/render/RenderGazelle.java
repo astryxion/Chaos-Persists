@@ -8,7 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderGazelle extends MobRenderer<Gazelle, ModelGazelle> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/gazelletexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/gazelletexture.png");
     private final float scale;
 
     public RenderGazelle(EntityRendererProvider.Context context, ModelGazelle model, float shadow, float scale) {

@@ -11,7 +11,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 public class RenderUltimateArrow extends ArrowRenderer<UltimateArrow> {
 
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.withDefaultNamespace("textures/entity/projectiles/arrow.png");
+            new ResourceLocation("textures/entity/projectiles/arrow.png");
 
     public RenderUltimateArrow(EntityRendererProvider.Context context) {
         super(context);

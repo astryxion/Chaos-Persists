@@ -8,9 +8,9 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderRubberDucky extends MobRenderer<RubberDucky, ModelRubberDucky> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/rubberduckytexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/rubberduckytexture.png");
     private static final ResourceLocation TEXTURE2 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/evilrubberduckytexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/evilrubberduckytexture.png");
     private final float scale;
 
     public RenderRubberDucky(EntityRendererProvider.Context context, ModelRubberDucky model, float shadow, float scale) {

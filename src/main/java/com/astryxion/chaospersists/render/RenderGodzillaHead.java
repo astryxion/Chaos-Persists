@@ -7,7 +7,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderGodzillaHead extends EntityRenderer<GodzillaHead> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/godzillatexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/godzillatexture.png");
 
     public RenderGodzillaHead(EntityRendererProvider.Context context) {
         super(context);

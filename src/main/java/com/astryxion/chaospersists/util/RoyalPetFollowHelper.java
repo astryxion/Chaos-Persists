@@ -1,6 +1,9 @@
 package com.astryxion.chaospersists.util;
 
+import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.entity.Dragon;
+import com.astryxion.chaospersists.entity.Spyro;
+import com.astryxion.chaospersists.entity.Stinky;
 import com.astryxion.chaospersists.entity.ThePrince;
 import com.astryxion.chaospersists.entity.ThePrinceAdult;
 import com.astryxion.chaospersists.entity.ThePrinceTeen;
@@ -11,10 +14,12 @@ import java.util.Set;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
@@ -29,6 +34,12 @@ public final class RoyalPetFollowHelper {
 
     private RoyalPetFollowHelper() {}
 
+    /** Only Chaos Persists tameables — never touch other mods' companions. */
+    public static boolean isChaosPersistsPet(TamableAnimal pet) {
+        ResourceLocation key = EntityType.getKey(pet.getType());
+        return key != null && ChaosPersists.MODID.equals(key.getNamespace());
+    }
+
     public static boolean isStayingPut(TamableAnimal pet) {
         return pet.isOrderedToSit() || pet.isInSittingPose();
     }
@@ -38,6 +49,17 @@ public final class RoyalPetFollowHelper {
                 || pet instanceof ThePrincess
                 || pet instanceof ThePrinceTeen
                 || pet instanceof ThePrinceAdult;
+    }
+
+    /** Flyers that use activity/chaos flight — must not be force-warped onto ground. */
+    public static boolean isChaosFlyerPet(TamableAnimal pet) {
+        if (pet instanceof Stinky stinky) {
+            return stinky.getActivity() == 2;
+        }
+        if (pet instanceof Spyro spyro) {
+            return spyro.getActivity() == 2;
+        }
+        return false;
     }
 
     /** Move tamed royal pets to the player's dimension when they change worlds. */
@@ -50,6 +72,9 @@ public final class RoyalPetFollowHelper {
             List<TamableAnimal> pets = new ArrayList<>();
             for (Entity entity : level.getAllEntities()) {
                 if (!(entity instanceof TamableAnimal pet)) {
+                    continue;
+                }
+                if (!pet.isAlive() || pet.isRemoved()) {
                     continue;
                 }
                 if (!isRoyalPet(pet) || !pet.isTame() || !ownerId.equals(pet.getOwnerUUID())) {
@@ -85,16 +110,27 @@ public final class RoyalPetFollowHelper {
                 if (!(entity instanceof TamableAnimal pet)) {
                     continue;
                 }
+                if (!pet.isAlive() || pet.isRemoved()) {
+                    continue;
+                }
+                // Ground catch-up is Chaos-only. Other mods' TamableAnimals (wolves, Occultism,
+                // Ice and Fire, etc.) must keep their own sit/wander/follow modes.
+                if (!isChaosPersistsPet(pet)) {
+                    continue;
+                }
                 if (!pet.isTame() || !ownerId.equals(pet.getOwnerUUID())) {
                     continue;
                 }
-                if (isRoyalPet(pet) || pet instanceof Dragon) {
+                if (isRoyalPet(pet) || pet instanceof Dragon || isChaosFlyerPet(pet)) {
                     continue;
                 }
                 if (isStayingPut(pet)) {
                     continue;
                 }
                 if (pet.getVehicle() == player || !pet.getPassengers().isEmpty()) {
+                    continue;
+                }
+                if (MyUtils.usesChaosFlight(pet)) {
                     continue;
                 }
                 boolean far =
@@ -112,7 +148,12 @@ public final class RoyalPetFollowHelper {
 
     /** Teleport only when the owner is in another dimension (does not affect in-flight movement). */
     public static void syncDimensionOnly(TamableAnimal pet) {
-        if (pet.level().isClientSide || !pet.isTame() || isStayingPut(pet) || !isRoyalPet(pet)) {
+        if (pet.level().isClientSide
+                || !pet.isAlive()
+                || pet.isRemoved()
+                || !pet.isTame()
+                || isStayingPut(pet)
+                || !isRoyalPet(pet)) {
             return;
         }
         if (!pet.getPassengers().isEmpty()) {
@@ -130,7 +171,7 @@ public final class RoyalPetFollowHelper {
      * Never warps pets to midair.
      */
     public static boolean tryFollowTeleport(TamableAnimal pet, LivingEntity owner) {
-        if (owner == null || isStayingPut(pet)) {
+        if (owner == null || !pet.isAlive() || pet.isRemoved() || isStayingPut(pet)) {
             return false;
         }
         if (pet.distanceToSqr(owner) < 144.0 && pet.level() == owner.level()) {
@@ -144,7 +185,7 @@ public final class RoyalPetFollowHelper {
      * flying, use the surface under them so ground pets catch up without fall damage.
      */
     public static boolean teleportToOwnerOnGround(TamableAnimal pet, LivingEntity owner) {
-        if (owner == null || isStayingPut(pet) || pet.isRemoved()) {
+        if (owner == null || !pet.isAlive() || isStayingPut(pet) || pet.isRemoved()) {
             return false;
         }
         if (!pet.getPassengers().isEmpty()) {
@@ -203,7 +244,9 @@ public final class RoyalPetFollowHelper {
 
         int startY = Mth.floor(owner.getY());
         int minY = level.getMinBuildHeight() + 1;
-        for (int y = startY; y >= minY && startY - y <= 384; --y) {
+        // Cap depth: OreSpawn only checked the owner's feet Y. A 384-deep scan with noCollision
+        // per ring cell melts TPS when pets are stranded (esp. flying owner / multi-dim catch-up).
+        for (int y = startY; y >= minY && startY - y <= 64; --y) {
             BlockPos spot = findOreSpawnRingSpot(level, pet, ownerX, y, ownerZ);
             if (spot != null) {
                 return spot;
@@ -233,7 +276,9 @@ public final class RoyalPetFollowHelper {
     }
 
     public static boolean teleportNearOwner(TamableAnimal pet, LivingEntity owner) {
-        if (!(owner.level() instanceof ServerLevel dest) || pet.isRemoved()) {
+        if (!(owner.level() instanceof ServerLevel dest)
+                || !pet.isAlive()
+                || pet.isRemoved()) {
             return false;
         }
         if (!pet.getPassengers().isEmpty()) {

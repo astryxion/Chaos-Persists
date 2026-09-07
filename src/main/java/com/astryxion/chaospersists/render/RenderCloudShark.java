@@ -8,7 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderCloudShark extends MobRenderer<CloudShark, ModelCloudShark> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/cloudshark.png");
+            new ResourceLocation("chaospersists", "textures/entity/cloudshark.png");
     private final float scale;
 
     public RenderCloudShark(EntityRendererProvider.Context context, ModelCloudShark model, float shadow, float scale) {

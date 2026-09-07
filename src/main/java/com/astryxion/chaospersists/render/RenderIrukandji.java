@@ -9,7 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderIrukandji extends MobRenderer<Irukandji, ModelIrukandji> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/irukandjitexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/irukandjitexture.png");
     private final float scale;
 
     public RenderIrukandji(

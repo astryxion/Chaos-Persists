@@ -38,17 +38,17 @@ public class Cockateil extends Animal {
     private static final EntityDataAccessor<Integer> BIRD_TYPE =
             SynchedEntityData.defineId(Cockateil.class, EntityDataSerializers.INT);
     private static final ResourceLocation TEXTURE1 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/bird1.png");
+            new ResourceLocation("chaospersists", "textures/entity/bird1.png");
     private static final ResourceLocation TEXTURE2 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/bird2.png");
+            new ResourceLocation("chaospersists", "textures/entity/bird2.png");
     private static final ResourceLocation TEXTURE3 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/bird3.png");
+            new ResourceLocation("chaospersists", "textures/entity/bird3.png");
     private static final ResourceLocation TEXTURE4 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/bird4.png");
+            new ResourceLocation("chaospersists", "textures/entity/bird4.png");
     private static final ResourceLocation TEXTURE5 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/bird5.png");
+            new ResourceLocation("chaospersists", "textures/entity/bird5.png");
     private static final ResourceLocation TEXTURE6 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/bird6.png");
+            new ResourceLocation("chaospersists", "textures/entity/bird6.png");
 
     private BlockPos currentFlightTarget = null;
     public int birdtype;
@@ -307,7 +307,7 @@ public class Cockateil extends Animal {
     protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
         this.birdtype = this.getBirdType();
         if (this.birdtype == 5 && this.killedByPlayer && this.getRandom().nextInt(3) == 1) {
-            Item ruby = ForgeRegistries.ITEMS.getValue(ResourceLocation.fromNamespaceAndPath("chaospersists", "ruby"));
+            Item ruby = ForgeRegistries.ITEMS.getValue(new ResourceLocation("chaospersists", "ruby"));
             if (ruby != null) {
                 this.spawnAtLocation(ruby);
                 return;

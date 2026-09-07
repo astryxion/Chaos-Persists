@@ -13,11 +13,11 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderOstrich extends MobRenderer<Ostrich, ModelOstrich> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/ostrichtexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/ostrichtexture.png");
     private static final ResourceLocation TEXTURE2 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/ostrichtexture2.png");
+            new ResourceLocation("chaospersists", "textures/entity/ostrichtexture2.png");
     private static final ResourceLocation TEXTURE3 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/ostrichtexture3.png");
+            new ResourceLocation("chaospersists", "textures/entity/ostrichtexture3.png");
     private final float scale;
 
     public RenderOstrich(EntityRendererProvider.Context context, ModelOstrich model, float shadow, float scale) {

@@ -1,6 +1,7 @@
 package com.astryxion.chaospersists.block;
 
 import com.astryxion.chaospersists.util.MyUtils;
+import com.astryxion.chaospersists.util.MiningDropHelper;
 
 import com.astryxion.chaospersists.core.ChaosPersists;
 import java.util.List;
@@ -21,7 +22,11 @@ import net.minecraft.world.phys.AABB;
 public class CrystalAntBlock extends Block {
 
     public CrystalAntBlock(int par1) {
-        super(net.minecraft.world.level.block.Block.Properties.of().sound(SoundType.GRASS).randomTicks().noOcclusion());
+        super(net.minecraft.world.level.block.Block.Properties.of()
+                .strength(0.6f)
+                .sound(SoundType.GRASS)
+                .randomTicks()
+                .noOcclusion());
     }
 
     /**
@@ -71,6 +76,11 @@ public class CrystalAntBlock extends Block {
     @Override
     public ItemStack getCloneItemStack(net.minecraft.world.level.BlockGetter level, BlockPos pos, BlockState state) {
         return new ItemStack(this);
+    }
+
+    @Override
+    public List<ItemStack> getDrops(BlockState state, net.minecraft.world.level.storage.loot.LootParams.Builder builder) {
+        return MiningDropHelper.selfDrops(this, builder);
     }
 
     public static Entity spawnCreature(

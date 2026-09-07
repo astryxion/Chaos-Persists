@@ -168,7 +168,7 @@ public final class ChaosLocateStructures {
 
     public static ResourceKey<Structure> key(String path) {
         return ResourceKey.create(
-                Registries.STRUCTURE, ResourceLocation.fromNamespaceAndPath(ChaosPersists.MODID, path));
+                Registries.STRUCTURE, new ResourceLocation(ChaosPersists.MODID, path));
     }
 
     /** True when this chunk is the seed slot for {@code key} in the current dimension. */
@@ -226,9 +226,9 @@ public final class ChaosLocateStructures {
         }
         ResourceLocation setId;
         if (level.dimension().equals(ChaosPersists.getMiningDimensionKey())) {
-            setId = ResourceLocation.fromNamespaceAndPath(ChaosPersists.MODID, "mining_ender_knight");
+            setId = new ResourceLocation(ChaosPersists.MODID, "mining_ender_knight");
         } else if (Level.END.equals(level.dimension())) {
-            setId = ResourceLocation.fromNamespaceAndPath(ChaosPersists.MODID, "ender_knight_dungeon");
+            setId = new ResourceLocation(ChaosPersists.MODID, "ender_knight_dungeon");
         } else {
             return found;
         }

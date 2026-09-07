@@ -156,7 +156,7 @@ public class BlockExtremeTorch extends ChaosDirectionalTorchBlock {
         boolean found = false;
 
         Block eyeBlock =
-                ForgeRegistries.BLOCKS.getValue(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", "eyeofender"));
+                ForgeRegistries.BLOCKS.getValue(new net.minecraft.resources.ResourceLocation("chaospersists", "eyeofender"));
         if (eyeBlock != null && world.getBlockState(new BlockPos(x, y - 1, z)).is(eyeBlock)) {
             block0:
             for (int tries = 0; tries < 100 && !found; ++tries) {
@@ -180,7 +180,7 @@ public class BlockExtremeTorch extends ChaosDirectionalTorchBlock {
             }
             if (found) {
                 if (!world.isClientSide) {
-                    spawnCreature(world, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", "cephadrome"), (double) x + 0.5D, (double) y + 0.01D, (double) z + 0.5D);
+                    spawnCreature(world, new net.minecraft.resources.ResourceLocation("chaospersists", "cephadrome"), (double) x + 0.5D, (double) y + 0.01D, (double) z + 0.5D);
                 } else {
                     for (int var3 = 0; var3 < 16; ++var3) {
                         world.addParticle(

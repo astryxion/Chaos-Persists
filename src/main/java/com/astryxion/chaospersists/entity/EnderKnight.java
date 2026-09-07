@@ -376,7 +376,7 @@ public class EnderKnight extends Monster {
                         continue;
                     }
                     ResourceLocation knightId =
-                            ResourceLocation.fromNamespaceAndPath("chaospersists", "ender_knight");
+                            new ResourceLocation("chaospersists", "ender_knight");
                     ResourceLocation norm = SpawnerFixHelper.normalizeSpawnerEntityId(id);
                     if (SpawnerFixHelper.entityIdsMatchForSpawner(norm, knightId)
                             || "Ender Knight".equals(id.getPath())) {
@@ -416,7 +416,7 @@ public class EnderKnight extends Monster {
                         continue;
                     }
                     ResourceLocation knightId =
-                            ResourceLocation.fromNamespaceAndPath("chaospersists", "ender_knight");
+                            new ResourceLocation("chaospersists", "ender_knight");
                     ResourceLocation norm = SpawnerFixHelper.normalizeSpawnerEntityId(id);
                     if (SpawnerFixHelper.entityIdsMatchForSpawner(norm, knightId)
                             || "Ender Knight".equals(id.getPath())) {

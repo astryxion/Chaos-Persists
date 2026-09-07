@@ -9,7 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderWormLarge extends MobRenderer<WormLarge, ModelWormLarge> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/wormlargetexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/wormlargetexture.png");
     private final float scale;
 
     public RenderWormLarge(EntityRendererProvider.Context context, ModelWormLarge model, float shadow, float scale) {

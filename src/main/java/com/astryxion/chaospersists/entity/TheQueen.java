@@ -1267,16 +1267,16 @@ public class TheQueen extends Monster {
 
     private static ResourceLocation resolveSpawnId(String par1) {
         if (par1.contains(":")) {
-            return ResourceLocation.parse(par1);
+            return new ResourceLocation(par1);
         }
         return switch (par1) {
-            case "QueenHead" -> ResourceLocation.fromNamespaceAndPath("chaospersists", "queen_head");
-            case "PurplePower" -> ResourceLocation.fromNamespaceAndPath("chaospersists", "purple_power");
-            case "Butterfly" -> ResourceLocation.fromNamespaceAndPath("chaospersists", "butterfly");
-            case "Bird" -> ResourceLocation.fromNamespaceAndPath("chaospersists", "bird");
-            case "The Princess" -> ResourceLocation.fromNamespaceAndPath("chaospersists", "the_princess");
+            case "QueenHead" -> new ResourceLocation("chaospersists", "queen_head");
+            case "PurplePower" -> new ResourceLocation("chaospersists", "purple_power");
+            case "Butterfly" -> new ResourceLocation("chaospersists", "butterfly");
+            case "Bird" -> new ResourceLocation("chaospersists", "bird");
+            case "The Princess" -> new ResourceLocation("chaospersists", "the_princess");
             default ->
-                    ResourceLocation.fromNamespaceAndPath(
+                    new ResourceLocation(
                             "chaospersists", par1.toLowerCase(Locale.ROOT).replace(' ', '_'));
         };
     }

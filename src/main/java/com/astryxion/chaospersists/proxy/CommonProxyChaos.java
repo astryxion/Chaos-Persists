@@ -41,7 +41,7 @@ public class CommonProxyChaos {
 
     public void registerNetworkStuff() {
         this.network = NetworkRegistry.newSimpleChannel(
-                ResourceLocation.fromNamespaceAndPath("chaospersists", "chaospersists"),
+                new ResourceLocation("chaospersists", "chaospersists"),
                 () -> "1.0",
                 "1.0"::equals,
                 "1.0"::equals);

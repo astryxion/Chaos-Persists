@@ -8,6 +8,7 @@ import com.astryxion.chaospersists.util.GenericTargetSorter;
 import com.astryxion.chaospersists.util.MyEntityAIFollowOwner;
 import com.astryxion.chaospersists.util.MyEntityAIWanderALot;
 import com.astryxion.chaospersists.util.MyUtils;
+import com.astryxion.chaospersists.util.PetCombatHelper;
 import com.astryxion.chaospersists.util.SpawnerFixHelper;
 import java.util.Collections;
 import java.util.Iterator;
@@ -220,6 +221,9 @@ public class WaterDragon extends TamableAnimal {
     public void setOrderedToSit(boolean orderedToSit) {
         super.setOrderedToSit(orderedToSit);
         this.setInSittingPose(orderedToSit);
+        if (!this.level().isClientSide && orderedToSit) {
+            PetCombatHelper.onPetSit(this);
+        }
     }
 
     @Override
@@ -246,6 +250,10 @@ public class WaterDragon extends TamableAnimal {
 
     @Override
     public void aiStep() {
+        if (this.isDeadOrDying()) {
+            super.aiStep();
+            return;
+        }
         super.aiStep();
         SurfaceWaterFloat.keepOnSurface(this);
     }
@@ -340,7 +348,7 @@ public class WaterDragon extends TamableAnimal {
     private ItemStack dropItemRandMod(String path, int count) {
         Item item =
                 ForgeRegistries.ITEMS.getValue(
-                        ResourceLocation.fromNamespaceAndPath("chaospersists", path));
+                        new ResourceLocation("chaospersists", path));
         if (item == null) {
             return null;
         }
@@ -698,6 +706,7 @@ public class WaterDragon extends TamableAnimal {
         if (this.isDeadOrDying()) {
             return;
         }
+        PetCombatHelper.tickPetCombat(this);
         super.customServerAiStep();
         if (this.hurt_timer > 0) {
             --this.hurt_timer;
@@ -748,16 +757,10 @@ public class WaterDragon extends TamableAnimal {
             }
         }
         if (this.level().getDifficulty() != Difficulty.PEACEFUL) {
-            LivingEntity e = this.getTarget();
-            if (e != null && (!e.isAlive() || !this.isSuitableTarget(e, false))) {
-                this.setTarget(null);
-                e = null;
-            }
-            if (e == null) {
-                e = this.findSomethingToAttack();
-                if (e != null) {
-                    this.setTarget(e);
-                }
+            LivingEntity prior = this.getTarget();
+            LivingEntity e = PetCombatHelper.resolveCombatTarget(this, prior, this::findSomethingToAttack);
+            if (e != prior) {
+                this.setTarget(e);
             }
             if (e == null && !this.isTame()) {
                 Player p = this.level().getNearestPlayer(this, 14.0);
@@ -884,7 +887,10 @@ public class WaterDragon extends TamableAnimal {
         if (par1EntityLiving instanceof WaterDragon) {
             return false;
         }
-        if (par1EntityLiving instanceof Monster) {
+        if (this.isTame() && !PetCombatHelper.wantsPetToAttack(this, par1EntityLiving)) {
+            return false;
+        }
+        if (PetCombatHelper.isAutoHostileTarget(par1EntityLiving)) {
             return true;
         }
         if (this.isTame()) {
@@ -903,10 +909,7 @@ public class WaterDragon extends TamableAnimal {
     }
 
     private boolean isAttackableNonMobTarget(LivingEntity par1EntityLiving) {
-        if (par1EntityLiving instanceof Monster) {
-            return true;
-        }
-        if (par1EntityLiving instanceof Mothra) {
+        if (PetCombatHelper.isAutoHostileTarget(par1EntityLiving)) {
             return true;
         }
         if (MyUtils.isAttackableNonMob(par1EntityLiving)) {
@@ -1066,7 +1069,7 @@ public class WaterDragon extends TamableAnimal {
     public boolean isBreedingItem(ItemStack par1ItemStack) {
         Item crystal =
                 ForgeRegistries.ITEMS.getValue(
-                        ResourceLocation.fromNamespaceAndPath("chaospersists", "crystalapple"));
+                        new ResourceLocation("chaospersists", "crystalapple"));
         if (crystal == null) {
             crystal = ChaosPersists.MyCrystalApple;
         }

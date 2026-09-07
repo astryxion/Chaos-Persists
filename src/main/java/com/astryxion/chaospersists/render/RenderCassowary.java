@@ -9,7 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderCassowary extends MobRenderer<Cassowary, ModelCassowary> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/cassowary.png");
+            new ResourceLocation("chaospersists", "textures/entity/cassowary.png");
     private final float scale;
 
     public RenderCassowary(EntityRendererProvider.Context context, ModelCassowary model, float shadow, float scale) {

@@ -33,6 +33,18 @@ public class Lavafoam extends Block {
                 .friction(1.1f));
     }
 
+    @Override
+    public java.util.List<net.minecraft.world.item.ItemStack> getDrops(
+            BlockState state, net.minecraft.world.level.storage.loot.LootParams.Builder builder) {
+        return com.astryxion.chaospersists.util.MiningDropHelper.selfDrops(this, builder);
+    }
+
+    @Override
+    public net.minecraft.world.item.ItemStack getCloneItemStack(
+            net.minecraft.world.level.BlockGetter level, BlockPos pos, BlockState state) {
+        return new net.minecraft.world.item.ItemStack(this);
+    }
+
     public int tickRate() {
         return 10;
     }

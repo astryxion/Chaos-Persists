@@ -9,7 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderEasterBunny extends MobRenderer<EasterBunny, ModelEasterBunny> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/easterbunnytexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/easterbunnytexture.png");
     private final float scale;
 
     public RenderEasterBunny(EntityRendererProvider.Context context, ModelEasterBunny model, float shadow, float scale) {

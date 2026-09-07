@@ -10,9 +10,9 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderThePrincess extends MobRenderer<ThePrincess, ModelThePrincess> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/theprincesstexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/theprincesstexture.png");
     private static final ResourceLocation TEXTURE_ATTACK =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/theprincesstexture2.png");
+            new ResourceLocation("chaospersists", "textures/entity/theprincesstexture2.png");
     private final float scale;
 
     public RenderThePrincess(

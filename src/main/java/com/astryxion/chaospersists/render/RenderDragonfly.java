@@ -8,7 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderDragonfly extends MobRenderer<Dragonfly, ModelDragonfly> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/dragonfly.png");
+            new ResourceLocation("chaospersists", "textures/entity/dragonfly.png");
     private final float scale;
 
     public RenderDragonfly(EntityRendererProvider.Context context, ModelDragonfly model, float shadow, float scale) {

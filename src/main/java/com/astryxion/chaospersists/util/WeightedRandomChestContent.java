@@ -34,13 +34,19 @@ public class WeightedRandomChestContent implements WeightedEntry {
         if (item == null) {
             return null;
         }
+        Item resolved;
         if (item instanceof Item registered) {
-            return registered;
+            resolved = registered;
+        } else if (item instanceof Block block) {
+            resolved = block.asItem();
+        } else {
+            resolved = (Item) item;
         }
-        if (item instanceof Block block) {
-            return block.asItem();
+        // Block without a BlockItem resolves to AIR — treat as missing loot entry
+        if (resolved == null || resolved == net.minecraft.world.item.Items.AIR) {
+            return null;
         }
-        return (Item) item;
+        return resolved;
     }
 
     public WeightedRandomChestContent(ItemStack stack, int minChance, int maxChance, int weight) {
@@ -53,8 +59,15 @@ public class WeightedRandomChestContent implements WeightedEntry {
     }
 
     public static void generateChestContents(RandomSource random, WeightedRandomChestContent[] content, Container inv, int max) {
-        List<WeightedRandomChestContent> list = Arrays.asList(content);
+        List<WeightedRandomChestContent> list =
+                Arrays.stream(content).filter(e -> e != null && e.item != null).toList();
+        if (list.isEmpty() || inv.getContainerSize() <= 0) {
+            return;
+        }
         int total = WeightedRandom.getTotalWeight(list);
+        if (total <= 0) {
+            return;
+        }
         for (int i = 0; i < max; i++) {
             Optional<WeightedRandomChestContent> entry = WeightedRandom.getRandomItem(random, list, total);
             if (entry.isEmpty()) {
@@ -68,8 +81,14 @@ public class WeightedRandomChestContent implements WeightedEntry {
                     + (pick.maxStackSize > pick.minStackSize
                             ? random.nextInt(pick.maxStackSize - pick.minStackSize + 1)
                             : 0);
+            if (count <= 0) {
+                continue;
+            }
             int limit = pick.item.getMaxStackSize(new ItemStack(pick.item));
             ItemStack stack = new ItemStack(pick.item, Math.min(count, limit));
+            if (stack.isEmpty()) {
+                continue;
+            }
             int slot = random.nextInt(inv.getContainerSize());
             inv.setItem(slot, stack);
         }

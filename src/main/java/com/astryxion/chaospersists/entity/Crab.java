@@ -241,7 +241,7 @@ public class Crab extends Monster {
         if (meat == null) {
             meat =
                     ForgeRegistries.ITEMS.getValue(
-                            ResourceLocation.fromNamespaceAndPath("chaospersists", "crabmeat"));
+                            new ResourceLocation("chaospersists", "crabmeat"));
         }
         if (meat == null) {
             return;

@@ -13,7 +13,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 @OnlyIn(Dist.CLIENT)
 public class CrystalWorkbenchGUI extends AbstractContainerScreen<ContainerCrystalWorkbench> {
     private static final ResourceLocation CRAFTING_TABLE_GUI =
-            ResourceLocation.fromNamespaceAndPath("minecraft", "textures/gui/container/crafting_table.png");
+            new ResourceLocation("minecraft", "textures/gui/container/crafting_table.png");
 
     public CrystalWorkbenchGUI(ContainerCrystalWorkbench menu, Inventory inventory, Component title) {
         super(menu, inventory, title);

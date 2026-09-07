@@ -10,7 +10,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderThePrince extends MobRenderer<ThePrince, ModelThePrince> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/theprincetexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/theprincetexture.png");
     private final float scale;
 
     public RenderThePrince(EntityRendererProvider.Context context, ModelThePrince model, float shadow, float scale) {

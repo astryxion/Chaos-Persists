@@ -11,29 +11,29 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderRockBase extends MobRenderer<RockBase, ModelRockBase> {
     private static final ResourceLocation TEXTURE1 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/rocktexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/rocktexture.png");
     private static final ResourceLocation TEXTURE2 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/rocktexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/rocktexture.png");
     private static final ResourceLocation TEXTURE3 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/rockredtexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/rockredtexture.png");
     private static final ResourceLocation TEXTURE4 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/rockgreentexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/rockgreentexture.png");
     private static final ResourceLocation TEXTURE5 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/rockbluetexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/rockbluetexture.png");
     private static final ResourceLocation TEXTURE6 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/rockpurpletexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/rockpurpletexture.png");
     private static final ResourceLocation TEXTURE7 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/rocktexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/rocktexture.png");
     private static final ResourceLocation TEXTURE8 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/rocktnttexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/rocktnttexture.png");
     private static final ResourceLocation TEXTURE9 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/rockcrystaltexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/rockcrystaltexture.png");
     private static final ResourceLocation TEXTURE10 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/rockcrystalgreentexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/rockcrystalgreentexture.png");
     private static final ResourceLocation TEXTURE11 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/rockcrystalbluetexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/rockcrystalbluetexture.png");
     private static final ResourceLocation TEXTURE12 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/rockcrystaltnttexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/rockcrystaltnttexture.png");
     private final float scale;
 
     public RenderRockBase(EntityRendererProvider.Context context, ModelRockBase model, float shadow, float scale) {

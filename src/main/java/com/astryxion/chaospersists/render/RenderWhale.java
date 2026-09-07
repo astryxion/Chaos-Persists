@@ -9,7 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderWhale extends MobRenderer<Whale, ModelWhale> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/whaletexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/whaletexture.png");
     private final float scale;
 
     public RenderWhale(EntityRendererProvider.Context context, ModelWhale model, float shadow, float scale) {

@@ -9,7 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderBandP extends MobRenderer<BandP, ModelBandP> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/bandptexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/bandptexture.png");
     private final float scale;
 
     public RenderBandP(EntityRendererProvider.Context context, ModelBandP model, float shadow, float scale) {

@@ -45,7 +45,7 @@ public class Biome {
   }
 
   private static void putTerrain(String path, float depth, float scale) {
-    LEGACY_TERRAIN.put(ResourceLocation.withDefaultNamespace(path), new float[] {depth, scale});
+    LEGACY_TERRAIN.put(new ResourceLocation(path), new float[] {depth, scale});
   }
 
   public static Biome wrap(net.minecraft.world.level.biome.Biome delegate) {
@@ -133,7 +133,7 @@ public class Biome {
 
   /** 1.7.10 biome name for {@link com.astryxion.chaospersists.world.biome.LegacyBiomeMatcher}. */
   public ResourceLocation getLegacyGroupId() {
-    return ResourceLocation.withDefaultNamespace(legacyPath);
+    return new ResourceLocation(legacyPath);
   }
 
   public List<SpawnListEntry> getSpawnableList(EnumCreatureType type) {

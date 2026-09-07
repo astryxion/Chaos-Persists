@@ -39,6 +39,9 @@ public class MyEntityAIFollowOwner extends Goal {
 
     @Override
     public boolean canUse() {
+        if (!this.thePet.isAlive() || this.thePet.isRemoved()) {
+            return false;
+        }
         LivingEntity owner = this.thePet.getOwner();
         if (owner == null) {
             return false;
@@ -63,6 +66,9 @@ public class MyEntityAIFollowOwner extends Goal {
 
     @Override
     public boolean canContinueToUse() {
+        if (!this.thePet.isAlive() || this.thePet.isRemoved()) {
+            return false;
+        }
         if (this.isPetStaying() || MyUtils.isPrinceFlying(this.thePet)) {
             return false;
         }

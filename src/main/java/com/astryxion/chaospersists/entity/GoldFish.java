@@ -222,7 +222,7 @@ public class GoldFish extends Animal {
         } else if (i == 1) {
             Item uranium =
                     ForgeRegistries.ITEMS.getValue(
-                            net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(
+                            new net.minecraft.resources.ResourceLocation(
                                     "chaospersists", "uraniumnugget"));
             if (uranium == null) {
                 uranium = ChaosPersists.UraniumNugget;
@@ -233,7 +233,7 @@ public class GoldFish extends Animal {
         } else if (i == 2) {
             Item titanium =
                     ForgeRegistries.ITEMS.getValue(
-                            net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(
+                            new net.minecraft.resources.ResourceLocation(
                                     "chaospersists", "titaniumnugget"));
             if (titanium == null) {
                 titanium = ChaosPersists.TitaniumNugget;

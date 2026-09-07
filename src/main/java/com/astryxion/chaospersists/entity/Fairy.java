@@ -44,23 +44,23 @@ public class Fairy extends AmbientCreature {
     private static final EntityDataAccessor<Integer> FAIRY_TYPE =
             SynchedEntityData.defineId(Fairy.class, EntityDataSerializers.INT);
     private static final ResourceLocation TEXTURE0 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/fairytexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/fairytexture.png");
     private static final ResourceLocation TEXTURE1 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/fairytexture2.png");
+            new ResourceLocation("chaospersists", "textures/entity/fairytexture2.png");
     private static final ResourceLocation TEXTURE2 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/fairytexture3.png");
+            new ResourceLocation("chaospersists", "textures/entity/fairytexture3.png");
     private static final ResourceLocation TEXTURE3 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/fairytexture4.png");
+            new ResourceLocation("chaospersists", "textures/entity/fairytexture4.png");
     private static final ResourceLocation TEXTURE4 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/fairytexture5.png");
+            new ResourceLocation("chaospersists", "textures/entity/fairytexture5.png");
     private static final ResourceLocation TEXTURE5 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/fairytexture6.png");
+            new ResourceLocation("chaospersists", "textures/entity/fairytexture6.png");
     private static final ResourceLocation TEXTURE6 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/fairytexture7.png");
+            new ResourceLocation("chaospersists", "textures/entity/fairytexture7.png");
     private static final ResourceLocation TEXTURE7 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/fairytexture8.png");
+            new ResourceLocation("chaospersists", "textures/entity/fairytexture8.png");
     private static final ResourceLocation TEXTURE8 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/fairytexture9.png");
+            new ResourceLocation("chaospersists", "textures/entity/fairytexture9.png");
 
     int my_blink = 0;
     int blinker = 0;

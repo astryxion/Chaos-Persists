@@ -147,7 +147,7 @@ public class MyUtils {
         return true;
     }
 
-    /** 1.7.10 {@code IMob.mobSelector} parity for girlfriend/boyfriend target search. */
+    /** 1.7.10 {@code IMob.mobSelector} parity — includes Slimes ({@code Enemy}, not {@code Monster}). */
     public static boolean isHostileMobTarget(LivingEntity entity) {
         return entity instanceof Enemy || entity instanceof Mothra;
     }
@@ -241,7 +241,8 @@ public class MyUtils {
     }
 
     public static boolean isAttackableNonMob(LivingEntity par1EntityLiving) {
-        if (par1EntityLiving instanceof Monster) {
+        // Prefer Enemy over Monster so Slimes (and similar) count as hostiles.
+        if (par1EntityLiving instanceof Enemy || par1EntityLiving instanceof Monster) {
             return true;
         }
         if (par1EntityLiving instanceof Mothra) {
@@ -354,6 +355,16 @@ public class MyUtils {
         if (pet instanceof Dragon dragon && (dragon.getActivity() != 0 || !dragon.onGround())) {
             return true;
         }
+        if (pet instanceof Stinky stinky && stinky.getActivity() == 2) {
+            return true;
+        }
+        if (pet instanceof Spyro spyro && spyro.getActivity() == 2) {
+            return true;
+        }
+        // Leon: activity 1 = flying (unlike Spyro's 2)
+        if (pet instanceof Leon leon && leon.getActivity() != 0) {
+            return true;
+        }
         if (pet instanceof ThePrince prince && prince.getActivity() == 2) {
             return true;
         }
@@ -403,6 +414,9 @@ public class MyUtils {
                 return pet.distanceToSqr(owner) < 625.0;
             }
             if (pet instanceof Dragon dragon && dragon.getActivity() != 0) {
+                return pet.distanceToSqr(owner) < 625.0;
+            }
+            if (pet instanceof Leon leon && leon.getActivity() != 0) {
                 return pet.distanceToSqr(owner) < 625.0;
             }
         }

@@ -8,7 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderHammerhead extends MobRenderer<Hammerhead, ModelHammerhead> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/hammerheadtexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/hammerheadtexture.png");
     private final float scale;
 
     public RenderHammerhead(EntityRendererProvider.Context context, ModelHammerhead model, float shadow, float scale) {

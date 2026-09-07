@@ -100,7 +100,7 @@ public class QueenSpawnerBlock extends Block {
 
     public static Entity spawnTheQueen(Level par0World, double par2, double par4, double par6) {
         EntityType<?> type =
-                ForgeRegistries.ENTITY_TYPES.getValue(ResourceLocation.fromNamespaceAndPath("chaospersists", "the_queen"));
+                ForgeRegistries.ENTITY_TYPES.getValue(new ResourceLocation("chaospersists", "the_queen"));
         if (type == null) {
             return null;
         }

@@ -8,12 +8,15 @@ import com.astryxion.chaospersists.util.SpawnerFixHelper;
 import com.astryxion.chaospersists.util.GenericTargetSorter;
 import com.astryxion.chaospersists.util.MyEntityAIFollowOwner;
 import com.astryxion.chaospersists.util.MyEntityAIWander;
+import com.astryxion.chaospersists.util.ChaosMountHelper;
 import com.astryxion.chaospersists.util.MyUtils;
+import com.astryxion.chaospersists.util.PetCombatHelper;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerInputPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -31,11 +34,13 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.TamableAnimal;
@@ -46,7 +51,6 @@ import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.TemptGoal;
 import com.astryxion.chaospersists.util.ChaosHurtByTargetGoal;
-import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
@@ -98,6 +102,8 @@ public class Leon extends TamableAnimal {
     private int lastZ = 0;
     private int unstick_timer = 0;
     private int dismountCooldown = 0;
+    /** Ice and Fire-style gravity land — ticks since we stopped flying; emergency snap only if stuck. */
+    private int landingTicks = 0;
     private float moveSpeed = 0.25f;
     private float deltasmooth = 0.0f;
 
@@ -114,11 +120,206 @@ public class Leon extends TamableAnimal {
         this.goalSelector.addGoal(3, new MyEntityAIWander(this, 0.75f));
         this.goalSelector.addGoal(4, new LookAtPlayerGoal(this, Player.class, 9.0f));
         this.goalSelector.addGoal(5, new RandomLookAroundGoal(this));
-        if (ChaosPersists.PlayNicely == 0) {
-            this.targetSelector.addGoal(
-                    1, new NearestAttackableTargetGoal<>(this, LivingEntity.class, true, false));
+        // OreSpawn Leon had no NearestAttackableTargetGoal — only timed findSomethingToAttack scans
+        this.targetSelector.addGoal(1, new ChaosHurtByTargetGoal(this));
+    }
+
+    /** Keep sitting pose in sync with stay order (1.7.10 EntityTameable.setSitting parity). */
+    @Override
+    public void setOrderedToSit(boolean orderedToSit) {
+        super.setOrderedToSit(orderedToSit);
+        this.setInSittingPose(orderedToSit);
+        if (orderedToSit) {
+            if (this.getNavigation() != null) {
+                this.getNavigation().stop();
+            }
+            if (!this.level().isClientSide) {
+                PetCombatHelper.onPetSit(this);
+                this.setTarget(null);
+                this.setAttacking(0);
+                this.target_in_sight = false;
+                this.owner_flying = 0;
+                this.currentFlightTarget = null;
+                // Ice and Fire: sit/land = gravity fall, not teleport
+                this.setActivity(0);
+                this.beginGravityLand();
+            }
         }
-        this.targetSelector.addGoal(2, new ChaosHurtByTargetGoal(this));
+    }
+
+    /** OreSpawn uses isSitting() only — prefer ordered flag so pose desync cannot trap sit. */
+    private boolean isSittingNow() {
+        return this.isOrderedToSit();
+    }
+
+    private boolean canOwnerReach(Player player) {
+        return player.distanceToSqr(this) < 1024.0 // 32 blocks
+                || this.getBoundingBox().inflate(8.0).contains(player.getEyePosition());
+    }
+
+    /** IAF {@code isOverAirLogic}: empty block directly under the hitbox. */
+    private boolean isOverAir() {
+        if (this.level() == null) {
+            return true;
+        }
+        return this.level()
+                .isEmptyBlock(
+                        BlockPos.containing(
+                                this.getBlockX(), this.getBoundingBox().minY - 1.0, this.getBlockZ()));
+    }
+
+    /**
+     * True when feet are on (or very near) solid ground. Looser than before so walking does not flicker.
+     */
+    private boolean hasRealGroundSupport() {
+        if (this.level() == null) {
+            return false;
+        }
+        if (this.onGround() && !this.isOverAir()) {
+            return true;
+        }
+        BlockPos below = BlockPos.containing(this.getX(), this.getY() - 0.2, this.getZ());
+        BlockState state = this.level().getBlockState(below);
+        if (state.isAir() || !state.blocksMotion()) {
+            return false;
+        }
+        var shape = state.getCollisionShape(this.level(), below);
+        if (shape.isEmpty()) {
+            return false;
+        }
+        double top = below.getY() + shape.max(Direction.Axis.Y);
+        return this.getY() <= top + 0.55 && this.getY() >= top - 0.1;
+    }
+
+    /**
+     * Ice and Fire landing: enable gravity and push down. No midair teleport (that caused float→snap lag).
+     */
+    private void beginGravityLand() {
+        if (this.level() == null || this.level().isClientSide) {
+            return;
+        }
+        this.setNoGravity(false);
+        this.noPhysics = false;
+        MyUtils.clearChaosFlight(this);
+        this.currentFlightTarget = null;
+        this.owner_flying = 0;
+        this.boatPosRotationIncrements = 0;
+        this.setOnGround(false);
+        Vec3 dm = this.getDeltaMovement();
+        // Match IAF hover-land: add(0, -0.25, 0), keep some horizontal bleed-off
+        this.setDeltaMovement(dm.x * 0.35, Math.min(dm.y, -0.25), dm.z * 0.35);
+        if (this.landingTicks <= 0) {
+            this.landingTicks = 1;
+        }
+    }
+
+    /** Y to place feet on, or NaN if none — emergency stuck recovery only. */
+    private double findStandY() {
+        int x = Mth.floor(this.getX());
+        int z = Mth.floor(this.getZ());
+        int minY = this.level().getMinBuildHeight();
+        int surface =
+                this.level().getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
+        if (surface > minY && this.getY() > (double) surface + 1.0) {
+            return surface;
+        }
+        int startY = Mth.floor(this.getY()) - 1;
+        if (surface > minY) {
+            startY = Math.min(startY, surface);
+        }
+        for (int y = startY; y > minY; --y) {
+            BlockPos pos = new BlockPos(x, y, z);
+            BlockState state = this.level().getBlockState(pos);
+            if (!state.blocksMotion()) {
+                continue;
+            }
+            var shape = state.getCollisionShape(this.level(), pos);
+            if (shape.isEmpty()) {
+                continue;
+            }
+            return pos.getY() + shape.max(Direction.Axis.Y);
+        }
+        if (surface > minY) {
+            return surface;
+        }
+        return Double.NaN;
+    }
+
+    /** Last-resort place on ground if gravity land is stuck (e.g. noGravity desync). */
+    private void emergencySnapToGround() {
+        if (this.level() == null || this.level().isClientSide) {
+            return;
+        }
+        double standY = this.findStandY();
+        if (Double.isNaN(standY)) {
+            this.setDeltaMovement(0.0, -0.8, 0.0);
+            return;
+        }
+        this.moveTo(this.getX(), standY, this.getZ(), this.getYRot(), this.getXRot());
+        this.setDeltaMovement(Vec3.ZERO);
+        this.fallDistance = 0.0f;
+        this.hasImpulse = true;
+        this.boatPosRotationIncrements = 0;
+        this.landingTicks = 0;
+    }
+
+    /**
+     * While sitting / dismounting / landing: keep gravity on and fall (IAF), never per-tick teleport.
+     */
+    private void tickGravityLand() {
+        if (this.level() == null || this.level().isClientSide) {
+            return;
+        }
+        this.setNoGravity(false);
+        this.noPhysics = false;
+        MyUtils.clearChaosFlight(this);
+        if (this.hasRealGroundSupport() || !this.isOverAir()) {
+            Vec3 dm = this.getDeltaMovement();
+            this.setDeltaMovement(dm.x * 0.5, Math.min(dm.y, 0.0), dm.z * 0.5);
+            this.landingTicks = 0;
+            return;
+        }
+        ++this.landingTicks;
+        // IAF: slowly land the hovering dragon
+        Vec3 dm = this.getDeltaMovement();
+        this.setDeltaMovement(dm.x * 0.9, Math.min(dm.y - 0.06, -0.25), dm.z * 0.9);
+        // Only if still stuck after ~3s of falling
+        if (this.landingTicks > 60) {
+            this.emergencySnapToGround();
+        }
+    }
+
+    private void forceLandFromFlight() {
+        if (this.level() != null && this.level().isClientSide) {
+            return;
+        }
+        this.owner_flying = 0;
+        this.currentFlightTarget = null;
+        this.target_in_sight = false;
+        this.setAttacking(0);
+        this.setActivity(0);
+        if (this.getNavigation() != null) {
+            this.getNavigation().stop();
+        }
+        this.setTarget(null);
+        this.beginGravityLand();
+    }
+
+    @Override
+    public boolean isImmobile() {
+        // Only lock once on terrain — otherwise sit-while-flying never falls (IAF pattern)
+        return super.isImmobile()
+                || (this.isOrderedToSit()
+                        && this.getPassengers().isEmpty()
+                        && this.hasRealGroundSupport());
+    }
+
+    @Override
+    public void setTarget(@javax.annotation.Nullable LivingEntity target) {
+        if (target != null && this.isOrderedToSit()) {
+            return;
+        }
+        super.setTarget(target);
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -154,7 +355,8 @@ public class Leon extends TamableAnimal {
     }
 
     public int getUpdateFrequency() {
-        return 10;
+        // 10 made ground walking hitch; IAF-style mounts need frequent sync
+        return 3;
     }
 
     public boolean sendsVelocityUpdates() {
@@ -200,14 +402,28 @@ public class Leon extends TamableAnimal {
      */
     @Override
     public void travel(Vec3 travelVector) {
-        if (MyUtils.usesChaosFlight(this)) {
+        // Sitting: always normal gravity travel — never chaos-flight skip
+        if (this.isSittingNow() && this.getPassengers().isEmpty()) {
+            this.setNoGravity(false);
+            this.noPhysics = false;
+            MyUtils.clearChaosFlight(this);
+            super.travel(travelVector);
             return;
         }
-        Vec3 dm = this.getDeltaMovement();
-        double mx = dm.x;
-        double my = dm.y;
-        double mz = dm.z;
-        if (this.isVehicle() && this.getControllingPassenger() instanceof Player pp && this.getActivity() != 0) {
+        // Grounded activity: fall, do not float
+        if (this.getActivity() == 0 && this.getPassengers().isEmpty()) {
+            this.setNoGravity(false);
+            this.noPhysics = false;
+            MyUtils.clearChaosFlight(this);
+            super.travel(travelVector);
+            return;
+        }
+        // Rider control must win over chaos-flight skip (same as Cephadrome) or mount is stuck
+        if (this.isVehicle() && this.getControllingPassenger() instanceof Player pp) {
+            if (!this.level().isClientSide && this.getActivity() == 0) {
+                this.setActivity(1);
+            }
+            MyUtils.clearChaosFlight(this);
             if (pp.isDeadOrDying()) {
                 this.ejectPassengers();
                 this.setNoGravity(false);
@@ -215,6 +431,10 @@ public class Leon extends TamableAnimal {
                 return;
             }
             this.setNoGravity(true);
+            Vec3 dm = this.getDeltaMovement();
+            double mx = dm.x;
+            double my = dm.y;
+            double mz = dm.z;
             double obstruction_factor;
             double relative_g;
             double max_speed = 1.15;
@@ -241,22 +461,22 @@ public class Leon extends TamableAnimal {
                             .getBlockState(
                                     BlockPos.containing(
                                             this.getX(), (float) this.getY() - (float) gh, this.getZ()));
+            // IAF lands by clearing flight near ground — do NOT setPos(+0.1) every tick (walk/fly lag)
             if (!ground.isAir()) {
-                my += 0.03;
-                this.setPos(this.getX(), this.getY() + 0.1, this.getZ());
+                my += 0.02;
             } else {
                 my -= 0.018;
             }
 
             obstruction_factor = 0.0;
-            int distLimit = 3 + (int) (velocity * 7.0);
+            int distLimit = 3 + (int) (velocity * 4.0);
             if (distLimit < 3) {
                 distLimit = 3;
             }
-            if (distLimit > 24) {
-                distLimit = 24;
+            if (distLimit > 8) {
+                distLimit = 8;
             }
-            int iMax = Math.min(distLimit * 2, 48);
+            int iMax = Math.min(distLimit, 8);
             for (int k = 1; k < distLimit; k++) {
                 for (int i = 1; i < iMax; i++) {
                     double dx = i * Math.cos(Math.toRadians(this.getYRot() + 90.0f));
@@ -272,8 +492,7 @@ public class Leon extends TamableAnimal {
                 }
             }
 
-            my += obstruction_factor * 0.07000000000000001;
-            this.setPos(this.getX(), this.getY() + obstruction_factor * 0.07000000000000001, this.getZ());
+            my += obstruction_factor * 0.05;
             if (my > 2.0) {
                 my = 2.0;
             }
@@ -319,7 +538,11 @@ public class Leon extends TamableAnimal {
             this.setYHeadRot(this.getYRot());
 
             double newvelocity = Math.sqrt(mx * mx + mz * mz);
+            // Prefer live client input when available (server zza is often 0 without sync)
             double im = pp.zza;
+            if (pp instanceof LocalPlayer lp) {
+                im = lp.input.forwardImpulse;
+            }
 
             boolean riderJumping =
                     pp instanceof LocalPlayer lp && lp.input.jumping || ChaosPersists.flyup_keystate != 0;
@@ -394,6 +617,15 @@ public class Leon extends TamableAnimal {
             }
             return;
         }
+        if (MyUtils.usesChaosFlight(this)) {
+            return;
+        }
+        // Grounded / not flying: always fall with gravity (no midair float)
+        if (this.getActivity() == 0 || this.isSittingNow()) {
+            this.setNoGravity(false);
+            this.noPhysics = false;
+            MyUtils.clearChaosFlight(this);
+        }
         this.setNoGravity(false);
         super.travel(travelVector);
     }
@@ -407,21 +639,13 @@ public class Leon extends TamableAnimal {
     }
 
     private void finishDismountLanding() {
-        this.dismountCooldown = 80;
-        this.owner_flying = 0;
-        this.currentFlightTarget = null;
-        if (MyUtils.isPrinceAirborne(this)) {
-            this.setActivity(1);
-            this.setNoGravity(true);
-            this.noPhysics = true;
-            return;
+        this.dismountCooldown = ChaosMountHelper.DISMOUNT_COOLDOWN_TICKS;
+        // Dismount lands on ground — do not leave midair hover or instantly re-chase owner
+        if (!this.level().isClientSide) {
+            this.setOrderedToSit(false);
+            this.setInSittingPose(false);
+            this.forceLandFromFlight();
         }
-        this.setActivity(0);
-        this.setNoGravity(false);
-        this.noPhysics = false;
-        Vec3 dm = this.getDeltaMovement();
-        this.setDeltaMovement(dm.x, Math.min(dm.y, -0.25), dm.z);
-        MyUtils.enforceDragonMountGroundSafety(this);
     }
 
     @Override
@@ -497,7 +721,7 @@ public class Leon extends TamableAnimal {
 
     @Override
     protected SoundEvent getAmbientSound() {
-        if (this.isInSittingPose()) {
+        if (this.isSittingNow()) {
             return null;
         }
         if (this.getActivity() == 1 && this.getPassengers().isEmpty()) {
@@ -606,10 +830,10 @@ public class Leon extends TamableAnimal {
     public boolean hurt(DamageSource par1DamageSource, float par2) {
         boolean ret = false;
         Entity e;
-        if (this.hurt_timer > 0) {
+        if (this.isInvulnerableTo(par1DamageSource)) {
             return false;
         }
-        if (this.isInvulnerableTo(par1DamageSource)) {
+        if (!par1DamageSource.is(DamageTypeTags.BYPASSES_INVULNERABILITY) && this.hurt_timer > 0) {
             return false;
         }
         if (par1DamageSource.is(DamageTypes.IN_WALL)) {
@@ -617,22 +841,25 @@ public class Leon extends TamableAnimal {
         }
         if (!this.level().isClientSide) {
             this.setOrderedToSit(false);
-        }
-        if (!this.level().isClientSide) {
-            this.setActivity(1);
+            this.setInSittingPose(false);
         }
         e = par1DamageSource.getEntity();
         if (e instanceof Leon) {
             return false;
         }
+        // Owner punch: stand + snap to ground (do not launch flight)
+        if (!this.level().isClientSide && this.isTame() && e instanceof Player) {
+            this.forceLandFromFlight();
+            return false;
+        }
+        if (!this.level().isClientSide) {
+            this.setActivity(1);
+        }
         ret = super.hurt(par1DamageSource, par2);
-        if (ret) {
+        if (ret && !par1DamageSource.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
             this.hurt_timer = 15;
         }
         if (e instanceof LivingEntity living && !this.level().isClientSide && MyUtils.isValidAggroTarget(living)) {
-            if (this.isTame() && e instanceof Player) {
-                return false;
-            }
             this.setTarget(living);
             this.getNavigation().moveTo(living, 1.2);
             ret = true;
@@ -642,6 +869,17 @@ public class Leon extends TamableAnimal {
 
     @Override
     protected void customServerAiStep() {
+        PetCombatHelper.tickPetCombat(this);
+        // Sitting = fully idle (OreSpawn always_do returns; do not run combat goals)
+        if (this.isSittingNow()) {
+            this.setTarget(null);
+            this.setAttacking(0);
+            this.target_in_sight = false;
+            if (this.getNavigation() != null) {
+                this.getNavigation().stop();
+            }
+            return;
+        }
         if (!this.getPassengers().isEmpty()) {
             return;
         }
@@ -650,12 +888,17 @@ public class Leon extends TamableAnimal {
         }
         super.customServerAiStep();
         LivingEntity e;
-        if (!this.isInSittingPose()
-                && this.getActivity() == 0
+        if (this.getActivity() == 0
                 && this.getPassengers().isEmpty()
                 && this.level().getDifficulty() != Difficulty.PEACEFUL
                 && this.getRandom().nextInt(10) == 1
-                && (e = this.findSomethingToAttack()) != null) {
+                && (e =
+                        PetCombatHelper.resolveCombatTarget(
+                                this, this.getTarget(), this::findSomethingToAttack))
+                        != null) {
+            if (e != this.getTarget()) {
+                this.setTarget(e);
+            }
             this.setActivity(1);
         }
     }
@@ -663,25 +906,46 @@ public class Leon extends TamableAnimal {
     public void always_do() {
         Player p = null;
         LivingEntity e;
-        if (!this.isInSittingPose()
-                && this.getActivity() == 0
-                && this.getPassengers().isEmpty()
-                && this.level().getDifficulty() != Difficulty.PEACEFUL
-                && this.getRandom().nextInt(10) == 1
-                && (e = this.findSomethingToAttack()) != null) {
-            this.setActivity(1);
+        // After dismount: stay grounded — do not immediately take off to chase owner
+        if (this.dismountCooldown > 0 && this.getPassengers().isEmpty()) {
+            this.owner_flying = 0;
+            this.currentFlightTarget = null;
+            this.setActivity(0);
+            this.tickGravityLand();
+            if (this.getRandom().nextInt(250) == 1 && this.getHealth() < (float) this.mygetMaxHealth()) {
+                this.heal(2.0f);
+            }
+            return;
         }
+        // OreSpawn: heal can run while sat, but combat/flight never does
         if (this.getRandom().nextInt(250) == 1 && this.getHealth() < (float) this.mygetMaxHealth()) {
             this.heal(2.0f);
         }
-        if (this.isInSittingPose()) {
+        if (this.isSittingNow()) {
+            this.setTarget(null);
+            this.setAttacking(0);
+            this.target_in_sight = false;
+            this.owner_flying = 0;
+            this.tickGravityLand();
             return;
+        }
+        if (this.getActivity() == 0
+                && this.getPassengers().isEmpty()
+                && this.level().getDifficulty() != Difficulty.PEACEFUL
+                && this.getRandom().nextInt(10) == 1
+                && (e =
+                        PetCombatHelper.resolveCombatTarget(
+                                this, this.getTarget(), this::findSomethingToAttack))
+                        != null) {
+            if (e != this.getTarget()) {
+                this.setTarget(e);
+            }
+            this.setActivity(1);
         }
         this.owner_flying = 0;
         if (this.isTame()
                 && this.getOwner() != null
-                && this.getPassengers().isEmpty()
-                && !this.isInSittingPose()) {
+                && this.getPassengers().isEmpty()) {
             p = (Player) this.getOwner();
             if (p.getAbilities().flying) {
                 this.owner_flying = 1;
@@ -690,40 +954,20 @@ public class Leon extends TamableAnimal {
         }
         if (this.isTame()
                 && this.getOwner() != null
-                && !this.isInSittingPose()
                 && this.distanceToSqr((p = (Player) this.getOwner())) > 400.0) {
             this.setActivity(1);
         }
         if (this.getRandom().nextInt(50) == 1
                 && this.dismountCooldown == 0
-                && !this.isInSittingPose()
                 && !this.target_in_sight
-                && this.getPassengers().isEmpty()) {
-            if (MyUtils.isPrinceAirborne(this)) {
-                this.setActivity(1);
-            } else if (this.getRandom().nextInt(15) == 1) {
+                && this.getPassengers().isEmpty()
+                && this.hasRealGroundSupport()) {
+            if (this.getRandom().nextInt(15) == 1) {
                 this.setActivity(1);
             } else {
                 this.setActivity(0);
             }
         }
-    }
-
-    private boolean shouldStopFlying() {
-        if (this.dismountCooldown > 0 || this.target_in_sight || this.owner_flying != 0) {
-            return false;
-        }
-        if (!MyUtils.isPrinceAirborne(this)) {
-            return true;
-        }
-        if (this.getOwner() == null) {
-            BlockPos feet = this.blockPosition();
-            int groundY = this.level().getHeight(Heightmap.Types.MOTION_BLOCKING, feet.getX(), feet.getZ());
-            if (this.getY() <= groundY + 4.0) {
-                return true;
-            }
-        }
-        return false;
     }
 
     public void fly_with_rider() {
@@ -732,7 +976,7 @@ public class Leon extends TamableAnimal {
         if (this.isDeadOrDying()) {
             return;
         }
-        if (this.isInSittingPose()) {
+        if (this.isSittingNow()) {
             return;
         }
         if (this.level().isClientSide) {
@@ -742,12 +986,10 @@ public class Leon extends TamableAnimal {
             if (this.getRandom().nextInt(250) == 0) {
                 this.setTarget(null);
             }
-            if ((e = this.getTarget()) != null && !e.isAlive()) {
-                this.setTarget(null);
-                e = null;
-            }
-            if (e == null) {
-                e = this.findSomethingToAttack();
+            LivingEntity prior = this.getTarget();
+            e = PetCombatHelper.resolveCombatTarget(this, prior, this::findSomethingToAttack);
+            if (e != prior) {
+                this.setTarget(e);
             }
             if (e != null) {
                 this.setAttacking(1);
@@ -787,6 +1029,10 @@ public class Leon extends TamableAnimal {
         if (par1EntityLiving instanceof Leon) {
             return false;
         }
+        if (this.isTame() && !PetCombatHelper.wantsPetToAttack(this, par1EntityLiving)) {
+            return false;
+        }
+        // OreSpawn 1.7.10: EntityMob only. Do NOT use isAttackableNonMob (that includes Slimes via Enemy).
         if (par1EntityLiving instanceof Monster) {
             return true;
         }
@@ -797,9 +1043,6 @@ public class Leon extends TamableAnimal {
             if (this.isTame()) {
                 return false;
             }
-            return true;
-        }
-        if (!this.isTame() && MyUtils.isAttackableNonMob(par1EntityLiving)) {
             return true;
         }
         return false;
@@ -849,7 +1092,7 @@ public class Leon extends TamableAnimal {
                         continue;
                     }
                     ResourceLocation leonId =
-                            ResourceLocation.fromNamespaceAndPath("chaospersists", "leonopteryx");
+                            new ResourceLocation("chaospersists", "leonopteryx");
                     ResourceLocation norm = SpawnerFixHelper.normalizeSpawnerEntityId(id);
                     if (SpawnerFixHelper.entityIdsMatchForSpawner(norm, leonId)
                             || "Leonopteryx".equals(id.getPath())) {
@@ -898,7 +1141,7 @@ public class Leon extends TamableAnimal {
                         continue;
                     }
                     ResourceLocation leonId =
-                            ResourceLocation.fromNamespaceAndPath("chaospersists", "leonopteryx");
+                            new ResourceLocation("chaospersists", "leonopteryx");
                     ResourceLocation norm = SpawnerFixHelper.normalizeSpawnerEntityId(id);
                     if (SpawnerFixHelper.entityIdsMatchForSpawner(norm, leonId)
                             || "Leonopteryx".equals(id.getPath())) {
@@ -938,6 +1181,22 @@ public class Leon extends TamableAnimal {
     @Override
     public void lerpTo(
             double par1, double par3, double par5, float par7, float par8, int par9, boolean interpolate) {
+        // Landing / sit: snap client to server (avoid midair ghost)
+        if (this.isOrderedToSit() || this.landingTicks > 0) {
+            this.boatPosRotationIncrements = 0;
+            this.setPos(par1, par3, par5);
+            this.setYRot(par7);
+            this.setXRot(par8);
+            this.yRotO = par7;
+            this.xRotO = par8;
+            return;
+        }
+        // Ground walking: vanilla smooth lerp — boat/instant paths made walking insanely hitchy
+        if (this.getActivity() == 0) {
+            this.boatPosRotationIncrements = 0;
+            super.lerpTo(par1, par3, par5, par7, par8, par9, interpolate);
+            return;
+        }
         this.boatPosRotationIncrements = par9;
         this.boatX = par1;
         this.boatY = par3;
@@ -955,23 +1214,64 @@ public class Leon extends TamableAnimal {
 
     @Override
     public void tick() {
-        LivingEntity e;
+        if (this.isDeadOrDying()) {
+            this.noPhysics = false;
+            if (!this.level().isClientSide) {
+                this.setNoGravity(false);
+            }
+            MyUtils.clearChaosFlight(this);
+            super.tick();
+            return;
+        }
         if (this.dismountCooldown > 0) {
             --this.dismountCooldown;
         }
         this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue((double) this.moveSpeed);
         this.noPhysics = false;
-        if (!this.level().isClientSide
-                && this.getPassengers().isEmpty()
-                && !this.isInSittingPose()
-                && this.getActivity() == 0
-                && MyUtils.isPrinceAirborne(this)) {
-            this.setActivity(1);
+        // Sit lock: stay on the ground, no flight AI
+        if (this.isOrderedToSit()) {
+            if (!this.level().isClientSide) {
+                if (this.getActivity() != 0) {
+                    this.setActivity(0);
+                }
+                this.setTarget(null);
+                this.setAttacking(0);
+                this.target_in_sight = false;
+                this.owner_flying = 0;
+                this.currentFlightTarget = null;
+                this.tickGravityLand();
+            }
+            super.tick();
+            if (this.hurt_timer > 0) {
+                --this.hurt_timer;
+            }
+            return;
         }
+        // After dismount: no flight AI until cooldown ends (prevents midair re-chase)
+        if (!this.level().isClientSide
+                && this.dismountCooldown > 0
+                && this.getPassengers().isEmpty()) {
+            if (this.getActivity() != 0) {
+                this.setActivity(0);
+            }
+            this.tickGravityLand();
+            super.tick();
+            if (this.hurt_timer > 0) {
+                --this.hurt_timer;
+            }
+            return;
+        }
+        // Gravity-landing in progress (stopped flying / sit from air) — IAF style fall
+        if (!this.level().isClientSide
+                && this.landingTicks > 0
+                && this.getPassengers().isEmpty()
+                && this.getActivity() == 0) {
+            this.tickGravityLand();
+        }
+        // Do NOT auto-fly from isPrinceAirborne — tall Leons often report !onGround and launch instantly
         if (!this.level().isClientSide
                 && this.getActivity() != 0
-                && this.getPassengers().isEmpty()
-                && !this.isInSittingPose()) {
+                && this.getPassengers().isEmpty()) {
             this.fly_without_rider();
         }
         super.tick();
@@ -1002,16 +1302,17 @@ public class Leon extends TamableAnimal {
         if (this.level().isClientSide) {
             return;
         }
-        if (this.getActivity() == 0
+        if (this.dismountCooldown == 0
+                && this.getActivity() == 0
                 && this.isTame()
                 && this.getOwner() != null
-                && !this.isInSittingPose()
-                && this.distanceToSqr((e = this.getOwner())) > 144.0) {
+                && !this.isOrderedToSit()
+                && this.distanceToSqr(this.getOwner()) > 144.0) {
             this.setActivity(1);
         }
-        MyUtils.enforceDragonMountGroundSafety(this);
-        if (this.getPassengers().isEmpty()) {
-            this.moveTo(this.getX(), this.getY(), this.getZ());
+        // Do not call enforceDragonMountGroundSafety here — it pushes tall Leons upward into a float
+        if (this.getActivity() == 0) {
+            ChaosMountHelper.applyGroundGravityWhenIdle(this);
         }
     }
 
@@ -1043,19 +1344,13 @@ public class Leon extends TamableAnimal {
             do_new = true;
             this.currentFlightTarget = new BlockPos((int)this.getX(), (int)this.getY(), (int)this.getZ());
         }
-        if (this.isInSittingPose()) {
+        if (this.isSittingNow()) {
             return;
         }
         if ((this.getPassengers().isEmpty() ? null : this.getPassengers().get(0)) != null) {
             return;
         }
-        if (this.shouldStopFlying()) {
-            this.setActivity(0);
-            this.setNoGravity(false);
-            this.noPhysics = false;
-            this.currentFlightTarget = null;
-            return;
-        }
+        // OreSpawn 1.7.10 has no ground "abort takeoff" here — removing it stops fly↔sit rubberbanding.
         if (this.unstick_timer > 0) {
             --this.unstick_timer;
         }
@@ -1096,13 +1391,21 @@ public class Leon extends TamableAnimal {
                 this.setAttacking(0);
                 this.flyaway = 0;
                 do_new = true;
+                // Fly straight toward owner (random offset made it look like reverse chase)
+                this.currentFlightTarget =
+                        new BlockPos((int) ox, (int) (oy + 2.0), (int) oz);
+                do_new = false;
             }
         }
         if (this.flyaway > 0) {
             --this.flyaway;
         }
         if (!toofar && this.unstick_timer == 0 && this.flyaway == 0 && this.level().getDifficulty() != Difficulty.PEACEFUL && this.getRandom().nextInt(8) == 1) {
-            e = this.findSomethingToAttack();
+            LivingEntity prior = this.getTarget();
+            e = PetCombatHelper.resolveCombatTarget(this, prior, this::findSomethingToAttack);
+            if (e != prior) {
+                this.setTarget(e);
+            }
             if (e != null) {
                 if (this.isTame() && this.getHealth() / (float) this.mygetMaxHealth() < 0.25f) {
                     this.setActivity(1);
@@ -1176,15 +1479,15 @@ public class Leon extends TamableAnimal {
         // Match ThePrinceTeen: horizontal speed for kMax after targeting/damping, not at method entry.
         double velocity = Math.sqrt(mx * mx + mz * mz);
         // Match ThePrinceTeen: small inner loop only — large scanDist*2 loops stacked huge Y boosts (random "rocket up").
-        int kMax = 2 + (int)(Math.max(0.0, velocity) * 4.0);
+        int kMax = 2 + (int)(Math.max(0.0, velocity) * 2.0);
         if (kMax < 2) {
             kMax = 2;
         }
-        if (kMax > 24) {
-            kMax = 24;
+        if (kMax > 8) {
+            kMax = 8;
         }
         for (int k = 1; k < kMax; ++k) {
-            for (int i = 1; i < 4; ++i) {
+            for (int i = 1; i < 3; ++i) {
                 double dz;
                 double dx = (double)i * Math.cos(Math.toRadians(this.getYRot() + 90.0f));
                 bid = this.level().getBlockState(new BlockPos((int)(this.getX() + dx), (int)this.getY() - k, (int)(this.getZ() + (dz = (double)i * Math.sin(Math.toRadians(this.getYRot() + 90.0f)))))).getBlock();
@@ -1193,7 +1496,7 @@ public class Leon extends TamableAnimal {
             }
         }
         my += obstruction_factor * 0.05;
-        this.setPos(this.getX(), this.getY() + obstruction_factor * 0.05, this.getZ());
+        // Velocity only — setPos Y nudges caused rubber-band lag near terrain
         speed_factor = 0.5;
         var1 = (double)this.currentFlightTarget.getX() + 0.5 - this.getX();
         var3 = (double)this.currentFlightTarget.getY() + 0.1 - this.getY();
@@ -1204,13 +1507,22 @@ public class Leon extends TamableAnimal {
                 speed_factor = 3.5;
             }
         }
+        // Unridden flight was reading as insanely fast on 1.20 — cap to OreSpawn-ish cruise
+        if (this.getPassengers().isEmpty()) {
+            speed_factor = Math.min(speed_factor, 0.55);
+        }
         mx += (Math.signum(var1) - mx) * 0.15 * speed_factor;
         my += (Math.signum(var3) - my) * 0.21 * speed_factor;
         mz += (Math.signum(var5) - mz) * 0.15 * speed_factor;
         float var7 = (float)(Math.atan2(mz, mx) * 180.0 / 3.141592653589793) - 90.0f;
         float var8 = Mth.wrapDegrees((float)(var7 - this.getYRot()));
+        // Face travel direction — slow yaw made follow look like flying backwards
         this.zza = (float) (0.75 * speed_factor);
-        this.setYRot(this.getYRot() + var8 / 4.0f);
+        if (toofar || this.owner_flying != 0) {
+            this.setYRot(this.getYRot() + var8 * 0.5f);
+        } else {
+            this.setYRot(this.getYRot() + var8 / 4.0f);
+        }
         this.setDeltaMovement(mx, my, mz);
         MyUtils.applyChaosFlightMovement(this);
     }
@@ -1317,15 +1629,30 @@ public class Leon extends TamableAnimal {
             if (!this.isOwnedBy(par1EntityPlayer)) {
                 return InteractionResult.FAIL;
             }
-            if (var2.isEmpty() && par1EntityPlayer.distanceToSqr(this) < 49.0) {
+            // Empty hand: stand if sitting, else mount (OreSpawn empty = mount + clear sit)
+            if (var2.isEmpty() && this.canOwnerReach(par1EntityPlayer)) {
+                if (this.isOrderedToSit()) {
+                    if (!this.level().isClientSide) {
+                        this.setOrderedToSit(false);
+                        this.forceLandFromFlight();
+                    }
+                    return InteractionResult.SUCCESS;
+                }
+                if (par1EntityPlayer.isShiftKeyDown()) {
+                    if (!this.level().isClientSide) {
+                        this.setOrderedToSit(true);
+                    }
+                    return InteractionResult.SUCCESS;
+                }
                 if (!this.level().isClientSide) {
                     par1EntityPlayer.startRiding(this);
                     this.setActivity(1);
                     this.setOrderedToSit(false);
+                    MyUtils.clearChaosFlight(this);
                 }
                 return InteractionResult.SUCCESS;
             }
-            if (!var2.isEmpty() && var2.is(Items.BEEF) && par1EntityPlayer.distanceToSqr(this) < 49.0) {
+            if (!var2.isEmpty() && var2.is(Items.BEEF) && this.canOwnerReach(par1EntityPlayer)) {
                 if (this.level().isClientSide) {
                     spawnTamingParticles(true);
                     this.level().broadcastEntityEvent(this, (byte) 7);
@@ -1343,7 +1670,7 @@ public class Leon extends TamableAnimal {
             }
             if (!var2.isEmpty()
                     && var2.is(Blocks.DEAD_BUSH.asItem())
-                    && par1EntityPlayer.distanceToSqr(this) < 49.0) {
+                    && this.canOwnerReach(par1EntityPlayer)) {
                 if (!this.level().isClientSide) {
                     this.setTame(false);
                     this.setOwnerUUID(null);
@@ -1361,7 +1688,7 @@ public class Leon extends TamableAnimal {
             if (this.isTame()
                     && !var2.isEmpty()
                     && var2.is(Items.NAME_TAG)
-                    && par1EntityPlayer.distanceToSqr(this) < 49.0
+                    && this.canOwnerReach(par1EntityPlayer)
                     && this.isOwnedBy(par1EntityPlayer)) {
                 this.setCustomName(var2.getHoverName());
                 if (!par1EntityPlayer.getAbilities().instabuild) {
@@ -1372,15 +1699,16 @@ public class Leon extends TamableAnimal {
                 }
                 return InteractionResult.SUCCESS;
             }
-            if (var2 != null
-                    && par1EntityPlayer.distanceToSqr(this) < 49.0
+            // Stick / any other item: toggle sit (OreSpawn). Always works via isOrderedToSit only.
+            if (!var2.isEmpty()
+                    && this.canOwnerReach(par1EntityPlayer)
                     && this.getPassengers().isEmpty()) {
-                if (!this.isInSittingPose()) {
-                    this.setOrderedToSit(true);
-                    this.setActivity(0);
-                } else {
-                    this.setOrderedToSit(false);
-                    this.setActivity(0);
+                if (!this.level().isClientSide) {
+                    boolean sit = !this.isOrderedToSit();
+                    this.setOrderedToSit(sit);
+                    if (!sit) {
+                        this.forceLandFromFlight();
+                    }
                 }
                 return InteractionResult.SUCCESS;
             }
@@ -1411,7 +1739,24 @@ public class Leon extends TamableAnimal {
         if (this.level() != null && this.level().isClientSide) {
             return;
         }
+        // Never take off while ordered to sit or during post-dismount landing
+        if (par1 != 0 && (this.isOrderedToSit() || this.dismountCooldown > 0)) {
+            par1 = 0;
+        }
+        int prev = this.getActivity();
         this.entityData.set(INT21, par1);
+        if (par1 == 0) {
+            this.setNoGravity(false);
+            this.noPhysics = false;
+            MyUtils.clearChaosFlight(this);
+            this.currentFlightTarget = null;
+            this.boatPosRotationIncrements = 0;
+            if (prev != 0 && !this.hasRealGroundSupport()) {
+                this.beginGravityLand();
+            }
+        } else {
+            this.landingTicks = 0;
+        }
     }
 
     public int getBeingRidden() {

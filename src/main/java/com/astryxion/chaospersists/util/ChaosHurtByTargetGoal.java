@@ -7,7 +7,8 @@ import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.player.Player;
 
 /**
- * Retaliation goal that ignores creative and spectator players, matching legacy OreSpawn aggro rules.
+ * Retaliation goal that ignores creative/spectator players and royalty, matching OreSpawn
+ * "royals do not fight royals" rules.
  */
 public class ChaosHurtByTargetGoal extends HurtByTargetGoal {
     public ChaosHurtByTargetGoal(PathfinderMob mob, Class<?>... toIgnoreDamage) {
@@ -17,7 +18,7 @@ public class ChaosHurtByTargetGoal extends HurtByTargetGoal {
     @Override
     public boolean canUse() {
         LivingEntity attacker = this.mob.getLastHurtByMob();
-        if (!MyUtils.isValidAggroTarget(attacker)) {
+        if (!MyUtils.isValidAggroTarget(attacker) || MyUtils.isRoyalty(attacker)) {
             return false;
         }
         return super.canUse();
@@ -25,7 +26,7 @@ public class ChaosHurtByTargetGoal extends HurtByTargetGoal {
 
     @Override
     protected void alertOther(Mob mob, LivingEntity target) {
-        if (!MyUtils.isValidAggroTarget(target)) {
+        if (!MyUtils.isValidAggroTarget(target) || MyUtils.isRoyalty(target)) {
             return;
         }
         super.alertOther(mob, target);

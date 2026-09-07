@@ -17,13 +17,13 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderEnchantedCow extends MobRenderer<RedCow, CowModel<RedCow>> {
     private static final ResourceLocation TEXTURE_RED =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/red_cow.png");
+            new ResourceLocation("chaospersists", "textures/entity/red_cow.png");
     private static final ResourceLocation TEXTURE_GOLD =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/gold_cow.png");
+            new ResourceLocation("chaospersists", "textures/entity/gold_cow.png");
     private static final ResourceLocation TEXTURE_CRYSTAL =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/crystal_cow.png");
+            new ResourceLocation("chaospersists", "textures/entity/crystal_cow.png");
     private static final ResourceLocation ENCHANTED_GLINT =
-            ResourceLocation.withDefaultNamespace("textures/misc/enchanted_glint_entity.png");
+            new ResourceLocation("textures/misc/enchanted_glint_entity.png");
 
     public RenderEnchantedCow(EntityRendererProvider.Context context, CowModel<RedCow> model, float shadow) {
         super(context, model, shadow);

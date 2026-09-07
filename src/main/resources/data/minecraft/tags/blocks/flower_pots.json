@@ -1,0 +1,13 @@
+﻿{
+  "replace": false,
+  "values": [
+    "chaospersists:potted_flower_pink",
+    "chaospersists:potted_flower_blue",
+    "chaospersists:potted_flower_black",
+    "chaospersists:potted_flower_scary",
+    "chaospersists:potted_crystalflower_red",
+    "chaospersists:potted_crystalflower_green",
+    "chaospersists:potted_crystalflower_blue",
+    "chaospersists:potted_crystalflower_yellow"
+  ]
+}

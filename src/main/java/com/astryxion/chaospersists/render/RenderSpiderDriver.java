@@ -8,7 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderSpiderDriver extends SpiderRenderer<SpiderDriver> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/spiderdriver.png");
+            new ResourceLocation("chaospersists", "textures/entity/spiderdriver.png");
 
     public RenderSpiderDriver(EntityRendererProvider.Context context, float shadow) {
         super(context);

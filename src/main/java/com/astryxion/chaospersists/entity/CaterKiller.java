@@ -413,13 +413,13 @@ public class CaterKiller extends Monster {
 
     private static ResourceLocation resolveSpawnId(String par1) {
         if (par1.contains(":")) {
-            return ResourceLocation.parse(par1);
+            return new ResourceLocation(par1);
         }
         return switch (par1) {
-            case "Butterfly" -> ResourceLocation.fromNamespaceAndPath("chaospersists", "butterfly");
-            case "Brutalfly" -> ResourceLocation.fromNamespaceAndPath("chaospersists", "brutalfly");
+            case "Butterfly" -> new ResourceLocation("chaospersists", "butterfly");
+            case "Brutalfly" -> new ResourceLocation("chaospersists", "brutalfly");
             default ->
-                    ResourceLocation.fromNamespaceAndPath(
+                    new ResourceLocation(
                             "chaospersists", par1.toLowerCase(Locale.ROOT).replace(' ', '_'));
         };
     }

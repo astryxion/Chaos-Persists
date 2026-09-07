@@ -328,7 +328,7 @@ public class LeafMonster extends Monster {
                         continue;
                     }
                     ResourceLocation leafId =
-                            ResourceLocation.fromNamespaceAndPath("chaospersists", "leaf_monster");
+                            new ResourceLocation("chaospersists", "leaf_monster");
                     ResourceLocation norm = SpawnerFixHelper.normalizeSpawnerEntityId(id);
                     if (SpawnerFixHelper.entityIdsMatchForSpawner(norm, leafId)
                             || "Leaf Monster".equals(id.getPath())) {
@@ -374,7 +374,7 @@ public class LeafMonster extends Monster {
                         continue;
                     }
                     ResourceLocation leafId =
-                            ResourceLocation.fromNamespaceAndPath("chaospersists", "leaf_monster");
+                            new ResourceLocation("chaospersists", "leaf_monster");
                     ResourceLocation norm = SpawnerFixHelper.normalizeSpawnerEntityId(id);
                     if (SpawnerFixHelper.entityIdsMatchForSpawner(norm, leafId)
                             || "Leaf Monster".equals(id.getPath())) {

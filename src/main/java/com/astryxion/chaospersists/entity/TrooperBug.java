@@ -542,8 +542,8 @@ public class TrooperBug extends Monster {
     public static Entity spawnCreature(Level level, String par1, double x, double y, double z) {
         ResourceLocation res =
                 par1.contains(":")
-                        ? ResourceLocation.parse(par1)
-                        : ResourceLocation.fromNamespaceAndPath("chaospersists", par1);
+                        ? new ResourceLocation(par1)
+                        : new ResourceLocation("chaospersists", par1);
         EntityType<?> type = ForgeRegistries.ENTITY_TYPES.getValue(res);
         if (type == null || !(level instanceof ServerLevel serverLevel)) {
             return null;

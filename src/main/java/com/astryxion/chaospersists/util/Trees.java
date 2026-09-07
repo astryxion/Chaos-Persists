@@ -547,7 +547,7 @@ public class Trees {
         if (spawnerEntity instanceof net.minecraft.world.level.block.entity.SpawnerBlockEntity spawner) {
             net.minecraft.resources.ResourceLocation id =
                     SpawnerFixHelper.normalizeSpawnerEntityId(
-                            net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(
+                            new net.minecraft.resources.ResourceLocation(
                                     "chaospersists", "fairy"));
             net.minecraft.world.entity.EntityType<?> type =
                     net.minecraftforge.registries.ForgeRegistries.ENTITY_TYPES.getValue(id);
@@ -691,7 +691,7 @@ public class Trees {
             if (spawnerEntity instanceof net.minecraft.world.level.block.entity.SpawnerBlockEntity spawner) {
                 net.minecraft.resources.ResourceLocation id =
                         SpawnerFixHelper.normalizeSpawnerEntityId(
-                                net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(
+                                new net.minecraft.resources.ResourceLocation(
                                         "chaospersists", "fairy"));
                 net.minecraft.world.entity.EntityType<?> type =
                         net.minecraftforge.registries.ForgeRegistries.ENTITY_TYPES.getValue(id);

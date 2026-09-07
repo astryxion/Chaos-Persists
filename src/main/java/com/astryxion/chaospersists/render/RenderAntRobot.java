@@ -9,7 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderAntRobot extends MobRenderer<AntRobot, ModelAntRobot> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/antrobottexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/antrobottexture.png");
     private final float scale;
 
     public RenderAntRobot(

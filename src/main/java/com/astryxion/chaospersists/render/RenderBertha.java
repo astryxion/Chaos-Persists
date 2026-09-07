@@ -14,7 +14,7 @@ import net.minecraft.world.item.ItemStack;
 public class RenderBertha implements IItemRenderer {
     protected ModelBertha modelBertha = new ModelBertha();
     private static final ResourceLocation texture =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/berthatexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/berthatexture.png");
 
     @Override
     public boolean handleRenderType(ItemStack item, ItemRenderType type) {

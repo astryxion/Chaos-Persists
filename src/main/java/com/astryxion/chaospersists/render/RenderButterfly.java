@@ -15,7 +15,7 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 public class RenderButterfly extends MobRenderer<EntityButterfly, ModelButterfly> {
     private static final ResourceLocation CREEPER_ARMOR =
-            ResourceLocation.withDefaultNamespace("textures/entity/creeper/creeper_armor.png");
+            new ResourceLocation("textures/entity/creeper/creeper_armor.png");
     private final float scale;
 
     public RenderButterfly(EntityRendererProvider.Context context, ModelButterfly model, float shadow, float scale) {

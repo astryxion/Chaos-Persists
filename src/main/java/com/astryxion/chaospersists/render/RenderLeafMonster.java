@@ -8,7 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderLeafMonster extends MobRenderer<LeafMonster, ModelLeafMonster> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/leafmonstertexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/leafmonstertexture.png");
     private final float scale;
 
     public RenderLeafMonster(EntityRendererProvider.Context context, ModelLeafMonster model, float shadow, float scale) {

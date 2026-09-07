@@ -9,7 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderCoin extends MobRenderer<Coin, ModelCoin> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/cointexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/cointexture.png");
     private final float scale;
 
     public RenderCoin(EntityRendererProvider.Context context, ModelCoin model, float shadow, float scale) {

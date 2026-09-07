@@ -449,7 +449,7 @@ public class Mothra extends EntityButterfly {
             this.dropItemRand(Items.GOLD_NUGGET, 1);
         }
         Item mothScale =
-                ForgeRegistries.ITEMS.getValue(ResourceLocation.fromNamespaceAndPath("chaospersists", "mothscale"));
+                ForgeRegistries.ITEMS.getValue(new ResourceLocation("chaospersists", "mothscale"));
         if (mothScale != null) {
             for (var4 = 0; var4 < 25; ++var4) {
                 this.dropItemRand(mothScale, 1);
@@ -467,7 +467,7 @@ public class Mothra extends EntityButterfly {
     }
 
     public static Entity spawnCreature(ServerLevel level, String entityPath, double px, double py, double pz) {
-        ResourceLocation id = ResourceLocation.fromNamespaceAndPath("chaospersists", entityPath);
+        ResourceLocation id = new ResourceLocation("chaospersists", entityPath);
         EntityType<?> type = ForgeRegistries.ENTITY_TYPES.getValue(id);
         if (type == null) {
             return null;

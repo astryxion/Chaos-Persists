@@ -238,7 +238,7 @@ public class Peacock extends Animal {
 
     public boolean isBreedingItem(ItemStack par1ItemStack) {
         Item crystal =
-                ForgeRegistries.ITEMS.getValue(ResourceLocation.fromNamespaceAndPath("chaospersists", "crystalapple"));
+                ForgeRegistries.ITEMS.getValue(new ResourceLocation("chaospersists", "crystalapple"));
         if (crystal == null) {
             crystal = ChaosPersists.MyCrystalApple;
         }

@@ -2959,7 +2959,7 @@ public class ChaosWorld {
         if (blockEntity instanceof net.minecraft.world.level.block.entity.SpawnerBlockEntity spawner) {
             net.minecraft.resources.ResourceLocation id =
                     SpawnerFixHelper.normalizeSpawnerEntityId(
-                            net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(
+                            new net.minecraft.resources.ResourceLocation(
                                     "chaospersists", mobPath));
             net.minecraft.world.entity.EntityType<?> type =
                     net.minecraftforge.registries.ForgeRegistries.ENTITY_TYPES.getValue(id);
@@ -4502,10 +4502,10 @@ public class ChaosWorld {
         net.minecraft.resources.ResourceLocation requested;
         if (par1 != null && par1.contains(":")) {
             String[] parts = par1.split(":", 2);
-            requested = net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(parts[0], parts[1]);
+            requested = new net.minecraft.resources.ResourceLocation(parts[0], parts[1]);
         } else {
             String normalizedPath = (par1 == null ? "" : par1.trim().toLowerCase(Locale.ROOT).replace(' ', '_'));
-            requested = net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", normalizedPath);
+            requested = new net.minecraft.resources.ResourceLocation("chaospersists", normalizedPath);
         }
         requested = SpawnerFixHelper.normalizeEntityLookupId(requested);
         EntityType<?> entityType = ForgeRegistries.ENTITY_TYPES.getValue(requested);

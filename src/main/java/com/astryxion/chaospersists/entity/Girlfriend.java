@@ -1,5 +1,6 @@
 package com.astryxion.chaospersists.entity;
 import com.astryxion.chaospersists.util.MyUtils;
+import com.astryxion.chaospersists.util.PetCombatHelper;
 
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.core.ChaosSounds;
@@ -111,129 +112,129 @@ public class Girlfriend extends TamableAnimal implements RangedAttackMob {
     public int feelingBetter = 0;
 
     private static final ResourceLocation DryTexture0 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend0.png");
+            new ResourceLocation("chaospersists", "textures/entity/girlfriend0.png");
     private static final ResourceLocation DryTexture1 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend1.png");
+            new ResourceLocation("chaospersists", "textures/entity/girlfriend1.png");
     private static final ResourceLocation DryTexture2 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend2.png");
+            new ResourceLocation("chaospersists", "textures/entity/girlfriend2.png");
     private static final ResourceLocation DryTexture3 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend3.png");
+            new ResourceLocation("chaospersists", "textures/entity/girlfriend3.png");
     private static final ResourceLocation DryTexture4 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend4.png");
+            new ResourceLocation("chaospersists", "textures/entity/girlfriend4.png");
     private static final ResourceLocation DryTexture5 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend5.png");
+            new ResourceLocation("chaospersists", "textures/entity/girlfriend5.png");
     private static final ResourceLocation DryTexture6 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend6.png");
+            new ResourceLocation("chaospersists", "textures/entity/girlfriend6.png");
     private static final ResourceLocation DryTexture7 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend7.png");
+            new ResourceLocation("chaospersists", "textures/entity/girlfriend7.png");
     private static final ResourceLocation DryTexture8 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend8.png");
+            new ResourceLocation("chaospersists", "textures/entity/girlfriend8.png");
     private static final ResourceLocation DryTexture9 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend9.png");
+            new ResourceLocation("chaospersists", "textures/entity/girlfriend9.png");
     private static final ResourceLocation DryTexture10 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend10.png");
+            new ResourceLocation("chaospersists", "textures/entity/girlfriend10.png");
     private static final ResourceLocation DryTexture11 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend11.png");
+            new ResourceLocation("chaospersists", "textures/entity/girlfriend11.png");
     private static final ResourceLocation DryTexture12 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend12.png");
+            new ResourceLocation("chaospersists", "textures/entity/girlfriend12.png");
     private static final ResourceLocation DryTexture13 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend13.png");
+            new ResourceLocation("chaospersists", "textures/entity/girlfriend13.png");
     private static final ResourceLocation DryTexture14 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend14.png");
+            new ResourceLocation("chaospersists", "textures/entity/girlfriend14.png");
     private static final ResourceLocation DryTexture15 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend15.png");
+            new ResourceLocation("chaospersists", "textures/entity/girlfriend15.png");
     private static final ResourceLocation DryTexture16 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend16.png");
+            new ResourceLocation("chaospersists", "textures/entity/girlfriend16.png");
     private static final ResourceLocation DryTexture17 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend17.png");
+            new ResourceLocation("chaospersists", "textures/entity/girlfriend17.png");
     private static final ResourceLocation DryTexture18 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend18.png");
+            new ResourceLocation("chaospersists", "textures/entity/girlfriend18.png");
     private static final ResourceLocation DryTexture19 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend19.png");
+            new ResourceLocation("chaospersists", "textures/entity/girlfriend19.png");
     private static final ResourceLocation DryTexture20 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend20.png");
+            new ResourceLocation("chaospersists", "textures/entity/girlfriend20.png");
     private static final ResourceLocation DryTexture21 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend21.png");
+            new ResourceLocation("chaospersists", "textures/entity/girlfriend21.png");
     private static final ResourceLocation DryTexture22 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend22.png");
+            new ResourceLocation("chaospersists", "textures/entity/girlfriend22.png");
     private static final ResourceLocation DryTexture23 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend23.png");
+            new ResourceLocation("chaospersists", "textures/entity/girlfriend23.png");
     private static final ResourceLocation DryTexture24 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend24.png");
+            new ResourceLocation("chaospersists", "textures/entity/girlfriend24.png");
     private static final ResourceLocation DryTexture25 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend25.png");
+            new ResourceLocation("chaospersists", "textures/entity/girlfriend25.png");
     private static final ResourceLocation DryTexture26 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend26.png");
+            new ResourceLocation("chaospersists", "textures/entity/girlfriend26.png");
     private static final ResourceLocation DryTexture27 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend27.png");
+            new ResourceLocation("chaospersists", "textures/entity/girlfriend27.png");
     private static final ResourceLocation DryTexture28 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend28.png");
+            new ResourceLocation("chaospersists", "textures/entity/girlfriend28.png");
     private static final ResourceLocation DryTexture29 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend29.png");
+            new ResourceLocation("chaospersists", "textures/entity/girlfriend29.png");
     private static final ResourceLocation DryTexture30 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend30.png");
+            new ResourceLocation("chaospersists", "textures/entity/girlfriend30.png");
     private static final ResourceLocation DryTexture31 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend31.png");
+            new ResourceLocation("chaospersists", "textures/entity/girlfriend31.png");
     private static final ResourceLocation DryTexture32 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend32.png");
+            new ResourceLocation("chaospersists", "textures/entity/girlfriend32.png");
     private static final ResourceLocation DryTexture33 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend33.png");
+            new ResourceLocation("chaospersists", "textures/entity/girlfriend33.png");
     private static final ResourceLocation DryTexture34 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend34.png");
+            new ResourceLocation("chaospersists", "textures/entity/girlfriend34.png");
     private static final ResourceLocation DryTexture35 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend35.png");
+            new ResourceLocation("chaospersists", "textures/entity/girlfriend35.png");
     private static final ResourceLocation DryTexture36 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend36.png");
+            new ResourceLocation("chaospersists", "textures/entity/girlfriend36.png");
     private static final ResourceLocation DryTexture37 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend37.png");
+            new ResourceLocation("chaospersists", "textures/entity/girlfriend37.png");
     private static final ResourceLocation DryTexture38 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend38.png");
+            new ResourceLocation("chaospersists", "textures/entity/girlfriend38.png");
     private static final ResourceLocation DryTexture39 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend39.png");
+            new ResourceLocation("chaospersists", "textures/entity/girlfriend39.png");
     private static final ResourceLocation DryTexture40 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend40.png");
+            new ResourceLocation("chaospersists", "textures/entity/girlfriend40.png");
     private static final ResourceLocation ValentineTexture =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriendv.png");
+            new ResourceLocation("chaospersists", "textures/entity/girlfriendv.png");
     private static final ResourceLocation WetTexture0 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/bikini0.png");
+            new ResourceLocation("chaospersists", "textures/entity/bikini0.png");
     private static final ResourceLocation WetTexture1 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/bikini1.png");
+            new ResourceLocation("chaospersists", "textures/entity/bikini1.png");
     private static final ResourceLocation WetTexture2 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/bikini2.png");
+            new ResourceLocation("chaospersists", "textures/entity/bikini2.png");
     private static final ResourceLocation WetTexture3 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/bikini3.png");
+            new ResourceLocation("chaospersists", "textures/entity/bikini3.png");
     private static final ResourceLocation WetTexture4 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/bikini4.png");
+            new ResourceLocation("chaospersists", "textures/entity/bikini4.png");
     private static final ResourceLocation WetTexture5 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/bikini5.png");
+            new ResourceLocation("chaospersists", "textures/entity/bikini5.png");
     private static final ResourceLocation WetTexture6 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/bikini6.png");
+            new ResourceLocation("chaospersists", "textures/entity/bikini6.png");
     private static final ResourceLocation WetTexture7 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/bikini7.png");
+            new ResourceLocation("chaospersists", "textures/entity/bikini7.png");
     private static final ResourceLocation WetTexture8 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/bikini8.png");
+            new ResourceLocation("chaospersists", "textures/entity/bikini8.png");
     private static final ResourceLocation WetTexture9 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/bikini9.png");
+            new ResourceLocation("chaospersists", "textures/entity/bikini9.png");
     private static final ResourceLocation WetTexture10 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/bikini10.png");
+            new ResourceLocation("chaospersists", "textures/entity/bikini10.png");
     private static final ResourceLocation WetTexture11 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/bikini11.png");
+            new ResourceLocation("chaospersists", "textures/entity/bikini11.png");
     private static final ResourceLocation WetTexture12 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/bikini12.png");
+            new ResourceLocation("chaospersists", "textures/entity/bikini12.png");
     private static final ResourceLocation WetTexture13 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/bikini13.png");
+            new ResourceLocation("chaospersists", "textures/entity/bikini13.png");
     private static final ResourceLocation WetTexture14 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/bikini14.png");
+            new ResourceLocation("chaospersists", "textures/entity/bikini14.png");
     private static final ResourceLocation WetTexture15 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/bikini15.png");
+            new ResourceLocation("chaospersists", "textures/entity/bikini15.png");
     private static final ResourceLocation WetTexture16 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/bikini16.png");
+            new ResourceLocation("chaospersists", "textures/entity/bikini16.png");
     private static final ResourceLocation WetTexture17 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/bikini17.png");
+            new ResourceLocation("chaospersists", "textures/entity/bikini17.png");
     private static final ResourceLocation PrincessTexture1 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/frogprincess.png");
+            new ResourceLocation("chaospersists", "textures/entity/frogprincess.png");
     private static final ResourceLocation PrincessTexture2 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/frogprincess2.png");
+            new ResourceLocation("chaospersists", "textures/entity/frogprincess2.png");
 
     public Girlfriend(EntityType<? extends Girlfriend> type, Level level) {
         super(type, level);
@@ -405,6 +406,10 @@ public class Girlfriend extends TamableAnimal implements RangedAttackMob {
     @Override
     public void aiStep() {
         this.updateSwingTime();
+        if (this.isDeadOrDying()) {
+            super.aiStep();
+            return;
+        }
         super.aiStep();
         if (this.isInWater() || this.isInLava()) {
             this.wet_count = 500;
@@ -458,14 +463,21 @@ public class Girlfriend extends TamableAnimal implements RangedAttackMob {
         this.setInSittingPose(orderedToSit);
         if (!this.level().isClientSide && orderedToSit) {
             this.getNavigation().stop();
-            this.setTarget(null);
-            this.setLastHurtByMob(null);
+            PetCombatHelper.onPetSit(this);
             this.setDeltaMovement(Vec3.ZERO);
         }
     }
 
     private void customCombatAiStep() {
+        PetCombatHelper.tickPetCombat(this);
         ItemStack stack = this.getMainHandItem();
+        LivingEntity prior = this.getTarget();
+        // Freeroam hostiles come from targetSelector; resolve adds owner-assist + sit guards.
+        LivingEntity resolved =
+                PetCombatHelper.resolveCombatTarget(this, prior, () -> null);
+        if (resolved != prior) {
+            this.setTarget(resolved);
+        }
         LivingEntity victim = this.getTarget();
         if (ChaosPersists.PlayNicely != 0) {
             victim = null;
@@ -476,8 +488,7 @@ public class Girlfriend extends TamableAnimal implements RangedAttackMob {
         if (this.level().getRandom().nextInt(200) == 1) {
             this.setTarget(null);
         }
-        if (victim != null
-                && (MyUtils.isProtectedCompanion(this, victim) || !MyUtils.isHostileMobTarget(victim))) {
+        if (victim != null && !PetCombatHelper.shouldRetainTarget(this, victim)) {
             this.setTarget(null);
             victim = null;
         }
@@ -1277,7 +1288,7 @@ public class Girlfriend extends TamableAnimal implements RangedAttackMob {
                         continue;
                     }
                     ResourceLocation girlfriendId =
-                            ResourceLocation.fromNamespaceAndPath("chaospersists", "girlfriend");
+                            new ResourceLocation("chaospersists", "girlfriend");
                     ResourceLocation norm = SpawnerFixHelper.normalizeSpawnerEntityId(id);
                     if (SpawnerFixHelper.entityIdsMatchForSpawner(norm, girlfriendId)
                             || "Girlfriend".equals(id.getPath())) {
@@ -1308,7 +1319,7 @@ public class Girlfriend extends TamableAnimal implements RangedAttackMob {
                         continue;
                     }
                     ResourceLocation girlfriendId =
-                            ResourceLocation.fromNamespaceAndPath("chaospersists", "girlfriend");
+                            new ResourceLocation("chaospersists", "girlfriend");
                     ResourceLocation norm = SpawnerFixHelper.normalizeSpawnerEntityId(id);
                     if (SpawnerFixHelper.entityIdsMatchForSpawner(norm, girlfriendId)
                             || "Girlfriend".equals(id.getPath())) {

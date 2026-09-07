@@ -8,7 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderRotator extends MobRenderer<Rotator, ModelRotator> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/rotatortexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/rotatortexture.png");
     private final float scale;
 
     public RenderRotator(EntityRendererProvider.Context context, ModelRotator model, float shadow, float scale) {

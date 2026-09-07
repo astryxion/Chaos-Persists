@@ -28,15 +28,15 @@ import net.minecraft.world.phys.AABB;
 
 public class EntityAnt extends Animal {
     private static final ResourceLocation TEXTURE1 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/ant.png");
+            new ResourceLocation("chaospersists", "textures/entity/ant.png");
     private static final ResourceLocation TEXTURE2 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/red_ant.png");
+            new ResourceLocation("chaospersists", "textures/entity/red_ant.png");
     private static final ResourceLocation TEXTURE3 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/rainbow_ant.png");
+            new ResourceLocation("chaospersists", "textures/entity/rainbow_ant.png");
     private static final ResourceLocation TEXTURE4 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/unstableant.png");
+            new ResourceLocation("chaospersists", "textures/entity/unstableant.png");
     private static final ResourceLocation TEXTURE5 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/termite.png");
+            new ResourceLocation("chaospersists", "textures/entity/termite.png");
 
     public double moveSpeed = 0.15000000596046448;
 

@@ -1,5 +1,7 @@
 package com.astryxion.chaospersists.block;
 
+import com.astryxion.chaospersists.util.MiningDropHelper;
+import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -8,11 +10,13 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.loot.LootParams;
 import org.joml.Vector3f;
 
 public class RTPBlock extends Block {
@@ -24,7 +28,22 @@ public class RTPBlock extends Block {
     }
 
     public RTPBlock(int i) {
-        super(net.minecraft.world.level.block.Block.Properties.of().strength(1.5f, 6.0f).sound(SoundType.STONE));
+        // Stone-like: hand mining is slow and drops nothing without a pickaxe (1.7.10 was Material.rock)
+        super(net.minecraft.world.level.block.Block.Properties.of()
+                .strength(1.5f, 6.0f)
+                .sound(SoundType.STONE)
+                .requiresCorrectToolForDrops());
+    }
+
+    @Override
+    public List<ItemStack> getDrops(BlockState state, LootParams.Builder builder) {
+        return MiningDropHelper.selfDrops(this, builder);
+    }
+
+    @Override
+    public ItemStack getCloneItemStack(
+            net.minecraft.world.level.BlockGetter level, BlockPos pos, BlockState state) {
+        return new ItemStack(this);
     }
 
     @Override

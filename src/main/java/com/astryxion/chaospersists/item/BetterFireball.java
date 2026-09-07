@@ -211,9 +211,12 @@ public class BetterFireball extends AbstractHurtingProjectile implements ItemSup
             }
         }
         if (!this.small) {
+            // 1.7.10 used newExplosion(null, ...) so blast damage is not attributed to the
+            // shooter. Attributing to this fireball makes getEntity() resolve to shootingEntity
+            // and starts royal family feuds via Teen/Adult hurt retaliation.
             this.level()
                     .explode(
-                            this,
+                            null,
                             this.getX(),
                             this.getY(),
                             this.getZ(),

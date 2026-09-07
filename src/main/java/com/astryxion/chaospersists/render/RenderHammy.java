@@ -14,7 +14,7 @@ import net.minecraft.world.item.ItemStack;
 public class RenderHammy implements IItemRenderer {
     protected ModelHammy modelHammy = new ModelHammy();
     private static final ResourceLocation texture =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/attitudeadjustertexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/attitudeadjustertexture.png");
 
     @Override
     public boolean handleRenderType(ItemStack item, ItemRenderType type) {

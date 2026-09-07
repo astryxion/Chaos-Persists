@@ -58,6 +58,7 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.registries.ForgeRegistries;
 import com.astryxion.chaospersists.util.MyUtils;
+import com.astryxion.chaospersists.util.PetCombatHelper;
 import com.astryxion.chaospersists.util.RoyalPetFollowHelper;
 
 public class ThePrince extends TamableAnimal {
@@ -224,8 +225,7 @@ public class ThePrince extends TamableAnimal {
             if (orderedToSit) {
                 this.setActivity(1);
                 this.setAttacking(0);
-                this.setTarget(null);
-                this.setLastHurtByMob(null);
+                PetCombatHelper.onPetSit(this);
                 MyUtils.clearChaosFlight(this);
                 this.setNoGravity(false);
                 this.noPhysics = false;
@@ -480,8 +480,10 @@ public class ThePrince extends TamableAnimal {
         }
         if (!par1DamageSource.getMsgId().equals("cactus")) {
             ret = super.hurt(par1DamageSource, par2);
-            this.setOrderedToSit(false);
-            this.setActivity(2);
+            if (ret && !this.isDeadOrDying()) {
+                this.setOrderedToSit(false);
+                this.setActivity(2);
+            }
         }
         return ret;
     }
@@ -502,6 +504,15 @@ public class ThePrince extends TamableAnimal {
     @Override
     public void tick() {
         int i;
+        if (this.isDeadOrDying()) {
+            this.noPhysics = false;
+            if (!this.level().isClientSide) {
+                this.setNoGravity(false);
+            }
+            MyUtils.clearChaosFlight(this);
+            super.tick();
+            return;
+        }
         super.tick();
         this.noPhysics = this.getActivity() == 2;
         if (!this.level().isClientSide) {
@@ -568,6 +579,10 @@ public class ThePrince extends TamableAnimal {
 
     @Override
     public void aiStep() {
+        if (this.isDeadOrDying()) {
+            super.aiStep();
+            return;
+        }
         this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue((double) this.moveSpeed);
         super.aiStep();
         if (this.isOrderedToSit() || this.isInSittingPose()) {
@@ -612,6 +627,7 @@ public class ThePrince extends TamableAnimal {
             return;
         }
 
+        PetCombatHelper.tickPetCombat(this);
         if (this.isTame() && !RoyalPetFollowHelper.isStayingPut(this)) {
             RoyalPetFollowHelper.syncDimensionOnly(this);
         }
@@ -738,16 +754,10 @@ public class ThePrince extends TamableAnimal {
                 do_new = true;
             }
         }
-        e = this.getTarget();
-        if (e != null && (!e.isAlive() || !this.isSuitableTarget(e, false))) {
-            this.setTarget(null);
-            e = null;
-        }
-        if (e == null && this.level().getDifficulty() != Difficulty.PEACEFUL) {
-            e = this.findSomethingToAttack();
-            if (e != null) {
-                this.setTarget(e);
-            }
+        LivingEntity prior = this.getTarget();
+        e = PetCombatHelper.resolveCombatTarget(this, prior, this::findSomethingToAttack);
+        if (e != prior) {
+            this.setTarget(e);
         }
         if (e != null) {
             if (this.isTame() && this.getHealth() / (float) this.mygetMaxHealth() < 0.25f) {
@@ -927,10 +937,10 @@ public class ThePrince extends TamableAnimal {
         if (isRoyaltyTarget(par1EntityLiving)) {
             return false;
         }
-        if (par1EntityLiving instanceof Monster) {
-            return true;
+        if (this.isTame() && !PetCombatHelper.wantsPetToAttack(this, par1EntityLiving)) {
+            return false;
         }
-        if (par1EntityLiving instanceof Mothra) {
+        if (PetCombatHelper.isAutoHostileTarget(par1EntityLiving)) {
             return true;
         }
         if (par1EntityLiving instanceof EntityButterfly) {
@@ -1099,8 +1109,8 @@ public class ThePrince extends TamableAnimal {
     public static Entity spawnCreature(Level level, String par1, double par2, double par4, double par6) {
         ResourceLocation res =
                 par1.contains(":")
-                        ? ResourceLocation.parse(par1)
-                        : ResourceLocation.fromNamespaceAndPath(
+                        ? new ResourceLocation(par1)
+                        : new ResourceLocation(
                                 "chaospersists", par1.toLowerCase(Locale.ROOT).replace(' ', '_'));
         EntityType<?> type = ForgeRegistries.ENTITY_TYPES.getValue(res);
         if (type == null || !(level instanceof ServerLevel serverLevel)) {

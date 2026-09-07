@@ -1,13 +1,17 @@
 package com.astryxion.chaospersists.util;
 
 import com.astryxion.chaospersists.core.ChaosPersists;
+import com.astryxion.chaospersists.util.MiningDropHelper;
+import java.util.List;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.BushBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -22,6 +26,16 @@ public class MyBlockFlower extends BushBlock {
                 .instabreak()
                 .sound(SoundType.GRASS)
                 .offsetType(OffsetType.XZ));
+    }
+
+    @Override
+    public List<ItemStack> getDrops(BlockState state, LootParams.Builder builder) {
+        return MiningDropHelper.selfDrops(this, builder);
+    }
+
+    @Override
+    public ItemStack getCloneItemStack(BlockGetter level, BlockPos pos, BlockState state) {
+        return new ItemStack(this);
     }
 
     @Override

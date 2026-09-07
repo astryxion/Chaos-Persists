@@ -92,6 +92,11 @@ public class AntBlock extends GrassBlock {
         return new ItemStack(this);
     }
 
+    @Override
+    public List<ItemStack> getDrops(BlockState state, net.minecraft.world.level.storage.loot.LootParams.Builder builder) {
+        return com.astryxion.chaospersists.util.MiningDropHelper.selfDrops(this, builder);
+    }
+
     public static Entity spawnCreature(
             Level world, EntityType<? extends Mob> entityType, double x, double y, double z) {
         Entity entity = entityType.create(world);

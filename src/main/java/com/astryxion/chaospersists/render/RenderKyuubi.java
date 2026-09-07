@@ -9,7 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderKyuubi extends MobRenderer<Kyuubi, ModelKyuubi> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/kyuubi.png");
+            new ResourceLocation("chaospersists", "textures/entity/kyuubi.png");
     private final float scale;
 
     public RenderKyuubi(EntityRendererProvider.Context context, ModelKyuubi model, float shadow, float scale) {

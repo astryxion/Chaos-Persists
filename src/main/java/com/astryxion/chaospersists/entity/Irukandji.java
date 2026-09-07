@@ -136,7 +136,7 @@ public class Irukandji extends Monster {
         if (drop == null) {
             drop =
                     ForgeRegistries.ITEMS.getValue(
-                            ResourceLocation.fromNamespaceAndPath("chaospersists", "deadirukandji"));
+                            new ResourceLocation("chaospersists", "deadirukandji"));
         }
         if (drop != null) {
             this.spawnAtLocation(new ItemStack(drop));

@@ -121,7 +121,10 @@ public final class GameRegistry {
                 continue;
               }
               String path = rl.getPath();
-              if ("pizza".equals(path) || "ducttape".equals(path) || "island".equals(path)) {
+              if ("pizza".equals(path)
+                  || "ducttape".equals(path)
+                  || "island".equals(path)
+                  || path.startsWith("potted_")) {
                 continue;
               }
               if (BuiltInRegistries.ITEM.containsKey(rl)) {
@@ -192,7 +195,7 @@ public final class GameRegistry {
     Recipe<?> build() {
       Ingredient ingredient = LegacyRecipeBuilder.ingredientFrom(input);
       ResourceLocation id =
-          ResourceLocation.fromNamespaceAndPath(
+          new ResourceLocation(
               "chaospersists",
               "smelt_"
                   + BuiltInRegistries.ITEM.getKey(output.getItem()).getPath()

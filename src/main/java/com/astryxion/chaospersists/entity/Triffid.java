@@ -218,14 +218,16 @@ public class Triffid extends Monster {
 
     @Override
     public boolean hurt(DamageSource par1DamageSource, float par2) {
-        if (this.hurt_timer > 0 || this.getOpenClosed() == 0) {
-            if (!this.isInvulnerableTo(par1DamageSource)) {
-                this.hurt_timer = 300;
-            }
-            this.setAttacking(0);
+        if (this.isInvulnerableTo(par1DamageSource)) {
             return false;
         }
-        if (this.isInvulnerableTo(par1DamageSource)) {
+        // /kill and other absolute damage pierce closed shell / i-frames
+        if (par1DamageSource.is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY)) {
+            return super.hurt(par1DamageSource, par2);
+        }
+        if (this.hurt_timer > 0 || this.getOpenClosed() == 0) {
+            this.hurt_timer = 300;
+            this.setAttacking(0);
             return false;
         }
         boolean ret = super.hurt(par1DamageSource, par2);

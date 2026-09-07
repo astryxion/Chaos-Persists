@@ -8,7 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderTRex extends MobRenderer<TRex, ModelTRex> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/trextexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/trextexture.png");
     private final float scale;
 
     public RenderTRex(EntityRendererProvider.Context context, ModelTRex model, float shadow, float scale) {

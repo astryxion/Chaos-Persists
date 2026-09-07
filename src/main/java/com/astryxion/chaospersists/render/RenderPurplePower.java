@@ -13,25 +13,31 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderPurplePower extends EntityRenderer<PurplePower> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/purplepowertexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/purplepowertexture.png");
     private static final ResourceLocation TEXTURE2 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/purplepowertexture2.png");
+            new ResourceLocation("chaospersists", "textures/entity/purplepowertexture2.png");
     private static final ResourceLocation TEXTURE3 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/purplepowertexture3.png");
+            new ResourceLocation("chaospersists", "textures/entity/purplepowertexture3.png");
     private static final ResourceLocation TEXTURE4 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/purplepowertexture4.png");
+            new ResourceLocation("chaospersists", "textures/entity/purplepowertexture4.png");
     private static final ResourceLocation TEXTURE10 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/purplepowertexture10.png");
+            new ResourceLocation("chaospersists", "textures/entity/purplepowertexture10.png");
+
+    /**
+     * OreSpawn {@code RenderPurplePower.preRenderScale} for non-zero types (Princess crystals 1-3,
+     * King type 10). That method was never hooked via {@code preRenderCallback} in 1.7.10, so
+     * beams drew oversized. Use this for all purple/crystal beams — type 0's registered 2.75 never
+     * appeared in OG and would make Queen beams worse.
+     */
+    private static final float CRYSTAL_SCALE = 0.55f;
 
     private final ModelPurplePower model;
-    private final float scale;
 
     public RenderPurplePower(
             EntityRendererProvider.Context context, ModelPurplePower model, float shadow, float scale) {
         super(context);
         this.model = model;
-        this.scale = scale;
-        this.shadowRadius = shadow * scale;
+        this.shadowRadius = shadow * CRYSTAL_SCALE;
     }
 
     @Override
@@ -46,9 +52,7 @@ public class RenderPurplePower extends EntityRenderer<PurplePower> {
         poseStack.translate(0.0F, entity.getBbHeight() * 0.5F, 0.0F);
         poseStack.mulPose(Axis.YP.rotationDegrees(180.0F - entityYaw));
 
-        // Match 1.7.10 actual draw size: RenderPurplePower.preRenderScale was never hooked
-        // via preRenderCallback, so type-based 0.55 / registered 2.75 never applied.
-        poseStack.scale(this.scale, this.scale, this.scale);
+        poseStack.scale(CRYSTAL_SCALE, CRYSTAL_SCALE, CRYSTAL_SCALE);
 
         float age = entity.tickCount + partialTicks;
         this.model.setupAnim(entity, 0.0F, 0.0F, age, 0.0F, 0.0F);

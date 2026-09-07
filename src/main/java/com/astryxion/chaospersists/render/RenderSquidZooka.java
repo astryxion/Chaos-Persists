@@ -14,7 +14,7 @@ import net.minecraft.world.item.ItemStack;
 public class RenderSquidZooka implements IItemRenderer {
     protected ModelSquidZooka modelSquidZooka = new ModelSquidZooka();
     private static final ResourceLocation texture =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/squidzookatexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/squidzookatexture.png");
 
     @Override
     public boolean handleRenderType(ItemStack item, ItemRenderType type) {

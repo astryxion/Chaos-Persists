@@ -143,12 +143,12 @@ public class ChaosSounds {
     public static SoundEvent WTF_LIVING;
 
     private static SoundEvent create(String name) {
-        ResourceLocation loc = ResourceLocation.fromNamespaceAndPath(MODID, name);
+        ResourceLocation loc = new ResourceLocation(MODID, name);
         return SoundEvent.createVariableRangeEvent(loc);
     }
 
     private static void register(RegisterEvent event, String name, Consumer<SoundEvent> assign) {
-        ResourceLocation loc = ResourceLocation.fromNamespaceAndPath(MODID, name);
+        ResourceLocation loc = new ResourceLocation(MODID, name);
         SoundEvent sound = SoundEvent.createVariableRangeEvent(loc);
         assign.accept(sound);
         event.register(net.minecraft.core.registries.Registries.SOUND_EVENT, loc, () -> sound);

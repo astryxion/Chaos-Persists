@@ -9,7 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderAttackSquid extends MobRenderer<AttackSquid, ModelAttackSquid> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/attacksquid.png");
+            new ResourceLocation("chaospersists", "textures/entity/attacksquid.png");
     private final float scale;
 
     public RenderAttackSquid(

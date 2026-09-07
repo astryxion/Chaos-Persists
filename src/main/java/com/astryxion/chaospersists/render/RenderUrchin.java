@@ -8,7 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderUrchin extends MobRenderer<Urchin, ModelUrchin> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/urchintexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/urchintexture.png");
     private final float scale;
 
     public RenderUrchin(EntityRendererProvider.Context context, ModelUrchin model, float shadow, float scale) {

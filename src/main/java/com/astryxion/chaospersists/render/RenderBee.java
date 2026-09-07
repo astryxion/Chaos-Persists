@@ -8,7 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderBee extends MobRenderer<Bee, ModelBee> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/beetexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/beetexture.png");
     private final float scale;
 
     public RenderBee(EntityRendererProvider.Context context, ModelBee model, float shadow, float scale) {

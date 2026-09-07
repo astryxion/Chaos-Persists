@@ -138,11 +138,11 @@ public class IslandBlock extends Block {
     public static Entity spawnCreature(Level par0World, String par1, double par2, double par4, double par6) {
         ResourceLocation rl;
         if ("Island".equals(par1)) {
-            rl = ResourceLocation.fromNamespaceAndPath("chaospersists", "island");
+            rl = new ResourceLocation("chaospersists", "island");
         } else if ("IslandToo".equals(par1)) {
-            rl = ResourceLocation.fromNamespaceAndPath("chaospersists", "island_too");
+            rl = new ResourceLocation("chaospersists", "island_too");
         } else {
-            rl = ResourceLocation.fromNamespaceAndPath("chaospersists", par1.toLowerCase(Locale.ROOT));
+            rl = new ResourceLocation("chaospersists", par1.toLowerCase(Locale.ROOT));
         }
         EntityType<?> type = ForgeRegistries.ENTITY_TYPES.getValue(rl);
         if (type == null) {

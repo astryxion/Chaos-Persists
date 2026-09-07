@@ -1,6 +1,7 @@
 package com.astryxion.chaospersists.entity;
 
 import com.astryxion.chaospersists.util.MyUtils;
+import com.astryxion.chaospersists.util.PetCombatHelper;
 
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.util.GenericTargetSorter;
@@ -235,6 +236,9 @@ public class EntityCannonFodder extends TamableAnimal {
             return InteractionResult.SUCCESS;
         }
         this.setOrderedToSit(true);
+        if (!this.level().isClientSide) {
+            PetCombatHelper.onPetSit(this);
+        }
         spawnTamingParticles(false);
         this.px = (int) this.getX();
         this.py = (int) this.getY();
@@ -245,16 +249,16 @@ public class EntityCannonFodder extends TamableAnimal {
     public static Entity spawnCreature(Level par0World, String par1, double par2, double par4, double par6) {
         ResourceLocation key;
         if (par1.indexOf(':') >= 0) {
-            key = ResourceLocation.parse(par1);
+            key = new ResourceLocation(par1);
         } else {
             key =
                     switch (par1) {
-                        case "Chipmunk" -> ResourceLocation.fromNamespaceAndPath("chaospersists", "chipmunk");
-                        case "Ostrich" -> ResourceLocation.fromNamespaceAndPath("chaospersists", "ostrich");
-                        case "Lizard" -> ResourceLocation.fromNamespaceAndPath("chaospersists", "lizard");
+                        case "Chipmunk" -> new ResourceLocation("chaospersists", "chipmunk");
+                        case "Ostrich" -> new ResourceLocation("chaospersists", "ostrich");
+                        case "Lizard" -> new ResourceLocation("chaospersists", "lizard");
                         case "Velocity Raptor" ->
-                                ResourceLocation.fromNamespaceAndPath("chaospersists", "velocity_raptor");
-                        default -> ResourceLocation.fromNamespaceAndPath("chaospersists", par1);
+                                new ResourceLocation("chaospersists", "velocity_raptor");
+                        default -> new ResourceLocation("chaospersists", par1);
                     };
         }
         EntityType<?> type = ForgeRegistries.ENTITY_TYPES.getValue(key);
@@ -355,7 +359,10 @@ public class EntityCannonFodder extends TamableAnimal {
                 return false;
             }
         }
-        if (par1EntityLiving instanceof Monster) {
+        if (this.isTame() && !PetCombatHelper.wantsPetToAttack(this, par1EntityLiving)) {
+            return false;
+        }
+        if (PetCombatHelper.isAutoHostileTarget(par1EntityLiving)) {
             return true;
         }
         if (par1EntityLiving instanceof EntityCannonFodder cf) {
@@ -415,6 +422,7 @@ public class EntityCannonFodder extends TamableAnimal {
         if (this.isDeadOrDying()) {
             return;
         }
+        PetCombatHelper.tickPetCombat(this);
         super.customServerAiStep();
         if (this.getRandom().nextInt(200) == 1) {
             this.setLastHurtByMob(null);
@@ -438,7 +446,12 @@ public class EntityCannonFodder extends TamableAnimal {
             pfreq = 4;
         }
         if (this.level().getDifficulty() != Difficulty.PEACEFUL && this.getRandom().nextInt(pfreq) == 1) {
-            LivingEntity e = this.findSomethingToAttack();
+            LivingEntity e =
+                    PetCombatHelper.resolveCombatTarget(
+                            this, this.getTarget(), this::findSomethingToAttack);
+            if (e != this.getTarget()) {
+                this.setTarget(e);
+            }
             if (e != null) {
                 this.getNavigation().moveTo(e, 1.25);
                 if (this.distanceToSqr(e) < 9.0

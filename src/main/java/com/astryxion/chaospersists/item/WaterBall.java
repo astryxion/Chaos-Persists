@@ -117,7 +117,7 @@ public class WaterBall extends ThrowableProjectile {
             if (this.random.nextInt(10) == 1) {
                 Item waterball =
                         ForgeRegistries.ITEMS.getValue(
-                                ResourceLocation.fromNamespaceAndPath("chaospersists", "waterball"));
+                                new ResourceLocation("chaospersists", "waterball"));
                 if (waterball != null) {
                     entity.spawnAtLocation(new ItemStack(waterball));
                 }

@@ -9,7 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderNastysaurus extends MobRenderer<Nastysaurus, ModelNastysaurus> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/nastysaurustexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/nastysaurustexture.png");
     private final float scale;
 
     public RenderNastysaurus(EntityRendererProvider.Context context, ModelNastysaurus model, float shadow, float scale) {

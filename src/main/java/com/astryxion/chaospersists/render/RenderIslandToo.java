@@ -8,7 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderIslandToo extends MobRenderer<IslandToo, ModelIsland<IslandToo>> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/island.png");
+            new ResourceLocation("chaospersists", "textures/entity/island.png");
     private final float scale;
 
     public RenderIslandToo(EntityRendererProvider.Context context, ModelIsland<IslandToo> model, float shadow, float scale) {

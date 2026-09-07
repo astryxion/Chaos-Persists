@@ -497,8 +497,8 @@ public class WormLarge extends Monster {
     public static Entity spawnCreature(Level level, String par1, double x, double y, double z) {
         ResourceLocation res =
                 par1.contains(":")
-                        ? ResourceLocation.parse(par1)
-                        : ResourceLocation.fromNamespaceAndPath("chaospersists", par1.toLowerCase().replace(" ", "_"));
+                        ? new ResourceLocation(par1)
+                        : new ResourceLocation("chaospersists", par1.toLowerCase().replace(" ", "_"));
         EntityType<?> type = ForgeRegistries.ENTITY_TYPES.getValue(res);
         if (type == null || !(level instanceof ServerLevel serverLevel)) {
             return null;
@@ -515,7 +515,7 @@ public class WormLarge extends Monster {
     private Item resolveModItem(String registryPath, Item fallback) {
         Item item =
                 ForgeRegistries.ITEMS.getValue(
-                        ResourceLocation.fromNamespaceAndPath("chaospersists", registryPath));
+                        new ResourceLocation("chaospersists", registryPath));
         return item != null ? item : fallback;
     }
 

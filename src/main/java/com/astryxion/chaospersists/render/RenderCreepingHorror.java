@@ -8,7 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderCreepingHorror extends MobRenderer<CreepingHorror, ModelCreepingHorror> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/creepinghorror.png");
+            new ResourceLocation("chaospersists", "textures/entity/creepinghorror.png");
     private final float scale;
 
     public RenderCreepingHorror(EntityRendererProvider.Context context, ModelCreepingHorror model, float shadow, float scale) {

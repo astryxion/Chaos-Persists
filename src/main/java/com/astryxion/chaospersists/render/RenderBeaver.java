@@ -9,7 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderBeaver extends MobRenderer<Beaver, ModelBeaver> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/beavertexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/beavertexture.png");
     private final float scale;
 
     public RenderBeaver(EntityRendererProvider.Context context, ModelBeaver model, float shadow, float scale) {

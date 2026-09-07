@@ -6,11 +6,11 @@ import net.minecraft.resources.ResourceLocation;
 public final class LootTableList {
 
   public static final ResourceLocation CHESTS_SIMPLE_DUNGEON =
-      ResourceLocation.fromNamespaceAndPath("minecraft", "chests/simple_dungeon");
+      new ResourceLocation("minecraft", "chests/simple_dungeon");
   public static final ResourceLocation CHESTS_JUNGLE_TEMPLE =
-      ResourceLocation.fromNamespaceAndPath("minecraft", "chests/jungle_temple");
+      new ResourceLocation("minecraft", "chests/jungle_temple");
   public static final ResourceLocation CHESTS_DESERT_PYRAMID =
-      ResourceLocation.fromNamespaceAndPath("minecraft", "chests/desert_pyramid");
+      new ResourceLocation("minecraft", "chests/desert_pyramid");
 
   private LootTableList() {}
 }

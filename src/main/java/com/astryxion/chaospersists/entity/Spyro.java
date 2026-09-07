@@ -1,6 +1,7 @@
 package com.astryxion.chaospersists.entity;
 
 import com.astryxion.chaospersists.util.MyUtils;
+import com.astryxion.chaospersists.util.PetCombatHelper;
 
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.core.ChaosSounds;
@@ -276,7 +277,7 @@ public class Spyro extends TamableAnimal {
             if (this.getNavigation() != null) {
                 this.getNavigation().stop();
             }
-            this.setTarget(null);
+            PetCombatHelper.onPetSit(this);
             this.owner_flying = 0;
             this.setActivity(1);
             this.setNoGravity(false);
@@ -595,6 +596,17 @@ public class Spyro extends TamableAnimal {
         return super.hurt(par1DamageSource, par2);
     }
 
+    @Override
+    public void die(DamageSource source) {
+        this.noPhysics = false;
+        this.setNoGravity(false);
+        MyUtils.clearChaosFlight(this);
+        if (this.getNavigation() != null) {
+            this.getNavigation().stop();
+        }
+        super.die(source);
+    }
+
     public boolean canSeeTarget(double pX, double pY, double pZ) {
         HitResult hit =
                 this.level()
@@ -610,6 +622,15 @@ public class Spyro extends TamableAnimal {
 
     @Override
     public void tick() {
+        if (this.isDeadOrDying()) {
+            this.noPhysics = false;
+            if (!this.level().isClientSide) {
+                this.setNoGravity(false);
+            }
+            MyUtils.clearChaosFlight(this);
+            super.tick();
+            return;
+        }
         this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue((double) this.moveSpeed);
         if (this.isSittingNow()) {
             if (this.getActivity() != 1) {
@@ -687,6 +708,7 @@ public class Spyro extends TamableAnimal {
         if (this.isDeadOrDying()) {
             return;
         }
+        PetCombatHelper.tickPetCombat(this);
         if (this.activity == 1 && !this.isSittingNow()) {
             super.customServerAiStep();
         }
@@ -783,16 +805,10 @@ public class Spyro extends TamableAnimal {
             }
         }
         if (this.getRandom().nextInt(6) == 1 && this.level().getDifficulty() != Difficulty.PEACEFUL) {
-            e = this.getTarget();
-            if (e != null && !e.isAlive()) {
-                this.setTarget(null);
-                e = null;
-            }
-            if (e == null) {
-                e = this.findSomethingToAttack();
-                if (e != null) {
-                    this.setTarget(e);
-                }
+            LivingEntity prior = this.getTarget();
+            e = PetCombatHelper.resolveCombatTarget(this, prior, this::findSomethingToAttack);
+            if (e != prior) {
+                this.setTarget(e);
             }
             if (e != null) {
                 if (this.isTame() && this.getHealth() / (float) this.mygetMaxHealth() < 0.25f) {
@@ -941,7 +957,10 @@ public class Spyro extends TamableAnimal {
         if (par1EntityLiving instanceof Mothra) {
             return true;
         }
-        if (par1EntityLiving instanceof Monster) {
+        if (this.isTame() && !PetCombatHelper.wantsPetToAttack(this, par1EntityLiving)) {
+            return false;
+        }
+        if (PetCombatHelper.isAutoHostileTarget(par1EntityLiving)) {
             return true;
         }
         return false;
@@ -993,8 +1012,8 @@ public class Spyro extends TamableAnimal {
     public static Entity spawnCreature(Level level, String par1, double x, double y, double z) {
         ResourceLocation res =
                 par1.contains(":")
-                        ? ResourceLocation.parse(par1)
-                        : ResourceLocation.fromNamespaceAndPath("chaospersists", par1);
+                        ? new ResourceLocation(par1)
+                        : new ResourceLocation("chaospersists", par1);
         EntityType<?> type = ForgeRegistries.ENTITY_TYPES.getValue(res);
         if (type == null || !(level instanceof ServerLevel serverLevel)) {
             return null;

@@ -8,7 +8,7 @@ import net.minecraft.client.renderer.entity.MobRenderer;
 
 public class RenderGhostSkelly extends MobRenderer<GhostSkelly, ModelGhostSkelly> {
     private static final net.minecraft.resources.ResourceLocation TEXTURE =
-            net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(
+            new net.minecraft.resources.ResourceLocation(
                     "chaospersists", "textures/entity/ghostskellytexture.png");
     private final float scale;
 

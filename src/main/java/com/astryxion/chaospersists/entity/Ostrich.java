@@ -58,8 +58,6 @@ public class Ostrich extends EntityCannonFodder {
     private float moveSpeed = 0.38f;
     private RenderInfo renderdata = new RenderInfo();
     private int dismountCooldown = 0;
-    /** Only true when the owner intentionally nests the bird on sand/dirt. */
-    private boolean nestSitting = false;
 
     public Ostrich(EntityType<? extends Ostrich> type, Level level) {
         super(type, level);
@@ -111,7 +109,7 @@ public class Ostrich extends EntityCannonFodder {
             @Nullable SpawnGroupData spawnData,
             @Nullable CompoundTag data) {
         SpawnGroupData result = super.finalizeSpawn(level, difficulty, spawnType, spawnData, data);
-        this.wakeFromSit();
+        this.setOrderedToSit(false);
         this.noPhysics = false;
         this.setNoGravity(false);
         MyUtils.clearChaosFlight(this);
@@ -128,6 +126,13 @@ public class Ostrich extends EntityCannonFodder {
             this.noPhysics = false;
             this.setNoGravity(false);
             MyUtils.clearChaosFlight(this);
+        }
+        // Stay put: panic/avoid/wander still path while "sitting" unless we hard-stop
+        if (!this.level().isClientSide && this.isOrderedToSit() && this.getPassengers().isEmpty()) {
+            if (this.getNavigation() != null) {
+                this.getNavigation().stop();
+            }
+            this.setDeltaMovement(this.getDeltaMovement().multiply(0.0, 1.0, 0.0));
         }
         super.tick();
     }
@@ -148,29 +153,42 @@ public class Ostrich extends EntityCannonFodder {
     }
 
     @Override
-    public boolean isOrderedToSit() {
-        return this.nestSitting;
-    }
-
-    @Override
     public void setOrderedToSit(boolean sitting) {
-        this.nestSitting = sitting;
         super.setOrderedToSit(sitting);
-        super.setInSittingPose(sitting);
+        this.setInSittingPose(sitting);
+        if (sitting && this.getNavigation() != null) {
+            this.getNavigation().stop();
+        }
     }
 
     @Override
-    public void setInSittingPose(boolean sitting) {
-        if (sitting && !this.nestSitting) {
-            sitting = false;
-        }
-        super.setInSittingPose(sitting);
+    public boolean isImmobile() {
+        return super.isImmobile()
+                || (this.isOrderedToSit() && this.getPassengers().isEmpty());
     }
 
-    private void wakeFromSit() {
-        this.nestSitting = false;
-        super.setOrderedToSit(false);
-        super.setInSittingPose(false);
+    /** OreSpawn nest materials, plus common dirt/sand tag variants so stay works on modern blocks. */
+    private boolean canNestSitHere() {
+        BlockState below =
+                this.level()
+                        .getBlockState(BlockPos.containing(this.getX(), this.getY() - 0.2, this.getZ()));
+        Block bid = below.getBlock();
+        return bid == Blocks.SAND
+                || bid == Blocks.RED_SAND
+                || bid == Blocks.GRAVEL
+                || bid == Blocks.DIRT
+                || bid == Blocks.COARSE_DIRT
+                || bid == Blocks.ROOTED_DIRT
+                || bid == Blocks.PODZOL
+                || bid == Blocks.MYCELIUM
+                || bid == Blocks.MUD
+                || bid == Blocks.DIRT_PATH
+                || bid == Blocks.FARMLAND
+                || bid == Blocks.GRASS_BLOCK
+                || bid == Blocks.SANDSTONE
+                || bid == Blocks.SMOOTH_SANDSTONE
+                || below.is(net.minecraft.tags.BlockTags.DIRT)
+                || below.is(net.minecraft.tags.BlockTags.SAND);
     }
 
     @Override
@@ -233,7 +251,7 @@ public class Ostrich extends EntityCannonFodder {
             return false;
         }
         if (!this.level().isClientSide) {
-            this.wakeFromSit();
+            this.setOrderedToSit(false);
         }
         return super.hurt(source, amount);
     }
@@ -263,9 +281,9 @@ public class Ostrich extends EntityCannonFodder {
             }
             if (this.isTame()
                     && this.isOwnedBy(par1EntityPlayer)
-                    && this.nestSitting) {
+                    && this.isOrderedToSit()) {
                 if (!this.level().isClientSide) {
-                    this.wakeFromSit();
+                    this.setOrderedToSit(false);
                 }
                 return InteractionResult.sidedSuccess(this.level().isClientSide);
             }
@@ -273,7 +291,7 @@ public class Ostrich extends EntityCannonFodder {
         }
         if (!var2.isEmpty() && super.mobInteract(par1EntityPlayer, hand) == InteractionResult.SUCCESS) {
             if (!this.level().isClientSide) {
-                this.wakeFromSit();
+                this.setOrderedToSit(false);
             }
             return InteractionResult.SUCCESS;
         }
@@ -332,20 +350,13 @@ public class Ostrich extends EntityCannonFodder {
                 && this.isOwnedBy(par1EntityPlayer)
                 && par1EntityPlayer.distanceToSqr(this) < 16.0) {
             if (!this.level().isClientSide) {
-                if (!this.nestSitting) {
-                    Block bid =
-                            this.level()
-                                    .getBlockState(BlockPos.containing(this.getX(), this.getY() - 1.0, this.getZ()))
-                                    .getBlock();
-                    if (bid == Blocks.SAND
-                            || bid == Blocks.GRAVEL
-                            || bid == Blocks.DIRT
-                            || bid == Blocks.FARMLAND
-                            || bid == Blocks.GRASS_BLOCK) {
+                if (!this.isOrderedToSit()) {
+                    // Stay still on nest-like ground (OreSpawn) — expanded for 1.20 blocks
+                    if (this.canNestSitHere()) {
                         this.setOrderedToSit(true);
                     }
                 } else {
-                    this.wakeFromSit();
+                    this.setOrderedToSit(false);
                 }
             }
             return InteractionResult.SUCCESS;
@@ -370,11 +381,8 @@ public class Ostrich extends EntityCannonFodder {
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
-        if (tag.contains("Sitting") && tag.getBoolean("Sitting") && this.isTame()) {
-            this.nestSitting = true;
-        } else {
-            this.wakeFromSit();
-        }
+        // TamableAnimal already loads Sitting — keep pose in sync
+        this.setInSittingPose(this.isOrderedToSit());
     }
 
     @Override
@@ -483,7 +491,7 @@ public class Ostrich extends EntityCannonFodder {
 
     public boolean isBreedingItem(ItemStack par1ItemStack) {
         Item crystal =
-                ForgeRegistries.ITEMS.getValue(ResourceLocation.fromNamespaceAndPath("chaospersists", "crystalapple"));
+                ForgeRegistries.ITEMS.getValue(new ResourceLocation("chaospersists", "crystalapple"));
         if (crystal == null) {
             crystal = ChaosPersists.MyCrystalApple;
         }

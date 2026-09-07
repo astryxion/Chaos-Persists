@@ -9,7 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderTshirt extends MobRenderer<Tshirt, ModelTshirt> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/tshirttexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/tshirttexture.png");
     private final float scale;
 
     public RenderTshirt(EntityRendererProvider.Context context, ModelTshirt model, float shadow, float scale) {

@@ -11,11 +11,11 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderVelocityRaptor extends MobRenderer<VelocityRaptor, ModelVelocityRaptor> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/velocityraptor.png");
+            new ResourceLocation("chaospersists", "textures/entity/velocityraptor.png");
     private static final ResourceLocation TEXTURE2 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/velocityraptor2.png");
+            new ResourceLocation("chaospersists", "textures/entity/velocityraptor2.png");
     private static final ResourceLocation TEXTURE3 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/velocityraptor3.png");
+            new ResourceLocation("chaospersists", "textures/entity/velocityraptor3.png");
     private final float scale;
 
     public RenderVelocityRaptor(

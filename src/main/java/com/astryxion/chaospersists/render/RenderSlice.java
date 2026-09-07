@@ -31,7 +31,7 @@ import net.minecraft.world.item.ItemStack;
 public class RenderSlice implements IItemRenderer {
     protected ModelSlice modelSlice = new ModelSlice();
     private static final ResourceLocation texture =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/slicetexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/slicetexture.png");
 
     @Override
     public boolean handleRenderType(ItemStack item, ItemRenderType type) {

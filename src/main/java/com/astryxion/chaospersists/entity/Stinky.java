@@ -1,6 +1,7 @@
 package com.astryxion.chaospersists.entity;
 
 import com.astryxion.chaospersists.util.MyUtils;
+import com.astryxion.chaospersists.util.PetCombatHelper;
 
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.core.ChaosSounds;
@@ -181,6 +182,32 @@ public class Stinky extends TamableAnimal {
         return 100;
     }
 
+    /** Keep sitting pose in sync with stay order (1.7.10 EntityTameable.setSitting parity). */
+    @Override
+    public void setOrderedToSit(boolean orderedToSit) {
+        super.setOrderedToSit(orderedToSit);
+        this.setInSittingPose(orderedToSit);
+        if (orderedToSit) {
+            if (this.getNavigation() != null) {
+                this.getNavigation().stop();
+            }
+            if (!this.level().isClientSide) {
+                PetCombatHelper.onPetSit(this);
+            }
+            this.owner_flying = 0;
+            this.setActivity(1);
+            this.setNoGravity(false);
+            this.noPhysics = false;
+            MyUtils.clearChaosFlight(this);
+            Vec3 dm = this.getDeltaMovement();
+            this.setDeltaMovement(dm.x, Math.min(dm.y, 0.0), dm.z);
+        }
+    }
+
+    private boolean isSittingNow() {
+        return this.isOrderedToSit() || this.isInSittingPose();
+    }
+
     @Override
     public InteractionResult mobInteract(Player par1EntityPlayer, InteractionHand hand) {
         ItemStack var2 = par1EntityPlayer.getItemInHand(hand);
@@ -240,15 +267,10 @@ public class Stinky extends TamableAnimal {
             return InteractionResult.SUCCESS;
         }
         if (this.isTame()
-                && var2.isEmpty()
                 && par1EntityPlayer.distanceToSqr(this) < 16.0
                 && this.isOwnedBy(par1EntityPlayer)) {
-            if (!this.isInSittingPose()) {
-                this.setOrderedToSit(true);
-                this.setActivity(1);
-            } else {
-                this.setOrderedToSit(false);
-            }
+            // OreSpawn 1.7.10 setSitting toggled one flag; on 1.20 ordered-sit and pose are separate.
+            this.setOrderedToSit(!this.isOrderedToSit());
             return InteractionResult.SUCCESS;
         }
         return super.mobInteract(par1EntityPlayer, hand);
@@ -298,8 +320,9 @@ public class Stinky extends TamableAnimal {
     protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
         super.dropCustomDeathLoot(source, looting, recentlyHit);
         if (this.isTame()) {
-            int var3 = this.getRandom().nextInt(4);
-            for (int var4 = 0; var4 < ++var3; ++var4) {
+            // Was `var4 < ++var3` (OreSpawn copy) — increments every check and never ends.
+            int var3 = this.getRandom().nextInt(4) + 1;
+            for (int var4 = 0; var4 < var3; ++var4) {
                 this.spawnAtLocation(Items.BEEF);
             }
         }
@@ -364,7 +387,7 @@ public class Stinky extends TamableAnimal {
             return false;
         }
         boolean ret = super.hurt(par1DamageSource, par2);
-        if (ret) {
+        if (ret && !this.isDeadOrDying()) {
             this.setOrderedToSit(false);
             this.setActivity(2);
         }
@@ -409,7 +432,28 @@ public class Stinky extends TamableAnimal {
     }
 
     @Override
+    public void die(DamageSource source) {
+        this.noPhysics = false;
+        this.setNoGravity(false);
+        MyUtils.clearChaosFlight(this);
+        this.setActivity(1);
+        if (this.getNavigation() != null) {
+            this.getNavigation().stop();
+        }
+        super.die(source);
+    }
+
+    @Override
     public void tick() {
+        if (this.isDeadOrDying()) {
+            this.noPhysics = false;
+            if (!this.level().isClientSide) {
+                this.setNoGravity(false);
+            }
+            MyUtils.clearChaosFlight(this);
+            super.tick();
+            return;
+        }
         super.tick();
         if (this.level().isClientSide) {
             return;
@@ -482,6 +526,15 @@ public class Stinky extends TamableAnimal {
 
     @Override
     public void aiStep() {
+        if (this.isDeadOrDying()) {
+            this.noPhysics = false;
+            if (!this.level().isClientSide) {
+                this.setNoGravity(false);
+            }
+            MyUtils.clearChaosFlight(this);
+            super.aiStep();
+            return;
+        }
         this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue((double) this.moveSpeed);
         super.aiStep();
         if (this.isInWater()) {
@@ -620,6 +673,7 @@ public class Stinky extends TamableAnimal {
         if (this.isDeadOrDying()) {
             return;
         }
+        PetCombatHelper.tickPetCombat(this);
 
         if (this.getRandom().nextInt(200) == 1) {
             this.setLastHurtByMob(null);
@@ -633,7 +687,7 @@ public class Stinky extends TamableAnimal {
             this.heal(1.0f);
         }
 
-        if (!this.isInSittingPose()) {
+        if (!this.isSittingNow()) {
             if (this.activity == 0) {
                 this.setActivity(1);
             }
@@ -667,6 +721,9 @@ public class Stinky extends TamableAnimal {
             // Sitting: drop chaos flight so mid-air sit falls (OreSpawn gravity).
             MyUtils.clearChaosFlight(this);
             this.setNoGravity(false);
+            if (this.getNavigation() != null) {
+                this.getNavigation().stop();
+            }
         }
     }
 
@@ -700,16 +757,10 @@ public class Stinky extends TamableAnimal {
                 do_new = true;
             }
         }
-        e = this.getTarget();
-        if (e != null && !e.isAlive()) {
-            this.setTarget(null);
-            e = null;
-        }
-        if (e == null && this.level().getDifficulty() != Difficulty.PEACEFUL) {
-            e = this.findSomethingToAttack();
-            if (e != null) {
-                this.setTarget(e);
-            }
+        LivingEntity prior = this.getTarget();
+        e = PetCombatHelper.resolveCombatTarget(this, prior, this::findSomethingToAttack);
+        if (e != prior) {
+            this.setTarget(e);
         }
         if (this.getRandom().nextInt(7) == 1
                 && this.level().getDifficulty() != Difficulty.PEACEFUL
@@ -865,7 +916,10 @@ public class Stinky extends TamableAnimal {
         if (par1EntityLiving instanceof Mothra) {
             return true;
         }
-        if (par1EntityLiving instanceof Monster) {
+        if (this.isTame() && !PetCombatHelper.wantsPetToAttack(this, par1EntityLiving)) {
+            return false;
+        }
+        if (PetCombatHelper.isAutoHostileTarget(par1EntityLiving)) {
             return true;
         }
         return false;

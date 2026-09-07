@@ -373,7 +373,7 @@ public class EnderReaper extends Monster {
                         continue;
                     }
                     ResourceLocation reaperId =
-                            ResourceLocation.fromNamespaceAndPath("chaospersists", "ender_reaper");
+                            new ResourceLocation("chaospersists", "ender_reaper");
                     ResourceLocation norm = SpawnerFixHelper.normalizeSpawnerEntityId(id);
                     if (SpawnerFixHelper.entityIdsMatchForSpawner(norm, reaperId)
                             || "Ender Reaper".equals(id.getPath())) {
@@ -415,7 +415,7 @@ public class EnderReaper extends Monster {
                         continue;
                     }
                     ResourceLocation reaperId =
-                            ResourceLocation.fromNamespaceAndPath("chaospersists", "ender_reaper");
+                            new ResourceLocation("chaospersists", "ender_reaper");
                     ResourceLocation norm = SpawnerFixHelper.normalizeSpawnerEntityId(id);
                     if (SpawnerFixHelper.entityIdsMatchForSpawner(norm, reaperId)
                             || "Ender Reaper".equals(id.getPath())) {

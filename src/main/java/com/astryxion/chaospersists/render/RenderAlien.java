@@ -8,7 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderAlien extends MobRenderer<Alien, ModelAlien> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/myalien.png");
+            new ResourceLocation("chaospersists", "textures/entity/myalien.png");
     private final float scale;
 
     public RenderAlien(EntityRendererProvider.Context context, ModelAlien model, float shadow, float scale) {

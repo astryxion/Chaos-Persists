@@ -10,9 +10,9 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderTheQueen extends MobRenderer<TheQueen, ModelTheQueen> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/thequeentexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/thequeentexture.png");
     private static final ResourceLocation TEXTURE_HAPPY =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/thequeentexture2.png");
+            new ResourceLocation("chaospersists", "textures/entity/thequeentexture2.png");
     private final float scale;
 
     public RenderTheQueen(EntityRendererProvider.Context context, ModelTheQueen model, float shadow, float scale) {

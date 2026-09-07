@@ -98,7 +98,7 @@ public class RubyBirdDungeon {
         if (spawnerEntity instanceof SpawnerBlockEntity spawner) {
             EntityType<?> rubyBird =
                     ForgeRegistries.ENTITY_TYPES.getValue(
-                            ResourceLocation.fromNamespaceAndPath("chaospersists", "ruby_bird"));
+                            new ResourceLocation("chaospersists", "ruby_bird"));
             if (rubyBird != null) {
                 spawner.setEntityId(rubyBird, level.getRandom());
             }

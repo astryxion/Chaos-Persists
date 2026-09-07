@@ -9,7 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderCrab extends MobRenderer<Crab, ModelCrab> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/robotcrabtexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/robotcrabtexture.png");
     private final float scale;
 
     public RenderCrab(EntityRendererProvider.Context context, ModelCrab model, float shadow, float scale) {

@@ -9,7 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderGhost extends MobRenderer<Ghost, ModelGhost> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/ghosttexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/ghosttexture.png");
     private final float scale;
 
     public RenderGhost(EntityRendererProvider.Context context, ModelGhost model, float shadow, float scale) {

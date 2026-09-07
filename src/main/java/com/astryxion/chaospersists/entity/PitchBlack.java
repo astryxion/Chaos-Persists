@@ -20,6 +20,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
@@ -43,6 +44,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.SpawnerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
@@ -545,10 +547,16 @@ public class PitchBlack extends Monster {
 
     @Override
     public boolean hurt(DamageSource source, float amount) {
-        if (this.damageTicker > 0) {
+        if (this.isInvulnerableTo(source)) {
             return false;
         }
-        this.damageTicker = 20;
+        // /kill and other absolute damage must pierce i-frames
+        if (!source.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
+            if (this.damageTicker > 0) {
+                return false;
+            }
+            this.damageTicker = 20;
+        }
         boolean ret = super.hurt(source, amount);
         Entity e = source.getEntity();
         if (e != null) {
@@ -686,8 +694,16 @@ public class PitchBlack extends Monster {
                 for (int i = -2; i <= 6; ++i) {
                     BlockPos check = pos.offset(j, i, k);
                     if (MyUtils.getBlockStateForSpawnRules(level, check).getBlock() == Blocks.SPAWNER) {
-                        float t = 1.0f;
-                        return true;
+                        if (level instanceof Level world) {
+                            BlockEntity be = world.getBlockEntity(check);
+                            if (be instanceof SpawnerBlockEntity spawner) {
+                                ResourceLocation id =
+                                        SpawnerFixHelper.getMobSpawnerEntityIdFromBlockEntity(spawner);
+                                if (id != null && "nightmare".equalsIgnoreCase(id.getPath())) {
+                                    return true;
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -718,12 +734,22 @@ public class PitchBlack extends Monster {
         for (int k = -5; k <= 5; ++k) {
             for (int j = -5; j <= 5; ++j) {
                 for (int i = -2; i <= 6; ++i) {
-                    if (MyUtils.getBlockStateForSpawnRules(level, pos.offset(j, i, k)).getBlock() == Blocks.SPAWNER) {
-                        if (this.getPitchBlackScale() > 1.0f) {
-                            this.setPitchBlackScale(1.0f);
+                    BlockPos check = pos.offset(j, i, k);
+                    if (MyUtils.getBlockStateForSpawnRules(level, check).getBlock() == Blocks.SPAWNER) {
+                        if (level instanceof Level world) {
+                            BlockEntity be = world.getBlockEntity(check);
+                            if (be instanceof SpawnerBlockEntity spawner) {
+                                ResourceLocation id =
+                                        SpawnerFixHelper.getMobSpawnerEntityIdFromBlockEntity(spawner);
+                                if (id != null && "nightmare".equalsIgnoreCase(id.getPath())) {
+                                    if (this.getPitchBlackScale() > 1.0f) {
+                                        this.setPitchBlackScale(1.0f);
+                                    }
+                                    this.setSpawnedFromSpawner();
+                                    return true;
+                                }
+                            }
                         }
-                        this.setSpawnedFromSpawner();
-                        return true;
                     }
                 }
             }

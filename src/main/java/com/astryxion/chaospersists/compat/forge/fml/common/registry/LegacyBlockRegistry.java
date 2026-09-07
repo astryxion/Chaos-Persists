@@ -12,7 +12,7 @@ public final class LegacyBlockRegistry {
   private LegacyBlockRegistry() {}
 
   public static void track(Block block, String modId, String path) {
-    PENDING_KEYS.put(block, ResourceLocation.fromNamespaceAndPath(modId, path));
+    PENDING_KEYS.put(block, new ResourceLocation(modId, path));
   }
 
   static ResourceLocation getPendingKey(Block block) {

@@ -9,7 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderGammaMetroid extends MobRenderer<GammaMetroid, ModelGammaMetroid> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/gammametroid.png");
+            new ResourceLocation("chaospersists", "textures/entity/gammametroid.png");
     private final float scale;
 
     public RenderGammaMetroid(

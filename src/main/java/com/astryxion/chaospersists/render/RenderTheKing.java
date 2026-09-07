@@ -11,7 +11,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderTheKing extends MobRenderer<TheKing, ModelTheKing> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/thekingtexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/thekingtexture.png");
     private final float scale;
 
     public RenderTheKing(EntityRendererProvider.Context context, ModelTheKing model, float shadow, float scale) {

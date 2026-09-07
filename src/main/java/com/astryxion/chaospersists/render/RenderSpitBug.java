@@ -8,7 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderSpitBug extends MobRenderer<SpitBug, ModelSpitBug> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/blisterbug.png");
+            new ResourceLocation("chaospersists", "textures/entity/blisterbug.png");
     private final float scale;
 
     public RenderSpitBug(

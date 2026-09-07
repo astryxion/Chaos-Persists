@@ -8,7 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderHydrolisc extends MobRenderer<Hydrolisc, ModelHydrolisc> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/hydrolisc.png");
+            new ResourceLocation("chaospersists", "textures/entity/hydrolisc.png");
     private final float scale;
 
     public RenderHydrolisc(EntityRendererProvider.Context context, ModelHydrolisc model, float shadow, float scale) {

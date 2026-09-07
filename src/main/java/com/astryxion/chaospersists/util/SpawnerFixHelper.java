@@ -32,7 +32,7 @@ import net.minecraftforge.registries.ForgeRegistries;
  */
 public final class SpawnerFixHelper {
     private static final ResourceLocation FALLBACK =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "ant");
+            new ResourceLocation("chaospersists", "ant");
     private static final Map<String, String> LEGACY_PATH_ALIASES = new HashMap<String, String>();
 
     static {
@@ -150,7 +150,7 @@ public final class SpawnerFixHelper {
 
         return ForgeRegistries.ENTITY_TYPES.containsKey(FALLBACK)
                 ? FALLBACK
-                : ResourceLocation.fromNamespaceAndPath("minecraft", "pig");
+                : new ResourceLocation("minecraft", "pig");
     }
 
     /**
@@ -181,14 +181,14 @@ public final class SpawnerFixHelper {
         }
         return ForgeRegistries.ENTITY_TYPES.containsKey(FALLBACK)
                 ? FALLBACK
-                : ResourceLocation.fromNamespaceAndPath("minecraft", "pig");
+                : new ResourceLocation("minecraft", "pig");
     }
 
     private static ResourceLocation tryResolve(String namespace, String path) {
         if (path == null || path.isEmpty()) {
             return null;
         }
-        ResourceLocation id = ResourceLocation.fromNamespaceAndPath(namespace, path);
+        ResourceLocation id = new ResourceLocation(namespace, path);
         return ForgeRegistries.ENTITY_TYPES.containsKey(id) ? id : null;
     }
 

@@ -107,11 +107,11 @@ public final class BigWeaponModelHandler {
     }
 
     private static Item item(String path) {
-        return BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(ChaosPersists.MODID, path));
+        return BuiltInRegistries.ITEM.get(new ResourceLocation(ChaosPersists.MODID, path));
     }
 
     private static ResourceLocation texture(String file) {
-        return ResourceLocation.fromNamespaceAndPath(ChaosPersists.MODID, "textures/entity/" + file);
+        return new ResourceLocation(ChaosPersists.MODID, "textures/entity/" + file);
     }
 
     private static void wrapTeisrHandItem(

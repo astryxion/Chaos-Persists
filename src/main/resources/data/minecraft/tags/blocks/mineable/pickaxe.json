@@ -27,6 +27,7 @@
     "chaospersists:redanttroll",
     "chaospersists:termitetroll",
     "chaospersists:deepslate_redanttroll",
-    "chaospersists:deepslate_termitetroll"
+    "chaospersists:deepslate_termitetroll",
+    "chaospersists:blockteleport"
   ]
 }

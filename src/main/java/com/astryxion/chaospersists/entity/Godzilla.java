@@ -566,13 +566,13 @@ public class Godzilla extends Monster {
 
     private static ResourceLocation resolveSpawnId(String par1) {
         if (par1.contains(":")) {
-            return ResourceLocation.parse(par1);
+            return new ResourceLocation(par1);
         }
         return switch (par1) {
             case "GodzillaHead" ->
-                    ResourceLocation.fromNamespaceAndPath("chaospersists", "mobzilla_head");
+                    new ResourceLocation("chaospersists", "mobzilla_head");
             default ->
-                    ResourceLocation.fromNamespaceAndPath(
+                    new ResourceLocation(
                             "chaospersists", par1.toLowerCase(Locale.ROOT).replace(' ', '_'));
         };
     }
@@ -781,7 +781,7 @@ public class Godzilla extends Monster {
     private ItemStack dropItemRandMod(String path, int par1) {
         Item item =
                 ForgeRegistries.ITEMS.getValue(
-                        ResourceLocation.fromNamespaceAndPath("chaospersists", path));
+                        new ResourceLocation("chaospersists", path));
         if (item == null) {
             return null;
         }

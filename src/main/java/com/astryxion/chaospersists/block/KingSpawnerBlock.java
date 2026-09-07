@@ -100,7 +100,7 @@ public class KingSpawnerBlock extends Block {
 
     public static Entity spawnTheKing(Level par0World, double par2, double par4, double par6) {
         EntityType<?> type =
-                ForgeRegistries.ENTITY_TYPES.getValue(ResourceLocation.fromNamespaceAndPath("chaospersists", "the_king"));
+                ForgeRegistries.ENTITY_TYPES.getValue(new ResourceLocation("chaospersists", "the_king"));
         if (type == null) {
             return null;
         }

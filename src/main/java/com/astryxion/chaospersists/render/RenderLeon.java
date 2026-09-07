@@ -8,7 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderLeon extends MobRenderer<Leon, ModelLeon> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/leon.png");
+            new ResourceLocation("chaospersists", "textures/entity/leon.png");
     private final float scale;
 
     public RenderLeon(EntityRendererProvider.Context context, ModelLeon model, float shadow, float scale) {

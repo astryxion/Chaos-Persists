@@ -16,29 +16,29 @@ import org.joml.Matrix4f;
 
 public class RenderThrownRock extends EntityRenderer<EntityThrownRock> {
     private static final ResourceLocation TEXTURE1 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/item/rocksmall.png");
+            new ResourceLocation("chaospersists", "textures/item/rocksmall.png");
     private static final ResourceLocation TEXTURE2 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/item/rock.png");
+            new ResourceLocation("chaospersists", "textures/item/rock.png");
     private static final ResourceLocation TEXTURE3 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/item/rockred.png");
+            new ResourceLocation("chaospersists", "textures/item/rockred.png");
     private static final ResourceLocation TEXTURE4 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/item/rockgreen.png");
+            new ResourceLocation("chaospersists", "textures/item/rockgreen.png");
     private static final ResourceLocation TEXTURE5 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/item/rockblue.png");
+            new ResourceLocation("chaospersists", "textures/item/rockblue.png");
     private static final ResourceLocation TEXTURE6 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/item/rockpurple.png");
+            new ResourceLocation("chaospersists", "textures/item/rockpurple.png");
     private static final ResourceLocation TEXTURE7 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/item/rockspikey.png");
+            new ResourceLocation("chaospersists", "textures/item/rockspikey.png");
     private static final ResourceLocation TEXTURE8 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/item/rocktnt.png");
+            new ResourceLocation("chaospersists", "textures/item/rocktnt.png");
     private static final ResourceLocation TEXTURE9 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/item/rockcrystalred.png");
+            new ResourceLocation("chaospersists", "textures/item/rockcrystalred.png");
     private static final ResourceLocation TEXTURE10 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/item/rockcrystalgreen.png");
+            new ResourceLocation("chaospersists", "textures/item/rockcrystalgreen.png");
     private static final ResourceLocation TEXTURE11 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/item/rockcrystalblue.png");
+            new ResourceLocation("chaospersists", "textures/item/rockcrystalblue.png");
     private static final ResourceLocation TEXTURE12 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/item/rockcrystaltnt.png");
+            new ResourceLocation("chaospersists", "textures/item/rockcrystaltnt.png");
 
     public RenderThrownRock(EntityRendererProvider.Context context) {
         super(context);

@@ -14,7 +14,7 @@ import net.minecraft.world.item.ItemStack;
 public class RenderRoyal implements IItemRenderer {
     protected ModelSlice modelSlice = new ModelSlice();
     private static final ResourceLocation texture =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/royaltexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/royaltexture.png");
 
     @Override
     public boolean handleRenderType(ItemStack item, ItemRenderType type) {

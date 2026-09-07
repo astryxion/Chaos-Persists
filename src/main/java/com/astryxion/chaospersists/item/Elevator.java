@@ -55,25 +55,25 @@ public class Elevator extends Mob {
             SynchedEntityData.defineId(Elevator.class, EntityDataSerializers.BOOLEAN);
 
     private static final ResourceLocation TEXTURE1 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/elevator1.png");
+            new ResourceLocation("chaospersists", "textures/entity/elevator1.png");
     private static final ResourceLocation TEXTURE2 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/elevator2.png");
+            new ResourceLocation("chaospersists", "textures/entity/elevator2.png");
     private static final ResourceLocation TEXTURE3 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/elevator3.png");
+            new ResourceLocation("chaospersists", "textures/entity/elevator3.png");
     private static final ResourceLocation TEXTURE4 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/elevator4.png");
+            new ResourceLocation("chaospersists", "textures/entity/elevator4.png");
     private static final ResourceLocation TEXTURE5 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/elevator5.png");
+            new ResourceLocation("chaospersists", "textures/entity/elevator5.png");
     private static final ResourceLocation TEXTURE6 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/elevator6.png");
+            new ResourceLocation("chaospersists", "textures/entity/elevator6.png");
     private static final ResourceLocation TEXTURE7 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/elevator7.png");
+            new ResourceLocation("chaospersists", "textures/entity/elevator7.png");
     private static final ResourceLocation TEXTURE8 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/elevator8.png");
+            new ResourceLocation("chaospersists", "textures/entity/elevator8.png");
     private static final ResourceLocation TEXTURE9 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/elevator9.png");
+            new ResourceLocation("chaospersists", "textures/entity/elevator9.png");
     private static final ResourceLocation TEXTURE10 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/elevator10.png");
+            new ResourceLocation("chaospersists", "textures/entity/elevator10.png");
 
     private int exploding = 0;
     private int color = 1;

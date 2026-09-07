@@ -212,8 +212,10 @@ public class BandP extends Monster {
             LivingEntity e = this.findSomethingToAttack();
             if (e != null) {
                 this.setTarget(e);
-                if (this.distanceToSqr(e) < 9.0) {
+                double reach = 3.0 + (double) (this.getBbWidth() + e.getBbWidth()) * 0.5;
+                if (this.distanceToSqr(e) < reach * reach) {
                     MyUtils.faceEntity(this, e, 10.0f, 10.0f);
+                    this.getNavigation().stop();
                     this.doHurtTarget(e);
                     if (e instanceof Player p) {
                         int k = -1;
@@ -268,7 +270,9 @@ public class BandP extends Monster {
         if (!par1EntityLiving.isAlive()) {
             return false;
         }
-        if (!this.getSensing().hasLineOfSight(par1EntityLiving)) {
+        // Point-blank: skip LOS so criminals can still hit when pressed against the player
+        if (this.distanceToSqr(par1EntityLiving) > 4.0
+                && !this.getSensing().hasLineOfSight(par1EntityLiving)) {
             return false;
         }
         if (par1EntityLiving instanceof Player p) {

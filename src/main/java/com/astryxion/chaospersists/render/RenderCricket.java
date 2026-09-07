@@ -9,7 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderCricket extends MobRenderer<Cricket, ModelCricket> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/crickettexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/crickettexture.png");
     private final float scale;
 
     public RenderCricket(EntityRendererProvider.Context context, ModelCricket model, float shadow, float scale) {

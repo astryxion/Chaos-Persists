@@ -9,7 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderRat extends MobRenderer<Rat, ModelRat> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/rattexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/rattexture.png");
     private final float scale;
 
     public RenderRat(EntityRendererProvider.Context context, ModelRat model, float shadow, float scale) {

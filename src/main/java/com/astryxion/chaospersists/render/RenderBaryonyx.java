@@ -8,7 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderBaryonyx extends MobRenderer<Baryonyx, ModelBaryonyx> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/baryonyx.png");
+            new ResourceLocation("chaospersists", "textures/entity/baryonyx.png");
     private final float scale;
 
     public RenderBaryonyx(EntityRendererProvider.Context context, ModelBaryonyx model, float shadow, float scale) {

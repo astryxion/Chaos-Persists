@@ -416,6 +416,7 @@ import com.astryxion.chaospersists.block.BlockExperienceLeaves;
 import com.astryxion.chaospersists.item.ExperienceCatcher;
 import com.astryxion.chaospersists.item.ItemExperienceTreeSeed;
 import com.astryxion.chaospersists.block.BlockExperiencePlant;
+import com.astryxion.chaospersists.util.ChaosFlowerPots;
 import com.astryxion.chaospersists.util.MyBlockFlower;
 import com.astryxion.chaospersists.block.BlockScaryLeaves;
 import com.astryxion.chaospersists.block.BlockCrystalLeaves;
@@ -590,18 +591,18 @@ public class ChaosPersists
   public static final String MODID = "chaospersists";
 
   private static ItemStack creativeTabIconItem(String itemPath, Item fallback) {
-    Item item = BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, itemPath));
+    Item item = BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, itemPath));
     return new ItemStack(item != null && item != Items.AIR ? item : fallback);
   }
 
   private static ItemStack creativeTabIconBlock(String blockPath, Item fallback) {
-    Block block = BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, blockPath));
+    Block block = BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, blockPath));
     return block != null ? new ItemStack(block) : new ItemStack(fallback);
   }
 
   /** Keys for {@link CreativeModeTab.Builder#withTabsBefore} — matches 1.12 tab page layout. */
   private static ResourceKey<CreativeModeTab> chaosTabKey(String path) {
-    return ResourceKey.create(Registries.CREATIVE_MODE_TAB, ResourceLocation.fromNamespaceAndPath(MODID, path));
+    return ResourceKey.create(Registries.CREATIVE_MODE_TAB, new ResourceLocation(MODID, path));
   }
 
   public static final DeferredRegister<Block> BLOCKS =
@@ -704,7 +705,7 @@ public class ChaosPersists
               BlockEntityType.Builder.of(
                       TileEntityCrystalFurnace::new,
                       BuiltInRegistries.BLOCK
-                          .getOptional(ResourceLocation.fromNamespaceAndPath(MODID, "crystalfurnace"))
+                          .getOptional(new ResourceLocation(MODID, "crystalfurnace"))
                           .orElse(Blocks.FURNACE))
                   .build(null));
 
@@ -962,7 +963,7 @@ public class ChaosPersists
   public static final RegistryObject<EntityType<CrystalCow>> ENTITY_TYPE_CRYSTAL_COW = ENTITY_TYPES.register("crystal_apple_cow",
       () -> EntityType.Builder.<CrystalCow>of(CrystalCow::new, MobCategory.CREATURE).sized(0.6f, 1.4f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("crystal_apple_cow"));
   public static final RegistryObject<EntityType<Leon>> ENTITY_TYPE_LEONOPTERYX = ENTITY_TYPES.register("leonopteryx",
-      () -> EntityType.Builder.<Leon>of(Leon::new, MobCategory.MONSTER).sized(3.5f, 8.25f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("leonopteryx"));
+      () -> EntityType.Builder.<Leon>of(Leon::new, MobCategory.MONSTER).sized(3.5f, 8.25f).clientTrackingRange(64).updateInterval(3).setShouldReceiveVelocityUpdates(true).build("leonopteryx"));
   public static final RegistryObject<EntityType<Hammerhead>> ENTITY_TYPE_HAMMERHEAD = ENTITY_TYPES.register("hammerhead",
       () -> EntityType.Builder.<Hammerhead>of(Hammerhead::new, MobCategory.MONSTER).sized(3.0f, 5.0f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("hammerhead"));
   public static final RegistryObject<EntityType<RubberDucky>> ENTITY_TYPE_RUBBER_DUCKY = ENTITY_TYPES.register("rubber_ducky",
@@ -1210,6 +1211,7 @@ private static void registerAllCritterCages() {
     BLOCKS.register("flower_blue", MyBlockFlower::new);
     BLOCKS.register("flower_pink", MyBlockFlower::new);
     BLOCKS.register("flower_scary", MyBlockFlower::new);
+    ChaosFlowerPots.registerBlocks(BLOCKS);
     BLOCKS.register("leaves_apple", BlockAppleLeaves::new);
     BLOCKS.register("leaves_cherry", BlockScaryLeaves::new);
     BLOCKS.register("leaves_experience", BlockExperienceLeaves::new);
@@ -1393,19 +1395,19 @@ private static void registerAllCritterCages() {
         () ->
             new ItemPizza(
                 (BlockPizza)
-                    BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "pizza"))));
+                    BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "pizza"))));
     ITEMS.register(
         "ducttape",
         () ->
             new ItemDuctTape(
                 (BlockDuctTape)
-                    BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "ducttape"))));
+                    BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "ducttape"))));
     ITEMS.register(
         "island",
         () ->
             new IslandBlock.ItemIslandBlock(
                 (IslandBlock)
-                    BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "island")),
+                    BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "island")),
                 new Item.Properties()));
     ITEMS.register("acid", () -> new ItemAcid(BaseItemID + 247));
     ITEMS.register("antrobotkit", () -> new ItemSpiderRobotKit(BaseItemID + 473));
@@ -1417,7 +1419,7 @@ private static void registerAllCritterCages() {
             new ItemButterflySeed(
                 (BlockButterflyPlant)
                     BuiltInRegistries.BLOCK.get(
-                        ResourceLocation.fromNamespaceAndPath(MODID, "butterfly_plant")),
+                        new ResourceLocation(MODID, "butterfly_plant")),
                 Blocks.FARMLAND));
     ITEMS.register("cherrytree_seed", () -> new ItemAppleSeed(BaseItemID + 217));
     ITEMS.register(
@@ -1428,7 +1430,7 @@ private static void registerAllCritterCages() {
                 0.75F,
                 (BlockCorn)
                     BuiltInRegistries.BLOCK.get(
-                        ResourceLocation.fromNamespaceAndPath(MODID, "corn_plant0")),
+                        new ResourceLocation(MODID, "corn_plant0")),
                 Blocks.FARMLAND));
     ITEMS.register("creeperlauncher", () -> new ItemCreeperLauncher(BaseItemID + 252));
     ITEMS.register("crystalsticks", () -> new ItemCrystalSticks(BaseItemID + 254));
@@ -1441,7 +1443,7 @@ private static void registerAllCritterCages() {
             new ItemFireflySeed(
                 (BlockFireflyPlant)
                     BuiltInRegistries.BLOCK.get(
-                        ResourceLocation.fromNamespaceAndPath(MODID, "firefly_plant")),
+                        new ResourceLocation(MODID, "firefly_plant")),
                 Blocks.FARMLAND));
     ITEMS.register("greenfish", () -> new ItemGenericFish(3, 0.5F, false));
     ITEMS.register("greyfish", () -> new ItemGenericFish(5, 0.5F, false));
@@ -1458,7 +1460,7 @@ private static void registerAllCritterCages() {
                 0.45F,
                 (BlockLettuce)
                     BuiltInRegistries.BLOCK.get(
-                        ResourceLocation.fromNamespaceAndPath(MODID, "lettuce_0")),
+                        new ResourceLocation(MODID, "lettuce_0")),
                 Blocks.FARMLAND));
     ITEMS.register("magicapple", () -> new ItemMagicApple(BaseItemID + 236));
     ITEMS.register("minersdream", () -> new ItemMinersDream(BaseItemID + 237));
@@ -1468,7 +1470,7 @@ private static void registerAllCritterCages() {
             new ItemMosquitoSeed(
                 (BlockMosquitoPlant)
                     BuiltInRegistries.BLOCK.get(
-                        ResourceLocation.fromNamespaceAndPath(MODID, "mosquito_plant")),
+                        new ResourceLocation(MODID, "mosquito_plant")),
                 Blocks.FARMLAND));
     ITEMS.register(
         "moth_seed",
@@ -1476,7 +1478,7 @@ private static void registerAllCritterCages() {
             new ItemMothSeed(
                 (BlockMothPlant)
                     BuiltInRegistries.BLOCK.get(
-                        ResourceLocation.fromNamespaceAndPath(MODID, "moth_plant")),
+                        new ResourceLocation(MODID, "moth_plant")),
                 Blocks.FARMLAND));
     ITEMS.register("netherlost", () -> new ItemNetherLost(BaseItemID + 253));
     ITEMS.register("peachtree_seed", () -> new ItemAppleSeed(BaseItemID + 218));
@@ -1489,10 +1491,10 @@ private static void registerAllCritterCages() {
                 0.85F,
                 (BlockQuinoa)
                     BuiltInRegistries.BLOCK.get(
-                        ResourceLocation.fromNamespaceAndPath(MODID, "quinoa_0")),
+                        new ResourceLocation(MODID, "quinoa_0")),
                 (CrystalGrass)
                     BuiltInRegistries.BLOCK.get(
-                        ResourceLocation.fromNamespaceAndPath(MODID, "crystalgrass"))));
+                        new ResourceLocation(MODID, "crystalgrass"))));
     ITEMS.register(
         "radish",
         () ->
@@ -1501,7 +1503,7 @@ private static void registerAllCritterCages() {
                 0.45F,
                 (BlockRadish)
                     BuiltInRegistries.BLOCK.get(
-                        ResourceLocation.fromNamespaceAndPath(MODID, "radish_plant")),
+                        new ResourceLocation(MODID, "radish_plant")),
                 Blocks.FARMLAND));
     ITEMS.register("randomdungeon", () -> new ItemRandomDungeon(BaseItemID + 421));
     ITEMS.register("raygun", () -> new ItemRayGun(BaseItemID + 243));
@@ -1513,10 +1515,10 @@ private static void registerAllCritterCages() {
                 0.65F,
                 (BlockRice)
                     BuiltInRegistries.BLOCK.get(
-                        ResourceLocation.fromNamespaceAndPath(MODID, "rice_plant")),
+                        new ResourceLocation(MODID, "rice_plant")),
                 (CrystalGrass)
                     BuiltInRegistries.BLOCK.get(
-                        ResourceLocation.fromNamespaceAndPath(MODID, "crystalgrass"))));
+                        new ResourceLocation(MODID, "crystalgrass"))));
     ITEMS.register("rock", () -> new ItemRock(BaseItemID + 435));
     ITEMS.register("rockblue", () -> new ItemRock(BaseItemID + 439));
     ITEMS.register("rockcrystalblue", () -> new ItemRock(BaseItemID + 445));
@@ -1543,7 +1545,7 @@ private static void registerAllCritterCages() {
             new ItemStrawberrySeed(
                 (BlockStrawberry)
                     BuiltInRegistries.BLOCK.get(
-                        ResourceLocation.fromNamespaceAndPath(MODID, "strawberry_plant")),
+                        new ResourceLocation(MODID, "strawberry_plant")),
                 Blocks.FARMLAND));
     ITEMS.register("thunderstaff", () -> new ItemThunderStaff(BaseItemID + 240));
     ITEMS.register(
@@ -1554,7 +1556,7 @@ private static void registerAllCritterCages() {
                 0.55F,
                 (BlockTomato)
                     BuiltInRegistries.BLOCK.get(
-                        ResourceLocation.fromNamespaceAndPath(MODID, "tomato_plant0")),
+                        new ResourceLocation(MODID, "tomato_plant0")),
                 Blocks.FARMLAND));
     ITEMS.register("waterball", () -> new ItemWaterBall(BaseItemID + 244));
     ITEMS.register("woodfish", () -> new ItemGenericFish(5, 0.7F, false));
@@ -2357,6 +2359,7 @@ private static void registerAllCritterCages() {
   private void commonSetup(final FMLCommonSetupEvent event) {
     preInit(event);
     postInit(new FMLPostInitializationEvent());
+    event.enqueueWork(ChaosFlowerPots::bindToVanillaFlowerPot);
   }
 
   /** Client-only FMLClientSetup; bound from {@link com.astryxion.chaospersists.client.ClientModBusEvents}. */
@@ -2465,32 +2468,32 @@ private static void registerAllCritterCages() {
 
   public static ResourceKey<Level> getUtopiaDimensionKey() {
     return ResourceKey.create(
-        Registries.DIMENSION, ResourceLocation.fromNamespaceAndPath(MODID, "utopia"));
+        Registries.DIMENSION, new ResourceLocation(MODID, "utopia"));
   }
 
   public static ResourceKey<Level> getMiningDimensionKey() {
     return ResourceKey.create(
-        Registries.DIMENSION, ResourceLocation.fromNamespaceAndPath(MODID, "mining"));
+        Registries.DIMENSION, new ResourceLocation(MODID, "mining"));
   }
 
   public static ResourceKey<Level> getVillageDimensionKey() {
     return ResourceKey.create(
-        Registries.DIMENSION, ResourceLocation.fromNamespaceAndPath(MODID, "village"));
+        Registries.DIMENSION, new ResourceLocation(MODID, "village"));
   }
 
   public static ResourceKey<Level> getDangerDimensionKey() {
     return ResourceKey.create(
-        Registries.DIMENSION, ResourceLocation.fromNamespaceAndPath(MODID, "danger"));
+        Registries.DIMENSION, new ResourceLocation(MODID, "danger"));
   }
 
   public static ResourceKey<Level> getCrystalDimensionKey() {
     return ResourceKey.create(
-        Registries.DIMENSION, ResourceLocation.fromNamespaceAndPath(MODID, "crystal"));
+        Registries.DIMENSION, new ResourceLocation(MODID, "crystal"));
   }
 
   public static ResourceKey<Level> getChaosDimensionKey() {
     return ResourceKey.create(
-        Registries.DIMENSION, ResourceLocation.fromNamespaceAndPath(MODID, "chaos"));
+        Registries.DIMENSION, new ResourceLocation(MODID, "chaos"));
   }
 
   /** @deprecated Use {@link #getDangerDimensionKey()}; stem renamed from {@code islands} to {@code danger}. */
@@ -2669,14 +2672,14 @@ private static void registerAllCritterCages() {
 
     @OnlyIn(Dist.CLIENT)
   public void registerEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
-    final ResourceLocation texLaserBall = ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/item/laserball.png");
-    final ResourceLocation texIceBall = ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/item/iceball.png");
-    final ResourceLocation texAcid = ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/item/acid.png");
-    final ResourceLocation texDeadIruk = ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/item/deadirukandji.png");
+    final ResourceLocation texLaserBall = new ResourceLocation("chaospersists", "textures/item/laserball.png");
+    final ResourceLocation texIceBall = new ResourceLocation("chaospersists", "textures/item/iceball.png");
+    final ResourceLocation texAcid = new ResourceLocation("chaospersists", "textures/item/acid.png");
+    final ResourceLocation texDeadIruk = new ResourceLocation("chaospersists", "textures/item/deadirukandji.png");
     final ResourceLocation texThunderBolt =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/thunder_bolt.png");
+            new ResourceLocation("chaospersists", "textures/entity/thunder_bolt.png");
     final ResourceLocation texArrow =
-            ResourceLocation.withDefaultNamespace("textures/entity/projectiles/arrow.png");
+            new ResourceLocation("textures/entity/projectiles/arrow.png");
     event.registerEntityRenderer(ENTITY_TYPE_ACID.get(), ctx -> new RenderThrowableBillboard(ctx, texAcid));
     event.registerEntityRenderer(ENTITY_TYPE_BETTER_FIREBALL.get(), ctx -> new ThrownItemRenderer<>(ctx, 3.0F, true));
     event.registerEntityRenderer(ENTITY_TYPE_ALIEN.get(), ctx -> new RenderAlien(ctx, new ModelAlien(0.22f), 0.35f, 1.1f));
@@ -2772,8 +2775,8 @@ private static void registerAllCritterCages() {
     event.registerEntityRenderer(ENTITY_TYPE_OSTRICH.get(), ctx -> new RenderOstrich(ctx, new ModelOstrich(0.65f), 0.55f, 1.0f));
     event.registerEntityRenderer(ENTITY_TYPE_PEACOCK.get(), ctx -> new RenderPeacock(ctx, new ModelPeacock(0.75f), 0.25f, 1.0f));
     event.registerEntityRenderer(ENTITY_TYPE_POINTYSAURUS.get(), ctx -> new RenderPointysaurus(ctx, new ModelPointysaurus(1.0f), 1.0f, 1.0f));
-    // 1.7 registered 2.75 but never wired preRenderCallback, so beams drew at scale 1.0.
-    event.registerEntityRenderer(ENTITY_TYPE_PURPLE_POWER.get(), ctx -> new RenderPurplePower(ctx, new ModelPurplePower(1.0f), 0.3f, 1.0f));
+    // 1.7 registered 2.75; crystal types were meant to draw at 0.55 via preRenderScale (see RenderPurplePower).
+    event.registerEntityRenderer(ENTITY_TYPE_PURPLE_POWER.get(), ctx -> new RenderPurplePower(ctx, new ModelPurplePower(1.0f), 0.3f, 2.75f));
     event.registerEntityRenderer(ENTITY_TYPE_QUEEN_HEAD.get(), ctx -> new RenderQueenHead(ctx));
     event.registerEntityRenderer(ENTITY_TYPE_RAINBOW_ANT.get(), ctx -> new RenderAnt(ctx, new ModelAnt(), 0.1f, 0.25f));
     event.registerEntityRenderer(ENTITY_TYPE_RAT.get(), ctx -> new RenderRat(ctx, new ModelRat(1.0f), 0.1f, 0.75f));
@@ -4213,29 +4216,29 @@ private static void registerAllCritterCages() {
 
     laySomeEggs();
 
-    MyOreUraniumBlock = (OreUranium) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "oreuranium"));
+    MyOreUraniumBlock = (OreUranium) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "oreuranium"));
     MyDeepslateOreUraniumBlock =
-        BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "deepslate_oreuranium"));
-    MyOreTitaniumBlock = (OreTitanium) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "oretitanium"));
+        BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "deepslate_oreuranium"));
+    MyOreTitaniumBlock = (OreTitanium) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "oretitanium"));
     MyDeepslateOreTitaniumBlock =
-        BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "deepslate_oretitanium"));
-    MyIngotUranium = (IngotUranium) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "ingoturanium"));
-    MyIngotTitanium = (IngotTitanium) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "ingottitanium"));
-    MyBlockUraniumBlock = (BlockUranium) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "blockuranium"));
-    MyBlockTitaniumBlock = (BlockTitanium) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "blocktitanium"));
-    MyBlockMobzillaScaleBlock = (BlockRuby) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "blockmobzillascale"));
-    MyLavafoamBlock = (Lavafoam) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "lavafoam"));
-    MyBlockRubyBlock = (BlockRuby) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "blockruby"));
-    MyBlockAmethystBlock = (BlockRuby) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "blockamethyst"));
-    MyCrystalPinkBlock = (BlockCrystal) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalpink_block"));
-    MyCrystalPinkIngot = (IngotUranium) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalpink_ingot"));
-    MyTigersEyeBlock = (BlockCrystal) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "tigerseye_block"));
-    MyTigersEyeIngot = (IngotUranium) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "tigerseye_ingot"));
+        BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "deepslate_oretitanium"));
+    MyIngotUranium = (IngotUranium) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "ingoturanium"));
+    MyIngotTitanium = (IngotTitanium) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "ingottitanium"));
+    MyBlockUraniumBlock = (BlockUranium) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "blockuranium"));
+    MyBlockTitaniumBlock = (BlockTitanium) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "blocktitanium"));
+    MyBlockMobzillaScaleBlock = (BlockRuby) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "blockmobzillascale"));
+    MyLavafoamBlock = (Lavafoam) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "lavafoam"));
+    MyBlockRubyBlock = (BlockRuby) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "blockruby"));
+    MyBlockAmethystBlock = (BlockRuby) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "blockamethyst"));
+    MyCrystalPinkBlock = (BlockCrystal) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "crystalpink_block"));
+    MyCrystalPinkIngot = (IngotUranium) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "crystalpink_ingot"));
+    MyTigersEyeBlock = (BlockCrystal) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "tigerseye_block"));
+    MyTigersEyeIngot = (IngotUranium) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "tigerseye_ingot"));
 
-    MyPizzaBlock = (BlockPizza) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "pizza"));
-    MyPizzaItem = BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "pizza"));
-    MyDuctTapeBlock = (BlockDuctTape) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "ducttape"));
-    MyDuctTapeItem = BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "ducttape"));
+    MyPizzaBlock = (BlockPizza) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "pizza"));
+    MyPizzaItem = BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "pizza"));
+    MyDuctTapeBlock = (BlockDuctTape) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "ducttape"));
+    MyDuctTapeItem = BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "ducttape"));
 
     toolULTIMATE = EnumHelper.addToolMaterial("ULTIMATE", ultimate_stats.harvestlevel, ultimate_stats.maxuses, ultimate_stats.efficiency, ultimate_stats.damage, ultimate_stats.enchantability);
 
@@ -4267,137 +4270,137 @@ private static void registerAllCritterCages() {
 
     toolQUEENBATTLE = EnumHelper.addToolMaterial("QUEENBATTLE", queenbattleaxe_stats.harvestlevel, queenbattleaxe_stats.maxuses, queenbattleaxe_stats.efficiency, queenbattleaxe_stats.damage, queenbattleaxe_stats.enchantability);
 
-    MyUltimateSword = (UltimateSword) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "ultimatesword"));
-    MyUltimatePickaxe = (UltimatePickaxe) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "ultimatepickaxe"));
-    MyUltimateShovel = (UltimateShovel) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "ultimateshovel"));
-    MyUltimateHoe = (UltimateHoe) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "ultimatehoe"));
-    MyUltimateAxe = (UltimateAxe) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "ultimateaxe"));
-    MyNightmareSword = (NightmareSword) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "nightmaresword"));
-    MyBertha = (Bertha) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "berthasmall"));
-    MySlice = (Bertha) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "slicesmall"));
-    MyRoyal = (Bertha) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "royalsmall"));
-    MyHammy = (Bertha) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "hammysmall"));
-    MyBattleAxe = (UltimateSword) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "battleaxesmall"));
-    MyChainsaw = (UltimateSword) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "chainsawsmall"));
-    MyQueenBattleAxe = (UltimateSword) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "queenbattleaxesmall"));
+    MyUltimateSword = (UltimateSword) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "ultimatesword"));
+    MyUltimatePickaxe = (UltimatePickaxe) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "ultimatepickaxe"));
+    MyUltimateShovel = (UltimateShovel) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "ultimateshovel"));
+    MyUltimateHoe = (UltimateHoe) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "ultimatehoe"));
+    MyUltimateAxe = (UltimateAxe) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "ultimateaxe"));
+    MyNightmareSword = (NightmareSword) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "nightmaresword"));
+    MyBertha = (Bertha) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "berthasmall"));
+    MySlice = (Bertha) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "slicesmall"));
+    MyRoyal = (Bertha) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "royalsmall"));
+    MyHammy = (Bertha) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "hammysmall"));
+    MyBattleAxe = (UltimateSword) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "battleaxesmall"));
+    MyChainsaw = (UltimateSword) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "chainsawsmall"));
+    MyQueenBattleAxe = (UltimateSword) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "queenbattleaxesmall"));
 
-    MyEmeraldSword = (EmeraldSword) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "emeraldsword"));
-    MyEmeraldPickaxe = (EmeraldPickaxe) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "emeraldpickaxe"));
-    MyEmeraldShovel = (EmeraldShovel) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "emeraldshovel"));
-    MyEmeraldHoe = (EmeraldHoe) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "emeraldhoe"));
-    MyEmeraldAxe = (EmeraldAxe) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "emeraldaxe"));
-    MyExperienceSword = (ExperienceSword) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "experiencesword"));
-    MyPoisonSword = (PoisonSword) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "poisonsword"));
-    MyRatSword = (RatSword) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "ratsword"));
-    MyFairySword = (FairySword) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "fairysword"));
-    MyMantisClaw = (MantisClaw) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "mantisclaw"));
-    MyBigHammer = (BigHammer) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "bighammer"));
-    MyRubySword = (RubySword) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "rubysword"));
-    MyRubyPickaxe = (RubyPickaxe) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "rubypickaxe"));
-    MyRubyShovel = (RubyShovel) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "rubyshovel"));
-    MyRubyHoe = (RubyHoe) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "rubyhoe"));
-    MyRubyAxe = (RubyAxe) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "rubyaxe"));
-    MyAmethystSword = (AmethystSword) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "amethystsword"));
-    MyAmethystPickaxe = (AmethystPickaxe) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "amethystpickaxe"));
-    MyAmethystShovel = (AmethystShovel) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "amethystshovel"));
-    MyAmethystHoe = (AmethystHoe) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "amethysthoe"));
-    MyAmethystAxe = (AmethystAxe) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "amethystaxe"));
-    MyCrystalWoodSword = (CrystalSword) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalwoodsword"));
-    MyCrystalWoodPickaxe = (CrystalPickaxe) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalwoodpickaxe"));
-    MyCrystalWoodShovel = (CrystalShovel) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalwoodshovel"));
-    MyCrystalWoodHoe = (CrystalHoe) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalwoodhoe"));
-    MyCrystalWoodAxe = (CrystalAxe) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalwoodaxe"));
-    MyCrystalPinkSword = (CrystalSword) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalpinksword"));
-    MyCrystalPinkPickaxe = (CrystalPickaxe) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalpinkpickaxe"));
-    MyCrystalPinkShovel = (CrystalShovel) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalpinkshovel"));
-    MyCrystalPinkHoe = (CrystalHoe) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalpinkhoe"));
-    MyCrystalPinkAxe = (CrystalAxe) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalpinkaxe"));
-    MyCrystalStoneSword = (CrystalSword) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalstonesword"));
-    MyCrystalStonePickaxe = (CrystalPickaxe) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalstonepickaxe"));
-    MyCrystalStoneShovel = (CrystalShovel) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalstoneshovel"));
-    MyCrystalStoneHoe = (CrystalHoe) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalstonehoe"));
-    MyCrystalStoneAxe = (CrystalAxe) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalstoneaxe"));
-    MyTigersEyeSword = (CrystalSword) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "tigerseye_sword"));
-    MyTigersEyePickaxe = (CrystalPickaxe) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "tigerseye_pickaxe"));
-    MyTigersEyeShovel = (CrystalShovel) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "tigerseye_shovel"));
-    MyTigersEyeHoe = (CrystalHoe) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "tigerseye_hoe"));
-    MyTigersEyeAxe = (CrystalAxe) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "tigerseye_axe"));
-    MyRoseSword = (EmeraldSword) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "rosesword"));
+    MyEmeraldSword = (EmeraldSword) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "emeraldsword"));
+    MyEmeraldPickaxe = (EmeraldPickaxe) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "emeraldpickaxe"));
+    MyEmeraldShovel = (EmeraldShovel) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "emeraldshovel"));
+    MyEmeraldHoe = (EmeraldHoe) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "emeraldhoe"));
+    MyEmeraldAxe = (EmeraldAxe) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "emeraldaxe"));
+    MyExperienceSword = (ExperienceSword) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "experiencesword"));
+    MyPoisonSword = (PoisonSword) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "poisonsword"));
+    MyRatSword = (RatSword) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "ratsword"));
+    MyFairySword = (FairySword) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "fairysword"));
+    MyMantisClaw = (MantisClaw) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "mantisclaw"));
+    MyBigHammer = (BigHammer) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "bighammer"));
+    MyRubySword = (RubySword) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "rubysword"));
+    MyRubyPickaxe = (RubyPickaxe) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "rubypickaxe"));
+    MyRubyShovel = (RubyShovel) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "rubyshovel"));
+    MyRubyHoe = (RubyHoe) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "rubyhoe"));
+    MyRubyAxe = (RubyAxe) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "rubyaxe"));
+    MyAmethystSword = (AmethystSword) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "amethystsword"));
+    MyAmethystPickaxe = (AmethystPickaxe) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "amethystpickaxe"));
+    MyAmethystShovel = (AmethystShovel) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "amethystshovel"));
+    MyAmethystHoe = (AmethystHoe) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "amethysthoe"));
+    MyAmethystAxe = (AmethystAxe) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "amethystaxe"));
+    MyCrystalWoodSword = (CrystalSword) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "crystalwoodsword"));
+    MyCrystalWoodPickaxe = (CrystalPickaxe) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "crystalwoodpickaxe"));
+    MyCrystalWoodShovel = (CrystalShovel) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "crystalwoodshovel"));
+    MyCrystalWoodHoe = (CrystalHoe) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "crystalwoodhoe"));
+    MyCrystalWoodAxe = (CrystalAxe) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "crystalwoodaxe"));
+    MyCrystalPinkSword = (CrystalSword) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "crystalpinksword"));
+    MyCrystalPinkPickaxe = (CrystalPickaxe) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "crystalpinkpickaxe"));
+    MyCrystalPinkShovel = (CrystalShovel) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "crystalpinkshovel"));
+    MyCrystalPinkHoe = (CrystalHoe) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "crystalpinkhoe"));
+    MyCrystalPinkAxe = (CrystalAxe) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "crystalpinkaxe"));
+    MyCrystalStoneSword = (CrystalSword) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "crystalstonesword"));
+    MyCrystalStonePickaxe = (CrystalPickaxe) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "crystalstonepickaxe"));
+    MyCrystalStoneShovel = (CrystalShovel) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "crystalstoneshovel"));
+    MyCrystalStoneHoe = (CrystalHoe) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "crystalstonehoe"));
+    MyCrystalStoneAxe = (CrystalAxe) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "crystalstoneaxe"));
+    MyTigersEyeSword = (CrystalSword) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "tigerseye_sword"));
+    MyTigersEyePickaxe = (CrystalPickaxe) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "tigerseye_pickaxe"));
+    MyTigersEyeShovel = (CrystalShovel) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "tigerseye_shovel"));
+    MyTigersEyeHoe = (CrystalHoe) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "tigerseye_hoe"));
+    MyTigersEyeAxe = (CrystalAxe) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "tigerseye_axe"));
+    MyRoseSword = (EmeraldSword) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "rosesword"));
 
-    MyItemShoes = (ItemShoes) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "redheels"));
-    MyItemShoes_1 = (ItemShoes) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "blackheels"));
-    MyItemShoes_2 = (ItemShoes) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "slippers"));
-    MyItemShoes_3 = (ItemShoes) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "boots"));
-    MyItemGameController = (ItemShoes) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "gamecontroller"));
+    MyItemShoes = (ItemShoes) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "redheels"));
+    MyItemShoes_1 = (ItemShoes) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "blackheels"));
+    MyItemShoes_2 = (ItemShoes) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "slippers"));
+    MyItemShoes_3 = (ItemShoes) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "boots"));
+    MyItemGameController = (ItemShoes) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "gamecontroller"));
 
-    MyUltimateBow = (UltimateBow) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "ultimatebow"));
-    MySkateBow = (SkateBow) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "skatebow"));
+    MyUltimateBow = (UltimateBow) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "ultimatebow"));
+    MySkateBow = (SkateBow) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "skatebow"));
 
-    MyUltimateFishingRod = (UltimateFishingRod) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "ultimatefishingrod"));
+    MyUltimateFishingRod = (UltimateFishingRod) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "ultimatefishingrod"));
     UltimateFishingRod = new ItemStack(MyUltimateFishingRod);
 
-    MyFireFish = (ItemFireFish) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "firefish"));
-    MySunFish = (ItemSunFish) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "sunfish"));
-    MyLavaEel = (ItemLavaEel) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "lavaeel"));
-    MyMothScale = (ItemSalt) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "mothscale"));
-    MyQueenScale = (ItemSalt) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "queenscale"));
-    MyNightmareScale = (ItemSalt) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "nightmarescale"));
-    MyEmperorScorpionScale = (ItemSalt) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "emperorscorpionscale"));
-    MyBasiliskScale = (ItemSalt) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "basiliskscale"));
-    MyWaterDragonScale = (ItemSalt) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "waterdragonscale"));
-    MyPeacockFeather = (ItemSalt) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "peacockfeather"));
-    MyJumpyBugScale = (ItemSalt) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "jumpybugscale"));
-    MyKrakenTooth = (ItemSalt) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "krakentooth"));
-    MyGodzillaScale = (ItemSalt) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "godzillascale"));
-    GreenGoo = (ItemSalt) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "greengoo"));
-    SpiderRobotKit = (ItemSpiderRobotKit) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "spiderrobotkit"));
-    AntRobotKit = (ItemSpiderRobotKit) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "antrobotkit"));
-    ZooKeeper = (ItemZooKeeper) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "zookeeper"));
-    CreeperLauncher = (ItemCreeperLauncher) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "creeperlauncher"));
-    NetherLost = (ItemNetherLost) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "netherlost"));
-    CrystalSticks = (ItemCrystalSticks) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalsticks"));
-    MySunspotUrchin = (ItemSunspotUrchin) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "sunspoturchin"));
-    MySparkFish = (ItemSparkFish) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "sparkfish"));
-    MyWaterBall = (ItemWaterBall) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "waterball"));
-    MyLaserBall = (ItemLaserBall) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "laserball"));
-    MyIceBall = (ItemIceBall) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "iceball"));
-    MySmallRock = (ItemRock) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "rocksmall"));
-    MyRock = (ItemRock) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "rock"));
-    MyRedRock = (ItemRock) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "rockred"));
-    MyCrystalRedRock = (ItemRock) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "rockcrystalred"));
-    MyCrystalGreenRock = (ItemRock) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "rockcrystalgreen"));
-    MyCrystalBlueRock = (ItemRock) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "rockcrystalblue"));
-    MyCrystalTNTRock = (ItemRock) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "rockcrystaltnt"));
-    MyGreenRock = (ItemRock) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "rockgreen"));
-    MyBlueRock = (ItemRock) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "rockblue"));
-    MyPurpleRock = (ItemRock) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "rockpurple"));
-    MySpikeyRock = (ItemRock) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "rockspikey"));
-    MyTNTRock = (ItemRock) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "rocktnt"));
-    MyRayGun = (ItemRayGun) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "raygun"));
-    MyThunderStaff = (ItemThunderStaff) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "thunderstaff"));
-    MyWrench = (ItemWrench) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "wrench"));
-    MyAcid = (ItemAcid) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "acid"));
-    MyIrukandji = (ItemIrukandji) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "deadirukandji"));
-    MyIrukandjiArrow = (ItemIrukandjiArrow) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "irukandjiarrow"));
-    MyGreenFish = (ItemGenericFish) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "greenfish"));
-    MyBlueFish = (ItemGenericFish) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "bluefish"));
-    MyPinkFish = (ItemGenericFish) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "pinkfish"));
-    MyRockFish = (ItemGenericFish) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "rockfish"));
-    MyWoodFish = (ItemGenericFish) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "woodfish"));
-    MyGreyFish = (ItemGenericFish) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "greyfish"));
-    Sifter = (ItemSifter) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "sifter"));
-    MySquidZooka = (ItemSquidZooka) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "squidzookasmall"));
+    MyFireFish = (ItemFireFish) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "firefish"));
+    MySunFish = (ItemSunFish) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "sunfish"));
+    MyLavaEel = (ItemLavaEel) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "lavaeel"));
+    MyMothScale = (ItemSalt) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "mothscale"));
+    MyQueenScale = (ItemSalt) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "queenscale"));
+    MyNightmareScale = (ItemSalt) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "nightmarescale"));
+    MyEmperorScorpionScale = (ItemSalt) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "emperorscorpionscale"));
+    MyBasiliskScale = (ItemSalt) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "basiliskscale"));
+    MyWaterDragonScale = (ItemSalt) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "waterdragonscale"));
+    MyPeacockFeather = (ItemSalt) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "peacockfeather"));
+    MyJumpyBugScale = (ItemSalt) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "jumpybugscale"));
+    MyKrakenTooth = (ItemSalt) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "krakentooth"));
+    MyGodzillaScale = (ItemSalt) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "godzillascale"));
+    GreenGoo = (ItemSalt) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "greengoo"));
+    SpiderRobotKit = (ItemSpiderRobotKit) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "spiderrobotkit"));
+    AntRobotKit = (ItemSpiderRobotKit) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "antrobotkit"));
+    ZooKeeper = (ItemZooKeeper) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "zookeeper"));
+    CreeperLauncher = (ItemCreeperLauncher) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "creeperlauncher"));
+    NetherLost = (ItemNetherLost) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "netherlost"));
+    CrystalSticks = (ItemCrystalSticks) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "crystalsticks"));
+    MySunspotUrchin = (ItemSunspotUrchin) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "sunspoturchin"));
+    MySparkFish = (ItemSparkFish) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "sparkfish"));
+    MyWaterBall = (ItemWaterBall) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "waterball"));
+    MyLaserBall = (ItemLaserBall) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "laserball"));
+    MyIceBall = (ItemIceBall) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "iceball"));
+    MySmallRock = (ItemRock) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "rocksmall"));
+    MyRock = (ItemRock) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "rock"));
+    MyRedRock = (ItemRock) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "rockred"));
+    MyCrystalRedRock = (ItemRock) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "rockcrystalred"));
+    MyCrystalGreenRock = (ItemRock) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "rockcrystalgreen"));
+    MyCrystalBlueRock = (ItemRock) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "rockcrystalblue"));
+    MyCrystalTNTRock = (ItemRock) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "rockcrystaltnt"));
+    MyGreenRock = (ItemRock) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "rockgreen"));
+    MyBlueRock = (ItemRock) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "rockblue"));
+    MyPurpleRock = (ItemRock) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "rockpurple"));
+    MySpikeyRock = (ItemRock) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "rockspikey"));
+    MyTNTRock = (ItemRock) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "rocktnt"));
+    MyRayGun = (ItemRayGun) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "raygun"));
+    MyThunderStaff = (ItemThunderStaff) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "thunderstaff"));
+    MyWrench = (ItemWrench) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "wrench"));
+    MyAcid = (ItemAcid) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "acid"));
+    MyIrukandji = (ItemIrukandji) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "deadirukandji"));
+    MyIrukandjiArrow = (ItemIrukandjiArrow) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "irukandjiarrow"));
+    MyGreenFish = (ItemGenericFish) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "greenfish"));
+    MyBlueFish = (ItemGenericFish) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "bluefish"));
+    MyPinkFish = (ItemGenericFish) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "pinkfish"));
+    MyRockFish = (ItemGenericFish) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "rockfish"));
+    MyWoodFish = (ItemGenericFish) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "woodfish"));
+    MyGreyFish = (ItemGenericFish) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "greyfish"));
+    Sifter = (ItemSifter) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "sifter"));
+    MySquidZooka = (ItemSquidZooka) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "squidzookasmall"));
 
-    BerthaHandle = (ItemSalt) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "bbhandle"));
-    BerthaGuard = (ItemSalt) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "bbguard"));
-    BerthaBlade = (ItemSalt) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "bbblade"));
-    MolenoidNose = (ItemSalt) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "molenoidnose"));
-    SeaMonsterScale = (ItemSalt) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "seamonsterscale"));
-    WormTooth = (ItemSalt) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "wormtooth"));
-    TRexTooth = (ItemSalt) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "trextooth"));
-    CaterKillerJaw = (ItemSalt) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "caterkillerjaw"));
-    SeaViperTongue = (ItemSalt) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "seavipertongue"));
-    VortexEye = (ItemSalt) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "vortexeye"));
+    BerthaHandle = (ItemSalt) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "bbhandle"));
+    BerthaGuard = (ItemSalt) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "bbguard"));
+    BerthaBlade = (ItemSalt) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "bbblade"));
+    MolenoidNose = (ItemSalt) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "molenoidnose"));
+    SeaMonsterScale = (ItemSalt) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "seamonsterscale"));
+    WormTooth = (ItemSalt) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "wormtooth"));
+    TRexTooth = (ItemSalt) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "trextooth"));
+    CaterKillerJaw = (ItemSalt) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "caterkillerjaw"));
+    SeaViperTongue = (ItemSalt) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "seavipertongue"));
+    VortexEye = (ItemSalt) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "vortexeye"));
 
     armorULTIMATE = EnumHelper.addArmorMaterial("ULTIMATE", "chaospersists", Ultimate_armorstats.durability, new int[] { Ultimate_armorstats.head_protection, Ultimate_armorstats.chest_protection, Ultimate_armorstats.leg_protection, Ultimate_armorstats.boot_protection }, Ultimate_armorstats.enchantability, SoundEvents.ARMOR_EQUIP_GENERIC, armorToughnessFor("ULTIMATE"));
 
@@ -4427,220 +4430,220 @@ private static void registerAllCritterCages() {
 
     armorQUEEN = EnumHelper.addArmorMaterial("QUEEN", "chaospersists", Queen_armorstats.durability, new int[] { Queen_armorstats.head_protection, Queen_armorstats.chest_protection, Queen_armorstats.leg_protection, Queen_armorstats.boot_protection }, Queen_armorstats.enchantability, SoundEvents.ARMOR_EQUIP_GENERIC, armorToughnessFor("QUEEN"));
 
-    UltimateHelmet = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "ultimate_helmet"));
-    UltimateBody = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "ultimate_chest"));
-    UltimateLegs = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "ultimate_leggings"));
-    UltimateBoots = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "ultimate_boots"));
-    LavaEelHelmet = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "lavaeel_helmet"));
-    LavaEelBody = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "lavaeel_chest"));
-    LavaEelLegs = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "lavaeel_leggings"));
-    LavaEelBoots = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "lavaeel_boots"));
-    MothScaleHelmet = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "mothscale_helmet"));
-    MothScaleBody = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "mothscale_chest"));
-    MothScaleLegs = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "mothscale_leggings"));
-    MothScaleBoots = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "mothscale_boots"));
-    EmeraldHelmet = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "emerald_helmet"));
-    EmeraldBody = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "emerald_chest"));
-    EmeraldLegs = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "emerald_leggings"));
-    EmeraldBoots = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "emerald_boots"));
-    ExperienceHelmet = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "experience_helmet"));
-    ExperienceBody = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "experience_chest"));
-    ExperienceLegs = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "experience_leggings"));
-    ExperienceBoots = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "experience_boots"));
-    RubyHelmet = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "ruby_helmet"));
-    RubyBody = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "ruby_chest"));
-    RubyLegs = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "ruby_leggings"));
-    RubyBoots = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "ruby_boots"));
-    AmethystHelmet = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "amethyst_helmet"));
-    AmethystBody = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "amethyst_chest"));
-    AmethystLegs = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "amethyst_leggings"));
-    AmethystBoots = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "amethyst_boots"));
-    CrystalPinkHelmet = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "pink_helmet"));
-    CrystalPinkBody = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "pink_chest"));
-    CrystalPinkLegs = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "pink_leggings"));
-    CrystalPinkBoots = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "pink_boots"));
-    TigersEyeHelmet = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "tigerseye_helmet"));
-    TigersEyeBody = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "tigerseye_chest"));
-    TigersEyeLegs = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "tigerseye_leggings"));
-    TigersEyeBoots = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "tigerseye_boots"));
-    PeacockFeatherBoots = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "peacock_boots"));
-    PeacockFeatherHelmet = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "peacock_helmet"));
-    PeacockFeatherBody = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "peacock_chest"));
-    PeacockFeatherLegs = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "peacock_leggings"));
-    MobzillaHelmet = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "mobzilla_helmet"));
-    MobzillaBody = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "mobzilla_chest"));
-    MobzillaLegs = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "mobzilla_leggings"));
-    MobzillaBoots = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "mobzilla_boots"));
-    RoyalHelmet = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "royal_helmet"));
-    RoyalBody = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "royal_chest"));
-    RoyalLegs = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "royal_leggings"));
-    RoyalBoots = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "royal_boots"));
-    LapisHelmet = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "lapis_helmet"));
-    LapisBody = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "lapis_chest"));
-    LapisLegs = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "lapis_leggings"));
-    LapisBoots = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "lapis_boots"));
-    QueenHelmet = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "queen_helmet"));
-    QueenBody = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "queen_chest"));
-    QueenLegs = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "queen_leggings"));
-    QueenBoots = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "queen_boots"));
+    UltimateHelmet = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "ultimate_helmet"));
+    UltimateBody = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "ultimate_chest"));
+    UltimateLegs = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "ultimate_leggings"));
+    UltimateBoots = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "ultimate_boots"));
+    LavaEelHelmet = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "lavaeel_helmet"));
+    LavaEelBody = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "lavaeel_chest"));
+    LavaEelLegs = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "lavaeel_leggings"));
+    LavaEelBoots = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "lavaeel_boots"));
+    MothScaleHelmet = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "mothscale_helmet"));
+    MothScaleBody = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "mothscale_chest"));
+    MothScaleLegs = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "mothscale_leggings"));
+    MothScaleBoots = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "mothscale_boots"));
+    EmeraldHelmet = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "emerald_helmet"));
+    EmeraldBody = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "emerald_chest"));
+    EmeraldLegs = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "emerald_leggings"));
+    EmeraldBoots = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "emerald_boots"));
+    ExperienceHelmet = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "experience_helmet"));
+    ExperienceBody = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "experience_chest"));
+    ExperienceLegs = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "experience_leggings"));
+    ExperienceBoots = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "experience_boots"));
+    RubyHelmet = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "ruby_helmet"));
+    RubyBody = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "ruby_chest"));
+    RubyLegs = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "ruby_leggings"));
+    RubyBoots = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "ruby_boots"));
+    AmethystHelmet = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "amethyst_helmet"));
+    AmethystBody = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "amethyst_chest"));
+    AmethystLegs = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "amethyst_leggings"));
+    AmethystBoots = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "amethyst_boots"));
+    CrystalPinkHelmet = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "pink_helmet"));
+    CrystalPinkBody = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "pink_chest"));
+    CrystalPinkLegs = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "pink_leggings"));
+    CrystalPinkBoots = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "pink_boots"));
+    TigersEyeHelmet = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "tigerseye_helmet"));
+    TigersEyeBody = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "tigerseye_chest"));
+    TigersEyeLegs = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "tigerseye_leggings"));
+    TigersEyeBoots = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "tigerseye_boots"));
+    PeacockFeatherBoots = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "peacock_boots"));
+    PeacockFeatherHelmet = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "peacock_helmet"));
+    PeacockFeatherBody = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "peacock_chest"));
+    PeacockFeatherLegs = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "peacock_leggings"));
+    MobzillaHelmet = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "mobzilla_helmet"));
+    MobzillaBody = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "mobzilla_chest"));
+    MobzillaLegs = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "mobzilla_leggings"));
+    MobzillaBoots = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "mobzilla_boots"));
+    RoyalHelmet = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "royal_helmet"));
+    RoyalBody = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "royal_chest"));
+    RoyalLegs = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "royal_leggings"));
+    RoyalBoots = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "royal_boots"));
+    LapisHelmet = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "lapis_helmet"));
+    LapisBody = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "lapis_chest"));
+    LapisLegs = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "lapis_leggings"));
+    LapisBoots = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "lapis_boots"));
+    QueenHelmet = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "queen_helmet"));
+    QueenBody = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "queen_chest"));
+    QueenLegs = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "queen_leggings"));
+    QueenBoots = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "queen_boots"));
 
-    MyOreSaltBlock = (OreSalt) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "oresalt"));
+    MyOreSaltBlock = (OreSalt) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "oresalt"));
     MyDeepslateOreSaltBlock =
-        BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "deepslate_oresalt"));
-    MySalt = (ItemSalt) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "salt"));
-    MyPopcorn = (ItemPopcorn) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "popcorn"));
-    MyButteredPopcorn = (ItemPopcorn) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "popcorn_buttered"));
-    MyButteredSaltedPopcorn = (ItemPopcorn) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "popcorn_buttered_salted"));
-    MyPopcornBag = (ItemPopcorn) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "popcorn_bag"));
-    MyButter = (ItemPopcorn) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "butter"));
-    MyCornDog = (ItemPopcorn) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "corndog_cooked"));
-    MyRawCornDog = (ItemPopcorn) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "corndog_raw"));
-    MyButterCandy = (ItemSunFish) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "buttercandy"));
-    MyBacon = (ItemSunFish) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cookedbacon"));
-    MyRawBacon = (ItemPopcorn) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "bacon"));
-    MyCrabMeat = (ItemSunFish) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cookedcrabmeat"));
-    MyRawCrabMeat = (ItemPopcorn) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "crabmeat"));
-    MyCheese = (ItemPopcorn) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cheese"));
-    MySalad = (ItemPopcorn) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "salad"));
-    MyBLT = (ItemPopcorn) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "blt_sandwich"));
-    MyCrabbyPatty = (ItemPopcorn) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "crabbypatty"));
-    MyOreRubyBlock = (OreRuby) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "oreruby"));
+        BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "deepslate_oresalt"));
+    MySalt = (ItemSalt) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "salt"));
+    MyPopcorn = (ItemPopcorn) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "popcorn"));
+    MyButteredPopcorn = (ItemPopcorn) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "popcorn_buttered"));
+    MyButteredSaltedPopcorn = (ItemPopcorn) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "popcorn_buttered_salted"));
+    MyPopcornBag = (ItemPopcorn) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "popcorn_bag"));
+    MyButter = (ItemPopcorn) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "butter"));
+    MyCornDog = (ItemPopcorn) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "corndog_cooked"));
+    MyRawCornDog = (ItemPopcorn) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "corndog_raw"));
+    MyButterCandy = (ItemSunFish) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "buttercandy"));
+    MyBacon = (ItemSunFish) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cookedbacon"));
+    MyRawBacon = (ItemPopcorn) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "bacon"));
+    MyCrabMeat = (ItemSunFish) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cookedcrabmeat"));
+    MyRawCrabMeat = (ItemPopcorn) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "crabmeat"));
+    MyCheese = (ItemPopcorn) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cheese"));
+    MySalad = (ItemPopcorn) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "salad"));
+    MyBLT = (ItemPopcorn) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "blt_sandwich"));
+    MyCrabbyPatty = (ItemPopcorn) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "crabbypatty"));
+    MyOreRubyBlock = (OreRuby) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "oreruby"));
     MyDeepslateOreRubyBlock =
-        BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "deepslate_oreruby"));
-    MyRuby = (ItemSalt) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "ruby"));
-    MyOreAmethystBlock = (OreAmethyst) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "oreamethyst"));
+        BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "deepslate_oreruby"));
+    MyRuby = (ItemSalt) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "ruby"));
+    MyOreAmethystBlock = (OreAmethyst) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "oreamethyst"));
     MyDeepslateOreAmethystBlock =
-        BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "deepslate_oreamethyst"));
-    MyAmethyst = (ItemSalt) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "amethyst"));
-    UraniumNugget = (ItemSalt) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "uranium_nugget"));
-    TitaniumNugget = (ItemSalt) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "titanium_nugget"));
-    CrystalStone = (OreBasicStone) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalstone"));
-    CrystalCoal = (OreCrystal) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalcoal"));
-    CrystalGrass = (CrystalGrass) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalgrass"));
-    CrystalCrystal = (OreCrystalCrystal) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalcrystal"));
-    TigersEye = (OreCrystalCrystal) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "tigerseye"));
-    CrystalPlanksBlock = (CrystalWood) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalplanks"));
-    CrystalWorkbenchBlock = (CrystalWorkbench) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalworkbench"));
-    CrystalFurnaceBlock = (CrystalFurnace) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalfurnace"));
-    MyPeacock = (ItemPopcorn) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cookedpeacock"));
-    MyRawPeacock = (ItemPopcorn) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "rawpeacock"));
-    CrystalRat = (OreBasicStone) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalrat"));
-    CrystalFairy = (OreBasicStone) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalfairy"));
-    RedAntTroll = (OreBasicStone) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "redanttroll"));
-    TermiteTroll = (OreBasicStone) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "termitetroll"));
+        BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "deepslate_oreamethyst"));
+    MyAmethyst = (ItemSalt) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "amethyst"));
+    UraniumNugget = (ItemSalt) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "uranium_nugget"));
+    TitaniumNugget = (ItemSalt) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "titanium_nugget"));
+    CrystalStone = (OreBasicStone) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "crystalstone"));
+    CrystalCoal = (OreCrystal) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "crystalcoal"));
+    CrystalGrass = (CrystalGrass) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "crystalgrass"));
+    CrystalCrystal = (OreCrystalCrystal) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "crystalcrystal"));
+    TigersEye = (OreCrystalCrystal) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "tigerseye"));
+    CrystalPlanksBlock = (CrystalWood) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "crystalplanks"));
+    CrystalWorkbenchBlock = (CrystalWorkbench) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "crystalworkbench"));
+    CrystalFurnaceBlock = (CrystalFurnace) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "crystalfurnace"));
+    MyPeacock = (ItemPopcorn) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cookedpeacock"));
+    MyRawPeacock = (ItemPopcorn) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "rawpeacock"));
+    CrystalRat = (OreBasicStone) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "crystalrat"));
+    CrystalFairy = (OreBasicStone) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "crystalfairy"));
+    RedAntTroll = (OreBasicStone) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "redanttroll"));
+    TermiteTroll = (OreBasicStone) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "termitetroll"));
     DeepslateRedAntTroll =
         (OreBasicStone)
             BuiltInRegistries.BLOCK.get(
-                ResourceLocation.fromNamespaceAndPath(MODID, "deepslate_redanttroll"));
+                new ResourceLocation(MODID, "deepslate_redanttroll"));
     DeepslateTermiteTroll =
         (OreBasicStone)
             BuiltInRegistries.BLOCK.get(
-                ResourceLocation.fromNamespaceAndPath(MODID, "deepslate_termitetroll"));
+                new ResourceLocation(MODID, "deepslate_termitetroll"));
 
-    MyRTPBlock = (RTPBlock) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "blockteleport"));
-    MyStepUp = (StepUp) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "step_up"));
-    MyStepDown = (StepDown) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "step_down"));
-    MyStepAccross = (StepAccross) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "step_accross"));
-    MyMoleDirtBlock = (MoleDirtBlock) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "moledirt"));
+    MyRTPBlock = (RTPBlock) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "blockteleport"));
+    MyStepUp = (StepUp) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "step_up"));
+    MyStepDown = (StepDown) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "step_down"));
+    MyStepAccross = (StepAccross) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "step_accross"));
+    MyMoleDirtBlock = (MoleDirtBlock) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "moledirt"));
 
     initializeCagesAndEggs();
 
-    MyStrawberry = (ItemStrawberry) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "strawberry"));
-    MyStrawberryPlant = (BlockStrawberry) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "strawberry_plant"));
-    MyStrawberrySeed = (ItemStrawberrySeed) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "strawberry_seed"));
-    MyButterflyPlant = (BlockButterflyPlant) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "butterfly_plant"));
-    MyButterflySeed = (ItemButterflySeed) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "butterfly_seed"));
-    MyMothPlant = (BlockMothPlant) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "moth_plant"));
-    MyMothSeed = (ItemMothSeed) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "moth_seed"));
-    MyMosquitoPlant = (BlockMosquitoPlant) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "mosquito_plant"));
-    MyMosquitoSeed = (ItemMosquitoSeed) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "mosquito_seed"));
-    MyFireflyPlant = (BlockFireflyPlant) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "firefly_plant"));
-    MyFireflySeed = (ItemFireflySeed) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "firefly_seed"));
-    MyRadishPlant = (BlockRadish) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "radish_plant"));
-    MyRadish = (ItemRadish) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "radish"));
-    MyCherry = (ItemStrawberry) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cherries"));
-    MyPeach = (ItemStrawberry) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "peach"));
-    MyCrystalApple = (ItemSunFish) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalapple"));
-    MyLove = (ItemSunFish) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "heart"));
-    MyRicePlant = (BlockRice) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "rice_plant"));
-    MyRice = (ItemRadish) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "rice"));
+    MyStrawberry = (ItemStrawberry) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "strawberry"));
+    MyStrawberryPlant = (BlockStrawberry) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "strawberry_plant"));
+    MyStrawberrySeed = (ItemStrawberrySeed) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "strawberry_seed"));
+    MyButterflyPlant = (BlockButterflyPlant) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "butterfly_plant"));
+    MyButterflySeed = (ItemButterflySeed) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "butterfly_seed"));
+    MyMothPlant = (BlockMothPlant) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "moth_plant"));
+    MyMothSeed = (ItemMothSeed) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "moth_seed"));
+    MyMosquitoPlant = (BlockMosquitoPlant) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "mosquito_plant"));
+    MyMosquitoSeed = (ItemMosquitoSeed) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "mosquito_seed"));
+    MyFireflyPlant = (BlockFireflyPlant) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "firefly_plant"));
+    MyFireflySeed = (ItemFireflySeed) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "firefly_seed"));
+    MyRadishPlant = (BlockRadish) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "radish_plant"));
+    MyRadish = (ItemRadish) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "radish"));
+    MyCherry = (ItemStrawberry) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cherries"));
+    MyPeach = (ItemStrawberry) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "peach"));
+    MyCrystalApple = (ItemSunFish) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "crystalapple"));
+    MyLove = (ItemSunFish) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "heart"));
+    MyRicePlant = (BlockRice) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "rice_plant"));
+    MyRice = (ItemRadish) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "rice"));
 
-    MyElevator = (ItemElevator) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "elevator"));
+    MyElevator = (ItemElevator) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "elevator"));
 
-    MyCornPlant1 = (BlockCorn) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "corn_plant0"));
-    MyCornPlant2 = (BlockCorn) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "corn_plant1"));
-    MyCornPlant3 = (BlockCorn) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "corn_plant2"));
-    MyCornPlant4 = (BlockCorn) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "corn_plant3"));
-    MyCornCob = (ItemCornCob) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "corn_seed"));
-    MyQuinoaPlant1 = (BlockQuinoa) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "quinoa_0"));
-    MyQuinoaPlant2 = (BlockQuinoa) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "quinoa_1"));
-    MyQuinoaPlant3 = (BlockQuinoa) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "quinoa_2"));
-    MyQuinoaPlant4 = (BlockQuinoa) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "quinoa_3"));
-    MyQuinoa = (ItemCornCob) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "quinoa"));
+    MyCornPlant1 = (BlockCorn) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "corn_plant0"));
+    MyCornPlant2 = (BlockCorn) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "corn_plant1"));
+    MyCornPlant3 = (BlockCorn) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "corn_plant2"));
+    MyCornPlant4 = (BlockCorn) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "corn_plant3"));
+    MyCornCob = (ItemCornCob) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "corn_seed"));
+    MyQuinoaPlant1 = (BlockQuinoa) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "quinoa_0"));
+    MyQuinoaPlant2 = (BlockQuinoa) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "quinoa_1"));
+    MyQuinoaPlant3 = (BlockQuinoa) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "quinoa_2"));
+    MyQuinoaPlant4 = (BlockQuinoa) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "quinoa_3"));
+    MyQuinoa = (ItemCornCob) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "quinoa"));
 
-    MyTomatoPlant1 = (BlockTomato) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "tomato_plant0"));
-    MyTomatoPlant2 = (BlockTomato) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "tomato_plant1"));
-    MyTomatoPlant3 = (BlockTomato) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "tomato_plant2"));
-    MyTomatoPlant4 = (BlockTomato) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "tomato_plant3"));
-    MyTomato = (ItemTomato) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "tomato_seed"));
-    MyLettucePlant1 = (BlockLettuce) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "lettuce_0"));
-    MyLettucePlant2 = (BlockLettuce) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "lettuce_1"));
-    MyLettucePlant3 = (BlockLettuce) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "lettuce_2"));
-    MyLettucePlant4 = (BlockLettuce) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "lettuce_3"));
-    MyLettuce = (ItemLettuce) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "lettuce_seed"));
+    MyTomatoPlant1 = (BlockTomato) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "tomato_plant0"));
+    MyTomatoPlant2 = (BlockTomato) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "tomato_plant1"));
+    MyTomatoPlant3 = (BlockTomato) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "tomato_plant2"));
+    MyTomatoPlant4 = (BlockTomato) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "tomato_plant3"));
+    MyTomato = (ItemTomato) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "tomato_seed"));
+    MyLettucePlant1 = (BlockLettuce) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "lettuce_0"));
+    MyLettucePlant2 = (BlockLettuce) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "lettuce_1"));
+    MyLettucePlant3 = (BlockLettuce) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "lettuce_2"));
+    MyLettucePlant4 = (BlockLettuce) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "lettuce_3"));
+    MyLettuce = (ItemLettuce) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "lettuce_seed"));
 
-    MagicApple = (ItemMagicApple) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "magicapple"));
-    MinersDream = (ItemMinersDream) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "minersdream"));
-    ExtremeTorch = (BlockExtremeTorch) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "extremetorch"));
-    KrakenRepellent = (KrakenRepellent) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "krakenrepellent"));
-    MyIslandBlock = (IslandBlock) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "island"));
-    CreeperRepellent = (CreeperRepellent) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "creeperrepellent"));
-    ZooCage2 = (ZooCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "zoo2"));
-    ZooCage4 = (ZooCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "zoo4"));
-    ZooCage6 = (ZooCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "zoo6"));
-    ZooCage8 = (ZooCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "zoo8"));
-    ZooCage10 = (ZooCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "zoo10"));
-    InstantShelter = (InstantShelter) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "instantshelter"));
-    InstantGarden = (InstantGarden) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "instantgarden"));
-    CrystalTorch = (BlockCrystalTorch) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystaltorch"));
-    MyKingSpawnerBlock = (KingSpawnerBlock) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "kingspawner"));
-    MyQueenSpawnerBlock = (QueenSpawnerBlock) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "queenspawner"));
-    RandomDungeon = (ItemRandomDungeon) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "randomdungeon"));
-    MyDungeonSpawnerBlock = (DungeonSpawnerBlock) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "dungeonspawner"));
+    MagicApple = (ItemMagicApple) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "magicapple"));
+    MinersDream = (ItemMinersDream) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "minersdream"));
+    ExtremeTorch = (BlockExtremeTorch) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "extremetorch"));
+    KrakenRepellent = (KrakenRepellent) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "krakenrepellent"));
+    MyIslandBlock = (IslandBlock) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "island"));
+    CreeperRepellent = (CreeperRepellent) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "creeperrepellent"));
+    ZooCage2 = (ZooCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "zoo2"));
+    ZooCage4 = (ZooCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "zoo4"));
+    ZooCage6 = (ZooCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "zoo6"));
+    ZooCage8 = (ZooCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "zoo8"));
+    ZooCage10 = (ZooCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "zoo10"));
+    InstantShelter = (InstantShelter) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "instantshelter"));
+    InstantGarden = (InstantGarden) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "instantgarden"));
+    CrystalTorch = (BlockCrystalTorch) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "crystaltorch"));
+    MyKingSpawnerBlock = (KingSpawnerBlock) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "kingspawner"));
+    MyQueenSpawnerBlock = (QueenSpawnerBlock) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "queenspawner"));
+    RandomDungeon = (ItemRandomDungeon) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "randomdungeon"));
+    MyDungeonSpawnerBlock = (DungeonSpawnerBlock) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "dungeonspawner"));
 
-    MyAppleLeaves = (BlockAppleLeaves) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "leaves_apple"));
-    MyAppleSeed = (ItemAppleSeed) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "appletree_seed"));
-    MySkyTreeLog = (BlockSkyTreeLog) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "skytreelog"));
+    MyAppleLeaves = (BlockAppleLeaves) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "leaves_apple"));
+    MyAppleSeed = (ItemAppleSeed) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "appletree_seed"));
+    MySkyTreeLog = (BlockSkyTreeLog) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "skytreelog"));
 
-    MyDT = (BlockDuplicatorLog) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "duplicatortreelog"));
-    MyExperienceLeaves = (BlockExperienceLeaves) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "leaves_experience"));
-    MyExperienceCatcher = (ExperienceCatcher) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "experiencecatcher"));
-    MyExperienceTreeSeed = (ItemExperienceTreeSeed) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "experiencetree_seed"));
-    MyExperiencePlant = (BlockExperiencePlant) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "experiencesapling"));
-    MyDeadStinkBug = (ItemSalt) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "deadstinkbug"));
-    MyFlowerPinkBlock = (MyBlockFlower) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "flower_pink"));
-    MyFlowerBlueBlock = (MyBlockFlower) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "flower_blue"));
-    MyFlowerBlackBlock = (MyBlockFlower) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "flower_black"));
-    MyFlowerScaryBlock = (MyBlockFlower) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "flower_scary"));
-    MyScaryLeaves = (BlockScaryLeaves) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "leaves_scary"));
-    MyCherryLeaves = (BlockScaryLeaves) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "leaves_cherry"));
-    MyPeachLeaves = (BlockScaryLeaves) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "leaves_peach"));
-    MyCherrySeed = (ItemAppleSeed) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cherrytree_seed"));
-    MyPeachSeed = (ItemAppleSeed) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "peachtree_seed"));
-    CrystalFlowerRedBlock = (MyBlockFlower) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalflower_red"));
-    CrystalFlowerGreenBlock = (MyBlockFlower) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalflower_green"));
-    CrystalFlowerBlueBlock = (MyBlockFlower) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalflower_blue"));
-    CrystalFlowerYellowBlock = (MyBlockFlower) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalflower_yellow"));
-    MyCrystalLeaves = (BlockCrystalLeaves) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystaltreeleaves"));
-    MyCrystalTreeLog = (BlockCrystalTreeLog) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystaltreelog"));
-    MyCrystalLeaves2 = (BlockCrystalLeaves) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystaltreeleaves2"));
-    MyCrystalLeaves3 = (BlockCrystalLeaves) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystaltreeleaves3"));
-    MyCrystalPlant = (BlockCrystalPlant) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalsapling"));
-    MyCrystalPlant2 = (BlockCrystalPlant) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalsapling2"));
-    MyCrystalPlant3 = (BlockCrystalPlant) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalsapling3"));
+    MyDT = (BlockDuplicatorLog) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "duplicatortreelog"));
+    MyExperienceLeaves = (BlockExperienceLeaves) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "leaves_experience"));
+    MyExperienceCatcher = (ExperienceCatcher) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "experiencecatcher"));
+    MyExperienceTreeSeed = (ItemExperienceTreeSeed) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "experiencetree_seed"));
+    MyExperiencePlant = (BlockExperiencePlant) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "experiencesapling"));
+    MyDeadStinkBug = (ItemSalt) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "deadstinkbug"));
+    MyFlowerPinkBlock = (MyBlockFlower) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "flower_pink"));
+    MyFlowerBlueBlock = (MyBlockFlower) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "flower_blue"));
+    MyFlowerBlackBlock = (MyBlockFlower) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "flower_black"));
+    MyFlowerScaryBlock = (MyBlockFlower) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "flower_scary"));
+    MyScaryLeaves = (BlockScaryLeaves) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "leaves_scary"));
+    MyCherryLeaves = (BlockScaryLeaves) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "leaves_cherry"));
+    MyPeachLeaves = (BlockScaryLeaves) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "leaves_peach"));
+    MyCherrySeed = (ItemAppleSeed) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cherrytree_seed"));
+    MyPeachSeed = (ItemAppleSeed) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "peachtree_seed"));
+    CrystalFlowerRedBlock = (MyBlockFlower) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "crystalflower_red"));
+    CrystalFlowerGreenBlock = (MyBlockFlower) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "crystalflower_green"));
+    CrystalFlowerBlueBlock = (MyBlockFlower) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "crystalflower_blue"));
+    CrystalFlowerYellowBlock = (MyBlockFlower) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "crystalflower_yellow"));
+    MyCrystalLeaves = (BlockCrystalLeaves) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "crystaltreeleaves"));
+    MyCrystalTreeLog = (BlockCrystalTreeLog) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "crystaltreelog"));
+    MyCrystalLeaves2 = (BlockCrystalLeaves) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "crystaltreeleaves2"));
+    MyCrystalLeaves3 = (BlockCrystalLeaves) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "crystaltreeleaves3"));
+    MyCrystalPlant = (BlockCrystalPlant) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "crystalsapling"));
+    MyCrystalPlant2 = (BlockCrystalPlant) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "crystalsapling2"));
+    MyCrystalPlant3 = (BlockCrystalPlant) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "crystalsapling3"));
 
-    MyEnderPearlBlock = (OreGenericEgg) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "blockenderpearl"));
-    MyEyeOfEnderBlock = (OreGenericEgg) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "blockeyeofender"));
+    MyEnderPearlBlock = (OreGenericEgg) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "blockenderpearl"));
+    MyEyeOfEnderBlock = (OreGenericEgg) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "blockeyeofender"));
 
     make_some_more_things();
     proxy.registerBlockModels();
@@ -4650,12 +4653,12 @@ private static void registerAllCritterCages() {
 
   /** 1.20.1 registry paths must be [a-z0-9/._-]; 1.12 ids used PascalCase. */
   private static ResourceLocation cpId(String path) {
-    return ResourceLocation.fromNamespaceAndPath(MODID, path.toLowerCase(Locale.ROOT));
+    return new ResourceLocation(MODID, path.toLowerCase(Locale.ROOT));
   }
 
   private static ResourceLocation normalizeRegistryPath(ResourceLocation id) {
     String path = id.getPath().toLowerCase(Locale.ROOT);
-    return ResourceLocation.fromNamespaceAndPath(id.getNamespace(), path);
+    return new ResourceLocation(id.getNamespace(), path);
   }
 
   private ResourceLocation nextRecipeId(ResourceLocation baseId)
@@ -4668,7 +4671,7 @@ private static void registerAllCritterCages() {
     }
     int suffix = seen.intValue();
     recipeNameUseCounts.put(key, Integer.valueOf(suffix + 1));
-    return ResourceLocation.fromNamespaceAndPath(baseId.getNamespace(), baseId.getPath() + "_" + suffix);
+    return new ResourceLocation(baseId.getNamespace(), baseId.getPath() + "_" + suffix);
   }
 
   private void addShapedRecipe(ResourceLocation name, ResourceLocation group, ItemStack output, Object... params)
@@ -4997,7 +5000,7 @@ private static void registerAllCritterCages() {
 
     GameRegistry.findRegistry(Item.class).register(MyPizzaItem);
     GameRegistry.findRegistry(Item.class).register(MyDuctTapeItem);
-    GameRegistry.findRegistry(Item.class).register(BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "island")));
+    GameRegistry.findRegistry(Item.class).register(BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "island")));
     GameRegistry.findRegistry(Item.class).register(MyIngotUranium);
     GameRegistry.findRegistry(Item.class).register(MyCrystalPinkIngot);
     GameRegistry.findRegistry(Item.class).register(MyTigersEyeIngot);
@@ -5890,23 +5893,23 @@ private static void registerAllCritterCages() {
     GameRegistry.addSmelting(MyOreAmethystBlock, new ItemStack(MyAmethyst, 1), 1.0F);
     GameRegistry.addSmelting(MyOreSaltBlock, new ItemStack(MySalt, 8), 0.1F);
     GameRegistry.addSmelting(
-        BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "deepslate_oreuranium")),
+        BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "deepslate_oreuranium")),
         new ItemStack(UraniumNugget),
         0.3F);
     GameRegistry.addSmelting(
-        BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "deepslate_oretitanium")),
+        BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "deepslate_oretitanium")),
         new ItemStack(TitaniumNugget),
         0.3F);
     GameRegistry.addSmelting(
-        BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "deepslate_oreruby")),
+        BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "deepslate_oreruby")),
         new ItemStack(MyRuby, 1),
         1.0F);
     GameRegistry.addSmelting(
-        BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "deepslate_oreamethyst")),
+        BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "deepslate_oreamethyst")),
         new ItemStack(MyAmethyst, 1),
         1.0F);
     GameRegistry.addSmelting(
-        BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "deepslate_oresalt")),
+        BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "deepslate_oresalt")),
         new ItemStack(MySalt, 8),
         0.1F);
     GameRegistry.addSmelting(MyCornCob, new ItemStack(MyPopcorn), 0.1F);
@@ -7791,233 +7794,233 @@ private static void registerAllCritterCages() {
 
   public void initializeCagesAndEggs()
   {
-    CageEmpty = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cageempty"));
-    CagedSpider = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagespider"));
-    CagedBat = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagebat"));
-    CagedCow = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagecow"));
-    CagedPig = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagepig"));
-    CagedSquid = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagesquid"));
-    CagedChicken = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagechicken"));
-    CagedCreeper = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagecreeper"));
-    CagedSkeleton = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cageskeleton"));
-    CagedZombie = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagezombie"));
-    CagedSlime = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cageslime"));
-    CagedGhast = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cageghast"));
-    CagedZombiePigman = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagezombiepigman"));
-    CagedEnderman = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cageenderman"));
-    CagedCaveSpider = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagecavespider"));
-    CagedSilverfish = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagesilverfish"));
-    CagedMagmaCube = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagemagmacube"));
-    CagedWitch = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagewitch"));
-    CagedSheep = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagesheep"));
-    CagedWolf = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagewolf"));
-    CagedMooshroom = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagemooshroom"));
-    CagedOcelot = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cageocelot"));
-    CagedBlaze = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cageblaze"));
-    CagedGirlfriend = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagegirlfriend"));
-    CagedBoyfriend = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cageboyfriend"));
-    CagedWitherSkeleton = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagewitherskeleton"));
-    CagedEnderDragon = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cageenderdragon"));
-    CagedSnowGolem = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagesnowgolem"));
-    CagedIronGolem = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cageirongolem"));
-    CagedWitherBoss = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagewitherboss"));
-    CagedRedCow = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cageredcow"));
-    CagedGoldCow = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagegoldcow"));
-    CagedEnchantedCow = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cageenchantedcow"));
-    CagedMOTHRA = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagemothra"));
-    CagedAlo = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagealosaurus"));
-    CagedCryo = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagecryolophosaurus"));
-    CagedCama = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagecamarasaurus"));
-    CagedVelo = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagevelocityraptor"));
-    CagedHydro = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagehydrolisc"));
-    CagedBasil = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagebasilisc"));
-    CagedDragonfly = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagedragonfly"));
-    CagedEmperorScorpion = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cageemperorscorpion"));
-    CagedScorpion = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagescorpion"));
-    CagedCaveFisher = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagecavefisher"));
-    CagedSpyro = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagespyro"));
-    CagedBaryonyx = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagebaryonyx"));
-    CagedGammaMetroid = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagegammametroid"));
-    CagedCockateil = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagecockateil"));
-    CagedKyuubi = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagekyuubi"));
-    CagedAlien = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagealien"));
-    CagedAttackSquid = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cageattacksquid"));
-    CagedWaterDragon = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagewaterdragon"));
-    CagedCephadrome = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagecephadrome"));
-    CagedKraken = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagekraken"));
-    CagedLizard = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagelizard"));
-    CagedDragon = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagedragon"));
-    CagedBee = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagebee"));
-    CagedHorse = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagehorse"));
-    CagedFirefly = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagefirefly"));
-    CagedChipmunk = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagechipmunk"));
-    CagedGazelle = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagegazelle"));
-    CagedOstrich = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cageostrich"));
-    CagedTrooper = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagetrooper"));
-    CagedSpit = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagespit"));
-    CagedStink = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagestink"));
-    CagedCreepingHorror = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagecreepinghorror"));
-    CagedTerribleTerror = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cageterribleterror"));
-    CagedCliffRacer = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagecliffracer"));
-    CagedTriffid = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagetriffid"));
-    CagedPitchBlack = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagenightmare"));
-    CagedLurkingTerror = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagelurkingterror"));
-    CagedSmallWorm = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagesmallworm"));
-    CagedMediumWorm = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagemediumworm"));
-    CagedLargeWorm = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagelargeworm"));
-    CagedCassowary = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagecassowary"));
-    CagedCloudShark = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagecloudshark"));
-    CagedGoldFish = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagegoldfish"));
-    CagedLeafMonster = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cageleafmonster"));
-    CagedEnderKnight = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cageenderknight"));
-    CagedEnderReaper = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cageenderreaper"));
-    CagedBeaver = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagebeaver"));
-    CagedUrchin = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cageurchin"));
-    CagedFlounder = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cageflounder"));
-    CagedSkate = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cageskate"));
-    CagedRotator = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagerotator"));
-    CagedPeacock = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagepeacock"));
-    CagedFairy = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagefairy"));
-    CagedDungeonBeast = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagedungeonbeast"));
-    CagedVortex = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagevortex"));
-    CagedRat = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagerat"));
-    CagedWhale = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagewhale"));
-    CagedIrukandji = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cageirukandji"));
-    CagedTRex = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagetrex"));
-    CagedHercules = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagehercules"));
-    CagedMantis = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagemantis"));
-    CagedStinky = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagestinky"));
-    CagedEasterBunny = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cageeasterbunny"));
-    CagedCaterKiller = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagecaterkiller"));
-    CagedMolenoid = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagemolenoid"));
-    CagedSeaMonster = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cageseamonster"));
-    CagedSeaViper = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cageseaviper"));
-    CagedLeon = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cageleon"));
-    CagedHammerhead = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagehammerhead"));
-    CagedRubberDucky = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagerubberducky"));
-    CagedCrystalCow = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagecrystalcow"));
-    CagedVillager = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagevillager"));
-    CagedCriminal = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagecriminal"));
-    CagedBrutalfly = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagebrutalfly"));
-    CagedNastysaurus = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagenastysaurus"));
-    CagedPointysaurus = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagepointysaurus"));
-    CagedCricket = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagecricket"));
-    CagedFrog = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagefrog"));
-    CagedSpiderDriver = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagespiderdriver"));
-    CagedCrab = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagecrab"));
+    CageEmpty = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cageempty"));
+    CagedSpider = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagespider"));
+    CagedBat = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagebat"));
+    CagedCow = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagecow"));
+    CagedPig = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagepig"));
+    CagedSquid = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagesquid"));
+    CagedChicken = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagechicken"));
+    CagedCreeper = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagecreeper"));
+    CagedSkeleton = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cageskeleton"));
+    CagedZombie = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagezombie"));
+    CagedSlime = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cageslime"));
+    CagedGhast = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cageghast"));
+    CagedZombiePigman = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagezombiepigman"));
+    CagedEnderman = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cageenderman"));
+    CagedCaveSpider = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagecavespider"));
+    CagedSilverfish = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagesilverfish"));
+    CagedMagmaCube = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagemagmacube"));
+    CagedWitch = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagewitch"));
+    CagedSheep = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagesheep"));
+    CagedWolf = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagewolf"));
+    CagedMooshroom = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagemooshroom"));
+    CagedOcelot = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cageocelot"));
+    CagedBlaze = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cageblaze"));
+    CagedGirlfriend = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagegirlfriend"));
+    CagedBoyfriend = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cageboyfriend"));
+    CagedWitherSkeleton = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagewitherskeleton"));
+    CagedEnderDragon = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cageenderdragon"));
+    CagedSnowGolem = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagesnowgolem"));
+    CagedIronGolem = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cageirongolem"));
+    CagedWitherBoss = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagewitherboss"));
+    CagedRedCow = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cageredcow"));
+    CagedGoldCow = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagegoldcow"));
+    CagedEnchantedCow = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cageenchantedcow"));
+    CagedMOTHRA = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagemothra"));
+    CagedAlo = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagealosaurus"));
+    CagedCryo = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagecryolophosaurus"));
+    CagedCama = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagecamarasaurus"));
+    CagedVelo = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagevelocityraptor"));
+    CagedHydro = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagehydrolisc"));
+    CagedBasil = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagebasilisc"));
+    CagedDragonfly = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagedragonfly"));
+    CagedEmperorScorpion = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cageemperorscorpion"));
+    CagedScorpion = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagescorpion"));
+    CagedCaveFisher = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagecavefisher"));
+    CagedSpyro = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagespyro"));
+    CagedBaryonyx = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagebaryonyx"));
+    CagedGammaMetroid = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagegammametroid"));
+    CagedCockateil = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagecockateil"));
+    CagedKyuubi = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagekyuubi"));
+    CagedAlien = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagealien"));
+    CagedAttackSquid = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cageattacksquid"));
+    CagedWaterDragon = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagewaterdragon"));
+    CagedCephadrome = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagecephadrome"));
+    CagedKraken = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagekraken"));
+    CagedLizard = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagelizard"));
+    CagedDragon = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagedragon"));
+    CagedBee = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagebee"));
+    CagedHorse = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagehorse"));
+    CagedFirefly = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagefirefly"));
+    CagedChipmunk = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagechipmunk"));
+    CagedGazelle = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagegazelle"));
+    CagedOstrich = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cageostrich"));
+    CagedTrooper = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagetrooper"));
+    CagedSpit = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagespit"));
+    CagedStink = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagestink"));
+    CagedCreepingHorror = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagecreepinghorror"));
+    CagedTerribleTerror = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cageterribleterror"));
+    CagedCliffRacer = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagecliffracer"));
+    CagedTriffid = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagetriffid"));
+    CagedPitchBlack = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagenightmare"));
+    CagedLurkingTerror = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagelurkingterror"));
+    CagedSmallWorm = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagesmallworm"));
+    CagedMediumWorm = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagemediumworm"));
+    CagedLargeWorm = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagelargeworm"));
+    CagedCassowary = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagecassowary"));
+    CagedCloudShark = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagecloudshark"));
+    CagedGoldFish = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagegoldfish"));
+    CagedLeafMonster = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cageleafmonster"));
+    CagedEnderKnight = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cageenderknight"));
+    CagedEnderReaper = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cageenderreaper"));
+    CagedBeaver = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagebeaver"));
+    CagedUrchin = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cageurchin"));
+    CagedFlounder = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cageflounder"));
+    CagedSkate = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cageskate"));
+    CagedRotator = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagerotator"));
+    CagedPeacock = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagepeacock"));
+    CagedFairy = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagefairy"));
+    CagedDungeonBeast = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagedungeonbeast"));
+    CagedVortex = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagevortex"));
+    CagedRat = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagerat"));
+    CagedWhale = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagewhale"));
+    CagedIrukandji = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cageirukandji"));
+    CagedTRex = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagetrex"));
+    CagedHercules = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagehercules"));
+    CagedMantis = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagemantis"));
+    CagedStinky = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagestinky"));
+    CagedEasterBunny = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cageeasterbunny"));
+    CagedCaterKiller = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagecaterkiller"));
+    CagedMolenoid = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagemolenoid"));
+    CagedSeaMonster = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cageseamonster"));
+    CagedSeaViper = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cageseaviper"));
+    CagedLeon = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cageleon"));
+    CagedHammerhead = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagehammerhead"));
+    CagedRubberDucky = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagerubberducky"));
+    CagedCrystalCow = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagecrystalcow"));
+    CagedVillager = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagevillager"));
+    CagedCriminal = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagecriminal"));
+    CagedBrutalfly = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagebrutalfly"));
+    CagedNastysaurus = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagenastysaurus"));
+    CagedPointysaurus = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagepointysaurus"));
+    CagedCricket = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagecricket"));
+    CagedFrog = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagefrog"));
+    CagedSpiderDriver = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagespiderdriver"));
+    CagedCrab = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagecrab"));
 
-    EnderDragonEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggenderdragon"));
-    WitherBossEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggwitherboss"));
-    GirlfriendEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "egggirlfriend"));
-    RedCowEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggredcow"));
-    CrystalCowEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggcrystalcow"));
-    GoldCowEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "egggoldcow"));
-    EnchantedCowEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggenchantedcow"));
-    MOTHRAEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggmothra"));
-    AloEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggalosaurus"));
-    CryoEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggcryolophosaurus"));
-    CamaEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggcamarasaurus"));
-    VeloEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggvelocityraptor"));
-    HydroEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "egghydrolisc"));
-    BasilEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggbasilisc"));
-    DragonflyEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggdragonfly"));
-    EmperorScorpionEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggemperorscorpion"));
-    ScorpionEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggscorpion"));
-    CaveFisherEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggcavefisher"));
-    SpyroEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggspyro"));
-    BaryonyxEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggbaryonyx"));
-    GammaMetroidEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "egggammametroid"));
-    CockateilEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggcockateil"));
-    KyuubiEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggkyuubi"));
-    AlienEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggalien"));
-    AttackSquidEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggattacksquid"));
-    WaterDragonEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggwaterdragon"));
-    CephadromeEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggcephadrome"));
-    KrakenEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggkraken"));
-    LizardEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "egglizard"));
-    DragonEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggdragon"));
-    BeeEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggbee"));
-    TrooperBugEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggtrooper"));
-    SpitBugEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggspit"));
-    StinkBugEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggstink"));
-    OstrichEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggostrich"));
-    GazelleEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "egggazelle"));
-    ChipmunkEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggchipmunk"));
-    CreepingHorrorEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggcreepinghorror"));
-    TerribleTerrorEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggterribleterror"));
-    CliffRacerEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggcliffracer"));
-    TriffidEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggtriffid"));
-    PitchBlackEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggnightmare"));
-    LurkingTerrorEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "egglurkingterror"));
-    GodzillaEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "egggodzilla"));
-    SmallWormEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggsmallworm"));
-    MediumWormEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggmediumworm"));
-    LargeWormEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "egglargeworm"));
-    CassowaryEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggcassowary"));
-    CloudSharkEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggcloudshark"));
-    GoldFishEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "egggoldfish"));
-    LeafMonsterEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggleafmonster"));
-    TshirtEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggtshirt"));
-    EnderKnightEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggenderknight"));
-    EnderReaperEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggenderreaper"));
-    BeaverEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggbeaver"));
-    RotatorEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggrotator"));
-    VortexEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggvortex"));
-    PeacockEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggpeacock"));
-    FairyEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggfairy"));
-    DungeonBeastEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggdungeonbeast"));
-    RatEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggrat"));
-    FlounderEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggflounder"));
-    WhaleEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggwhale"));
-    IrukandjiEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggirukandji"));
-    SkateEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggskate"));
-    UrchinEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggurchin"));
-    Robot1Egg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggrobot1"));
-    Robot2Egg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggrobot2"));
-    Robot3Egg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggrobot3"));
-    Robot4Egg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggrobot4"));
-    GhostEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggghost"));
-    GhostSkellyEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggghostskelly"));
-    BrownAntEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggbrownant"));
-    RedAntEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggredant"));
-    RainbowAntEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggrainbowant"));
-    UnstableAntEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggunstableant"));
-    TermiteEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggtermite"));
-    ButterflyEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggbutterfly"));
-    MothEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggmoth"));
-    MosquitoEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggmosquito"));
-    FireflyEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggfirefly"));
-    TRexEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggtrex"));
-    HerculesEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "egghercules"));
-    MantisEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggmantis"));
-    StinkyEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggstinky"));
-    Robot5Egg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggrobot5"));
-    CoinEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggcoin"));
-    BoyfriendEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggboyfriend"));
-    TheKingEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggtheking"));
-    TheQueenEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggthequeen"));
-    ThePrinceEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggtheprince"));
-    EasterBunnyEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggeasterbunny"));
-    MolenoidEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggmolenoid"));
-    SeaMonsterEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggseamonster"));
-    SeaViperEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggseaviper"));
-    CaterKillerEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggcaterkiller"));
-    RubberDuckyEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggrubberducky"));
-    HammerheadEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "egghammerhead"));
-    LeonEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggleon"));
-    CriminalEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggcriminal"));
-    BrutalflyEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggbrutalfly"));
-    NastysaurusEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggnastysaurus"));
-    PointysaurusEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggpointysaurus"));
-    CricketEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggcricket"));
-    ThePrincessEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggtheprincess"));
-    FrogEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggfrog"));
-    JefferyEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggrobot6"));
-    AntRobotEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggantrobot"));
-    SpiderRobotEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggspiderrobot"));
-    SpiderDriverEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggspiderdriver"));
-    CrabEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggcrab"));
-    RockEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggrock"));
+    EnderDragonEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggenderdragon"));
+    WitherBossEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggwitherboss"));
+    GirlfriendEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "egggirlfriend"));
+    RedCowEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggredcow"));
+    CrystalCowEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggcrystalcow"));
+    GoldCowEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "egggoldcow"));
+    EnchantedCowEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggenchantedcow"));
+    MOTHRAEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggmothra"));
+    AloEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggalosaurus"));
+    CryoEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggcryolophosaurus"));
+    CamaEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggcamarasaurus"));
+    VeloEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggvelocityraptor"));
+    HydroEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "egghydrolisc"));
+    BasilEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggbasilisc"));
+    DragonflyEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggdragonfly"));
+    EmperorScorpionEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggemperorscorpion"));
+    ScorpionEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggscorpion"));
+    CaveFisherEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggcavefisher"));
+    SpyroEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggspyro"));
+    BaryonyxEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggbaryonyx"));
+    GammaMetroidEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "egggammametroid"));
+    CockateilEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggcockateil"));
+    KyuubiEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggkyuubi"));
+    AlienEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggalien"));
+    AttackSquidEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggattacksquid"));
+    WaterDragonEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggwaterdragon"));
+    CephadromeEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggcephadrome"));
+    KrakenEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggkraken"));
+    LizardEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "egglizard"));
+    DragonEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggdragon"));
+    BeeEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggbee"));
+    TrooperBugEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggtrooper"));
+    SpitBugEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggspit"));
+    StinkBugEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggstink"));
+    OstrichEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggostrich"));
+    GazelleEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "egggazelle"));
+    ChipmunkEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggchipmunk"));
+    CreepingHorrorEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggcreepinghorror"));
+    TerribleTerrorEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggterribleterror"));
+    CliffRacerEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggcliffracer"));
+    TriffidEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggtriffid"));
+    PitchBlackEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggnightmare"));
+    LurkingTerrorEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "egglurkingterror"));
+    GodzillaEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "egggodzilla"));
+    SmallWormEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggsmallworm"));
+    MediumWormEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggmediumworm"));
+    LargeWormEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "egglargeworm"));
+    CassowaryEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggcassowary"));
+    CloudSharkEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggcloudshark"));
+    GoldFishEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "egggoldfish"));
+    LeafMonsterEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggleafmonster"));
+    TshirtEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggtshirt"));
+    EnderKnightEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggenderknight"));
+    EnderReaperEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggenderreaper"));
+    BeaverEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggbeaver"));
+    RotatorEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggrotator"));
+    VortexEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggvortex"));
+    PeacockEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggpeacock"));
+    FairyEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggfairy"));
+    DungeonBeastEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggdungeonbeast"));
+    RatEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggrat"));
+    FlounderEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggflounder"));
+    WhaleEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggwhale"));
+    IrukandjiEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggirukandji"));
+    SkateEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggskate"));
+    UrchinEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggurchin"));
+    Robot1Egg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggrobot1"));
+    Robot2Egg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggrobot2"));
+    Robot3Egg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggrobot3"));
+    Robot4Egg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggrobot4"));
+    GhostEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggghost"));
+    GhostSkellyEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggghostskelly"));
+    BrownAntEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggbrownant"));
+    RedAntEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggredant"));
+    RainbowAntEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggrainbowant"));
+    UnstableAntEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggunstableant"));
+    TermiteEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggtermite"));
+    ButterflyEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggbutterfly"));
+    MothEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggmoth"));
+    MosquitoEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggmosquito"));
+    FireflyEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggfirefly"));
+    TRexEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggtrex"));
+    HerculesEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "egghercules"));
+    MantisEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggmantis"));
+    StinkyEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggstinky"));
+    Robot5Egg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggrobot5"));
+    CoinEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggcoin"));
+    BoyfriendEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggboyfriend"));
+    TheKingEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggtheking"));
+    TheQueenEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggthequeen"));
+    ThePrinceEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggtheprince"));
+    EasterBunnyEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggeasterbunny"));
+    MolenoidEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggmolenoid"));
+    SeaMonsterEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggseamonster"));
+    SeaViperEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggseaviper"));
+    CaterKillerEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggcaterkiller"));
+    RubberDuckyEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggrubberducky"));
+    HammerheadEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "egghammerhead"));
+    LeonEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggleon"));
+    CriminalEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggcriminal"));
+    BrutalflyEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggbrutalfly"));
+    NastysaurusEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggnastysaurus"));
+    PointysaurusEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggpointysaurus"));
+    CricketEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggcricket"));
+    ThePrincessEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggtheprincess"));
+    FrogEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggfrog"));
+    JefferyEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggrobot6"));
+    AntRobotEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggantrobot"));
+    SpiderRobotEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggspiderrobot"));
+    SpiderDriverEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggspiderdriver"));
+    CrabEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggcrab"));
+    RockEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggrock"));
   }
 
   private void DoDispenserRegistrations()
@@ -8201,6 +8204,7 @@ private static void registerAllCritterCages() {
         || pathLower.contains("sapling")
         || pathLower.startsWith("lettuce_")
         || pathLower.startsWith("quinoa_")
+        || pathLower.startsWith("potted_")
         || "dungeonspawner".equals(pathLower);
   }
 
@@ -9326,11 +9330,11 @@ private static void registerAllCritterCages() {
 
   private OreGenericEgg oreEggBlock(String path) {
     return (OreGenericEgg)
-        BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, path));
+        BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, path));
   }
 
   private Block antBlock(String path) {
-    return BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, path));
+    return BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, path));
   }
 
   private void laySomeEggs()

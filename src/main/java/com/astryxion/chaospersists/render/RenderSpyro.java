@@ -8,7 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderSpyro extends MobRenderer<Spyro, ModelSpyro> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/spyrotexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/spyrotexture.png");
     private final float scale;
 
     public RenderSpyro(EntityRendererProvider.Context context, ModelSpyro model, float shadow, float scale) {

@@ -8,7 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderVortex extends MobRenderer<Vortex, ModelVortex> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/vortextexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/vortextexture.png");
     private final float scale;
 
     public RenderVortex(EntityRendererProvider.Context context, ModelVortex model, float shadow, float scale) {

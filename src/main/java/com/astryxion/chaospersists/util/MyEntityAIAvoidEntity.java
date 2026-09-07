@@ -39,6 +39,10 @@ public class MyEntityAIAvoidEntity extends Goal {
         if (this.theEntity instanceof EntityCannonFodder cf && cf.get_is_activated() != 0) {
             return false;
         }
+        if (this.theEntity instanceof TamableAnimal tamable
+                && (tamable.isOrderedToSit() || tamable.isInSittingPose())) {
+            return false;
+        }
         if (this.targetEntityClass == Player.class) {
             if (this.theEntity instanceof TamableAnimal tamable && tamable.isTame()) {
                 return false;
@@ -73,6 +77,10 @@ public class MyEntityAIAvoidEntity extends Goal {
 
     @Override
     public boolean canContinueToUse() {
+        if (this.theEntity instanceof TamableAnimal tamable
+                && (tamable.isOrderedToSit() || tamable.isInSittingPose())) {
+            return false;
+        }
         return !this.entityPathNavigate.isDone();
     }
 

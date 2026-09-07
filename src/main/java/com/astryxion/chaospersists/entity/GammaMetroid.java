@@ -6,6 +6,7 @@ import com.astryxion.chaospersists.util.GenericTargetSorter;
 import com.astryxion.chaospersists.util.MyEntityAIFollowOwner;
 import com.astryxion.chaospersists.util.MyEntityAIWanderALot;
 import com.astryxion.chaospersists.util.MyUtils;
+import com.astryxion.chaospersists.util.PetCombatHelper;
 import com.astryxion.chaospersists.util.ChaosChaseMoveControl;
 import com.astryxion.chaospersists.util.SpawnerFixHelper;
 import java.util.Collections;
@@ -167,14 +168,36 @@ public class GammaMetroid extends TamableAnimal {
             return InteractionResult.SUCCESS;
         }
         if (this.isTame() && this.isOwnedBy(player) && player.distanceToSqr(this) < 25.0) {
-            if (!this.isInSittingPose()) {
-                this.setOrderedToSit(true);
-            } else {
-                this.setOrderedToSit(false);
+            // Toggle on ordered sit (not pose) — pose was never set, so unsit never fired
+            if (!this.level().isClientSide) {
+                boolean sit = !this.isOrderedToSit();
+                this.setOrderedToSit(sit);
+                this.setInSittingPose(sit);
+                if (sit) {
+                    PetCombatHelper.onPetSit(this);
+                    if (this.getNavigation() != null) {
+                        this.getNavigation().stop();
+                    }
+                }
             }
             return InteractionResult.SUCCESS;
         }
         return InteractionResult.PASS;
+    }
+
+    @Override
+    public void setOrderedToSit(boolean sitting) {
+        super.setOrderedToSit(sitting);
+        this.setInSittingPose(sitting);
+        if (sitting && this.getNavigation() != null) {
+            this.getNavigation().stop();
+        }
+    }
+
+    @Override
+    public boolean isImmobile() {
+        return super.isImmobile()
+                || (this.isOrderedToSit() && this.getPassengers().isEmpty());
     }
 
     public int mygetMaxHealth() {
@@ -252,11 +275,25 @@ public class GammaMetroid extends TamableAnimal {
         if (this.isDeadOrDying()) {
             return;
         }
+        if (this.isOrderedToSit()) {
+            this.setTarget(null);
+            if (this.getNavigation() != null) {
+                this.getNavigation().stop();
+            }
+            return;
+        }
+        PetCombatHelper.tickPetCombat(this);
         super.customServerAiStep();
         LivingEntity target;
         if (this.level().getDifficulty() != Difficulty.PEACEFUL
                 && this.getRandom().nextInt(5) == 0
-                && (target = this.findSomethingToAttack()) != null) {
+                && (target =
+                        PetCombatHelper.resolveCombatTarget(
+                                this, this.getTarget(), this::findSomethingToAttack))
+                        != null) {
+            if (target != this.getTarget()) {
+                this.setTarget(target);
+            }
             this.setTarget(target);
             if (this.distanceToSqr(target) <= 9.0) {
                 MyUtils.faceEntity(this, target, 10.0f, 10.0f);
@@ -270,7 +307,7 @@ public class GammaMetroid extends TamableAnimal {
         if ((this.getRandom().nextInt(20) == 0 && this.getHealth() < (float) this.mygetMaxHealth()
                         || this.getRandom().nextInt(100) == 0)
                 && ChaosPersists.PlayNicely == 0
-                && !this.isInSittingPose()) {
+                && !this.isOrderedToSit()) {
             this.closest = 99999;
             this.tz = 0;
             this.ty = 0;
@@ -326,7 +363,7 @@ public class GammaMetroid extends TamableAnimal {
         if (par1EntityLiving instanceof GammaMetroid) {
             return false;
         }
-        if (par1EntityLiving instanceof Monster) {
+        if (PetCombatHelper.isAutoHostileTarget(par1EntityLiving)) {
             return false;
         }
         if (this.isTame()) {

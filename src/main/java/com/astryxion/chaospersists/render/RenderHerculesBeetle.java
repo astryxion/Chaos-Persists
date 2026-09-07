@@ -8,7 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderHerculesBeetle extends MobRenderer<HerculesBeetle, ModelHerculesBeetle> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/beetletexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/beetletexture.png");
     private final float scale;
 
     public RenderHerculesBeetle(

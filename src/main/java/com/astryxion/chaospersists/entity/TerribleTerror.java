@@ -335,7 +335,7 @@ public class TerribleTerror extends Monster {
                         continue;
                     }
                     ResourceLocation terrorId =
-                            ResourceLocation.fromNamespaceAndPath("chaospersists", "terrible_terror");
+                            new ResourceLocation("chaospersists", "terrible_terror");
                     ResourceLocation norm = SpawnerFixHelper.normalizeSpawnerEntityId(id);
                     if (SpawnerFixHelper.entityIdsMatchForSpawner(norm, terrorId)
                             || "Terrible Terror".equals(id.getPath())) {
@@ -375,7 +375,7 @@ public class TerribleTerror extends Monster {
                         continue;
                     }
                     ResourceLocation terrorId =
-                            ResourceLocation.fromNamespaceAndPath("chaospersists", "terrible_terror");
+                            new ResourceLocation("chaospersists", "terrible_terror");
                     ResourceLocation norm = SpawnerFixHelper.normalizeSpawnerEntityId(id);
                     if (SpawnerFixHelper.entityIdsMatchForSpawner(norm, terrorId)
                             || "Terrible Terror".equals(id.getPath())) {

@@ -382,7 +382,7 @@ public class LurkingTerror extends Monster {
                         continue;
                     }
                     ResourceLocation lurkingId =
-                            ResourceLocation.fromNamespaceAndPath("chaospersists", "lurking_terror");
+                            new ResourceLocation("chaospersists", "lurking_terror");
                     ResourceLocation norm = SpawnerFixHelper.normalizeSpawnerEntityId(id);
                     if (SpawnerFixHelper.entityIdsMatchForSpawner(norm, lurkingId)
                             || "Lurking Terror".equals(id.getPath())) {
@@ -435,7 +435,7 @@ public class LurkingTerror extends Monster {
                         continue;
                     }
                     ResourceLocation lurkingId =
-                            ResourceLocation.fromNamespaceAndPath("chaospersists", "lurking_terror");
+                            new ResourceLocation("chaospersists", "lurking_terror");
                     ResourceLocation norm = SpawnerFixHelper.normalizeSpawnerEntityId(id);
                     if (SpawnerFixHelper.entityIdsMatchForSpawner(norm, lurkingId)
                             || "Lurking Terror".equals(id.getPath())) {

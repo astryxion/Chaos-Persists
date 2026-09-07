@@ -9,7 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderGodzilla extends MobRenderer<Godzilla, ModelGodzilla> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/godzillatexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/godzillatexture.png");
     private final float scale;
 
     public RenderGodzilla(EntityRendererProvider.Context context, ModelGodzilla model, float shadow, float scale) {

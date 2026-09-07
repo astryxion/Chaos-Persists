@@ -10,6 +10,7 @@ import com.astryxion.chaospersists.util.GenericTargetSorter;
 import com.astryxion.chaospersists.util.MyEntityAIFollowOwner;
 import com.astryxion.chaospersists.util.MyEntityAIWander;
 import com.astryxion.chaospersists.util.MyUtils;
+import com.astryxion.chaospersists.util.PetCombatHelper;
 import com.astryxion.chaospersists.util.RoyalPetFollowHelper;
 import java.util.Collections;
 import java.util.List;
@@ -39,6 +40,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.Pose;
@@ -128,7 +130,16 @@ public class ThePrinceAdult extends TamableAnimal {
         this.goalSelector.addGoal(4, new LookAtPlayerGoal(this, LivingEntity.class, 20.0f));
         this.goalSelector.addGoal(5, new RandomLookAroundGoal(this));
         if (ChaosPersists.PlayNicely == 0) {
-            this.targetSelector.addGoal(1, new NearestAttackableTargetGoal<>(this, Monster.class, true, false));
+            this.targetSelector.addGoal(
+                    1,
+                    new NearestAttackableTargetGoal<>(
+                            this, Mob.class, 10, true, false, PetCombatHelper::isNearestHostileGoalTarget) {
+                        @Override
+                        public boolean canUse() {
+                            return PetCombatHelper.canUseNearestHostileGoal(ThePrinceAdult.this)
+                                    && super.canUse();
+                        }
+                    });
         }
         this.targetSelector.addGoal(2, new ChaosHurtByTargetGoal(this));
     }
@@ -168,8 +179,7 @@ public class ThePrinceAdult extends TamableAnimal {
             if (orderedToSit) {
                 this.setActivity(0);
                 this.setAttacking(0);
-                this.setTarget(null);
-                this.setLastHurtByMob(null);
+                PetCombatHelper.onPetSit(this);
                 MyUtils.clearChaosFlight(this);
                 this.setNoGravity(false);
                 this.noPhysics = false;
@@ -869,15 +879,17 @@ public class ThePrinceAdult extends TamableAnimal {
             e.discard();
             return ret;
         }
-        if (e instanceof ThePrinceAdult) {
-            return false;
-        }
-        if (e instanceof Spyro) {
+        // 1.7.10 only ignored same-stage adults; isSuitableTarget rejects all royalty, so ignore
+        // the whole family here to prevent regal family feuds from collateral / retaliation.
+        if (MyUtils.isRoyalty(e) || e instanceof Spyro) {
             return false;
         }
         ret = super.hurt(par1DamageSource, par2);
         this.hurt_timer = 20;
-        if (e instanceof LivingEntity living && !this.level().isClientSide && MyUtils.isValidAggroTarget(living)) {
+        if (e instanceof LivingEntity living
+                && !this.level().isClientSide
+                && MyUtils.isValidAggroTarget(living)
+                && !MyUtils.isRoyalty(living)) {
             if (this.isTame() && e instanceof Player) {
                 return false;
             }
@@ -890,6 +902,7 @@ public class ThePrinceAdult extends TamableAnimal {
 
     @Override
     protected void customServerAiStep() {
+        PetCombatHelper.tickPetCombat(this);
         if (this.isTame() && !RoyalPetFollowHelper.isStayingPut(this)) {
             RoyalPetFollowHelper.syncDimensionOnly(this);
         }
@@ -903,7 +916,11 @@ public class ThePrinceAdult extends TamableAnimal {
                 && this.getPassengers().isEmpty()
                 && this.level().getDifficulty() != Difficulty.PEACEFUL
                 && this.getRandom().nextInt(10) == 1) {
-            e = this.findSomethingToAttack();
+            LivingEntity prior = this.getTarget();
+            e = PetCombatHelper.resolveCombatTarget(this, prior, this::findSomethingToAttack);
+            if (e != prior) {
+                this.setTarget(e);
+            }
             if (e != null) {
                 this.setActivity(1);
             } else {
@@ -986,7 +1003,11 @@ public class ThePrinceAdult extends TamableAnimal {
             return;
         }
         if (this.getRandom().nextInt(5) == 1 && this.level().getDifficulty() != Difficulty.PEACEFUL) {
-            e = this.findSomethingToAttack();
+            LivingEntity prior = this.getTarget();
+            e = PetCombatHelper.resolveCombatTarget(this, prior, this::findSomethingToAttack);
+            if (e != prior) {
+                this.setTarget(e);
+            }
             if (e != null) {
                 this.setAttacking(1);
                 if (this.distanceToSqr(e)
@@ -1022,10 +1043,10 @@ public class ThePrinceAdult extends TamableAnimal {
         if (MyUtils.isRoyalty(par1EntityLiving)) {
             return false;
         }
-        if (par1EntityLiving instanceof Monster) {
-            return true;
+        if (this.isTame() && !PetCombatHelper.wantsPetToAttack(this, par1EntityLiving)) {
+            return false;
         }
-        if (par1EntityLiving instanceof Mothra) {
+        if (PetCombatHelper.isAutoHostileTarget(par1EntityLiving)) {
             return true;
         }
         if (par1EntityLiving instanceof Kraken) {
@@ -1126,6 +1147,15 @@ public class ThePrinceAdult extends TamableAnimal {
     @Override
     public void tick() {
         LivingEntity e;
+        if (this.isDeadOrDying()) {
+            this.noPhysics = false;
+            if (!this.level().isClientSide) {
+                this.setNoGravity(false);
+            }
+            MyUtils.clearChaosFlight(this);
+            super.tick();
+            return;
+        }
         if (this.dismountCooldown > 0) {
             --this.dismountCooldown;
         }
@@ -1328,13 +1358,10 @@ public class ThePrinceAdult extends TamableAnimal {
                 && this.flyaway == 0
                 && this.level().getDifficulty() != Difficulty.PEACEFUL
                 && this.getRandom().nextInt(6) == 1) {
-            e = this.getTarget();
-            if (e != null && !e.isAlive()) {
-                this.setTarget(null);
-                e = null;
-            }
-            if (e == null) {
-                e = this.findSomethingToAttack();
+            LivingEntity prior = this.getTarget();
+            e = PetCombatHelper.resolveCombatTarget(this, prior, this::findSomethingToAttack);
+            if (e != prior) {
+                this.setTarget(e);
             }
             if (e != null) {
                 if (this.isTame() && this.getHealth() / (float) this.mygetMaxHealth() < 0.25f) {
@@ -1758,8 +1785,8 @@ public class ThePrinceAdult extends TamableAnimal {
     public static Entity spawnCreature(Level level, String par1, double par2, double par4, double par6) {
         ResourceLocation res =
                 par1.contains(":")
-                        ? ResourceLocation.parse(par1)
-                        : ResourceLocation.fromNamespaceAndPath(
+                        ? new ResourceLocation(par1)
+                        : new ResourceLocation(
                                 "chaospersists", par1.toLowerCase(Locale.ROOT).replace(' ', '_'));
         EntityType<?> type = ForgeRegistries.ENTITY_TYPES.getValue(res);
         if (type == null || !(level instanceof ServerLevel serverLevel)) {

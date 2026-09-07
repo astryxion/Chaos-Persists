@@ -16,7 +16,7 @@ import net.minecraftforge.fml.common.Mod;
 @Mod.EventBusSubscriber(modid = ChaosPersists.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public final class UtopiaDimension {
     public static final ResourceLocation UTOPIA_EFFECTS =
-            ResourceLocation.fromNamespaceAndPath(ChaosPersists.MODID, "utopia");
+            new ResourceLocation(ChaosPersists.MODID, "utopia");
 
     private UtopiaDimension() {}
 

@@ -299,7 +299,7 @@ public class TRex extends Monster {
             MobSpawnType spawnType,
             BlockPos pos,
             net.minecraft.util.RandomSource random) {
-        ResourceLocation trexId = ResourceLocation.fromNamespaceAndPath("chaospersists", "trex");
+        ResourceLocation trexId = new ResourceLocation("chaospersists", "trex");
         BlockPos.MutableBlockPos checkPos = new BlockPos.MutableBlockPos();
         for (int dz = -8; dz <= 8; ++dz) {
             for (int dx = -8; dx <= 8; ++dx) {
@@ -348,7 +348,7 @@ public class TRex extends Monster {
     @Override
     public boolean checkSpawnRules(LevelAccessor level, MobSpawnType spawnReason) {
         BlockPos pos = this.blockPosition();
-        ResourceLocation trexId = ResourceLocation.fromNamespaceAndPath("chaospersists", "trex");
+        ResourceLocation trexId = new ResourceLocation("chaospersists", "trex");
         BlockPos.MutableBlockPos checkPos = new BlockPos.MutableBlockPos();
         for (int dz = -8; dz <= 8; ++dz) {
             for (int dx = -8; dx <= 8; ++dx) {

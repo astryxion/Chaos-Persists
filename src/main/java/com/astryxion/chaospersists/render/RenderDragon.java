@@ -10,9 +10,9 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderDragon extends MobRenderer<Dragon, ModelDragon> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/dragon.png");
+            new ResourceLocation("chaospersists", "textures/entity/dragon.png");
     private static final ResourceLocation TEXTURE_WHITE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/whitedragon.png");
+            new ResourceLocation("chaospersists", "textures/entity/whitedragon.png");
     private final float scale;
 
     public RenderDragon(EntityRendererProvider.Context context, ModelDragon model, float shadow, float scale) {

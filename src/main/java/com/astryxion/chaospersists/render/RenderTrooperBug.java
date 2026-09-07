@@ -8,7 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderTrooperBug extends MobRenderer<TrooperBug, ModelTrooperBug> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/trooperbug.png");
+            new ResourceLocation("chaospersists", "textures/entity/trooperbug.png");
     private final float scale;
 
     public RenderTrooperBug(

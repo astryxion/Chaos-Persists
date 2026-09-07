@@ -8,7 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderScorpion extends MobRenderer<Scorpion, ModelScorpion> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/scorpion.png");
+            new ResourceLocation("chaospersists", "textures/entity/scorpion.png");
     private final float scale;
 
     public RenderScorpion(

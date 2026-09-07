@@ -8,7 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderDungeonBeast extends MobRenderer<DungeonBeast, ModelDungeonBeast> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/botwtexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/botwtexture.png");
     private final float scale;
 
     public RenderDungeonBeast(

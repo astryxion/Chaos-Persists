@@ -40,6 +40,10 @@ public class MyEntityAIWander extends Goal {
 
     @Override
     public boolean canContinueToUse() {
+        if (this.entity instanceof TamableAnimal tamable
+                && (tamable.isInSittingPose() || tamable.isOrderedToSit())) {
+            return false;
+        }
         if (this.entity instanceof TamableAnimal tamable) {
             var owner = tamable.getOwner();
             if (owner != null

@@ -18,7 +18,7 @@ import org.joml.Matrix4f;
 public class RenderSpinner extends EntityRenderer<Entity> {
     public int spinItemIconIndex = 160;
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/spinners.png");
+            new ResourceLocation("chaospersists", "textures/entity/spinners.png");
 
     public RenderSpinner(EntityRendererProvider.Context context) {
         super(context);

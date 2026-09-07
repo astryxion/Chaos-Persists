@@ -8,7 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderStinkBug extends MobRenderer<StinkBug, ModelStinkBug> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/stinkbug.png");
+            new ResourceLocation("chaospersists", "textures/entity/stinkbug.png");
     private final float scale;
 
     public RenderStinkBug(

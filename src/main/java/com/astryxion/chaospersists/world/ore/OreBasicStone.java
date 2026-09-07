@@ -134,15 +134,15 @@ public class OreBasicStone extends Block {
         }
         switch (legacyName) {
             case "Rat":
-                return ResourceLocation.fromNamespaceAndPath("chaospersists", "rat");
+                return new ResourceLocation("chaospersists", "rat");
             case "Fairy":
-                return ResourceLocation.fromNamespaceAndPath("chaospersists", "fairy");
+                return new ResourceLocation("chaospersists", "fairy");
             case "Red Ant":
-                return ResourceLocation.fromNamespaceAndPath("chaospersists", "red_ant");
+                return new ResourceLocation("chaospersists", "red_ant");
             case "Termite":
-                return ResourceLocation.fromNamespaceAndPath("chaospersists", "termite");
+                return new ResourceLocation("chaospersists", "termite");
             default:
-                return ResourceLocation.fromNamespaceAndPath(
+                return new ResourceLocation(
                         "chaospersists", legacyName.toLowerCase(java.util.Locale.ROOT).replace(' ', '_'));
         }
     }

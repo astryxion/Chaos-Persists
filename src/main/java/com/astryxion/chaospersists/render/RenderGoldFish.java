@@ -9,7 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderGoldFish extends MobRenderer<GoldFish, ModelGoldFish> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/goldfish.png");
+            new ResourceLocation("chaospersists", "textures/entity/goldfish.png");
     private final float scale;
 
     public RenderGoldFish(EntityRendererProvider.Context context, ModelGoldFish model, float shadow, float scale) {

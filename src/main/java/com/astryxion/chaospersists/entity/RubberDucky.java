@@ -1,6 +1,7 @@
 package com.astryxion.chaospersists.entity;
 
 import com.astryxion.chaospersists.util.MyUtils;
+import com.astryxion.chaospersists.util.PetCombatHelper;
 
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.core.ChaosSounds;
@@ -339,6 +340,9 @@ public class RubberDucky extends TamableAnimal {
         if (this.isTame() && this.isOwnedBy(par1EntityPlayer) && par1EntityPlayer.distanceToSqr(this) < 16.0) {
             if (!this.isInSittingPose() && this.getKillCount() < 5) {
                 this.setOrderedToSit(true);
+                if (!this.level().isClientSide) {
+                    PetCombatHelper.onPetSit(this);
+                }
             } else {
                 this.setOrderedToSit(false);
             }
@@ -439,6 +443,7 @@ public class RubberDucky extends TamableAnimal {
         if (this.isDeadOrDying()) {
             return;
         }
+        PetCombatHelper.tickPetCombat(this);
         super.customServerAiStep();
         if (!this.isInWater() && this.getRandom().nextInt(50) == 0) {
             this.closest = 99999;
@@ -470,7 +475,12 @@ public class RubberDucky extends TamableAnimal {
             this.heal(1.0f);
         }
         if (this.level().getDifficulty() != Difficulty.PEACEFUL && this.getRandom().nextInt(5) == 1) {
-            LivingEntity e = this.findSomethingToAttack();
+            LivingEntity prior = this.getTarget();
+            LivingEntity e =
+                    PetCombatHelper.resolveCombatTarget(this, prior, this::findSomethingToAttack);
+            if (e != prior) {
+                this.setTarget(e);
+            }
             if (e != null) {
                 if (this.distanceToSqr(e) < 12.0) {
                     this.setAttacking(1);
@@ -524,6 +534,9 @@ public class RubberDucky extends TamableAnimal {
         }
         if (par1EntityLiving instanceof Squid) {
             return true;
+        }
+        if (this.isTame() && !PetCombatHelper.wantsPetToAttack(this, par1EntityLiving)) {
+            return false;
         }
         if (par1EntityLiving instanceof RubberDucky && this.getRandom().nextInt(10) == 1) {
             this.buddy = par1EntityLiving;
@@ -624,7 +637,7 @@ public class RubberDucky extends TamableAnimal {
                         continue;
                     }
                     ResourceLocation rubberId =
-                            ResourceLocation.fromNamespaceAndPath("chaospersists", "rubber_ducky");
+                            new ResourceLocation("chaospersists", "rubber_ducky");
                     ResourceLocation norm = SpawnerFixHelper.normalizeSpawnerEntityId(id);
                     if (SpawnerFixHelper.entityIdsMatchForSpawner(norm, rubberId)
                             || "Rubber Ducky".equals(id.getPath())) {
@@ -658,7 +671,7 @@ public class RubberDucky extends TamableAnimal {
                         continue;
                     }
                     ResourceLocation rubberId =
-                            ResourceLocation.fromNamespaceAndPath("chaospersists", "rubber_ducky");
+                            new ResourceLocation("chaospersists", "rubber_ducky");
                     ResourceLocation norm = SpawnerFixHelper.normalizeSpawnerEntityId(id);
                     if (SpawnerFixHelper.entityIdsMatchForSpawner(norm, rubberId)
                             || "Rubber Ducky".equals(id.getPath())) {

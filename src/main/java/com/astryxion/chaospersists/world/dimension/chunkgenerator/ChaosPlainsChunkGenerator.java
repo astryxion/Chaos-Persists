@@ -440,7 +440,7 @@ public class ChaosPlainsChunkGenerator extends ChaosChunkGeneratorWrapper {
             RandomSource source =
                     random
                             .getOrCreateRandomFactory(
-                                    ResourceLocation.fromNamespaceAndPath(
+                                    new ResourceLocation(
                                             "chaospersists", "plains_micro_bump"))
                             .fromHashOf("init");
             this.microBumpNoise = new ImprovedNoise(source);

@@ -9,7 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderSeaViper extends MobRenderer<SeaViper, ModelSeaViper> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/seavipertexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/seavipertexture.png");
     private final float scale;
 
     public RenderSeaViper(EntityRendererProvider.Context context, ModelSeaViper model, float shadow, float scale) {

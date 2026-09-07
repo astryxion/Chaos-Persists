@@ -20,7 +20,7 @@ import net.minecraft.world.item.ItemStack;
 public class ChainsawItemStackRenderer extends BlockEntityWithoutLevelRenderer {
 
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/chainsawtexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/chainsawtexture.png");
 
     private final BakedModel flatModel;
     private final ModelChainsaw modelChainsaw = new ModelChainsaw();

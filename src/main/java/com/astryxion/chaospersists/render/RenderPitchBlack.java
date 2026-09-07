@@ -8,7 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderPitchBlack extends MobRenderer<PitchBlack, ModelPitchBlack> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/pitchblacktexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/pitchblacktexture.png");
 
     public RenderPitchBlack(EntityRendererProvider.Context context, ModelPitchBlack model, float shadow, float scale) {
         super(context, model, shadow * scale);

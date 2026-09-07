@@ -63,9 +63,9 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 public class GirlfriendOverlayGui {
     private final Minecraft mc;
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriendgui.png");
+            new ResourceLocation("chaospersists", "textures/entity/girlfriendgui.png");
     private static final ResourceLocation LEGACY_TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/girlfriendgui.png");
+            new ResourceLocation("chaospersists", "textures/girlfriendgui.png");
     private static final int TEXTURE_WIDTH = 256;
     private static final int TEXTURE_HEIGHT = 256;
 

@@ -1,0 +1,11 @@
+{
+  "replace": false,
+  "values": [
+    "chaospersists:antblock",
+    "chaospersists:redantblock",
+    "chaospersists:rainbowantblock",
+    "chaospersists:unstableantblock",
+    "chaospersists:termiteblock",
+    "chaospersists:crystaltermiteblock"
+  ]
+}

@@ -8,7 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderTriffid extends MobRenderer<Triffid, ModelTriffid> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/triffidtexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/triffidtexture.png");
     private final float scale;
 
     public RenderTriffid(EntityRendererProvider.Context context, ModelTriffid model, float shadow, float scale) {

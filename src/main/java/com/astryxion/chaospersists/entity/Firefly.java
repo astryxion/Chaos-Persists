@@ -25,7 +25,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 
 public class Firefly extends AmbientCreature {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/fireflytexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/fireflytexture.png");
     int my_blink = 0;
     int blinker = 0;
     int myspace = 0;
@@ -223,7 +223,7 @@ public class Firefly extends AmbientCreature {
     protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
         super.dropCustomDeathLoot(source, looting, recentlyHit);
         net.minecraft.world.level.block.Block block =
-                ForgeRegistries.BLOCKS.getValue(ResourceLocation.fromNamespaceAndPath("chaospersists", "extremetorch"));
+                ForgeRegistries.BLOCKS.getValue(new ResourceLocation("chaospersists", "extremetorch"));
         if (block != null) {
             this.spawnAtLocation(new ItemStack(block));
         }

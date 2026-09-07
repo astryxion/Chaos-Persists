@@ -37,6 +37,7 @@ import com.astryxion.chaospersists.item.ItemSpawnEgg;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.core.ChaosSounds;
 import com.astryxion.chaospersists.util.MyBlockFlower;
+import net.minecraft.world.level.block.FlowerPotBlock;
 import com.astryxion.chaospersists.world.ore.OreBasicStone;
 import com.astryxion.chaospersists.world.ore.OreCrystal;
 import com.astryxion.chaospersists.world.ore.OreCrystalCrystal;
@@ -90,6 +91,7 @@ public class ClientProxyChaos extends CommonProxyChaos {
                     || block instanceof BlockCrystalPlant
                     || block instanceof BlockExperiencePlant
                     || block instanceof MyBlockFlower
+                    || block instanceof FlowerPotBlock
                     || block instanceof BlockTomato
                     || block instanceof BlockStrawberry
                     || block instanceof BlockRice

@@ -17,17 +17,17 @@ public final class ChaosWorldGenRegistration {
         if (event.getRegistryKey().equals(Registries.CHUNK_GENERATOR)) {
             event.register(
                     Registries.CHUNK_GENERATOR,
-                    ResourceLocation.fromNamespaceAndPath(ChaosPersists.MODID, "plains_terrain"),
+                    new ResourceLocation(ChaosPersists.MODID, "plains_terrain"),
                     () -> ChaosPlainsChunkGenerator.CODEC);
             event.register(
                     Registries.CHUNK_GENERATOR,
-                    ResourceLocation.fromNamespaceAndPath(ChaosPersists.MODID, "sky_islands"),
+                    new ResourceLocation(ChaosPersists.MODID, "sky_islands"),
                     () -> ChaosIslandsChunkGenerator.CODEC);
         }
         if (event.getRegistryKey().equals(Registries.FEATURE)) {
             event.register(
                     Registries.FEATURE,
-                    ResourceLocation.fromNamespaceAndPath(ChaosPersists.MODID, "village_foundation_fill"),
+                    new ResourceLocation(ChaosPersists.MODID, "village_foundation_fill"),
                     () -> new com.astryxion.chaospersists.world.dimension.structure.VillageFoundationFillFeature(
                             net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration.CODEC));
         }

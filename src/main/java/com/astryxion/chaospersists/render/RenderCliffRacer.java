@@ -8,7 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderCliffRacer extends MobRenderer<CliffRacer, ModelCliffRacer> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/cliffracertexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/cliffracertexture.png");
     private final float scale;
 
     public RenderCliffRacer(EntityRendererProvider.Context context, ModelCliffRacer model, float shadow, float scale) {

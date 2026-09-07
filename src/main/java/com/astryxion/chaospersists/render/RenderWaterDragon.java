@@ -9,7 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderWaterDragon extends MobRenderer<WaterDragon, ModelWaterDragon> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/waterdragon.png");
+            new ResourceLocation("chaospersists", "textures/entity/waterdragon.png");
     private final float scale;
 
     public RenderWaterDragon(

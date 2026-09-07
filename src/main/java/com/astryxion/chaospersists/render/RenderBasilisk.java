@@ -8,7 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderBasilisk extends MobRenderer<Basilisk, ModelBasilisk> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/basilisk.png");
+            new ResourceLocation("chaospersists", "textures/entity/basilisk.png");
     private final float scale;
 
     public RenderBasilisk(EntityRendererProvider.Context context, ModelBasilisk model, float shadow, float scale) {

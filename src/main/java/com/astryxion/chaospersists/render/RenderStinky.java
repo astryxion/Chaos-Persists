@@ -8,43 +8,43 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderStinky extends MobRenderer<Stinky, ModelStinky> {
     private static final ResourceLocation TEXTURE1 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/stinkytexture1.png");
+            new ResourceLocation("chaospersists", "textures/entity/stinkytexture1.png");
     private static final ResourceLocation TEXTURE2 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/stinkytexture2.png");
+            new ResourceLocation("chaospersists", "textures/entity/stinkytexture2.png");
     private static final ResourceLocation TEXTURE3 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/stinkytexture3.png");
+            new ResourceLocation("chaospersists", "textures/entity/stinkytexture3.png");
     private static final ResourceLocation TEXTURE4 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/stinkytexture4.png");
+            new ResourceLocation("chaospersists", "textures/entity/stinkytexture4.png");
     private static final ResourceLocation TEXTURE5 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/stinkytexture5.png");
+            new ResourceLocation("chaospersists", "textures/entity/stinkytexture5.png");
     private static final ResourceLocation TEXTURE6 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/stinkytexture6.png");
+            new ResourceLocation("chaospersists", "textures/entity/stinkytexture6.png");
     private static final ResourceLocation TEXTURE7 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/stinkytexture7.png");
+            new ResourceLocation("chaospersists", "textures/entity/stinkytexture7.png");
     private static final ResourceLocation TEXTURE8 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/stinkytexture8.png");
+            new ResourceLocation("chaospersists", "textures/entity/stinkytexture8.png");
     private static final ResourceLocation TEXTURE9 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/stinkytexture9.png");
+            new ResourceLocation("chaospersists", "textures/entity/stinkytexture9.png");
     private static final ResourceLocation TEXTURE10 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/stinkytexture10.png");
+            new ResourceLocation("chaospersists", "textures/entity/stinkytexture10.png");
     private static final ResourceLocation TEXTURE11 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/stinkytexture11.png");
+            new ResourceLocation("chaospersists", "textures/entity/stinkytexture11.png");
     private static final ResourceLocation TEXTURE12 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/stinkytexture12.png");
+            new ResourceLocation("chaospersists", "textures/entity/stinkytexture12.png");
     private static final ResourceLocation TEXTURE13 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/stinkytexture13.png");
+            new ResourceLocation("chaospersists", "textures/entity/stinkytexture13.png");
     private static final ResourceLocation TEXTURE14 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/stinkytexture14.png");
+            new ResourceLocation("chaospersists", "textures/entity/stinkytexture14.png");
     private static final ResourceLocation TEXTURE15 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/stinkytexture15.png");
+            new ResourceLocation("chaospersists", "textures/entity/stinkytexture15.png");
     private static final ResourceLocation TEXTURE16 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/stinkytexture16.png");
+            new ResourceLocation("chaospersists", "textures/entity/stinkytexture16.png");
     private static final ResourceLocation TEXTURE17 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/stinkytexture17.png");
+            new ResourceLocation("chaospersists", "textures/entity/stinkytexture17.png");
     private static final ResourceLocation TEXTURE18 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/stinkytexture18.png");
+            new ResourceLocation("chaospersists", "textures/entity/stinkytexture18.png");
     private static final ResourceLocation TEXTURE19 =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/stinkytexture19.png");
+            new ResourceLocation("chaospersists", "textures/entity/stinkytexture19.png");
     private final float scale;
 
     public RenderStinky(EntityRendererProvider.Context context, ModelStinky model, float shadow, float scale) {

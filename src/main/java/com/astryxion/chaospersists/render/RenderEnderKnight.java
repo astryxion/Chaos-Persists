@@ -8,7 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderEnderKnight extends MobRenderer<EnderKnight, ModelEnderKnight> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/enderknighttexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/enderknighttexture.png");
     private final float scale;
 
     public RenderEnderKnight(EntityRendererProvider.Context context, ModelEnderKnight model, float shadow, float scale) {

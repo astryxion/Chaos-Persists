@@ -7,7 +7,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderKingHead extends EntityRenderer<KingHead> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/thekingtexture.png");
+            new ResourceLocation("chaospersists", "textures/entity/thekingtexture.png");
 
     public RenderKingHead(EntityRendererProvider.Context context) {
         super(context);

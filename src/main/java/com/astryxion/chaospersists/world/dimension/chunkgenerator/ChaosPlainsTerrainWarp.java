@@ -141,7 +141,7 @@ public class ChaosPlainsTerrainWarp {
             RandomSource source =
                     random
                             .getOrCreateRandomFactory(
-                                    ResourceLocation.fromNamespaceAndPath(
+                                    new ResourceLocation(
                                             "chaospersists", "plains_depth_noise"))
                             .fromHashOf("init");
             // Pond-scale octaves (~80 blocks). -15 is overworld ocean scale and made inland seas.

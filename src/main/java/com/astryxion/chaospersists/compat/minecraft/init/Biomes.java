@@ -74,7 +74,7 @@ public final class Biomes {
     String path = legacyConstant.toLowerCase();
     String resolved = PATH_ALIASES.getOrDefault(path, path);
     net.minecraft.world.level.biome.Biome biome =
-        ForgeRegistries.BIOMES.getValue(ResourceLocation.withDefaultNamespace(resolved));
+        ForgeRegistries.BIOMES.getValue(new ResourceLocation(resolved));
     if (biome == null) {
       biome =
           ForgeRegistries.BIOMES.getValue(

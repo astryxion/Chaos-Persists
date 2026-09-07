@@ -9,7 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderMosquito extends MobRenderer<EntityMosquito, ModelMosquito> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/mosquito.png");
+            new ResourceLocation("chaospersists", "textures/entity/mosquito.png");
     private final float scale;
 
     public RenderMosquito(EntityRendererProvider.Context context, ModelMosquito model, float shadow, float scale) {

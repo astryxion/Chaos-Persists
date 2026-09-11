@@ -41,6 +41,9 @@
  */
 package com.astryxion.chaospersists.util;
 
+import com.astryxion.chaospersists.compat.eeeabsmobs.EeeabsMobsCompat;
+import com.astryxion.chaospersists.compat.guardvillagers.GuardVillagersArmorCompat;
+import com.astryxion.chaospersists.compat.mobbattle.MobBattleTeamCompat;
 import com.astryxion.chaospersists.entity.Boyfriend;
 import com.astryxion.chaospersists.entity.Cephadrome;
 import com.astryxion.chaospersists.entity.Cockateil;
@@ -64,6 +67,7 @@ import com.astryxion.chaospersists.entity.QueenHead;
 import com.astryxion.chaospersists.entity.RockBase;
 import com.astryxion.chaospersists.entity.Spyro;
 import com.astryxion.chaospersists.entity.Stinky;
+import com.astryxion.chaospersists.entity.TerribleTerror;
 import com.astryxion.chaospersists.entity.Termite;
 import com.astryxion.chaospersists.entity.TheKing;
 import com.astryxion.chaospersists.entity.ThePrince;
@@ -102,6 +106,8 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import java.util.UUID;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import javax.annotation.Nullable;
 
 /*
@@ -126,6 +132,11 @@ public class MyUtils {
         return false;
     }
 
+    /** False for empty stacks and armor with Curse of Binding. */
+    public static boolean canMobStripItem(@Nullable ItemStack stack) {
+        return stack != null && !stack.isEmpty() && !EnchantmentHelper.hasBindingCurse(stack);
+    }
+
     /** 1.12 {@code EntityLivingBase.playAmbientSound()} equivalent. */
     public static void playAmbientSound(LivingEntity entity) {
         if (entity instanceof Mob mob) {
@@ -145,6 +156,49 @@ public class MyUtils {
             return !player.isCreative() && !player.isSpectator();
         }
         return true;
+    }
+
+    public static boolean isValidAggroTarget(@Nullable Entity attacker, @Nullable LivingEntity target) {
+        return isValidAggroTarget(target) && !shouldSkipCombatTarget(attacker, target);
+    }
+
+    /** Vanilla scoreboard teammates ({@link Entity#isAlliedTo(Entity)}). */
+    public static boolean isScoreboardAlly(@Nullable Entity attacker, @Nullable Entity target) {
+        if (attacker == null || target == null || attacker == target) {
+            return false;
+        }
+        return attacker.isAlliedTo(target);
+    }
+
+    /**
+     * Skip this combat target: same scoreboard team, or (when Mob Battle is loaded) a teamed
+     * Chaos Persists mob hunting anyone who is not on an enemy team.
+     */
+    public static boolean shouldSkipCombatTarget(@Nullable Entity attacker, @Nullable LivingEntity target) {
+        if (attacker == null || target == null || attacker == target) {
+            return attacker != null && attacker == target;
+        }
+        if (isScoreboardAlly(attacker, target)) {
+            return true;
+        }
+        if (attacker.getTeam() != null && MobBattleTeamCompat.isPresent()) {
+            if (EeeabsMobsCompat.shouldAllowTeamedHunt(attacker, target)) {
+                return false;
+            }
+            if (isVillageCombatTarget(target) && !attacker.isAlliedTo(target)) {
+                return false;
+            }
+            return target.getTeam() == null || attacker.isAlliedTo(target);
+        }
+        return false;
+    }
+
+    /** Iron Golems and Guard Villagers — village defenders CP hostiles should fight. */
+    public static boolean isVillageCombatTarget(@Nullable LivingEntity target) {
+        if (target == null) {
+            return false;
+        }
+        return target instanceof IronGolem || GuardVillagersArmorCompat.isGuard(target);
     }
 
     /** 1.7.10 {@code IMob.mobSelector} parity — includes Slimes ({@code Enemy}, not {@code Monster}). */
@@ -355,6 +409,9 @@ public class MyUtils {
         if (pet instanceof Dragon dragon && (dragon.getActivity() != 0 || !dragon.onGround())) {
             return true;
         }
+        if (pet instanceof TerribleTerror terror && terror.isTame() && !terror.isOrderedToSit() && !terror.isInSittingPose()) {
+            return true;
+        }
         if (pet instanceof Stinky stinky && stinky.getActivity() == 2) {
             return true;
         }
@@ -482,6 +539,73 @@ public class MyUtils {
         }
         CHAOS_FLIGHT_ENTITIES.add(entity);
         entity.move(MoverType.SELF, entity.getDeltaMovement());
+    }
+
+    /**
+     * Ice and Fire {@code FlightMoveHelper}: turn toward the destination, then accelerate only along
+     * facing. Never strafes or reverse-thrusts — OreSpawn's bat {@code signum} + slow yaw did both.
+     */
+    public static void steerChaosFlightForward(
+            LivingEntity entity, double destX, double destY, double destZ, double speedFactor) {
+        double distX = destX - entity.getX();
+        double distY = destY - entity.getY();
+        double distZ = destZ - entity.getZ();
+        double planeDist = Math.sqrt(distX * distX + distZ * distZ);
+        if (planeDist < 1.0E-4 && Math.abs(distY) < 1.0E-4) {
+            return;
+        }
+
+        float targetYaw = (float) (Mth.atan2(distZ, distX) * (180.0 / Math.PI)) - 90.0f;
+        float yawErr = Mth.wrapDegrees(targetYaw - entity.getYRot());
+        // IAF tackle turns 10°/tick, cruise 4°. Stinky is small; 12° still banks instead of snapping.
+        float maxTurn = 12.0f;
+        float newYaw = entity.getYRot() + Mth.clamp(yawErr, -maxTurn, maxTurn);
+        entity.setYRot(newYaw);
+        entity.yBodyRot = newYaw;
+        entity.setYHeadRot(newYaw);
+
+        if (planeDist > 1.0E-4) {
+            float targetPitch = (float) (-(Mth.atan2(distY, planeDist) * (180.0 / Math.PI)));
+            entity.setXRot(Mth.clamp(targetPitch, -30.0f, 30.0f));
+        }
+
+        // IAF skips thrust when dist < 1 so they don't overshoot and look like they're strafing.
+        if (planeDist < 1.0) {
+            Vec3 motion = entity.getDeltaMovement();
+            double ny = motion.y;
+            if (Math.abs(distY) > 0.35) {
+                ny += (Math.signum(distY) * 0.2 * speedFactor - motion.y) * 0.21;
+            } else {
+                ny *= 0.6;
+            }
+            entity.setDeltaMovement(motion.x * 0.45, ny, motion.z * 0.45);
+            return;
+        }
+
+        float yawRad = newYaw * ((float) Math.PI / 180.0f);
+        double forwardX = -Mth.sin(yawRad);
+        double forwardZ = Mth.cos(yawRad);
+
+        double horizCruise = 0.5 * speedFactor;
+        // IAF: while yaw is still catching up, drop speed so the body cannot crab sideways.
+        if (Math.abs(yawErr) >= 8.0f) {
+            horizCruise *= 0.25;
+        }
+
+        Vec3 motion = entity.getDeltaMovement();
+        double along = motion.x * forwardX + motion.z * forwardZ;
+        if (along < 0.0) {
+            along = 0.0;
+        }
+        double newAlong = along + (horizCruise - along) * 0.25;
+
+        double vertCruise = 0.0;
+        if (Math.abs(distY) > 0.35) {
+            vertCruise = Math.signum(distY) * 0.45 * speedFactor;
+        }
+        double ny = motion.y + (vertCruise - motion.y) * 0.21;
+
+        entity.setDeltaMovement(forwardX * newAlong, ny, forwardZ * newAlong);
     }
 
     /** Entities that manage noClip themselves (OreSpawn royals / ghosts). */

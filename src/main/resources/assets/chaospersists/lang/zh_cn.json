@@ -1624,5 +1624,9 @@
     "itemGroup.chaospersists.chaos_items": "混沌物品",
     "itemGroup.chaospersists.chaos_mobs": "混沌生物",
     "itemGroup.chaospersists.chaos_tools": "混沌工具",
-    "itemGroup.chaospersists.chaos_weapons": "混沌武器"
+    "itemGroup.chaospersists.chaos_weapons": "混沌武器",
+    "trim_material.chaospersists.ruby": "红宝石材料",
+    "trim_material.chaospersists.amethyst": "紫水晶材料",
+    "trim_material.chaospersists.uranium": "铀材料",
+    "trim_material.chaospersists.titanium": "钛材料"
 }

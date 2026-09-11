@@ -26,6 +26,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -84,6 +85,11 @@ public class SpitBug extends Monster {
                 .add(Attributes.MOVEMENT_SPEED, 0.33)
                 .add(Attributes.ATTACK_DAMAGE, (double) ChaosPersists.SpitBug_stats.attack)
                 .add(Attributes.ARMOR, (double) ChaosPersists.SpitBug_stats.defense);
+    }
+
+    @Override
+    public MobType getMobType() {
+        return MobType.ARTHROPOD;
     }
 
     @Override
@@ -362,6 +368,9 @@ public class SpitBug extends Monster {
             return false;
         }
         if (entity == this) {
+            return false;
+        }
+        if (MyUtils.shouldSkipCombatTarget(this, entity)) {
             return false;
         }
         if (!entity.isAlive()) {

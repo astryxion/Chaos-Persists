@@ -1,11 +1,11 @@
 package com.astryxion.chaospersists.entity;
 
 import com.astryxion.chaospersists.core.ChaosPersists;
+import com.astryxion.chaospersists.util.FriendlyWeaponHits;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.entity.projectile.ThrowableProjectile;
@@ -158,12 +158,10 @@ public class BerthaHit extends ThrowableProjectile {
             EntityHitResult entityHit = (EntityHitResult) result;
             Entity e = entityHit.getEntity();
             Entity owner = this.getOwner();
-            if (ChaosPersists.big_bertha_pvp == 0 && e instanceof Player
-                    || isGirlfriendOrBoyfriend(e)) {
-                this.discard();
-                return;
-            }
-            if (ChaosPersists.big_bertha_pvp == 0 && e instanceof TamableAnimal t && t.isTame()) {
+            if (FriendlyWeaponHits.isCompanion(e)
+                    || FriendlyWeaponHits.isListedIgnore(e)
+                    || (ChaosPersists.big_bertha_pvp == 0
+                            && FriendlyWeaponHits.isFriendlyWhenPvpOff(e))) {
                 this.discard();
                 return;
             }
@@ -241,11 +239,6 @@ public class BerthaHit extends ThrowableProjectile {
                                     : ExplosionInteraction.NONE);
         }
         this.discard();
-    }
-
-    private static boolean isGirlfriendOrBoyfriend(Entity e) {
-        String n = e.getClass().getSimpleName();
-        return "Girlfriend".equals(n) || "Boyfriend".equals(n);
     }
 
     @Override

@@ -1,28 +1,38 @@
 package com.astryxion.chaospersists.entity;
 
-import com.astryxion.chaospersists.util.MyUtils;
-
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.core.ChaosSounds;
 import com.astryxion.chaospersists.util.GenericTargetSorter;
+import com.astryxion.chaospersists.util.MyUtils;
+import com.astryxion.chaospersists.util.PetCombatHelper;
+import com.astryxion.chaospersists.util.RoyalPetFollowHelper;
 import com.astryxion.chaospersists.util.SpawnerFixHelper;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Mth;
+import net.minecraft.world.Difficulty;
+import net.minecraft.world.DifficultyInstance;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.SpawnGroupData;
+import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
@@ -34,18 +44,19 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
-public class TerribleTerror extends Monster {
+public class TerribleTerror extends TamableAnimal {
     private BlockPos currentFlightTarget = null;
     private final GenericTargetSorter targetSorter;
 
     public TerribleTerror(EntityType<? extends TerribleTerror> type, Level level) {
         super(type, level);
         this.xpReward = 10;
+        this.setOrderedToSit(false);
         this.targetSorter = new GenericTargetSorter(this);
     }
 
     public static AttributeSupplier.Builder createAttributes() {
-        return Monster.createMonsterAttributes()
+        return TamableAnimal.createMobAttributes()
                 .add(Attributes.MAX_HEALTH, (double) ChaosPersists.TerribleTerror_stats.health)
                 .add(Attributes.MOVEMENT_SPEED, 0.10000000149011612)
                 .add(Attributes.ATTACK_DAMAGE, (double) ChaosPersists.TerribleTerror_stats.attack)
@@ -53,8 +64,149 @@ public class TerribleTerror extends Monster {
     }
 
     @Override
+    public AgeableMob getBreedOffspring(ServerLevel level, AgeableMob partner) {
+        return null;
+    }
+
+    @Override
+    public boolean isFood(ItemStack stack) {
+        return false;
+    }
+
+    @Override
+    public boolean isBaby() {
+        return false;
+    }
+
+    @Override
+    public void setAge(int age) {
+        super.setAge(Math.max(0, age));
+    }
+
+    @Override
+    public SpawnGroupData finalizeSpawn(
+            ServerLevelAccessor level,
+            DifficultyInstance difficulty,
+            MobSpawnType reason,
+            SpawnGroupData spawnData,
+            CompoundTag dataTag) {
+        SpawnGroupData data = super.finalizeSpawn(level, difficulty, reason, spawnData, dataTag);
+        this.setAge(0);
+        return data;
+    }
+
+    @Override
+    protected void defineSynchedData() {
+        super.defineSynchedData();
+        this.setOrderedToSit(false);
+        this.setTame(false);
+    }
+
+    @Override
+    public void setOrderedToSit(boolean orderedToSit) {
+        super.setOrderedToSit(orderedToSit);
+        this.setInSittingPose(orderedToSit);
+        if (orderedToSit) {
+            if (this.getNavigation() != null) {
+                this.getNavigation().stop();
+            }
+            if (!this.level().isClientSide) {
+                PetCombatHelper.onPetSit(this);
+            }
+            this.setNoGravity(false);
+            this.noPhysics = false;
+            MyUtils.clearChaosFlight(this);
+            this.currentFlightTarget = null;
+            this.setDeltaMovement(0.0, Math.min(this.getDeltaMovement().y, 0.0), 0.0);
+            this.xxa = 0.0f;
+            this.zza = 0.0f;
+            this.yya = 0.0f;
+        }
+    }
+
+    private boolean isSittingNow() {
+        return this.isOrderedToSit() || this.isInSittingPose();
+    }
+
+    @Override
+    public InteractionResult mobInteract(Player player, InteractionHand hand) {
+        ItemStack stack = player.getItemInHand(hand);
+        if (!stack.isEmpty() && stack.getCount() <= 0) {
+            player.setItemInHand(hand, ItemStack.EMPTY);
+            stack = ItemStack.EMPTY;
+        }
+        if (!stack.isEmpty() && stack.is(Items.CHICKEN) && player.distanceToSqr(this) < 16.0) {
+            if (!this.isTame()) {
+                if (!this.level().isClientSide) {
+                    if (this.getRandom().nextInt(2) == 0) {
+                        this.setTame(true);
+                        this.setOwnerUUID(player.getUUID());
+                        this.setPersistenceRequired();
+                        this.setOrderedToSit(false);
+                        spawnTamingParticles(true);
+                        this.level().broadcastEntityEvent(this, (byte) 7);
+                        this.heal((float) this.mygetMaxHealth() - this.getHealth());
+                    } else {
+                        spawnTamingParticles(false);
+                        this.level().broadcastEntityEvent(this, (byte) 6);
+                    }
+                }
+            } else if (this.isOwnedBy(player)) {
+                if (this.level().isClientSide) {
+                    spawnTamingParticles(true);
+                    this.level().broadcastEntityEvent(this, (byte) 7);
+                }
+                if ((float) this.mygetMaxHealth() > this.getHealth()) {
+                    this.heal((float) this.mygetMaxHealth() - this.getHealth());
+                }
+            }
+            if (!player.getAbilities().instabuild) {
+                stack.shrink(1);
+                if (stack.isEmpty()) {
+                    player.setItemInHand(hand, ItemStack.EMPTY);
+                }
+            }
+            return InteractionResult.SUCCESS;
+        }
+        if (this.isTame()
+                && !stack.isEmpty()
+                && stack.is(Blocks.DEAD_BUSH.asItem())
+                && player.distanceToSqr(this) < 16.0
+                && this.isOwnedBy(player)) {
+            if (!this.level().isClientSide) {
+                this.setOrderedToSit(false);
+                this.setTame(false);
+                this.setOwnerUUID(null);
+                this.setHealth((float) this.mygetMaxHealth());
+                spawnTamingParticles(false);
+                this.level().broadcastEntityEvent(this, (byte) 6);
+            }
+            if (!player.getAbilities().instabuild) {
+                stack.shrink(1);
+                if (stack.isEmpty()) {
+                    player.setItemInHand(hand, ItemStack.EMPTY);
+                }
+            }
+            return InteractionResult.SUCCESS;
+        }
+        if (this.isTame()
+                && stack.isEmpty()
+                && player.distanceToSqr(this) < 16.0
+                && this.isOwnedBy(player)) {
+            if (!this.level().isClientSide) {
+                this.setOrderedToSit(!this.isOrderedToSit());
+            }
+            return InteractionResult.SUCCESS;
+        }
+        return super.mobInteract(player, hand);
+    }
+
+    @Override
     public boolean removeWhenFarAway(double distanceToClosestPlayer) {
         if (this.isPersistenceRequired()) {
+            return false;
+        }
+        if (this.isTame()) {
             return false;
         }
         if (!this.level().isDay()) {
@@ -94,13 +246,28 @@ public class TerribleTerror extends Monster {
 
     @Override
     public void tick() {
+        boolean sitting = this.isSittingNow();
+        if (sitting) {
+            MyUtils.clearChaosFlight(this);
+            this.setNoGravity(false);
+            this.noPhysics = false;
+            this.xxa = 0.0f;
+            this.zza = 0.0f;
+            this.yya = 0.0f;
+        }
         super.tick();
-        this.setDeltaMovement(this.getDeltaMovement().multiply(1.0, 0.6000000238418579, 1.0));
+        if (sitting) {
+            Vec3 dm = this.getDeltaMovement();
+            this.setDeltaMovement(0.0, this.onGround() ? 0.0 : Math.min(dm.y, -0.25), 0.0);
+        } else {
+            this.setDeltaMovement(this.getDeltaMovement().multiply(1.0, 0.6000000238418579, 1.0));
+        }
     }
 
     @Override
     public boolean doHurtTarget(Entity par1Entity) {
-        return par1Entity.hurt(this.damageSources().mobAttack(this), 5.0f);
+        return par1Entity.hurt(
+                this.damageSources().mobAttack(this), (float) ChaosPersists.TerribleTerror_stats.attack);
     }
 
     public boolean canSeeTarget(double pX, double pY, double pZ) {
@@ -113,29 +280,83 @@ public class TerribleTerror extends Monster {
 
     @Override
     public void travel(Vec3 travelVector) {
+        if (this.isSittingNow()) {
+            super.travel(Vec3.ZERO);
+            return;
+        }
         if (MyUtils.usesChaosFlight(this)) {
             return;
         }
         super.travel(travelVector);
     }
+
     @Override
     protected void customServerAiStep() {
         if (this.isDeadOrDying()) {
             return;
         }
+        PetCombatHelper.tickPetCombat(this);
+        if (this.isSittingNow()) {
+            MyUtils.clearChaosFlight(this);
+            this.setNoGravity(false);
+            this.noPhysics = false;
+            this.setTarget(null);
+            this.currentFlightTarget = null;
+            this.xxa = 0.0f;
+            this.zza = 0.0f;
+            this.yya = 0.0f;
+            Vec3 dm = this.getDeltaMovement();
+            this.setDeltaMovement(0.0, this.onGround() ? 0.0 : Math.min(dm.y, -0.2), 0.0);
+            if (this.getNavigation() != null) {
+                this.getNavigation().stop();
+            }
+            return;
+        }
         super.customServerAiStep();
+        if (this.isTame()) {
+            RoyalPetFollowHelper.catchUpFlyingRoyal(this);
+        }
         int xdir = 1;
         int zdir = 1;
         int keepTrying = 50;
         if (this.currentFlightTarget == null) {
             this.currentFlightTarget = BlockPos.containing(this.getX(), this.getY(), this.getZ());
         }
-        if (this.getRandom().nextInt(100) == 0
-                || this.currentFlightTarget.distToCenterSqr(this.getX(), this.getY(), this.getZ()) < 2.1) {
+        LivingEntity owner = this.isTame() ? this.getOwner() : null;
+        LivingEntity prey = null;
+        if (this.isTame()) {
+            prey = PetCombatHelper.resolveCombatTarget(this, this.getTarget(), this::findSomethingToAttack);
+            if (prey != this.getTarget()) {
+                this.setTarget(prey);
+            }
+        } else if (this.getRandom().nextInt(9) == 0) {
+            prey = this.findSomethingToAttack();
+            this.setTarget(prey);
+        }
+        boolean chasing = prey != null && this.level().getDifficulty() != Difficulty.PEACEFUL;
+        if (chasing) {
+            this.currentFlightTarget =
+                    new BlockPos((int) prey.getX(), (int) (prey.getY() + 1.0), (int) prey.getZ());
+            if (this.distanceToSqr(prey) < 36.0) {
+                this.doHurtTarget(prey);
+            }
+        } else if (this.getRandom().nextInt(100) == 0
+                || this.currentFlightTarget.distToCenterSqr(this.getX(), this.getY(), this.getZ()) < 2.1
+                || (owner != null && this.distanceToSqr(owner) > 100.0)) {
             BlockState bid = Blocks.STONE.defaultBlockState();
             while (!bid.isAir() && keepTrying != 0) {
+                int gox = (int) this.getX();
+                int goy = (int) this.getY();
+                int goz = (int) this.getZ();
                 zdir = this.getRandom().nextInt(5) + 5;
                 xdir = this.getRandom().nextInt(5) + 5;
+                if (owner != null) {
+                    gox = (int) owner.getX();
+                    goy = (int) owner.getY();
+                    goz = (int) owner.getZ();
+                    zdir = this.getRandom().nextInt(4) + 6;
+                    xdir = this.getRandom().nextInt(4) + 6;
+                }
                 if (this.getRandom().nextInt(2) == 0) {
                     zdir = -zdir;
                 }
@@ -143,10 +364,7 @@ public class TerribleTerror extends Monster {
                     xdir = -xdir;
                 }
                 this.currentFlightTarget =
-                        new BlockPos(
-                                (int) this.getX() + xdir,
-                                (int) this.getY() + this.getRandom().nextInt(5) - 2,
-                                (int) this.getZ() + zdir);
+                        new BlockPos(gox + xdir, goy + this.getRandom().nextInt(5) - 2, goz + zdir);
                 bid = this.level().getBlockState(this.currentFlightTarget);
                 if (bid.isAir()
                         && !this.canSeeTarget(
@@ -156,15 +374,6 @@ public class TerribleTerror extends Monster {
                     bid = Blocks.STONE.defaultBlockState();
                 }
                 --keepTrying;
-            }
-        } else if (this.getRandom().nextInt(9) == 0) {
-            LivingEntity e = this.findSomethingToAttack();
-            if (e != null) {
-                this.currentFlightTarget =
-                        new BlockPos((int) e.getX(), (int) (e.getY() + 1.0), (int) e.getZ());
-                if (this.distanceToSqr(e) < 36.0) {
-                    this.doHurtTarget(e);
-                }
             }
         }
         double var1 = (double) this.currentFlightTarget.getX() + 0.4 - this.getX();
@@ -181,7 +390,7 @@ public class TerribleTerror extends Monster {
         float var8 = Mth.wrapDegrees(var7 - this.getYRot());
         this.setYRot(this.getYRot() + var8 / 4.0f);
         MyUtils.applyChaosFlightMovement(this);
-}
+    }
 
     @Override
     public boolean causeFallDamage(float distance, float damageMultiplier, DamageSource source) {
@@ -197,7 +406,10 @@ public class TerribleTerror extends Monster {
     public boolean hurt(DamageSource par1DamageSource, float par2) {
         boolean ret = super.hurt(par1DamageSource, par2);
         Entity e = par1DamageSource.getEntity();
-        if (e != null) {
+        if (ret && !this.isDeadOrDying() && this.isSittingNow()) {
+            this.setOrderedToSit(false);
+        }
+        if (e != null && !this.isSittingNow()) {
             this.currentFlightTarget = new BlockPos((int) e.getX(), (int) e.getY(), (int) e.getZ());
         }
         return ret;
@@ -226,11 +438,23 @@ public class TerribleTerror extends Monster {
         if (par1EntityLiving == this) {
             return false;
         }
+        if (MyUtils.shouldSkipCombatTarget(this, par1EntityLiving)) {
+            return false;
+        }
         if (!par1EntityLiving.isAlive()) {
             return false;
         }
         if (!this.getSensing().hasLineOfSight(par1EntityLiving)) {
             return false;
+        }
+        if (this.isTame()) {
+            if (!PetCombatHelper.wantsPetToAttack(this, par1EntityLiving)) {
+                return false;
+            }
+            if (par1EntityLiving instanceof Mothra) {
+                return true;
+            }
+            return PetCombatHelper.isAutoHostileTarget(par1EntityLiving);
         }
         if (par1EntityLiving instanceof RockBase) {
             return false;
@@ -297,6 +521,9 @@ public class TerribleTerror extends Monster {
 
     private LivingEntity findSomethingToAttack() {
         if (ChaosPersists.PlayNicely != 0) {
+            return null;
+        }
+        if (this.isTame() && this.level().getDifficulty() == Difficulty.PEACEFUL) {
             return null;
         }
         List<LivingEntity> var5 =

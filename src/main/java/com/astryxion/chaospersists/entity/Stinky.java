@@ -8,6 +8,7 @@ import com.astryxion.chaospersists.core.ChaosSounds;
 import com.astryxion.chaospersists.util.GenericTargetSorter;
 import com.astryxion.chaospersists.util.MyEntityAIFollowOwner;
 import com.astryxion.chaospersists.util.MyEntityAIWander;
+import com.astryxion.chaospersists.util.RoyalPetFollowHelper;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -55,6 +56,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -65,6 +67,8 @@ public class Stinky extends TamableAnimal {
     private static final EntityDataAccessor<Integer> ACTIVITY =
             SynchedEntityData.defineId(Stinky.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> SKIN_COLOR =
+            SynchedEntityData.defineId(Stinky.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> POOP_ENABLE =
             SynchedEntityData.defineId(Stinky.class, EntityDataSerializers.INT);
 
     private BlockPos currentFlightTarget;
@@ -122,6 +126,7 @@ public class Stinky extends TamableAnimal {
         this.entityData.define(SKIN_COLOR, 0);
         this.entityData.define(ACTIVITY, this.activity);
         this.entityData.define(SPYRO_FIRE, 1);
+        this.entityData.define(POOP_ENABLE, 1);
         this.setOrderedToSit(false);
         this.setTame(false);
     }
@@ -132,6 +137,7 @@ public class Stinky extends TamableAnimal {
         tag.putInt("SpyroActivity", this.entityData.get(ACTIVITY));
         tag.putInt("SpyroFire", this.entityData.get(SPYRO_FIRE));
         tag.putInt("StinkySkin", this.entityData.get(SKIN_COLOR));
+        tag.putInt("StinkyPoop", this.entityData.get(POOP_ENABLE));
     }
 
     @Override
@@ -142,6 +148,7 @@ public class Stinky extends TamableAnimal {
         this.entityData.set(SPYRO_FIRE, tag.getInt("SpyroFire"));
         this.skin_color = tag.getInt("StinkySkin");
         this.entityData.set(SKIN_COLOR, this.skin_color);
+        this.entityData.set(POOP_ENABLE, tag.contains("StinkyPoop") ? tag.getInt("StinkyPoop") : 1);
     }
 
     public int getActivity() {
@@ -173,6 +180,14 @@ public class Stinky extends TamableAnimal {
         this.entityData.set(SKIN_COLOR, par1);
     }
 
+    public int getPoopEnable() {
+        return this.entityData.get(POOP_ENABLE);
+    }
+
+    public void setPoopEnable(int par1) {
+        this.entityData.set(POOP_ENABLE, par1);
+    }
+
     @Override
     public boolean canBreatheUnderwater() {
         return true;
@@ -199,8 +214,11 @@ public class Stinky extends TamableAnimal {
             this.setNoGravity(false);
             this.noPhysics = false;
             MyUtils.clearChaosFlight(this);
-            Vec3 dm = this.getDeltaMovement();
-            this.setDeltaMovement(dm.x, Math.min(dm.y, 0.0), dm.z);
+            this.currentFlightTarget = null;
+            this.setDeltaMovement(0.0, Math.min(this.getDeltaMovement().y, 0.0), 0.0);
+            this.xxa = 0.0f;
+            this.zza = 0.0f;
+            this.yya = 0.0f;
         }
     }
 
@@ -257,6 +275,31 @@ public class Stinky extends TamableAnimal {
                 this.setOwnerUUID(null);
                 spawnTamingParticles(false);
                 this.level().broadcastEntityEvent(this, (byte) 6);
+            }
+            if (!par1EntityPlayer.getAbilities().instabuild) {
+                var2.shrink(1);
+                if (var2.isEmpty()) {
+                    par1EntityPlayer.setItemInHand(hand, ItemStack.EMPTY);
+                }
+            }
+            return InteractionResult.SUCCESS;
+        }
+        if (this.isTame()
+                && !var2.isEmpty()
+                && var2.is(Items.STICK)
+                && par1EntityPlayer.distanceToSqr(this) < 16.0
+                && this.isOwnedBy(par1EntityPlayer)) {
+            if (!this.level().isClientSide) {
+                boolean nowEnabled = this.getPoopEnable() == 0;
+                this.setPoopEnable(nowEnabled ? 1 : 0);
+                spawnTamingParticles(true);
+                this.level().broadcastEntityEvent(this, (byte) 6);
+                par1EntityPlayer.displayClientMessage(
+                        Component.literal(
+                                nowEnabled
+                                        ? "Stinky will drop items again."
+                                        : "Stinky will no longer drop items."),
+                        true);
             }
             if (!par1EntityPlayer.getAbilities().instabuild) {
                 var2.shrink(1);
@@ -390,6 +433,9 @@ public class Stinky extends TamableAnimal {
         if (ret && !this.isDeadOrDying()) {
             this.setOrderedToSit(false);
             this.setActivity(2);
+            // Knockback + leftover combat velocity was launching them in a straight line.
+            this.setDeltaMovement(0.0, Math.min(this.getDeltaMovement().y, 0.15), 0.0);
+            this.currentFlightTarget = null;
         }
         return ret;
     }
@@ -458,68 +504,70 @@ public class Stinky extends TamableAnimal {
         if (this.level().isClientSide) {
             return;
         }
-        if (this.getRandom().nextInt(1750) == 1) {
-            this.playSound(SoundEvents.PLAYER_BURP, 1.0f, 1.0f);
-            this.dropItemFront(Items.COAL, 1);
-        }
-        if (this.getRandom().nextInt(2000) == 2) {
-            this.playSound(ChaosSounds.FART, 1.0f, 1.5f);
-            if (this.skin_color == 0) {
-                this.dropItemRear(Items.BLAZE_POWDER, 1);
+        if (this.getPoopEnable() != 0) {
+            if (this.getRandom().nextInt(1750) == 1) {
+                this.playSound(SoundEvents.PLAYER_BURP, 1.0f, 1.0f);
+                this.dropItemFront(Items.COAL, 1);
             }
-            if (this.skin_color == 1) {
-                this.dropItemRear(Items.ROTTEN_FLESH, 1);
-            }
-            if (this.skin_color == 2) {
-                this.dropItemRear(Items.MELON_SEEDS, 1);
-            }
-            if (this.skin_color == 3) {
-                this.dropItemRear(ChaosPersists.UraniumNugget, 1);
-            }
-            if (this.skin_color == 4) {
-                this.dropItemRear(Items.WHEAT, 1);
-            }
-            if (this.skin_color == 5) {
-                this.dropItemRear(Items.BRICK, 1);
-            }
-            if (this.skin_color == 6) {
-                this.dropItemRear(Blocks.TORCH.asItem(), 1);
-            }
-            if (this.skin_color == 7) {
-                this.dropItemRear(Items.EMERALD, 1);
-            }
-            if (this.skin_color == 8) {
-                this.dropItemRear(Items.GOLD_INGOT, 1);
-            }
-            if (this.skin_color == 9) {
-                this.dropItemRear(Blocks.OAK_LEAVES.asItem(), 1);
-            }
-            if (this.skin_color == 10) {
-                this.dropItemRear(ChaosPersists.TitaniumNugget, 1);
-            }
-            if (this.skin_color == 11) {
-                this.dropItemRear(ChaosPersists.MyAppleSeed, 1);
-            }
-            if (this.skin_color == 12) {
-                this.dropItemRear(Items.DIAMOND, 1);
-            }
-            if (this.skin_color == 13) {
-                this.dropItemRear(Blocks.SAND.asItem(), 1);
-            }
-            if (this.skin_color == 14) {
-                this.dropItemRear(Blocks.COBBLESTONE.asItem(), 1);
-            }
-            if (this.skin_color == 15) {
-                this.dropItemRear(Items.BONE, 1);
-            }
-            if (this.skin_color == 16) {
-                this.dropItemRear(Items.STRING, 1);
-            }
-            if (this.skin_color == 17) {
-                this.dropItemRear(ChaosPersists.MyCherrySeed, 1);
-            }
-            if (this.skin_color == 18) {
-                this.dropItemRear(ChaosPersists.MyPeachSeed, 1);
+            if (this.getRandom().nextInt(2000) == 2) {
+                this.playSound(ChaosSounds.FART, 1.0f, 1.5f);
+                if (this.skin_color == 0) {
+                    this.dropItemRear(Items.BLAZE_POWDER, 1);
+                }
+                if (this.skin_color == 1) {
+                    this.dropItemRear(Items.ROTTEN_FLESH, 1);
+                }
+                if (this.skin_color == 2) {
+                    this.dropItemRear(Items.MELON_SEEDS, 1);
+                }
+                if (this.skin_color == 3) {
+                    this.dropItemRear(ChaosPersists.UraniumNugget, 1);
+                }
+                if (this.skin_color == 4) {
+                    this.dropItemRear(Items.WHEAT, 1);
+                }
+                if (this.skin_color == 5) {
+                    this.dropItemRear(Items.BRICK, 1);
+                }
+                if (this.skin_color == 6) {
+                    this.dropItemRear(Blocks.TORCH.asItem(), 1);
+                }
+                if (this.skin_color == 7) {
+                    this.dropItemRear(Items.EMERALD, 1);
+                }
+                if (this.skin_color == 8) {
+                    this.dropItemRear(Items.GOLD_INGOT, 1);
+                }
+                if (this.skin_color == 9) {
+                    this.dropItemRear(Blocks.OAK_LEAVES.asItem(), 1);
+                }
+                if (this.skin_color == 10) {
+                    this.dropItemRear(ChaosPersists.TitaniumNugget, 1);
+                }
+                if (this.skin_color == 11) {
+                    this.dropItemRear(ChaosPersists.MyAppleSeed, 1);
+                }
+                if (this.skin_color == 12) {
+                    this.dropItemRear(Items.DIAMOND, 1);
+                }
+                if (this.skin_color == 13) {
+                    this.dropItemRear(Blocks.SAND.asItem(), 1);
+                }
+                if (this.skin_color == 14) {
+                    this.dropItemRear(Blocks.COBBLESTONE.asItem(), 1);
+                }
+                if (this.skin_color == 15) {
+                    this.dropItemRear(Items.BONE, 1);
+                }
+                if (this.skin_color == 16) {
+                    this.dropItemRear(Items.STRING, 1);
+                }
+                if (this.skin_color == 17) {
+                    this.dropItemRear(ChaosPersists.MyCherrySeed, 1);
+                }
+                if (this.skin_color == 18) {
+                    this.dropItemRear(ChaosPersists.MyPeachSeed, 1);
+                }
             }
         }
     }
@@ -675,6 +723,32 @@ public class Stinky extends TamableAnimal {
         }
         PetCombatHelper.tickPetCombat(this);
 
+        if (this.isSittingNow()) {
+            MyUtils.clearChaosFlight(this);
+            this.setNoGravity(false);
+            this.noPhysics = false;
+            this.setActivity(1);
+            this.setTarget(null);
+            this.currentFlightTarget = null;
+            this.owner_flying = 0;
+            this.xxa = 0.0f;
+            this.zza = 0.0f;
+            this.yya = 0.0f;
+            Vec3 dm = this.getDeltaMovement();
+            this.setDeltaMovement(0.0, this.onGround() ? 0.0 : Math.min(dm.y, -0.2), 0.0);
+            if (this.getNavigation() != null) {
+                this.getNavigation().stop();
+            }
+            if (this.getRandom().nextInt(100) == 1 && this.getHealth() < (float) this.mygetMaxHealth()) {
+                this.heal(1.0f);
+            }
+            return;
+        }
+
+        if (this.isTame()) {
+            RoyalPetFollowHelper.catchUpFlyingRoyal(this);
+        }
+
         if (this.getRandom().nextInt(200) == 1) {
             this.setLastHurtByMob(null);
         }
@@ -687,44 +761,35 @@ public class Stinky extends TamableAnimal {
             this.heal(1.0f);
         }
 
-        if (!this.isSittingNow()) {
-            if (this.activity == 0) {
+        if (this.activity == 0) {
+            this.setActivity(1);
+        }
+
+        if (this.getRandom().nextInt(100) == 1) {
+            if (this.getRandom().nextInt(20) == 1) {
+                this.setActivity(2);
+            } else {
                 this.setActivity(1);
             }
+        }
 
-            if (this.getRandom().nextInt(100) == 1) {
-                if (this.getRandom().nextInt(20) == 1) {
-                    this.setActivity(2);
-                } else {
-                    this.setActivity(1);
-                }
-            }
-
-            this.owner_flying = 0;
-            if (this.isTame() && this.getOwner() != null) {
-                Player e = (Player) this.getOwner();
-                if (e.getAbilities().flying) {
-                    this.owner_flying = 1;
-                    this.setActivity(2);
-                }
-            }
-
-            if (this.activity == 1 && this.isTame() && this.getOwner() != null) {
-                LivingEntity e = this.getOwner();
-                if (this.distanceToSqr(e) > 256.0) {
-                    this.setActivity(2);
-                }
-            }
-
-            this.doMovement();
-        } else {
-            // Sitting: drop chaos flight so mid-air sit falls (OreSpawn gravity).
-            MyUtils.clearChaosFlight(this);
-            this.setNoGravity(false);
-            if (this.getNavigation() != null) {
-                this.getNavigation().stop();
+        this.owner_flying = 0;
+        if (this.isTame() && this.getOwner() != null) {
+            Player e = (Player) this.getOwner();
+            if (e.getAbilities().flying) {
+                this.owner_flying = 1;
+                this.setActivity(2);
             }
         }
+
+        if (this.activity == 1 && this.isTame() && this.getOwner() != null) {
+            LivingEntity e = this.getOwner();
+            if (this.distanceToSqr(e) > 256.0) {
+                this.setActivity(2);
+            }
+        }
+
+        this.doMovement();
     }
 
     private void doMovement() {
@@ -757,30 +822,39 @@ public class Stinky extends TamableAnimal {
                 do_new = true;
             }
         }
+        boolean chasingPrey = false;
         LivingEntity prior = this.getTarget();
         e = PetCombatHelper.resolveCombatTarget(this, prior, this::findSomethingToAttack);
         if (e != prior) {
             this.setTarget(e);
         }
-        if (this.getRandom().nextInt(7) == 1
-                && this.level().getDifficulty() != Difficulty.PEACEFUL
-                && e != null) {
+        LivingEntity prey = e;
+        if (this.level().getDifficulty() != Difficulty.PEACEFUL && prey != null) {
             if (this.isTame() && this.getHealth() / (float) this.mygetMaxHealth() < 0.25f) {
                 this.setActivity(2);
-                do_new = false;
-                this.currentFlightTarget =
-                        new BlockPos(
-                                (int) (this.getX() + (this.getX() - e.getX())),
-                                (int) (this.getY() + 1.0),
-                                (int) (this.getZ() + (this.getZ() - e.getZ())));
+                this.setTarget(null);
+                // 1.7.10 looked like follow-when-hurt; the receding away-from-enemy waypoint
+                // plus forward-only thrust rocketed them in one direction.
+                do_new = has_owner;
+                if (!has_owner) {
+                    this.currentFlightTarget =
+                            new BlockPos(
+                                    (int) (this.getX() + (this.getX() - prey.getX())),
+                                    (int) (this.getY() + 1.0),
+                                    (int) (this.getZ() + (this.getZ() - prey.getZ())));
+                }
             } else {
+                chasingPrey = true;
                 this.setActivity(2);
-                this.currentFlightTarget =
-                        new BlockPos((int) e.getX(), (int) (e.getY() + 1.0), (int) e.getZ());
-                do_new = false;
-                float reach = 3.0f + e.getBbWidth() / 2.0f;
-                if (this.distanceToSqr(e) < (double) (reach * reach)) {
-                    this.doHurtTarget(e);
+                float reach = 3.0f + prey.getBbWidth() / 2.0f;
+                if (this.distanceToSqr(prey) < (double) (reach * reach)) {
+                    this.doHurtTarget(prey);
+                    // Peel off after a pass so they buzz around a closed Triffid instead of hovering in it.
+                    do_new = true;
+                } else if (this.getRandom().nextInt(7) == 1) {
+                    this.currentFlightTarget =
+                            BlockPos.containing(prey.getX(), prey.getY() + 1.0, prey.getZ());
+                    do_new = false;
                 }
             }
         }
@@ -833,7 +907,13 @@ public class Stinky extends TamableAnimal {
                 int gox = (int) this.getX();
                 int goy = (int) this.getY();
                 int goz = (int) this.getZ();
-                if (has_owner) {
+                if (chasingPrey && prey != null) {
+                    gox = (int) prey.getX();
+                    goy = (int) (prey.getY() + 1.0);
+                    goz = (int) prey.getZ();
+                    zdir = this.getRandom().nextInt(6) + 6;
+                    xdir = this.getRandom().nextInt(6) + 6;
+                } else if (has_owner) {
                     gox = (int) ox;
                     goy = (int) oy;
                     goz = (int) oz;
@@ -871,26 +951,18 @@ public class Stinky extends TamableAnimal {
             }
         }
         double speed_factor = 1.0;
-        double var1 = (double) this.currentFlightTarget.getX() + 0.5 - this.getX();
-        double var3 = (double) this.currentFlightTarget.getY() + 0.1 - this.getY();
-        double var5 = (double) this.currentFlightTarget.getZ() + 0.5 - this.getZ();
         if (this.owner_flying != 0) {
             speed_factor = 1.75;
             if (this.isTame() && this.getOwner() != null && this.distanceToSqr(this.getOwner()) > 49.0) {
                 speed_factor = 3.5;
             }
         }
-        Vec3 motion = this.getDeltaMovement();
-        this.setDeltaMovement(
-                motion.add(
-                        (Math.signum(var1) * 0.5 - motion.x) * 0.15 * speed_factor,
-                        (Math.signum(var3) * 0.7 - motion.y) * 0.21 * speed_factor,
-                        (Math.signum(var5) * 0.5 - motion.z) * 0.15 * speed_factor));
-        motion = this.getDeltaMovement();
-        float var7 = (float) (Mth.atan2(motion.z, motion.x) * 180.0 / Math.PI) - 90.0f;
-        float var8 = Mth.wrapDegrees(var7 - this.getYRot());
-        this.setZza((float) (0.75 * speed_factor));
-        this.setYRot(this.getYRot() + var8 / 3.0f);
+        MyUtils.steerChaosFlightForward(
+                this,
+                (double) this.currentFlightTarget.getX() + 0.5,
+                (double) this.currentFlightTarget.getY() + 0.1,
+                (double) this.currentFlightTarget.getZ() + 0.5,
+                speed_factor);
         MyUtils.applyChaosFlightMovement(this);
 }
 
@@ -902,6 +974,9 @@ public class Stinky extends TamableAnimal {
             return false;
         }
         if (par1EntityLiving == this) {
+            return false;
+        }
+        if (MyUtils.shouldSkipCombatTarget(this, par1EntityLiving)) {
             return false;
         }
         if (!par1EntityLiving.isAlive()) {

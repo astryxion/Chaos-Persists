@@ -72,6 +72,8 @@ public class ThePrincess extends TamableAnimal {
             SynchedEntityData.defineId(ThePrincess.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> POWER =
             SynchedEntityData.defineId(ThePrincess.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> CRYSTAL_POWER =
+            SynchedEntityData.defineId(ThePrincess.class, EntityDataSerializers.INT);
 
     private BlockPos currentFlightTarget;
     private final GenericTargetSorter targetSorter;
@@ -146,6 +148,7 @@ public class ThePrincess extends TamableAnimal {
         this.entityData.define(ACTIVITY, this.activity);
         this.entityData.define(SPYRO_FIRE, 1);
         this.entityData.define(POWER, this.attack_level);
+        this.entityData.define(CRYSTAL_POWER, 1);
         this.setOrderedToSit(false);
         this.setTame(false);
         this.noPhysics = false;
@@ -156,6 +159,7 @@ public class ThePrincess extends TamableAnimal {
         super.addAdditionalSaveData(tag);
         tag.putInt("SpyroActivity", this.entityData.get(ACTIVITY));
         tag.putInt("SpyroFire", this.entityData.get(SPYRO_FIRE));
+        tag.putInt("PrincessCrystal", this.entityData.get(CRYSTAL_POWER));
         tag.putInt("SpyroGrow", this.ok_to_grow);
         tag.putInt("SpyroKill", this.kill_count);
         tag.putInt("SpyroFed", this.fed_count);
@@ -168,6 +172,7 @@ public class ThePrincess extends TamableAnimal {
         this.activity = tag.getInt("SpyroActivity");
         this.entityData.set(ACTIVITY, this.activity);
         this.entityData.set(SPYRO_FIRE, tag.getInt("SpyroFire"));
+        this.entityData.set(CRYSTAL_POWER, tag.contains("PrincessCrystal") ? tag.getInt("PrincessCrystal") : 1);
         this.ok_to_grow = tag.getInt("SpyroGrow");
         this.kill_count = tag.getInt("SpyroKill");
         this.fed_count = tag.getInt("SpyroFed");
@@ -201,6 +206,14 @@ public class ThePrincess extends TamableAnimal {
 
     public void setSpyroFire(int par1) {
         this.entityData.set(SPYRO_FIRE, par1);
+    }
+
+    public int getCrystalPower() {
+        return this.entityData.get(CRYSTAL_POWER);
+    }
+
+    public void setCrystalPower(int par1) {
+        this.entityData.set(CRYSTAL_POWER, par1);
     }
 
     public int getAttacking() {
@@ -326,6 +339,46 @@ public class ThePrincess extends TamableAnimal {
         }
         if (this.isTame()
                 && !var2.isEmpty()
+                && var2.is(Blocks.DEAD_BUSH.asItem())
+                && par1EntityPlayer.distanceToSqr(this) < 16.0
+                && this.isOwnedBy(par1EntityPlayer)) {
+            if (!this.level().isClientSide) {
+                spawnTamingParticles(true);
+                this.level().broadcastEntityEvent(this, (byte) 6);
+                this.setCrystalPower(0);
+                par1EntityPlayer.displayClientMessage(
+                        Component.literal("Princess crystal power extinguished."), true);
+            }
+            if (!par1EntityPlayer.getAbilities().instabuild) {
+                var2.shrink(1);
+                if (var2.isEmpty()) {
+                    par1EntityPlayer.setItemInHand(hand, ItemStack.EMPTY);
+                }
+            }
+            return InteractionResult.SUCCESS;
+        }
+        if (this.isTame()
+                && !var2.isEmpty()
+                && isCrystalFlower(var2)
+                && par1EntityPlayer.distanceToSqr(this) < 16.0
+                && this.isOwnedBy(par1EntityPlayer)) {
+            if (!this.level().isClientSide) {
+                spawnTamingParticles(true);
+                this.level().broadcastEntityEvent(this, (byte) 6);
+                this.setCrystalPower(1);
+                par1EntityPlayer.displayClientMessage(
+                        Component.literal("Princess crystal power lit!"), true);
+            }
+            if (!par1EntityPlayer.getAbilities().instabuild) {
+                var2.shrink(1);
+                if (var2.isEmpty()) {
+                    par1EntityPlayer.setItemInHand(hand, ItemStack.EMPTY);
+                }
+            }
+            return InteractionResult.SUCCESS;
+        }
+        if (this.isTame()
+                && !var2.isEmpty()
                 && var2.is(Items.FLINT_AND_STEEL)
                 && par1EntityPlayer.distanceToSqr(this) < 16.0
                 && this.isOwnedBy(par1EntityPlayer)) {
@@ -378,6 +431,20 @@ public class ThePrincess extends TamableAnimal {
 
     public boolean isWheat(ItemStack par1ItemStack) {
         return !par1ItemStack.isEmpty() && par1ItemStack.is(Items.BEEF);
+    }
+
+    private static boolean isCrystalFlower(ItemStack stack) {
+        if (stack.isEmpty()) {
+            return false;
+        }
+        return isCrystalFlowerItem(ChaosPersists.CrystalFlowerRedBlock, stack)
+                || isCrystalFlowerItem(ChaosPersists.CrystalFlowerGreenBlock, stack)
+                || isCrystalFlowerItem(ChaosPersists.CrystalFlowerBlueBlock, stack)
+                || isCrystalFlowerItem(ChaosPersists.CrystalFlowerYellowBlock, stack);
+    }
+
+    private static boolean isCrystalFlowerItem(Block block, ItemStack stack) {
+        return block != null && stack.is(block.asItem());
     }
 
     @Override
@@ -636,7 +703,7 @@ public class ThePrincess extends TamableAnimal {
 
         PetCombatHelper.tickPetCombat(this);
         if (this.isTame() && !RoyalPetFollowHelper.isStayingPut(this)) {
-            RoyalPetFollowHelper.syncDimensionOnly(this);
+            RoyalPetFollowHelper.syncRoyalFollow(this);
         }
 
         if (this.getRandom().nextInt(200) == 1) {
@@ -671,7 +738,7 @@ public class ThePrincess extends TamableAnimal {
             this.attack_level += 4;
         }
 
-        if (this.getSpyroFire() == 0) {
+        if (this.getCrystalPower() == 0) {
             this.attack_level = 0;
         }
 
@@ -903,12 +970,16 @@ public class ThePrincess extends TamableAnimal {
             if (this.isTame() && this.getHealth() / (float) this.mygetMaxHealth() < 0.25f) {
                 this.setActivity(2);
                 this.setAttacking(0);
-                do_new = false;
-                this.currentFlightTarget =
-                        new BlockPos(
-                                (int) (this.getX() + (this.getX() - e.getX())),
-                                (int) (this.getY() + 1.0),
-                                (int) (this.getZ() + (this.getZ() - e.getZ())));
+                // 1.7.10: orbit the owner when hurt. Fly-away-from-enemy every tick with
+                // noPhysics sent them through walls in a straight line.
+                do_new = has_owner;
+                if (!has_owner) {
+                    this.currentFlightTarget =
+                            new BlockPos(
+                                    (int) (this.getX() + (this.getX() - e.getX())),
+                                    (int) (this.getY() + 1.0),
+                                    (int) (this.getZ() + (this.getZ() - e.getZ())));
+                }
             } else {
                 this.setActivity(2);
                 this.setAttacking(1);
@@ -977,6 +1048,12 @@ public class ThePrincess extends TamableAnimal {
             }
         } else {
             this.setAttacking(0);
+            if (this.isTame()
+                    && has_owner
+                    && this.getHealth() / (float) this.mygetMaxHealth() < 0.25f) {
+                this.setActivity(2);
+                do_new = true;
+            }
         }
         if (this.activity == 1) {
             MyUtils.clearChaosFlight(this);
@@ -1053,6 +1130,9 @@ public class ThePrincess extends TamableAnimal {
             return false;
         }
         if (par1EntityLiving == this) {
+            return false;
+        }
+        if (MyUtils.shouldSkipCombatTarget(this, par1EntityLiving)) {
             return false;
         }
         if (!par1EntityLiving.isAlive()) {

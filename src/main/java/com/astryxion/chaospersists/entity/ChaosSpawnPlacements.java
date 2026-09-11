@@ -1,6 +1,6 @@
 package com.astryxion.chaospersists.entity;
 
-import com.astryxion.chaospersists.compat.forge.fml.common.registry.EntityRegistry;
+import com.astryxion.chaospersists.legacy.forge.fml.common.registry.EntityRegistry;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;

@@ -2,6 +2,7 @@ package com.astryxion.chaospersists.entity;
 import com.astryxion.chaospersists.util.MyUtils;
 import com.astryxion.chaospersists.util.PetCombatHelper;
 
+import com.astryxion.chaospersists.compat.eeeabsmobs.EeeabsMobsCompat;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.core.ChaosSounds;
 import com.astryxion.chaospersists.item.Elevator;
@@ -43,7 +44,6 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.OpenDoorGoal;
-import net.minecraft.world.entity.ai.goal.PanicGoal;
 import net.minecraft.world.entity.ai.goal.RangedAttackGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.TemptGoal;
@@ -212,7 +212,7 @@ public class Boyfriend extends TamableAnimal implements RangedAttackMob {
         this.goalSelector.addGoal(2, new TemptGoal(this, 1.25, Ingredient.of(Items.COOKED_BEEF), false));
         this.goalSelector.addGoal(4, new RangedAttackGoal(this, 1.25, 20, 10.0f));
         this.goalSelector.addGoal(5, new FloatGoal(this));
-        this.goalSelector.addGoal(6, new PanicGoal(this, 1.5));
+        this.goalSelector.addGoal(6, EeeabsMobsCompat.panicGoal(this, 1.5));
         this.goalSelector.addGoal(7, new LookAtPlayerGoal(this, Player.class, 6.0f));
         this.goalSelector.addGoal(8, new MyEntityAIWander(this, 0.75f));
         this.goalSelector.addGoal(9, new RandomLookAroundGoal(this));
@@ -409,7 +409,7 @@ public class Boyfriend extends TamableAnimal implements RangedAttackMob {
         LivingEntity prior = this.getTarget();
         // Freeroam hostiles come from targetSelector; resolve adds owner-assist + sit guards.
         LivingEntity resolved =
-                PetCombatHelper.resolveCombatTarget(this, prior, () -> null);
+                PetCombatHelper.resolveCombatTarget(this, prior, () -> EeeabsMobsCompat.findNearbyHunt(this));
         if (resolved != prior) {
             this.setTarget(resolved);
         }
@@ -427,8 +427,10 @@ public class Boyfriend extends TamableAnimal implements RangedAttackMob {
         if (!stack.isEmpty() && !this.isInSittingPose()) {
             if (victim != null) {
                 if (!this.getMainHandItem().isEmpty()) {
-                    if (this.distanceTo(victim) < 4.0f
-                            || stack.is(ChaosPersists.MyBertha) && this.distanceTo(victim) < 10.0f) {
+                    float extraReach = EeeabsMobsCompat.extraMeleeReach(victim);
+                    if (this.distanceTo(victim) < 4.0f + extraReach
+                            || stack.is(ChaosPersists.MyBertha)
+                                    && this.distanceTo(victim) < 10.0f + extraReach) {
                         --this.attackTime;
                         if (this.attackTime <= 0) {
                             this.attackTime = 25;
@@ -452,7 +454,8 @@ public class Boyfriend extends TamableAnimal implements RangedAttackMob {
                             }
                             this.had_target = 1;
                         }
-                    } else if (this.distanceTo(victim) < 7.0f && !stack.is(ChaosPersists.MyUltimateBow)) {
+                    } else if (this.distanceTo(victim) < 7.0f + extraReach
+                            && !stack.is(ChaosPersists.MyUltimateBow)) {
                         --this.taunt_sound_ticker;
                         if (this.taunt_sound_ticker <= 0) {
                             if (this.voice_enable != 0) {
@@ -1103,6 +1106,19 @@ public class Boyfriend extends TamableAnimal implements RangedAttackMob {
     }
 
     @Override
+    public boolean isBaby() {
+        return false;
+    }
+
+    @Override
+    public void setBaby(boolean baby) {}
+
+    @Override
+    public void setAge(int age) {
+        super.setAge(Math.max(0, age));
+    }
+
+    @Override
     public void performRangedAttack(LivingEntity entityliving, float f) {
         this.attackEntityWithRangedAttack(entityliving);
     }
@@ -1218,6 +1234,8 @@ public class Boyfriend extends TamableAnimal implements RangedAttackMob {
             CompoundTag dataTag) {
         this.ensureSkinInitialized();
         this.getAttribute(Attributes.MAX_HEALTH).setBaseValue((double) this.mygetMaxHealth());
-        return super.finalizeSpawn(level, difficulty, reason, spawnData, dataTag);
+        SpawnGroupData data = super.finalizeSpawn(level, difficulty, reason, spawnData, dataTag);
+        this.setAge(0);
+        return data;
     }
 }

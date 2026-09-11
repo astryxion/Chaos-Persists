@@ -1,5 +1,7 @@
 package com.astryxion.chaospersists.item;
 
+import com.astryxion.chaospersists.compat.illageandspillage.IllageAndSpillageExecuteCompat;
+import com.astryxion.chaospersists.compat.mutantmonsters.MutantMonstersExecuteCompat;
 import com.astryxion.chaospersists.entity.Mothra;
 import java.util.List;
 import net.minecraft.core.BlockPos;
@@ -203,6 +205,10 @@ public class BetterFireball extends AbstractHurtingProjectile implements ItemSup
             } else {
                 hit.hurt(this.damageSources().mobProjectile(this, this.shootingEntity), 5.0f);
                 hit.setSecondsOnFire(5);
+            }
+            if (hit instanceof LivingEntity livingHit) {
+                MutantMonstersExecuteCompat.forceExecuteIfDowned(livingHit);
+                IllageAndSpillageExecuteCompat.forceExecuteIfDowned(livingHit);
             }
         } else if (result instanceof BlockHitResult) {
             BlockPos firePos = BlockPos.containing(result.getLocation());

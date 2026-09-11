@@ -2,8 +2,8 @@ package com.astryxion.chaospersists.item;
 
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.core.ChaosSounds;
-import com.astryxion.chaospersists.entity.Boyfriend;
-import com.astryxion.chaospersists.entity.Girlfriend;
+import com.astryxion.chaospersists.util.FriendlyWeaponHits;
+import com.astryxion.chaospersists.util.MyUtils;
 import java.util.Iterator;
 import java.util.List;
 import net.minecraft.core.BlockPos;
@@ -13,7 +13,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -133,13 +132,11 @@ public class UltimateSword extends SwordItem {
 
     @Override
     public boolean onLeftClickEntity(ItemStack stack, Player player, Entity entity) {
-        if (entity != null && ChaosPersists.ultimate_sword_pvp == 0) {
-            if (entity instanceof Player
-                    || entity instanceof Girlfriend
-                    || entity instanceof Boyfriend
-                    || (entity instanceof TamableAnimal t && t.isTame())) {
-                return true;
-            }
+        if (entity != null
+                && (FriendlyWeaponHits.isListedIgnore(entity)
+                        || (ChaosPersists.ultimate_sword_pvp == 0
+                                && FriendlyWeaponHits.isFriendlyWhenPvpOff(entity)))) {
+            return true;
         }
         if (this == ChaosPersists.MyChainsaw && player != null) {
             this.findSomethingToHit(player);
@@ -176,18 +173,16 @@ public class UltimateSword extends SwordItem {
         if (par1EntityLiving == player) {
             return false;
         }
+        if (MyUtils.shouldSkipCombatTarget(player, par1EntityLiving)) {
+            return false;
+        }
         if (!par1EntityLiving.isAlive()) {
             return false;
         }
-        if (ChaosPersists.ultimate_sword_pvp == 0) {
-            if (par1EntityLiving instanceof Player
-                    || par1EntityLiving instanceof Girlfriend
-                    || par1EntityLiving instanceof Boyfriend) {
-                return false;
-            }
-            if (par1EntityLiving instanceof TamableAnimal t && t.isTame()) {
-                return false;
-            }
+        if (FriendlyWeaponHits.isListedIgnore(par1EntityLiving)
+                || (ChaosPersists.ultimate_sword_pvp == 0
+                        && FriendlyWeaponHits.isFriendlyWhenPvpOff(par1EntityLiving))) {
+            return false;
         }
         if (!this.myCanSee(par1EntityLiving, player)) {
             return false;

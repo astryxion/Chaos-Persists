@@ -2,5 +2,91 @@
   "parent": "item/generated",
   "textures": {
     "layer0": "chaospersists:item/amethyst_helmet"
-  }
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "trim_type": 0.1
+      },
+      "model": "chaospersists:item/amethyst_helmet_quartz_trim"
+    },
+    {
+      "predicate": {
+        "trim_type": 0.2
+      },
+      "model": "chaospersists:item/amethyst_helmet_iron_trim"
+    },
+    {
+      "predicate": {
+        "trim_type": 0.3
+      },
+      "model": "chaospersists:item/amethyst_helmet_netherite_trim"
+    },
+    {
+      "predicate": {
+        "trim_type": 0.4
+      },
+      "model": "chaospersists:item/amethyst_helmet_redstone_trim"
+    },
+    {
+      "predicate": {
+        "trim_type": 0.5
+      },
+      "model": "chaospersists:item/amethyst_helmet_copper_trim"
+    },
+    {
+      "predicate": {
+        "trim_type": 0.6
+      },
+      "model": "chaospersists:item/amethyst_helmet_gold_trim"
+    },
+    {
+      "predicate": {
+        "trim_type": 0.7
+      },
+      "model": "chaospersists:item/amethyst_helmet_emerald_trim"
+    },
+    {
+      "predicate": {
+        "trim_type": 0.8
+      },
+      "model": "chaospersists:item/amethyst_helmet_diamond_trim"
+    },
+    {
+      "predicate": {
+        "trim_type": 0.9
+      },
+      "model": "chaospersists:item/amethyst_helmet_lapis_trim"
+    },
+    {
+      "predicate": {
+        "trim_type": 1.0
+      },
+      "model": "chaospersists:item/amethyst_helmet_amethyst_trim"
+    },
+    {
+      "predicate": {
+        "trim_type": 1.1
+      },
+      "model": "chaospersists:item/amethyst_helmet_cp_ruby_trim"
+    },
+    {
+      "predicate": {
+        "trim_type": 1.2
+      },
+      "model": "chaospersists:item/amethyst_helmet_cp_amethyst_trim"
+    },
+    {
+      "predicate": {
+        "trim_type": 1.3
+      },
+      "model": "chaospersists:item/amethyst_helmet_cp_uranium_trim"
+    },
+    {
+      "predicate": {
+        "trim_type": 1.4
+      },
+      "model": "chaospersists:item/amethyst_helmet_cp_titanium_trim"
+    }
+  ]
 }

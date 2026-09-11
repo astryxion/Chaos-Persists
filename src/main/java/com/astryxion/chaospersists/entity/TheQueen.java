@@ -1,5 +1,7 @@
 package com.astryxion.chaospersists.entity;
 
+import com.astryxion.chaospersists.compat.illageandspillage.IllageAndSpillageExecuteCompat;
+import com.astryxion.chaospersists.compat.mutantmonsters.MutantMonstersExecuteCompat;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.core.ChaosSounds;
 import com.astryxion.chaospersists.item.BetterFireball;
@@ -352,6 +354,9 @@ public class TheQueen extends Monster {
         }
         if (par1Entity instanceof LivingEntity living && !this.level().isClientSide) {
             if (!living.isAlive()) {
+                if (isExecuteResurrectionMob(living)) {
+                    executeTarget(living);
+                }
                 this.ev = null;
                 this.evh = 0.0f;
             } else {
@@ -369,7 +374,7 @@ public class TheQueen extends Monster {
                 }
                 this.evh = living.getHealth();
                 if (this.evh <= 0.0f) {
-                    living.discard();
+                    executeTarget(living);
                 }
             }
         }
@@ -393,7 +398,35 @@ public class TheQueen extends Monster {
             }
             par1Entity.push(Math.cos(f3) * ks, inair, Math.sin(f3) * ks);
         }
+        if (!this.level().isClientSide
+                && par1Entity instanceof LivingEntity living
+                && (!living.isAlive() || living.getHealth() <= 0.0f)
+                && isExecuteResurrectionMob(living)) {
+            executeTarget(living);
+            this.ev = null;
+            this.evh = 0.0f;
+        }
         return var4;
+    }
+
+    private static boolean isExecuteResurrectionMob(LivingEntity living) {
+        return MutantMonstersExecuteCompat.isResurrectionMob(living)
+                || IllageAndSpillageExecuteCompat.isResurrectionMob(living);
+    }
+
+    private static void executeTarget(LivingEntity living) {
+        if (living == null || living.level().isClientSide || living.isRemoved()) {
+            return;
+        }
+        MutantMonstersExecuteCompat.forceExecuteIfDowned(living);
+        IllageAndSpillageExecuteCompat.forceExecuteIfDowned(living);
+        if (isExecuteResurrectionMob(living)) {
+            MutantMonstersExecuteCompat.forceExecute(living);
+            IllageAndSpillageExecuteCompat.forceExecute(living);
+        }
+        if (!living.isRemoved()) {
+            living.discard();
+        }
     }
 
     public boolean canSeeTarget(double pX, double pY, double pZ) {
@@ -447,16 +480,22 @@ public class TheQueen extends Monster {
         }
         super.customServerAiStep();
         if (this.ev != null) {
-            if (this.distanceToSqr(this.ev) < 2000.0 && this.ev.isAlive()) {
+            boolean inRange = this.distanceToSqr(this.ev) < 2000.0;
+            if (inRange && this.ev.isAlive()) {
                 if (this.evh < this.ev.getHealth()) {
                     this.ev.setHealth(this.evh);
                 } else {
                     this.evh = this.ev.getHealth();
                 }
                 if (this.evh <= 0.0f) {
-                    this.ev.discard();
+                    executeTarget(this.ev);
                 }
             } else {
+                if (inRange
+                        && (!this.ev.isAlive() || this.ev.getHealth() <= 0.0f)
+                        && isExecuteResurrectionMob(this.ev)) {
+                    executeTarget(this.ev);
+                }
                 this.ev = null;
                 this.evh = 0.0f;
             }
@@ -1160,6 +1199,9 @@ public class TheQueen extends Monster {
         if (par1EntityLiving == this) {
             return false;
         }
+        if (MyUtils.shouldSkipCombatTarget(this, par1EntityLiving)) {
+            return false;
+        }
         if (!par1EntityLiving.isAlive()) {
             return false;
         }
@@ -1299,6 +1341,8 @@ public class TheQueen extends Monster {
             }
             var4.hurt(this.damageSources().explosion(null), (float) damage / 2.0f);
             var4.hurt(this.damageSources().fall(), (float) damage / 2.0f);
+            MutantMonstersExecuteCompat.forceExecuteIfDowned(var4);
+            IllageAndSpillageExecuteCompat.forceExecuteIfDowned(var4);
             this.level()
                     .playSound(
                             null,

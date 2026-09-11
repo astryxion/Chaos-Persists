@@ -230,7 +230,7 @@ public class WormMedium extends Monster {
                 this.doHurtTarget(target);
                 if (this.getRandom().nextInt(6) == 1) {
                     boots = target.getItemBySlot(EquipmentSlot.FEET);
-                    if (!boots.isEmpty()) {
+                    if (MyUtils.canMobStripItem(boots)) {
                         target.setItemSlot(EquipmentSlot.FEET, ItemStack.EMPTY);
                         bid = boots.getMaxDamage() - boots.getDamageValue();
                         bid = bid > 15 ? (bid /= 15) : 1;
@@ -248,7 +248,7 @@ public class WormMedium extends Monster {
                         this.level().addFreshEntity(dropped);
                     } else {
                         boots = target.getItemBySlot(EquipmentSlot.LEGS);
-                        if (!boots.isEmpty()) {
+                        if (MyUtils.canMobStripItem(boots)) {
                             target.setItemSlot(EquipmentSlot.LEGS, ItemStack.EMPTY);
                             bid = boots.getMaxDamage() - boots.getDamageValue();
                             bid = bid > 15 ? (bid /= 15) : 1;

@@ -51,7 +51,7 @@ import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
-import com.astryxion.chaospersists.compat.forge.common.util.EnumHelper;
+import com.astryxion.chaospersists.legacy.forge.common.util.EnumHelper;
 import net.minecraft.world.level.FoliageColor;
 import net.minecraft.world.level.GrassColor;
 import net.minecraft.world.level.block.Block;

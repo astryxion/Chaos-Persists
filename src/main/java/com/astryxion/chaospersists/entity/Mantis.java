@@ -20,6 +20,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -64,6 +65,11 @@ public class Mantis extends Monster {
                 .add(Attributes.MOVEMENT_SPEED, 0.3199999928474426)
                 .add(Attributes.ATTACK_DAMAGE, (double) ChaosPersists.Mantis_stats.attack)
                 .add(Attributes.ARMOR, (double) ChaosPersists.Mantis_stats.defense);
+    }
+
+    @Override
+    public MobType getMobType() {
+        return MobType.ARTHROPOD;
     }
 
     @Override
@@ -403,6 +409,9 @@ public class Mantis extends Monster {
             return false;
         }
         if (par1EntityLiving == this) {
+            return false;
+        }
+        if (MyUtils.shouldSkipCombatTarget(this, par1EntityLiving)) {
             return false;
         }
         if (!par1EntityLiving.isAlive()) {

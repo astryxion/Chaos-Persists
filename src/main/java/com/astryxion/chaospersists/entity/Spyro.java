@@ -655,7 +655,9 @@ public class Spyro extends TamableAnimal {
         if (this.currentFlightTarget == null) {
             this.currentFlightTarget = BlockPos.containing(this.getX(), this.getY(), this.getZ());
         }
-        if (this.getRandom().nextInt(100000) == 1 && !this.isPersistenceRequired()) {
+        if (ChaosPersists.PrinceAutoGrow != 0
+                && this.getRandom().nextInt(100000) == 1
+                && !this.isPersistenceRequired()) {
             Entity ent =
                     spawnCreature(
                             this.level(),
@@ -943,6 +945,9 @@ public class Spyro extends TamableAnimal {
             return false;
         }
         if (par1EntityLiving == this) {
+            return false;
+        }
+        if (MyUtils.shouldSkipCombatTarget(this, par1EntityLiving)) {
             return false;
         }
         if (!par1EntityLiving.isAlive()) {

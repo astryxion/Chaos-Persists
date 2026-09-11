@@ -64,7 +64,7 @@ import net.minecraft.server.TickTask;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ThreadedLevelLightEngine;
-import com.astryxion.chaospersists.compat.minecraft.init.Biomes;
+import com.astryxion.chaospersists.legacy.minecraft.init.Biomes;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -78,9 +78,11 @@ import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
+import net.minecraft.world.level.storage.loot.entries.EmptyLootItem;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
 import net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer;
 import net.minecraft.world.level.storage.loot.functions.SetItemCountFunction;
+import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
@@ -99,14 +101,14 @@ import net.minecraft.world.item.FishingRodItem;
 import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.DiggerItem;
 import net.minecraft.world.item.UseAnim;
-import com.astryxion.chaospersists.compat.forge.common.CreativeTabCompat;
-import com.astryxion.chaospersists.compat.forge.common.RegistryCompat;
-import com.astryxion.chaospersists.compat.forge.fml.common.event.FMLInitializationEvent;
-import com.astryxion.chaospersists.compat.forge.fml.common.event.FMLPostInitializationEvent;
-import com.astryxion.chaospersists.compat.forge.fml.common.event.FMLServerStartingEvent;
+import com.astryxion.chaospersists.legacy.forge.common.CreativeTabCompat;
+import com.astryxion.chaospersists.legacy.forge.common.RegistryCompat;
+import com.astryxion.chaospersists.legacy.forge.fml.common.event.FMLInitializationEvent;
+import com.astryxion.chaospersists.legacy.forge.fml.common.event.FMLPostInitializationEvent;
+import com.astryxion.chaospersists.legacy.forge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
-import com.astryxion.chaospersists.compat.minecraft.block.BlockDispenser;
-import com.astryxion.chaospersists.compat.minecraft.world.storage.loot.LootTableList;
+import com.astryxion.chaospersists.legacy.minecraft.block.BlockDispenser;
+import com.astryxion.chaospersists.legacy.minecraft.world.storage.loot.LootTableList;
 import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.ArmorMaterial;
 import net.minecraft.world.inventory.MenuType;
@@ -119,10 +121,10 @@ import net.minecraft.client.renderer.entity.ArrowRenderer;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.common.MinecraftForge;
-import com.astryxion.chaospersists.compat.forge.common.config.Configuration;
-import com.astryxion.chaospersists.compat.forge.fml.common.network.NetworkRegistry;
-import com.astryxion.chaospersists.compat.forge.common.config.Property;
-import com.astryxion.chaospersists.compat.forge.common.util.EnumHelper;
+import com.astryxion.chaospersists.legacy.forge.common.config.Configuration;
+import com.astryxion.chaospersists.legacy.forge.fml.common.network.NetworkRegistry;
+import com.astryxion.chaospersists.legacy.forge.common.config.Property;
+import com.astryxion.chaospersists.legacy.forge.common.util.EnumHelper;
 import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
@@ -139,10 +141,9 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.server.ServerLifecycleHooks;
-import com.astryxion.chaospersists.compat.forge.fml.common.registry.EntityRegistry;
-import com.astryxion.chaospersists.compat.forge.fml.common.registry.GameRegistry;
+import com.astryxion.chaospersists.legacy.forge.fml.common.registry.EntityRegistry;
+import com.astryxion.chaospersists.legacy.forge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.loading.FMLPaths;
-import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegisterEvent;
 import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
@@ -897,9 +898,9 @@ public class ChaosPersists
   public static final RegistryObject<EntityType<GodzillaHead>> ENTITY_TYPE_MOBZILLA_HEAD = ENTITY_TYPES.register("mobzilla_head",
       () -> EntityType.Builder.<GodzillaHead>of(GodzillaHead::new, MobCategory.MISC).sized(9.9f, 10.0f).clientTrackingRange(128).updateInterval(10).setShouldReceiveVelocityUpdates(false).build("mobzilla_head"));
   public static final RegistryObject<EntityType<EnderKnight>> ENTITY_TYPE_ENDER_KNIGHT = ENTITY_TYPES.register("ender_knight",
-      () -> EntityType.Builder.<EnderKnight>of(EnderKnight::new, MobCategory.MONSTER).sized(0.6f, 2.9f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("ender_knight"));
+      () -> EntityType.Builder.<EnderKnight>of(EnderKnight::new, MobCategory.MONSTER).sized(0.6f, 2.9f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(true).build("ender_knight"));
   public static final RegistryObject<EntityType<EnderReaper>> ENTITY_TYPE_ENDER_REAPER = ENTITY_TYPES.register("ender_reaper",
-      () -> EntityType.Builder.<EnderReaper>of(EnderReaper::new, MobCategory.MONSTER).sized(0.7f, 2.9f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("ender_reaper"));
+      () -> EntityType.Builder.<EnderReaper>of(EnderReaper::new, MobCategory.MONSTER).sized(0.7f, 2.9f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(true).build("ender_reaper"));
   public static final RegistryObject<EntityType<Beaver>> ENTITY_TYPE_BEAVER = ENTITY_TYPES.register("beaver",
       () -> EntityType.Builder.<Beaver>of(Beaver::new, MobCategory.CREATURE).sized(0.6f, 0.8f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("beaver"));
   public static final RegistryObject<EntityType<Termite>> ENTITY_TYPE_TERMITE = ENTITY_TYPES.register("termite",
@@ -2868,6 +2869,8 @@ private static void registerAllCritterCages() {
   public static int MinersDreamExpensive = 0;
   public static int DisableOverworldDungeons = 0;
   public static int FullPowerKingEnable = 0;
+  /** 1 = grow naturally (kills/days) and with a Diamond Block. 0 = Diamond Block only. */
+  public static int PrinceAutoGrow = 1;
 
   public static ArmorStats Amethyst_armorstats = null;
   public static ArmorStats Emerald_armorstats = null;
@@ -2981,6 +2984,7 @@ private static void registerAllCritterCages() {
   public static int TriffidEnable = 1;
   public static int UltimateSwordMagic = 10;
   public static int UltimateBowDamage = 10;
+  public static int UltimateBowPetHeal = 1;
   public static int PitchBlackEnable = 1;
   public static int NightmareSize = 0;
   public static int LurkingTerrorEnable = 1;
@@ -4123,6 +4127,13 @@ private static void registerAllCritterCages() {
     MinersDreamExpensive = config.get(tweaks, "MinersDreamExpensive", 0).getInt();
     DisableOverworldDungeons = config.get(tweaks, "DisableOverworldDungeons", 0).getInt();
     FullPowerKingEnable = config.get(tweaks, "FullPowerKingEnable", 0).getInt();
+    PrinceAutoGrow =
+        config.get(
+                tweaks,
+                "PrinceAutoGrow",
+                1,
+                "1 (default) = Prince grows naturally from kills/days, and also if fed a Diamond Block. Baby Dragon can still grow randomly. 0 = they stay at the current stage unless fed a Diamond Block (Baby Dragon: feed a diamond).")
+            .getInt();
 
     // OreSpawn wiki / 1.7.10 Amethyst defaults: 4/8/7/3 defense, durability 100, enchantability 40.
     Amethyst_armorstats = get_armorstats(config, "Amethyst", 100, 4, 8, 7, 3, 40, 0, 0, 0, 0, 0, 0, 0, 0);
@@ -4158,11 +4169,20 @@ private static void registerAllCritterCages() {
 
     UltimateSwordMagic = config.get(weapons, "UltimateSwordEnchantmentLevel", 5).getInt();
     UltimateBowDamage = config.get(weapons, "UltimateBowDamage", 10).getInt();
+    UltimateBowPetHeal =
+        config.get(
+                weapons,
+                "UltimateBowPetHeal",
+                1,
+                "Health restored when an Ultimate Bow arrow hits a tamed pet (or Girlfriend / Boyfriend). 1 is the original amount. Range 1-5.")
+            .getInt();
 
     if (UltimateSwordMagic < 1) UltimateSwordMagic = 1;
     if (UltimateSwordMagic > 10) UltimateSwordMagic = 10;
     if (UltimateBowDamage < 2) UltimateBowDamage = 2;
     if (UltimateBowDamage > 20) UltimateBowDamage = 20;
+    if (UltimateBowPetHeal < 1) UltimateBowPetHeal = 1;
+    if (UltimateBowPetHeal > 5) UltimateBowPetHeal = 5;
 
     if (IslandSpeedFactor < 1) IslandSpeedFactor = 1;
     if (IslandSpeedFactor > 5) IslandSpeedFactor = 5;
@@ -5918,7 +5938,11 @@ private static void registerAllCritterCages() {
     GameRegistry.addSmelting(CrystalCrystal, new ItemStack(MyCrystalPinkIngot), 0.3F);
     GameRegistry.addSmelting(TigersEye, new ItemStack(MyTigersEyeIngot), 0.3F);
     GameRegistry.addSmelting(MyRawPeacock, new ItemStack(MyPeacock), 0.4F);
+    GameRegistry.addSmoking(MyRawBacon, new ItemStack(MyBacon), 0.2F);
+    GameRegistry.addSmoking(MyRawCornDog, new ItemStack(MyCornDog), 0.4F);
+    GameRegistry.addSmoking(MyRawPeacock, new ItemStack(MyPeacock), 0.4F);
     GameRegistry.addSmelting(MyRawCrabMeat, new ItemStack(MyCrabMeat), 0.2F);
+    GameRegistry.addSmoking(MyRawCrabMeat, new ItemStack(MyCrabMeat), 0.2F);
     // 1.7.10 behavior: CrystalCoal is furnace fuel (20000 burn time). Smelting recipe is not required.
 
     GameRegistry.addSmelting(MyGreenFish, new ItemStack(Items.COOKED_COD), 0.2F);
@@ -6589,51 +6613,51 @@ private static void registerAllCritterCages() {
     int nowday = gcalendar.get(5);
 
     if ((nowmonth == 9) && (nowday == 31)) {
-      EntityRegistry.addSpawn(GhostSkelly.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.BEACH });
-      EntityRegistry.addSpawn(GhostSkelly.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.EXTREME_HILLS });
-      EntityRegistry.addSpawn(GhostSkelly.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.EXTREME_HILLS_EDGE });
-      EntityRegistry.addSpawn(GhostSkelly.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.FOREST });
-      EntityRegistry.addSpawn(GhostSkelly.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.FOREST_HILLS });
-      EntityRegistry.addSpawn(GhostSkelly.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.JUNGLE });
-      EntityRegistry.addSpawn(GhostSkelly.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.JUNGLE_HILLS });
-      EntityRegistry.addSpawn(GhostSkelly.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.PLAINS });
-      EntityRegistry.addSpawn(GhostSkelly.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.RIVER });
-      EntityRegistry.addSpawn(GhostSkelly.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.DESERT });
-      EntityRegistry.addSpawn(GhostSkelly.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST });
-      EntityRegistry.addSpawn(GhostSkelly.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST_HILLS });
-      EntityRegistry.addSpawn(GhostSkelly.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.REDWOOD_TAIGA });
-      EntityRegistry.addSpawn(GhostSkelly.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.TAIGA });
-      EntityRegistry.addSpawn(GhostSkelly.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.SAVANNA });
-      EntityRegistry.addSpawn(GhostSkelly.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.SAVANNA_PLATEAU });
-      EntityRegistry.addSpawn(GhostSkelly.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.MESA_ROCK });
-      EntityRegistry.addSpawn(GhostSkelly.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.MESA_CLEAR_ROCK });
-      EntityRegistry.addSpawn(GhostSkelly.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.MESA });
-      EntityRegistry.addSpawn(GhostSkelly.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.COLD_TAIGA_HILLS });
-      EntityRegistry.addSpawn(GhostSkelly.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.COLD_TAIGA });
-      EntityRegistry.addSpawn(GhostSkelly.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.ROOFED_FOREST });
+      EntityRegistry.addSpawn(GhostSkelly.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.BEACH });
+      EntityRegistry.addSpawn(GhostSkelly.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.EXTREME_HILLS });
+      EntityRegistry.addSpawn(GhostSkelly.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.EXTREME_HILLS_EDGE });
+      EntityRegistry.addSpawn(GhostSkelly.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.FOREST });
+      EntityRegistry.addSpawn(GhostSkelly.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.FOREST_HILLS });
+      EntityRegistry.addSpawn(GhostSkelly.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.JUNGLE });
+      EntityRegistry.addSpawn(GhostSkelly.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.JUNGLE_HILLS });
+      EntityRegistry.addSpawn(GhostSkelly.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.PLAINS });
+      EntityRegistry.addSpawn(GhostSkelly.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.RIVER });
+      EntityRegistry.addSpawn(GhostSkelly.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.DESERT });
+      EntityRegistry.addSpawn(GhostSkelly.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST });
+      EntityRegistry.addSpawn(GhostSkelly.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST_HILLS });
+      EntityRegistry.addSpawn(GhostSkelly.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.REDWOOD_TAIGA });
+      EntityRegistry.addSpawn(GhostSkelly.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.TAIGA });
+      EntityRegistry.addSpawn(GhostSkelly.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SAVANNA });
+      EntityRegistry.addSpawn(GhostSkelly.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SAVANNA_PLATEAU });
+      EntityRegistry.addSpawn(GhostSkelly.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.MESA_ROCK });
+      EntityRegistry.addSpawn(GhostSkelly.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.MESA_CLEAR_ROCK });
+      EntityRegistry.addSpawn(GhostSkelly.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.MESA });
+      EntityRegistry.addSpawn(GhostSkelly.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.COLD_TAIGA_HILLS });
+      EntityRegistry.addSpawn(GhostSkelly.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.COLD_TAIGA });
+      EntityRegistry.addSpawn(GhostSkelly.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.ROOFED_FOREST });
 
-      EntityRegistry.addSpawn(Ghost.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.BEACH });
-      EntityRegistry.addSpawn(Ghost.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.EXTREME_HILLS });
-      EntityRegistry.addSpawn(Ghost.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.EXTREME_HILLS_EDGE });
-      EntityRegistry.addSpawn(Ghost.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.FOREST });
-      EntityRegistry.addSpawn(Ghost.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.FOREST_HILLS });
-      EntityRegistry.addSpawn(Ghost.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.JUNGLE });
-      EntityRegistry.addSpawn(Ghost.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.JUNGLE_HILLS });
-      EntityRegistry.addSpawn(Ghost.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.PLAINS });
-      EntityRegistry.addSpawn(Ghost.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.RIVER });
-      EntityRegistry.addSpawn(Ghost.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.DESERT });
-      EntityRegistry.addSpawn(Ghost.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST });
-      EntityRegistry.addSpawn(Ghost.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST_HILLS });
-      EntityRegistry.addSpawn(Ghost.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.REDWOOD_TAIGA });
-      EntityRegistry.addSpawn(Ghost.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.TAIGA });
-      EntityRegistry.addSpawn(Ghost.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.SAVANNA });
-      EntityRegistry.addSpawn(Ghost.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.SAVANNA_PLATEAU });
-      EntityRegistry.addSpawn(Ghost.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.MESA_ROCK });
-      EntityRegistry.addSpawn(Ghost.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.MESA_CLEAR_ROCK });
-      EntityRegistry.addSpawn(Ghost.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.MESA });
-      EntityRegistry.addSpawn(Ghost.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.COLD_TAIGA_HILLS });
-      EntityRegistry.addSpawn(Ghost.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.COLD_TAIGA });
-      EntityRegistry.addSpawn(Ghost.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.ROOFED_FOREST });
+      EntityRegistry.addSpawn(Ghost.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.BEACH });
+      EntityRegistry.addSpawn(Ghost.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.EXTREME_HILLS });
+      EntityRegistry.addSpawn(Ghost.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.EXTREME_HILLS_EDGE });
+      EntityRegistry.addSpawn(Ghost.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.FOREST });
+      EntityRegistry.addSpawn(Ghost.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.FOREST_HILLS });
+      EntityRegistry.addSpawn(Ghost.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.JUNGLE });
+      EntityRegistry.addSpawn(Ghost.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.JUNGLE_HILLS });
+      EntityRegistry.addSpawn(Ghost.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.PLAINS });
+      EntityRegistry.addSpawn(Ghost.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.RIVER });
+      EntityRegistry.addSpawn(Ghost.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.DESERT });
+      EntityRegistry.addSpawn(Ghost.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST });
+      EntityRegistry.addSpawn(Ghost.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST_HILLS });
+      EntityRegistry.addSpawn(Ghost.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.REDWOOD_TAIGA });
+      EntityRegistry.addSpawn(Ghost.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.TAIGA });
+      EntityRegistry.addSpawn(Ghost.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SAVANNA });
+      EntityRegistry.addSpawn(Ghost.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SAVANNA_PLATEAU });
+      EntityRegistry.addSpawn(Ghost.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.MESA_ROCK });
+      EntityRegistry.addSpawn(Ghost.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.MESA_CLEAR_ROCK });
+      EntityRegistry.addSpawn(Ghost.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.MESA });
+      EntityRegistry.addSpawn(Ghost.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.COLD_TAIGA_HILLS });
+      EntityRegistry.addSpawn(Ghost.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.COLD_TAIGA });
+      EntityRegistry.addSpawn(Ghost.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.ROOFED_FOREST });
     }
 
     if ((nowmonth == 1) && (nowday == 14)) {
@@ -6645,451 +6669,451 @@ private static void registerAllCritterCages() {
     }
 
     if (GirlfriendEnable != 0) {
-      EntityRegistry.addSpawn(Girlfriend.class, 30, 8, 15, MobCategory.CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.BEACH });
-      EntityRegistry.addSpawn(Girlfriend.class, 10, 3, 6, MobCategory.CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.FOREST });
-      EntityRegistry.addSpawn(Girlfriend.class, 8, 2, 5, MobCategory.CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.FOREST_HILLS });
-      EntityRegistry.addSpawn(Girlfriend.class, 5, 2, 3, MobCategory.CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.PLAINS });
-      EntityRegistry.addSpawn(Girlfriend.class, 10, 3, 6, MobCategory.CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.RIVER });
-      EntityRegistry.addSpawn(Girlfriend.class, 10, 3, 6, MobCategory.CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.STONE_BEACH });
-      EntityRegistry.addSpawn(Girlfriend.class, 5, 2, 4, MobCategory.CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST });
-      EntityRegistry.addSpawn(Girlfriend.class, 5, 2, 5, MobCategory.CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST_HILLS });
-      EntityRegistry.addSpawn(Girlfriend.class, 5, 2, 5, MobCategory.CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.REDWOOD_TAIGA });
-      EntityRegistry.addSpawn(Girlfriend.class, 5, 2, 5, MobCategory.CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.TAIGA });
-      EntityRegistry.addSpawn(Girlfriend.class, 2, 1, 3, MobCategory.CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.SAVANNA });
-      EntityRegistry.addSpawn(Girlfriend.class, 2, 1, 3, MobCategory.CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.SAVANNA_PLATEAU });
+      EntityRegistry.addSpawn(Girlfriend.class, 30, 8, 15, MobCategory.CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.BEACH });
+      EntityRegistry.addSpawn(Girlfriend.class, 10, 3, 6, MobCategory.CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.FOREST });
+      EntityRegistry.addSpawn(Girlfriend.class, 8, 2, 5, MobCategory.CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.FOREST_HILLS });
+      EntityRegistry.addSpawn(Girlfriend.class, 5, 2, 3, MobCategory.CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.PLAINS });
+      EntityRegistry.addSpawn(Girlfriend.class, 10, 3, 6, MobCategory.CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.RIVER });
+      EntityRegistry.addSpawn(Girlfriend.class, 10, 3, 6, MobCategory.CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.STONE_BEACH });
+      EntityRegistry.addSpawn(Girlfriend.class, 5, 2, 4, MobCategory.CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST });
+      EntityRegistry.addSpawn(Girlfriend.class, 5, 2, 5, MobCategory.CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST_HILLS });
+      EntityRegistry.addSpawn(Girlfriend.class, 5, 2, 5, MobCategory.CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.REDWOOD_TAIGA });
+      EntityRegistry.addSpawn(Girlfriend.class, 5, 2, 5, MobCategory.CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.TAIGA });
+      EntityRegistry.addSpawn(Girlfriend.class, 2, 1, 3, MobCategory.CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SAVANNA });
+      EntityRegistry.addSpawn(Girlfriend.class, 2, 1, 3, MobCategory.CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SAVANNA_PLATEAU });
     }
 
     if (BoyfriendEnable != 0) {
-      EntityRegistry.addSpawn(Boyfriend.class, 30, 8, 15, MobCategory.CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.BEACH });
-      EntityRegistry.addSpawn(Boyfriend.class, 10, 3, 6, MobCategory.CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.FOREST });
-      EntityRegistry.addSpawn(Boyfriend.class, 8, 2, 5, MobCategory.CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.FOREST_HILLS });
-      EntityRegistry.addSpawn(Boyfriend.class, 5, 2, 3, MobCategory.CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.PLAINS });
-      EntityRegistry.addSpawn(Boyfriend.class, 10, 3, 6, MobCategory.CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.RIVER });
-      EntityRegistry.addSpawn(Boyfriend.class, 10, 3, 6, MobCategory.CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.STONE_BEACH });
-      EntityRegistry.addSpawn(Boyfriend.class, 5, 2, 4, MobCategory.CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST });
-      EntityRegistry.addSpawn(Boyfriend.class, 5, 2, 5, MobCategory.CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST_HILLS });
-      EntityRegistry.addSpawn(Boyfriend.class, 5, 2, 5, MobCategory.CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.REDWOOD_TAIGA });
-      EntityRegistry.addSpawn(Boyfriend.class, 5, 2, 5, MobCategory.CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.TAIGA });
-      EntityRegistry.addSpawn(Boyfriend.class, 2, 1, 3, MobCategory.CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.SAVANNA });
-      EntityRegistry.addSpawn(Boyfriend.class, 2, 1, 3, MobCategory.CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.SAVANNA_PLATEAU });
+      EntityRegistry.addSpawn(Boyfriend.class, 30, 8, 15, MobCategory.CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.BEACH });
+      EntityRegistry.addSpawn(Boyfriend.class, 10, 3, 6, MobCategory.CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.FOREST });
+      EntityRegistry.addSpawn(Boyfriend.class, 8, 2, 5, MobCategory.CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.FOREST_HILLS });
+      EntityRegistry.addSpawn(Boyfriend.class, 5, 2, 3, MobCategory.CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.PLAINS });
+      EntityRegistry.addSpawn(Boyfriend.class, 10, 3, 6, MobCategory.CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.RIVER });
+      EntityRegistry.addSpawn(Boyfriend.class, 10, 3, 6, MobCategory.CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.STONE_BEACH });
+      EntityRegistry.addSpawn(Boyfriend.class, 5, 2, 4, MobCategory.CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST });
+      EntityRegistry.addSpawn(Boyfriend.class, 5, 2, 5, MobCategory.CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST_HILLS });
+      EntityRegistry.addSpawn(Boyfriend.class, 5, 2, 5, MobCategory.CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.REDWOOD_TAIGA });
+      EntityRegistry.addSpawn(Boyfriend.class, 5, 2, 5, MobCategory.CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.TAIGA });
+      EntityRegistry.addSpawn(Boyfriend.class, 2, 1, 3, MobCategory.CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SAVANNA });
+      EntityRegistry.addSpawn(Boyfriend.class, 2, 1, 3, MobCategory.CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SAVANNA_PLATEAU });
     }
 
     if (BeaverEnable != 0) {
-      EntityRegistry.addSpawn(Beaver.class, 10, 2, 4, MobCategory.CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.RIVER });
-      EntityRegistry.addSpawn(Beaver.class, 3, 2, 4, MobCategory.CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.FOREST });
-      EntityRegistry.addSpawn(Beaver.class, 2, 2, 4, MobCategory.CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST });
-      EntityRegistry.addSpawn(Beaver.class, 2, 2, 5, MobCategory.CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST_HILLS });
-      EntityRegistry.addSpawn(Beaver.class, 5, 2, 5, MobCategory.CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.REDWOOD_TAIGA });
-      EntityRegistry.addSpawn(Beaver.class, 5, 2, 5, MobCategory.CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.TAIGA });
+      EntityRegistry.addSpawn(Beaver.class, 10, 2, 4, MobCategory.CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.RIVER });
+      EntityRegistry.addSpawn(Beaver.class, 3, 2, 4, MobCategory.CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.FOREST });
+      EntityRegistry.addSpawn(Beaver.class, 2, 2, 4, MobCategory.CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST });
+      EntityRegistry.addSpawn(Beaver.class, 2, 2, 5, MobCategory.CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST_HILLS });
+      EntityRegistry.addSpawn(Beaver.class, 5, 2, 5, MobCategory.CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.REDWOOD_TAIGA });
+      EntityRegistry.addSpawn(Beaver.class, 5, 2, 5, MobCategory.CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.TAIGA });
     }
 
     if (CowEnable != 0)
     {
-      EntityRegistry.addSpawn(RedCow.class, 8, 4, 8, MobCategory.CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.PLAINS });
-      EntityRegistry.addSpawn(RedCow.class, 8, 4, 8, MobCategory.CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.FOREST });
-      EntityRegistry.addSpawn(RedCow.class, 5, 2, 5, MobCategory.CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.REDWOOD_TAIGA });
-      EntityRegistry.addSpawn(RedCow.class, 5, 2, 5, MobCategory.CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.TAIGA });
-      EntityRegistry.addSpawn(RedCow.class, 8, 1, 3, MobCategory.CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.SAVANNA });
-      EntityRegistry.addSpawn(RedCow.class, 2, 1, 3, MobCategory.CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.SAVANNA_PLATEAU });
+      EntityRegistry.addSpawn(RedCow.class, 8, 4, 8, MobCategory.CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.PLAINS });
+      EntityRegistry.addSpawn(RedCow.class, 8, 4, 8, MobCategory.CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.FOREST });
+      EntityRegistry.addSpawn(RedCow.class, 5, 2, 5, MobCategory.CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.REDWOOD_TAIGA });
+      EntityRegistry.addSpawn(RedCow.class, 5, 2, 5, MobCategory.CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.TAIGA });
+      EntityRegistry.addSpawn(RedCow.class, 8, 1, 3, MobCategory.CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SAVANNA });
+      EntityRegistry.addSpawn(RedCow.class, 2, 1, 3, MobCategory.CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SAVANNA_PLATEAU });
 
-      EntityRegistry.addSpawn(GoldCow.class, 5, 2, 6, MobCategory.CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.PLAINS });
-      EntityRegistry.addSpawn(GoldCow.class, 5, 2, 6, MobCategory.CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.FOREST });
-      EntityRegistry.addSpawn(GoldCow.class, 5, 2, 5, MobCategory.CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.REDWOOD_TAIGA });
-      EntityRegistry.addSpawn(GoldCow.class, 5, 2, 5, MobCategory.CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.TAIGA });
+      EntityRegistry.addSpawn(GoldCow.class, 5, 2, 6, MobCategory.CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.PLAINS });
+      EntityRegistry.addSpawn(GoldCow.class, 5, 2, 6, MobCategory.CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.FOREST });
+      EntityRegistry.addSpawn(GoldCow.class, 5, 2, 5, MobCategory.CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.REDWOOD_TAIGA });
+      EntityRegistry.addSpawn(GoldCow.class, 5, 2, 5, MobCategory.CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.TAIGA });
 
-      EntityRegistry.addSpawn(EnchantedCow.class, 3, 2, 4, MobCategory.CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.FOREST });
-      EntityRegistry.addSpawn(EnchantedCow.class, 3, 2, 4, MobCategory.CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.PLAINS });
-      EntityRegistry.addSpawn(EnchantedCow.class, 5, 2, 5, MobCategory.CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.REDWOOD_TAIGA });
-      EntityRegistry.addSpawn(EnchantedCow.class, 15, 3, 6, MobCategory.CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.MUSHROOM_ISLAND });
+      EntityRegistry.addSpawn(EnchantedCow.class, 3, 2, 4, MobCategory.CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.FOREST });
+      EntityRegistry.addSpawn(EnchantedCow.class, 3, 2, 4, MobCategory.CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.PLAINS });
+      EntityRegistry.addSpawn(EnchantedCow.class, 5, 2, 5, MobCategory.CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.REDWOOD_TAIGA });
+      EntityRegistry.addSpawn(EnchantedCow.class, 15, 3, 6, MobCategory.CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.MUSHROOM_ISLAND });
     }
 
     if (CriminalEnable != 0) {
-      EntityRegistry.addSpawn(BandP.class, 20, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.PLAINS });
-      EntityRegistry.addSpawn(BandP.class, 20, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.DESERT });
-      EntityRegistry.addSpawn(BandP.class, 20, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.SAVANNA });
+      EntityRegistry.addSpawn(BandP.class, 20, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.PLAINS });
+      EntityRegistry.addSpawn(BandP.class, 20, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.DESERT });
+      EntityRegistry.addSpawn(BandP.class, 20, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SAVANNA });
     }
 
     if (WormEnable != 0) {
-      EntityRegistry.addSpawn(WormLarge.class, 25, 1, 1, MobCategory.CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.PLAINS });
-      EntityRegistry.addSpawn(WormLarge.class, 15, 1, 1, MobCategory.CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.SAVANNA });
-      EntityRegistry.addSpawn(WormLarge.class, 10, 1, 1, MobCategory.CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.SAVANNA_PLATEAU });
+      EntityRegistry.addSpawn(WormLarge.class, 25, 1, 1, MobCategory.CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.PLAINS });
+      EntityRegistry.addSpawn(WormLarge.class, 15, 1, 1, MobCategory.CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SAVANNA });
+      EntityRegistry.addSpawn(WormLarge.class, 10, 1, 1, MobCategory.CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SAVANNA_PLATEAU });
     }
 
     if (ButterflyEnable != 0) {
-      EntityRegistry.addSpawn(EntityButterfly.class, 8, 5, 15, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.BEACH });
-      EntityRegistry.addSpawn(EntityButterfly.class, 5, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.EXTREME_HILLS });
-      EntityRegistry.addSpawn(EntityButterfly.class, 5, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.EXTREME_HILLS_EDGE });
-      EntityRegistry.addSpawn(EntityButterfly.class, 30, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.FOREST });
-      EntityRegistry.addSpawn(EntityButterfly.class, 20, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.FOREST_HILLS });
-      EntityRegistry.addSpawn(EntityButterfly.class, 20, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.JUNGLE });
-      EntityRegistry.addSpawn(EntityButterfly.class, 10, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.JUNGLE_HILLS });
-      EntityRegistry.addSpawn(EntityButterfly.class, 20, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.PLAINS });
-      EntityRegistry.addSpawn(EntityButterfly.class, 20, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.RIVER });
-      EntityRegistry.addSpawn(EntityButterfly.class, 20, 4, 10, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.SWAMPLAND });
-      EntityRegistry.addSpawn(EntityButterfly.class, 15, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST });
-      EntityRegistry.addSpawn(EntityButterfly.class, 15, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST_HILLS });
-      EntityRegistry.addSpawn(EntityButterfly.class, 15, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.REDWOOD_TAIGA });
-      EntityRegistry.addSpawn(EntityButterfly.class, 15, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.TAIGA });
-      EntityRegistry.addSpawn(EntityButterfly.class, 10, 1, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.SAVANNA });
-      EntityRegistry.addSpawn(EntityButterfly.class, 10, 1, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.SAVANNA_PLATEAU });
+      EntityRegistry.addSpawn(EntityButterfly.class, 8, 5, 15, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.BEACH });
+      EntityRegistry.addSpawn(EntityButterfly.class, 5, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.EXTREME_HILLS });
+      EntityRegistry.addSpawn(EntityButterfly.class, 5, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.EXTREME_HILLS_EDGE });
+      EntityRegistry.addSpawn(EntityButterfly.class, 30, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.FOREST });
+      EntityRegistry.addSpawn(EntityButterfly.class, 20, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.FOREST_HILLS });
+      EntityRegistry.addSpawn(EntityButterfly.class, 20, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.JUNGLE });
+      EntityRegistry.addSpawn(EntityButterfly.class, 10, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.JUNGLE_HILLS });
+      EntityRegistry.addSpawn(EntityButterfly.class, 20, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.PLAINS });
+      EntityRegistry.addSpawn(EntityButterfly.class, 20, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.RIVER });
+      EntityRegistry.addSpawn(EntityButterfly.class, 20, 4, 10, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SWAMPLAND });
+      EntityRegistry.addSpawn(EntityButterfly.class, 15, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST });
+      EntityRegistry.addSpawn(EntityButterfly.class, 15, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST_HILLS });
+      EntityRegistry.addSpawn(EntityButterfly.class, 15, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.REDWOOD_TAIGA });
+      EntityRegistry.addSpawn(EntityButterfly.class, 15, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.TAIGA });
+      EntityRegistry.addSpawn(EntityButterfly.class, 10, 1, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SAVANNA });
+      EntityRegistry.addSpawn(EntityButterfly.class, 10, 1, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SAVANNA_PLATEAU });
     }
 
     if (MothEnable != 0) {
-      EntityRegistry.addSpawn(EntityLunaMoth.class, 8, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.EXTREME_HILLS });
-      EntityRegistry.addSpawn(EntityLunaMoth.class, 8, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.EXTREME_HILLS_EDGE });
-      EntityRegistry.addSpawn(EntityLunaMoth.class, 10, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.FOREST_HILLS });
-      EntityRegistry.addSpawn(EntityLunaMoth.class, 20, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.FOREST });
-      EntityRegistry.addSpawn(EntityLunaMoth.class, 20, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.JUNGLE });
-      EntityRegistry.addSpawn(EntityLunaMoth.class, 10, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.JUNGLE_HILLS });
-      EntityRegistry.addSpawn(EntityLunaMoth.class, 20, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.SWAMPLAND });
-      EntityRegistry.addSpawn(EntityLunaMoth.class, 10, 1, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.PLAINS });
-      EntityRegistry.addSpawn(EntityLunaMoth.class, 15, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST });
-      EntityRegistry.addSpawn(EntityLunaMoth.class, 15, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST_HILLS });
-      EntityRegistry.addSpawn(EntityLunaMoth.class, 15, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.ROOFED_FOREST });
-      EntityRegistry.addSpawn(EntityLunaMoth.class, 15, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.REDWOOD_TAIGA });
-      EntityRegistry.addSpawn(EntityLunaMoth.class, 15, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.TAIGA });
-      EntityRegistry.addSpawn(EntityLunaMoth.class, 10, 1, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.SAVANNA });
-      EntityRegistry.addSpawn(EntityLunaMoth.class, 10, 1, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.SAVANNA_PLATEAU });
+      EntityRegistry.addSpawn(EntityLunaMoth.class, 8, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.EXTREME_HILLS });
+      EntityRegistry.addSpawn(EntityLunaMoth.class, 8, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.EXTREME_HILLS_EDGE });
+      EntityRegistry.addSpawn(EntityLunaMoth.class, 10, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.FOREST_HILLS });
+      EntityRegistry.addSpawn(EntityLunaMoth.class, 20, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.FOREST });
+      EntityRegistry.addSpawn(EntityLunaMoth.class, 20, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.JUNGLE });
+      EntityRegistry.addSpawn(EntityLunaMoth.class, 10, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.JUNGLE_HILLS });
+      EntityRegistry.addSpawn(EntityLunaMoth.class, 20, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SWAMPLAND });
+      EntityRegistry.addSpawn(EntityLunaMoth.class, 10, 1, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.PLAINS });
+      EntityRegistry.addSpawn(EntityLunaMoth.class, 15, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST });
+      EntityRegistry.addSpawn(EntityLunaMoth.class, 15, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST_HILLS });
+      EntityRegistry.addSpawn(EntityLunaMoth.class, 15, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.ROOFED_FOREST });
+      EntityRegistry.addSpawn(EntityLunaMoth.class, 15, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.REDWOOD_TAIGA });
+      EntityRegistry.addSpawn(EntityLunaMoth.class, 15, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.TAIGA });
+      EntityRegistry.addSpawn(EntityLunaMoth.class, 10, 1, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SAVANNA });
+      EntityRegistry.addSpawn(EntityLunaMoth.class, 10, 1, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SAVANNA_PLATEAU });
     }
 
     if (CassowaryEnable != 0) {
-      EntityRegistry.addSpawn(Cassowary.class, 5, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.EXTREME_HILLS });
-      EntityRegistry.addSpawn(Cassowary.class, 5, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.EXTREME_HILLS_EDGE });
-      EntityRegistry.addSpawn(Cassowary.class, 5, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.EXTREME_HILLS_WITH_TREES });
-      EntityRegistry.addSpawn(Cassowary.class, 5, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST });
-      EntityRegistry.addSpawn(Cassowary.class, 5, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST_HILLS });
-      EntityRegistry.addSpawn(Cassowary.class, 15, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.REDWOOD_TAIGA });
-      EntityRegistry.addSpawn(Cassowary.class, 15, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.REDWOOD_TAIGA_HILLS });
-      EntityRegistry.addSpawn(Cassowary.class, 3, 1, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.SAVANNA });
-      EntityRegistry.addSpawn(Cassowary.class, 10, 1, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.SAVANNA_PLATEAU });
+      EntityRegistry.addSpawn(Cassowary.class, 5, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.EXTREME_HILLS });
+      EntityRegistry.addSpawn(Cassowary.class, 5, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.EXTREME_HILLS_EDGE });
+      EntityRegistry.addSpawn(Cassowary.class, 5, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.EXTREME_HILLS_WITH_TREES });
+      EntityRegistry.addSpawn(Cassowary.class, 5, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST });
+      EntityRegistry.addSpawn(Cassowary.class, 5, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST_HILLS });
+      EntityRegistry.addSpawn(Cassowary.class, 15, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.REDWOOD_TAIGA });
+      EntityRegistry.addSpawn(Cassowary.class, 15, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.REDWOOD_TAIGA_HILLS });
+      EntityRegistry.addSpawn(Cassowary.class, 3, 1, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SAVANNA });
+      EntityRegistry.addSpawn(Cassowary.class, 10, 1, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SAVANNA_PLATEAU });
     }
 
     if ((EasterBunnyEnable != 0) && (easter_day != 0)) {
-      EntityRegistry.addSpawn(EasterBunny.class, 10, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.PLAINS });
-      EntityRegistry.addSpawn(EasterBunny.class, 10, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.FOREST });
-      EntityRegistry.addSpawn(EasterBunny.class, 10, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.FOREST_HILLS });
-      EntityRegistry.addSpawn(EasterBunny.class, 5, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST });
-      EntityRegistry.addSpawn(EasterBunny.class, 5, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST_HILLS });
-      EntityRegistry.addSpawn(EasterBunny.class, 5, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.REDWOOD_TAIGA });
-      EntityRegistry.addSpawn(EasterBunny.class, 8, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.TAIGA });
+      EntityRegistry.addSpawn(EasterBunny.class, 10, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.PLAINS });
+      EntityRegistry.addSpawn(EasterBunny.class, 10, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.FOREST });
+      EntityRegistry.addSpawn(EasterBunny.class, 10, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.FOREST_HILLS });
+      EntityRegistry.addSpawn(EasterBunny.class, 5, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST });
+      EntityRegistry.addSpawn(EasterBunny.class, 5, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST_HILLS });
+      EntityRegistry.addSpawn(EasterBunny.class, 5, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.REDWOOD_TAIGA });
+      EntityRegistry.addSpawn(EasterBunny.class, 8, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.TAIGA });
     }
 
     if (FireflyEnable != 0) {
-      EntityRegistry.addSpawn(Firefly.class, 15, 5, 10, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.FOREST });
-      EntityRegistry.addSpawn(Firefly.class, 15, 5, 10, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.FOREST_HILLS });
-      EntityRegistry.addSpawn(Firefly.class, 10, 4, 8, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.SWAMPLAND });
-      EntityRegistry.addSpawn(Firefly.class, 15, 5, 10, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.JUNGLE });
-      EntityRegistry.addSpawn(Firefly.class, 15, 5, 10, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.JUNGLE_HILLS });
-      EntityRegistry.addSpawn(Firefly.class, 10, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.STONE_BEACH });
-      EntityRegistry.addSpawn(Firefly.class, 15, 3, 10, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST });
-      EntityRegistry.addSpawn(Firefly.class, 15, 3, 10, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST_HILLS });
-      EntityRegistry.addSpawn(Firefly.class, 15, 2, 10, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.REDWOOD_TAIGA });
-      EntityRegistry.addSpawn(Firefly.class, 15, 2, 10, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.TAIGA });
-      EntityRegistry.addSpawn(Firefly.class, 15, 2, 10, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.REDWOOD_TAIGA_HILLS });
-      EntityRegistry.addSpawn(Firefly.class, 10, 2, 8, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.SAVANNA });
-      EntityRegistry.addSpawn(Firefly.class, 10, 2, 8, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.SAVANNA_PLATEAU });
+      EntityRegistry.addSpawn(Firefly.class, 15, 5, 10, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.FOREST });
+      EntityRegistry.addSpawn(Firefly.class, 15, 5, 10, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.FOREST_HILLS });
+      EntityRegistry.addSpawn(Firefly.class, 10, 4, 8, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SWAMPLAND });
+      EntityRegistry.addSpawn(Firefly.class, 15, 5, 10, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.JUNGLE });
+      EntityRegistry.addSpawn(Firefly.class, 15, 5, 10, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.JUNGLE_HILLS });
+      EntityRegistry.addSpawn(Firefly.class, 10, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.STONE_BEACH });
+      EntityRegistry.addSpawn(Firefly.class, 15, 3, 10, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST });
+      EntityRegistry.addSpawn(Firefly.class, 15, 3, 10, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST_HILLS });
+      EntityRegistry.addSpawn(Firefly.class, 15, 2, 10, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.REDWOOD_TAIGA });
+      EntityRegistry.addSpawn(Firefly.class, 15, 2, 10, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.TAIGA });
+      EntityRegistry.addSpawn(Firefly.class, 15, 2, 10, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.REDWOOD_TAIGA_HILLS });
+      EntityRegistry.addSpawn(Firefly.class, 10, 2, 8, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SAVANNA });
+      EntityRegistry.addSpawn(Firefly.class, 10, 2, 8, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SAVANNA_PLATEAU });
     }
 
     if (WhaleEnable != 0) {
-      EntityRegistry.addSpawn(Whale.class, 1, 1, 2, MobCategory.WATER_CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.DEEP_OCEAN });
+      EntityRegistry.addSpawn(Whale.class, 1, 1, 2, MobCategory.WATER_CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.DEEP_OCEAN });
     }
 
     if (BeeEnable != 0) {
-      EntityRegistry.addSpawn(Bee.class, 2, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.FOREST });
-      EntityRegistry.addSpawn(Bee.class, 2, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.FOREST_HILLS });
-      EntityRegistry.addSpawn(Bee.class, 5, 3, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.JUNGLE });
-      EntityRegistry.addSpawn(Bee.class, 5, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.JUNGLE_HILLS });
-      EntityRegistry.addSpawn(Bee.class, 3, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST });
-      EntityRegistry.addSpawn(Bee.class, 3, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST_HILLS });
-      EntityRegistry.addSpawn(Bee.class, 5, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.REDWOOD_TAIGA });
-      EntityRegistry.addSpawn(Bee.class, 5, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.TAIGA });
-      EntityRegistry.addSpawn(Bee.class, 3, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.SAVANNA });
-      EntityRegistry.addSpawn(Bee.class, 2, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.SAVANNA_PLATEAU });
+      EntityRegistry.addSpawn(Bee.class, 2, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.FOREST });
+      EntityRegistry.addSpawn(Bee.class, 2, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.FOREST_HILLS });
+      EntityRegistry.addSpawn(Bee.class, 5, 3, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.JUNGLE });
+      EntityRegistry.addSpawn(Bee.class, 5, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.JUNGLE_HILLS });
+      EntityRegistry.addSpawn(Bee.class, 3, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST });
+      EntityRegistry.addSpawn(Bee.class, 3, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST_HILLS });
+      EntityRegistry.addSpawn(Bee.class, 5, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.REDWOOD_TAIGA });
+      EntityRegistry.addSpawn(Bee.class, 5, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.TAIGA });
+      EntityRegistry.addSpawn(Bee.class, 3, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SAVANNA });
+      EntityRegistry.addSpawn(Bee.class, 2, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SAVANNA_PLATEAU });
     }
 
     if (MantisEnable != 0) {
-      EntityRegistry.addSpawn(Mantis.class, 1, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.FOREST });
-      EntityRegistry.addSpawn(Mantis.class, 1, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.FOREST_HILLS });
-      EntityRegistry.addSpawn(Mantis.class, 5, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.JUNGLE });
-      EntityRegistry.addSpawn(Mantis.class, 1, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.PLAINS });
-      EntityRegistry.addSpawn(Mantis.class, 1, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.SWAMPLAND });
-      EntityRegistry.addSpawn(Mantis.class, 1, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST });
-      EntityRegistry.addSpawn(Mantis.class, 1, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.REDWOOD_TAIGA });
-      EntityRegistry.addSpawn(Mantis.class, 1, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.SAVANNA });
-      EntityRegistry.addSpawn(Mantis.class, 1, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.SAVANNA_PLATEAU });
+      EntityRegistry.addSpawn(Mantis.class, 1, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.FOREST });
+      EntityRegistry.addSpawn(Mantis.class, 1, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.FOREST_HILLS });
+      EntityRegistry.addSpawn(Mantis.class, 5, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.JUNGLE });
+      EntityRegistry.addSpawn(Mantis.class, 1, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.PLAINS });
+      EntityRegistry.addSpawn(Mantis.class, 1, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SWAMPLAND });
+      EntityRegistry.addSpawn(Mantis.class, 1, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST });
+      EntityRegistry.addSpawn(Mantis.class, 1, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.REDWOOD_TAIGA });
+      EntityRegistry.addSpawn(Mantis.class, 1, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SAVANNA });
+      EntityRegistry.addSpawn(Mantis.class, 1, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SAVANNA_PLATEAU });
     }
 
     if (HerculesBeetleEnable != 0) {
-      EntityRegistry.addSpawn(HerculesBeetle.class, 2, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.FOREST_HILLS });
-      EntityRegistry.addSpawn(HerculesBeetle.class, 2, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.JUNGLE_HILLS });
-      EntityRegistry.addSpawn(HerculesBeetle.class, 5, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.EXTREME_HILLS_EDGE });
-      EntityRegistry.addSpawn(HerculesBeetle.class, 2, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.TAIGA_HILLS });
-      EntityRegistry.addSpawn(HerculesBeetle.class, 5, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST_HILLS });
-      EntityRegistry.addSpawn(HerculesBeetle.class, 2, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.COLD_TAIGA_HILLS });
-      EntityRegistry.addSpawn(HerculesBeetle.class, 2, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.REDWOOD_TAIGA_HILLS });
+      EntityRegistry.addSpawn(HerculesBeetle.class, 2, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.FOREST_HILLS });
+      EntityRegistry.addSpawn(HerculesBeetle.class, 2, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.JUNGLE_HILLS });
+      EntityRegistry.addSpawn(HerculesBeetle.class, 5, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.EXTREME_HILLS_EDGE });
+      EntityRegistry.addSpawn(HerculesBeetle.class, 2, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.TAIGA_HILLS });
+      EntityRegistry.addSpawn(HerculesBeetle.class, 5, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST_HILLS });
+      EntityRegistry.addSpawn(HerculesBeetle.class, 2, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.COLD_TAIGA_HILLS });
+      EntityRegistry.addSpawn(HerculesBeetle.class, 2, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.REDWOOD_TAIGA_HILLS });
     }
 
     if (MolenoidEnable != 0) {
-      EntityRegistry.addSpawn(Molenoid.class, 2, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.PLAINS });
-      EntityRegistry.addSpawn(Molenoid.class, 2, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.SAVANNA });
-      EntityRegistry.addSpawn(Molenoid.class, 2, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.SAVANNA_PLATEAU });
+      EntityRegistry.addSpawn(Molenoid.class, 2, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.PLAINS });
+      EntityRegistry.addSpawn(Molenoid.class, 2, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SAVANNA });
+      EntityRegistry.addSpawn(Molenoid.class, 2, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SAVANNA_PLATEAU });
     }
 
     if (CaterKillerEnable != 0) {
-      EntityRegistry.addSpawn(CaterKiller.class, 2, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.FOREST });
-      EntityRegistry.addSpawn(CaterKiller.class, 2, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.JUNGLE });
-      EntityRegistry.addSpawn(CaterKiller.class, 4, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.FOREST_HILLS });
-      EntityRegistry.addSpawn(CaterKiller.class, 4, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.JUNGLE_HILLS });
-      EntityRegistry.addSpawn(CaterKiller.class, 6, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST });
-      EntityRegistry.addSpawn(CaterKiller.class, 2, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST_HILLS });
-      EntityRegistry.addSpawn(CaterKiller.class, 2, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.REDWOOD_TAIGA });
-      EntityRegistry.addSpawn(CaterKiller.class, 2, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.TAIGA });
-      EntityRegistry.addSpawn(CaterKiller.class, 10, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.ROOFED_FOREST });
+      EntityRegistry.addSpawn(CaterKiller.class, 2, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.FOREST });
+      EntityRegistry.addSpawn(CaterKiller.class, 2, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.JUNGLE });
+      EntityRegistry.addSpawn(CaterKiller.class, 4, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.FOREST_HILLS });
+      EntityRegistry.addSpawn(CaterKiller.class, 4, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.JUNGLE_HILLS });
+      EntityRegistry.addSpawn(CaterKiller.class, 6, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST });
+      EntityRegistry.addSpawn(CaterKiller.class, 2, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST_HILLS });
+      EntityRegistry.addSpawn(CaterKiller.class, 2, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.REDWOOD_TAIGA });
+      EntityRegistry.addSpawn(CaterKiller.class, 2, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.TAIGA });
+      EntityRegistry.addSpawn(CaterKiller.class, 10, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.ROOFED_FOREST });
     }
 
     if (ChipmunkEnable != 0) {
-      EntityRegistry.addSpawn(Chipmunk.class, 8, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.FOREST });
-      EntityRegistry.addSpawn(Chipmunk.class, 5, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.FOREST_HILLS });
-      EntityRegistry.addSpawn(Chipmunk.class, 4, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.JUNGLE });
-      EntityRegistry.addSpawn(Chipmunk.class, 2, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.PLAINS });
-      EntityRegistry.addSpawn(Chipmunk.class, 5, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST });
-      EntityRegistry.addSpawn(Chipmunk.class, 4, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST_HILLS });
-      EntityRegistry.addSpawn(Chipmunk.class, 10, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.ROOFED_FOREST });
-      EntityRegistry.addSpawn(Chipmunk.class, 2, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.REDWOOD_TAIGA });
-      EntityRegistry.addSpawn(Chipmunk.class, 6, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.TAIGA });
+      EntityRegistry.addSpawn(Chipmunk.class, 8, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.FOREST });
+      EntityRegistry.addSpawn(Chipmunk.class, 5, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.FOREST_HILLS });
+      EntityRegistry.addSpawn(Chipmunk.class, 4, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.JUNGLE });
+      EntityRegistry.addSpawn(Chipmunk.class, 2, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.PLAINS });
+      EntityRegistry.addSpawn(Chipmunk.class, 5, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST });
+      EntityRegistry.addSpawn(Chipmunk.class, 4, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST_HILLS });
+      EntityRegistry.addSpawn(Chipmunk.class, 10, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.ROOFED_FOREST });
+      EntityRegistry.addSpawn(Chipmunk.class, 2, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.REDWOOD_TAIGA });
+      EntityRegistry.addSpawn(Chipmunk.class, 6, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.TAIGA });
     }
 
     if (OstrichEnable != 0) {
-      EntityRegistry.addSpawn(Ostrich.class, 1, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.DESERT });
-      EntityRegistry.addSpawn(Ostrich.class, 1, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.STONE_BEACH });
-      EntityRegistry.addSpawn(Ostrich.class, 1, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.SAVANNA });
-      EntityRegistry.addSpawn(Ostrich.class, 1, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.SAVANNA_PLATEAU });
+      EntityRegistry.addSpawn(Ostrich.class, 1, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.DESERT });
+      EntityRegistry.addSpawn(Ostrich.class, 1, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.STONE_BEACH });
+      EntityRegistry.addSpawn(Ostrich.class, 1, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SAVANNA });
+      EntityRegistry.addSpawn(Ostrich.class, 1, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SAVANNA_PLATEAU });
     }
 
     if (CephadromeEnable != 0) {
-      EntityRegistry.addSpawn(Cephadrome.class, 1, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.ICE_PLAINS });
-      EntityRegistry.addSpawn(Cephadrome.class, 1, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.COLD_TAIGA });
+      EntityRegistry.addSpawn(Cephadrome.class, 1, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.ICE_PLAINS });
+      EntityRegistry.addSpawn(Cephadrome.class, 1, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.COLD_TAIGA });
     }
 
     if (MosquitoEnable != 0) {
-      EntityRegistry.addSpawn(EntityMosquito.class, 30, 5, 10, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.SWAMPLAND });
-      EntityRegistry.addSpawn(EntityMosquito.class, 20, 5, 10, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.JUNGLE });
-      EntityRegistry.addSpawn(EntityMosquito.class, 20, 5, 10, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.JUNGLE_HILLS });
-      EntityRegistry.addSpawn(EntityMosquito.class, 15, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.ROOFED_FOREST });
+      EntityRegistry.addSpawn(EntityMosquito.class, 30, 5, 10, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SWAMPLAND });
+      EntityRegistry.addSpawn(EntityMosquito.class, 20, 5, 10, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.JUNGLE });
+      EntityRegistry.addSpawn(EntityMosquito.class, 20, 5, 10, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.JUNGLE_HILLS });
+      EntityRegistry.addSpawn(EntityMosquito.class, 15, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.ROOFED_FOREST });
     }
 
     if (GhostEnable != 0) {
-      EntityRegistry.addSpawn(Ghost.class, 15, 5, 10, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.COLD_TAIGA });
-      EntityRegistry.addSpawn(Ghost.class, 10, 5, 10, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.TAIGA_HILLS });
-      EntityRegistry.addSpawn(Ghost.class, 6, 4, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.FROZEN_RIVER });
-      EntityRegistry.addSpawn(Ghost.class, 2, 1, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.JUNGLE });
-      EntityRegistry.addSpawn(Ghost.class, 15, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.ROOFED_FOREST });
+      EntityRegistry.addSpawn(Ghost.class, 15, 5, 10, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.COLD_TAIGA });
+      EntityRegistry.addSpawn(Ghost.class, 10, 5, 10, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.TAIGA_HILLS });
+      EntityRegistry.addSpawn(Ghost.class, 6, 4, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.FROZEN_RIVER });
+      EntityRegistry.addSpawn(Ghost.class, 2, 1, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.JUNGLE });
+      EntityRegistry.addSpawn(Ghost.class, 15, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.ROOFED_FOREST });
     }
 
     if (GhostSkellyEnable != 0) {
-      EntityRegistry.addSpawn(GhostSkelly.class, 15, 5, 10, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.COLD_TAIGA });
-      EntityRegistry.addSpawn(GhostSkelly.class, 10, 5, 10, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.TAIGA_HILLS });
-      EntityRegistry.addSpawn(GhostSkelly.class, 6, 4, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.FROZEN_RIVER });
-      EntityRegistry.addSpawn(GhostSkelly.class, 2, 1, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.JUNGLE });
-      EntityRegistry.addSpawn(GhostSkelly.class, 15, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.ROOFED_FOREST });
+      EntityRegistry.addSpawn(GhostSkelly.class, 15, 5, 10, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.COLD_TAIGA });
+      EntityRegistry.addSpawn(GhostSkelly.class, 10, 5, 10, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.TAIGA_HILLS });
+      EntityRegistry.addSpawn(GhostSkelly.class, 6, 4, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.FROZEN_RIVER });
+      EntityRegistry.addSpawn(GhostSkelly.class, 2, 1, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.JUNGLE });
+      EntityRegistry.addSpawn(GhostSkelly.class, 15, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.ROOFED_FOREST });
     }
 
     if (DragonflyEnable != 0) {
-      EntityRegistry.addSpawn(Dragonfly.class, 5, 3, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.SWAMPLAND });
-      EntityRegistry.addSpawn(Dragonfly.class, 4, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.RIVER });
+      EntityRegistry.addSpawn(Dragonfly.class, 5, 3, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SWAMPLAND });
+      EntityRegistry.addSpawn(Dragonfly.class, 4, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.RIVER });
     }
 
     if (KyuubiEnable != 0) {
-      EntityRegistry.addSpawn(Kyuubi.class, 10, 1, 1, MobCategory.MONSTER, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.HELL });
+      EntityRegistry.addSpawn(Kyuubi.class, 10, 1, 1, MobCategory.MONSTER, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.HELL });
     }
 
     if (StinkyEnable != 0) {
-      EntityRegistry.addSpawn(Stinky.class, 2, 1, 1, MobCategory.MONSTER, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.HELL });
-      EntityRegistry.addSpawn(Stinky.class, 1, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.MESA });
-      EntityRegistry.addSpawn(Stinky.class, 1, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.MESA_CLEAR_ROCK });
-      EntityRegistry.addSpawn(Stinky.class, 1, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.MESA_ROCK });
+      EntityRegistry.addSpawn(Stinky.class, 2, 1, 1, MobCategory.MONSTER, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.HELL });
+      EntityRegistry.addSpawn(Stinky.class, 1, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.MESA });
+      EntityRegistry.addSpawn(Stinky.class, 1, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.MESA_CLEAR_ROCK });
+      EntityRegistry.addSpawn(Stinky.class, 1, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.MESA_ROCK });
     }
 
     if (CockateilEnable != 0) {
-      EntityRegistry.addSpawn(Cockateil.class, 10, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.BEACH });
-      EntityRegistry.addSpawn(Cockateil.class, 10, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.EXTREME_HILLS });
-      EntityRegistry.addSpawn(Cockateil.class, 10, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.EXTREME_HILLS_EDGE });
-      EntityRegistry.addSpawn(Cockateil.class, 25, 5, 10, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.FOREST });
-      EntityRegistry.addSpawn(Cockateil.class, 20, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.FOREST_HILLS });
-      EntityRegistry.addSpawn(Cockateil.class, 35, 5, 10, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.JUNGLE });
-      EntityRegistry.addSpawn(Cockateil.class, 25, 5, 10, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.JUNGLE_HILLS });
-      EntityRegistry.addSpawn(Cockateil.class, 10, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.PLAINS });
-      EntityRegistry.addSpawn(Cockateil.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.RIVER });
-      EntityRegistry.addSpawn(Cockateil.class, 5, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.STONE_BEACH });
-      EntityRegistry.addSpawn(Cockateil.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST });
-      EntityRegistry.addSpawn(Cockateil.class, 5, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST_HILLS });
-      EntityRegistry.addSpawn(Cockateil.class, 15, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.REDWOOD_TAIGA });
-      EntityRegistry.addSpawn(Cockateil.class, 15, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.TAIGA });
-      EntityRegistry.addSpawn(Cockateil.class, 11, 1, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.SAVANNA });
-      EntityRegistry.addSpawn(Cockateil.class, 11, 1, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.SAVANNA_PLATEAU });
+      EntityRegistry.addSpawn(Cockateil.class, 10, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.BEACH });
+      EntityRegistry.addSpawn(Cockateil.class, 10, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.EXTREME_HILLS });
+      EntityRegistry.addSpawn(Cockateil.class, 10, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.EXTREME_HILLS_EDGE });
+      EntityRegistry.addSpawn(Cockateil.class, 25, 5, 10, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.FOREST });
+      EntityRegistry.addSpawn(Cockateil.class, 20, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.FOREST_HILLS });
+      EntityRegistry.addSpawn(Cockateil.class, 35, 5, 10, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.JUNGLE });
+      EntityRegistry.addSpawn(Cockateil.class, 25, 5, 10, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.JUNGLE_HILLS });
+      EntityRegistry.addSpawn(Cockateil.class, 10, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.PLAINS });
+      EntityRegistry.addSpawn(Cockateil.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.RIVER });
+      EntityRegistry.addSpawn(Cockateil.class, 5, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.STONE_BEACH });
+      EntityRegistry.addSpawn(Cockateil.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST });
+      EntityRegistry.addSpawn(Cockateil.class, 5, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST_HILLS });
+      EntityRegistry.addSpawn(Cockateil.class, 15, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.REDWOOD_TAIGA });
+      EntityRegistry.addSpawn(Cockateil.class, 15, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.TAIGA });
+      EntityRegistry.addSpawn(Cockateil.class, 11, 1, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SAVANNA });
+      EntityRegistry.addSpawn(Cockateil.class, 11, 1, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SAVANNA_PLATEAU });
     }
 
     if (HydroliscEnable != 0) {
-      EntityRegistry.addSpawn(Hydrolisc.class, 25, 3, 6, MobCategory.CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.SWAMPLAND });
-      EntityRegistry.addSpawn(Hydrolisc.class, 15, 2, 5, MobCategory.CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.JUNGLE });
-      EntityRegistry.addSpawn(Hydrolisc.class, 10, 1, 3, MobCategory.CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.JUNGLE_HILLS });
-      EntityRegistry.addSpawn(Hydrolisc.class, 5, 3, 6, MobCategory.CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.STONE_BEACH });
+      EntityRegistry.addSpawn(Hydrolisc.class, 25, 3, 6, MobCategory.CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SWAMPLAND });
+      EntityRegistry.addSpawn(Hydrolisc.class, 15, 2, 5, MobCategory.CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.JUNGLE });
+      EntityRegistry.addSpawn(Hydrolisc.class, 10, 1, 3, MobCategory.CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.JUNGLE_HILLS });
+      EntityRegistry.addSpawn(Hydrolisc.class, 5, 3, 6, MobCategory.CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.STONE_BEACH });
     }
 
     if (MothraEnable != 0) {
-      EntityRegistry.addSpawn(Mothra.class, 2, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.EXTREME_HILLS });
-      EntityRegistry.addSpawn(Mothra.class, 2, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.EXTREME_HILLS_WITH_TREES });
+      EntityRegistry.addSpawn(Mothra.class, 2, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.EXTREME_HILLS });
+      EntityRegistry.addSpawn(Mothra.class, 2, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.EXTREME_HILLS_WITH_TREES });
     }
     if (BrutalflyEnable != 0) {
-      EntityRegistry.addSpawn(Brutalfly.class, 2, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.REDWOOD_TAIGA_HILLS });
-      EntityRegistry.addSpawn(Brutalfly.class, 2, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.EXTREME_HILLS_WITH_TREES });
-      EntityRegistry.addSpawn(Brutalfly.class, 2, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.MESA_CLEAR_ROCK });
+      EntityRegistry.addSpawn(Brutalfly.class, 2, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.REDWOOD_TAIGA_HILLS });
+      EntityRegistry.addSpawn(Brutalfly.class, 2, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.EXTREME_HILLS_WITH_TREES });
+      EntityRegistry.addSpawn(Brutalfly.class, 2, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.MESA_CLEAR_ROCK });
     }
     if (WaterDragonEnable != 0) {
-      EntityRegistry.addSpawn(WaterDragon.class, 5, 1, 1, MobCategory.WATER_CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.RIVER });
-      EntityRegistry.addSpawn(WaterDragon.class, 3, 1, 1, MobCategory.WATER_CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.SWAMPLAND });
-      EntityRegistry.addSpawn(WaterDragon.class, 2, 1, 1, MobCategory.WATER_CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.OCEAN });
-      EntityRegistry.addSpawn(WaterDragon.class, 2, 1, 1, MobCategory.WATER_CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.STONE_BEACH });
+      EntityRegistry.addSpawn(WaterDragon.class, 5, 1, 1, MobCategory.WATER_CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.RIVER });
+      EntityRegistry.addSpawn(WaterDragon.class, 3, 1, 1, MobCategory.WATER_CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SWAMPLAND });
+      EntityRegistry.addSpawn(WaterDragon.class, 2, 1, 1, MobCategory.WATER_CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.OCEAN });
+      EntityRegistry.addSpawn(WaterDragon.class, 2, 1, 1, MobCategory.WATER_CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.STONE_BEACH });
     }
     if (SeaMonsterEnable != 0) {
-      EntityRegistry.addSpawn(SeaMonster.class, 4, 1, 1, MobCategory.WATER_CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.OCEAN });
-      EntityRegistry.addSpawn(SeaMonster.class, 2, 1, 1, MobCategory.WATER_CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.SWAMPLAND });
+      EntityRegistry.addSpawn(SeaMonster.class, 4, 1, 1, MobCategory.WATER_CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.OCEAN });
+      EntityRegistry.addSpawn(SeaMonster.class, 2, 1, 1, MobCategory.WATER_CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SWAMPLAND });
     }
     if (SeaViperEnable != 0) {
-      EntityRegistry.addSpawn(SeaViper.class, 3, 1, 1, MobCategory.WATER_CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.OCEAN });
-      EntityRegistry.addSpawn(SeaViper.class, 2, 1, 1, MobCategory.WATER_CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.STONE_BEACH });
+      EntityRegistry.addSpawn(SeaViper.class, 3, 1, 1, MobCategory.WATER_CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.OCEAN });
+      EntityRegistry.addSpawn(SeaViper.class, 2, 1, 1, MobCategory.WATER_CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.STONE_BEACH });
     }
     if (CrabEnable != 0) {
-      EntityRegistry.addSpawn(Crab.class, 2, 3, 6, MobCategory.WATER_CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.OCEAN });
-      EntityRegistry.addSpawn(Crab.class, 1, 3, 6, MobCategory.WATER_CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.SWAMPLAND });
-      EntityRegistry.addSpawn(Crab.class, 1, 2, 4, MobCategory.WATER_CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.STONE_BEACH });
+      EntityRegistry.addSpawn(Crab.class, 2, 3, 6, MobCategory.WATER_CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.OCEAN });
+      EntityRegistry.addSpawn(Crab.class, 1, 3, 6, MobCategory.WATER_CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SWAMPLAND });
+      EntityRegistry.addSpawn(Crab.class, 1, 2, 4, MobCategory.WATER_CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.STONE_BEACH });
     }
     if (AttackSquidEnable != 0) {
-      EntityRegistry.addSpawn(AttackSquid.class, 12, 6, 10, MobCategory.WATER_CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.RIVER });
-      EntityRegistry.addSpawn(AttackSquid.class, 10, 5, 9, MobCategory.WATER_CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.SWAMPLAND });
-      EntityRegistry.addSpawn(AttackSquid.class, 7, 4, 8, MobCategory.WATER_CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.OCEAN });
+      EntityRegistry.addSpawn(AttackSquid.class, 12, 6, 10, MobCategory.WATER_CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.RIVER });
+      EntityRegistry.addSpawn(AttackSquid.class, 10, 5, 9, MobCategory.WATER_CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SWAMPLAND });
+      EntityRegistry.addSpawn(AttackSquid.class, 7, 4, 8, MobCategory.WATER_CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.OCEAN });
     }
     if (LizardEnable != 0) {
-      EntityRegistry.addSpawn(Lizard.class, 5, 2, 4, MobCategory.WATER_CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.RIVER });
-      EntityRegistry.addSpawn(Lizard.class, 4, 2, 4, MobCategory.WATER_CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.SWAMPLAND });
-      EntityRegistry.addSpawn(Lizard.class, 2, 2, 4, MobCategory.WATER_CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.OCEAN });
+      EntityRegistry.addSpawn(Lizard.class, 5, 2, 4, MobCategory.WATER_CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.RIVER });
+      EntityRegistry.addSpawn(Lizard.class, 4, 2, 4, MobCategory.WATER_CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SWAMPLAND });
+      EntityRegistry.addSpawn(Lizard.class, 2, 2, 4, MobCategory.WATER_CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.OCEAN });
     }
     if (RubberDuckyEnable != 0) {
-      EntityRegistry.addSpawn(RubberDucky.class, 10, 10, 20, MobCategory.WATER_CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.RIVER });
-      EntityRegistry.addSpawn(RubberDucky.class, 4, 4, 6, MobCategory.WATER_CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.STONE_BEACH });
+      EntityRegistry.addSpawn(RubberDucky.class, 10, 10, 20, MobCategory.WATER_CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.RIVER });
+      EntityRegistry.addSpawn(RubberDucky.class, 4, 4, 6, MobCategory.WATER_CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.STONE_BEACH });
     }
     if (BasiliskEnable != 0) {
-      EntityRegistry.addSpawn(Basilisk.class, 3, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.JUNGLE });
-      EntityRegistry.addSpawn(Basilisk.class, 2, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.JUNGLE_HILLS });
-      EntityRegistry.addSpawn(Basilisk.class, 4, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST_HILLS });
-      EntityRegistry.addSpawn(Basilisk.class, 15, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.ROOFED_FOREST });
+      EntityRegistry.addSpawn(Basilisk.class, 3, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.JUNGLE });
+      EntityRegistry.addSpawn(Basilisk.class, 2, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.JUNGLE_HILLS });
+      EntityRegistry.addSpawn(Basilisk.class, 4, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST_HILLS });
+      EntityRegistry.addSpawn(Basilisk.class, 15, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.ROOFED_FOREST });
     }
     if (EmperorScorpionEnable != 0) {
-      EntityRegistry.addSpawn(EmperorScorpion.class, 1, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.DESERT });
-      EntityRegistry.addSpawn(EmperorScorpion.class, 2, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.SAVANNA });
+      EntityRegistry.addSpawn(EmperorScorpion.class, 1, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.DESERT });
+      EntityRegistry.addSpawn(EmperorScorpion.class, 2, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SAVANNA });
     }
     if (TrooperBugEnable != 0) {
-      EntityRegistry.addSpawn(TrooperBug.class, 3, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.SWAMPLAND });
-      EntityRegistry.addSpawn(TrooperBug.class, 1, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.MESA });
+      EntityRegistry.addSpawn(TrooperBug.class, 3, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SWAMPLAND });
+      EntityRegistry.addSpawn(TrooperBug.class, 1, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.MESA });
     }
     if (SpitBugEnable != 0) {
-      EntityRegistry.addSpawn(SpitBug.class, 6, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.SWAMPLAND });
+      EntityRegistry.addSpawn(SpitBug.class, 6, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SWAMPLAND });
     }
     if (StinkBugEnable != 0) {
-      EntityRegistry.addSpawn(StinkBug.class, 10, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.FOREST });
-      EntityRegistry.addSpawn(StinkBug.class, 8, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.JUNGLE });
-      EntityRegistry.addSpawn(StinkBug.class, 6, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.FOREST_HILLS });
-      EntityRegistry.addSpawn(StinkBug.class, 4, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.JUNGLE_HILLS });
-      EntityRegistry.addSpawn(StinkBug.class, 8, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.SAVANNA });
+      EntityRegistry.addSpawn(StinkBug.class, 10, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.FOREST });
+      EntityRegistry.addSpawn(StinkBug.class, 8, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.JUNGLE });
+      EntityRegistry.addSpawn(StinkBug.class, 6, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.FOREST_HILLS });
+      EntityRegistry.addSpawn(StinkBug.class, 4, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.JUNGLE_HILLS });
+      EntityRegistry.addSpawn(StinkBug.class, 8, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SAVANNA });
     }
     if (ScorpionEnable != 0) {
-      EntityRegistry.addSpawn(Scorpion.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.DESERT });
-      EntityRegistry.addSpawn(Scorpion.class, 28, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.ROOFED_FOREST });
-      EntityRegistry.addSpawn(Scorpion.class, 15, 3, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.SAVANNA });
-      EntityRegistry.addSpawn(Scorpion.class, 15, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.SAVANNA_PLATEAU });
-      EntityRegistry.addSpawn(Scorpion.class, 6, 1, 3, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.MESA });
-      EntityRegistry.addSpawn(Scorpion.class, 4, 1, 3, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.MESA_CLEAR_ROCK });
-      EntityRegistry.addSpawn(Scorpion.class, 5, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.MESA_ROCK });
+      EntityRegistry.addSpawn(Scorpion.class, 15, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.DESERT });
+      EntityRegistry.addSpawn(Scorpion.class, 28, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.ROOFED_FOREST });
+      EntityRegistry.addSpawn(Scorpion.class, 15, 3, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SAVANNA });
+      EntityRegistry.addSpawn(Scorpion.class, 15, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SAVANNA_PLATEAU });
+      EntityRegistry.addSpawn(Scorpion.class, 6, 1, 3, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.MESA });
+      EntityRegistry.addSpawn(Scorpion.class, 4, 1, 3, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.MESA_CLEAR_ROCK });
+      EntityRegistry.addSpawn(Scorpion.class, 5, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.MESA_ROCK });
     }
 
     if (LeafMonsterEnable != 0) {
-      EntityRegistry.addSpawn(LeafMonster.class, 5, 2, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.JUNGLE });
-      EntityRegistry.addSpawn(LeafMonster.class, 5, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.FOREST });
-      EntityRegistry.addSpawn(LeafMonster.class, 3, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.JUNGLE_HILLS });
-      EntityRegistry.addSpawn(LeafMonster.class, 3, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.FOREST_HILLS });
-      EntityRegistry.addSpawn(LeafMonster.class, 3, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST });
-      EntityRegistry.addSpawn(LeafMonster.class, 2, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST_HILLS });
-      EntityRegistry.addSpawn(LeafMonster.class, 2, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.REDWOOD_TAIGA });
-      EntityRegistry.addSpawn(LeafMonster.class, 2, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.TAIGA });
+      EntityRegistry.addSpawn(LeafMonster.class, 5, 2, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.JUNGLE });
+      EntityRegistry.addSpawn(LeafMonster.class, 5, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.FOREST });
+      EntityRegistry.addSpawn(LeafMonster.class, 3, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.JUNGLE_HILLS });
+      EntityRegistry.addSpawn(LeafMonster.class, 3, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.FOREST_HILLS });
+      EntityRegistry.addSpawn(LeafMonster.class, 3, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST });
+      EntityRegistry.addSpawn(LeafMonster.class, 2, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST_HILLS });
+      EntityRegistry.addSpawn(LeafMonster.class, 2, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.REDWOOD_TAIGA });
+      EntityRegistry.addSpawn(LeafMonster.class, 2, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.TAIGA });
     }
 
     if (EnderKnightEnable != 0) {
-      EntityRegistry.addSpawn(EnderKnight.class, 4, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.EXTREME_HILLS });
-      EntityRegistry.addSpawn(EnderKnight.class, 4, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.EXTREME_HILLS_EDGE });
-      EntityRegistry.addSpawn(EnderKnight.class, 4, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.FOREST });
-      EntityRegistry.addSpawn(EnderKnight.class, 4, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.FOREST_HILLS });
-      EntityRegistry.addSpawn(EnderKnight.class, 4, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.JUNGLE_HILLS });
-      EntityRegistry.addSpawn(EnderKnight.class, 2, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.PLAINS });
-      EntityRegistry.addSpawn(EnderKnight.class, 2, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.RIVER });
-      EntityRegistry.addSpawn(EnderKnight.class, 2, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.DESERT });
-      EntityRegistry.addSpawn(EnderKnight.class, 20, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.ROOFED_FOREST });
+      EntityRegistry.addSpawn(EnderKnight.class, 4, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.EXTREME_HILLS });
+      EntityRegistry.addSpawn(EnderKnight.class, 4, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.EXTREME_HILLS_EDGE });
+      EntityRegistry.addSpawn(EnderKnight.class, 4, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.FOREST });
+      EntityRegistry.addSpawn(EnderKnight.class, 4, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.FOREST_HILLS });
+      EntityRegistry.addSpawn(EnderKnight.class, 4, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.JUNGLE_HILLS });
+      EntityRegistry.addSpawn(EnderKnight.class, 2, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.PLAINS });
+      EntityRegistry.addSpawn(EnderKnight.class, 2, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.RIVER });
+      EntityRegistry.addSpawn(EnderKnight.class, 2, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.DESERT });
+      EntityRegistry.addSpawn(EnderKnight.class, 20, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.ROOFED_FOREST });
     }
     if (EnderReaperEnable != 0) {
-      EntityRegistry.addSpawn(EnderReaper.class, 2, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.EXTREME_HILLS });
-      EntityRegistry.addSpawn(EnderReaper.class, 2, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.EXTREME_HILLS_EDGE });
-      EntityRegistry.addSpawn(EnderReaper.class, 1, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.FOREST });
-      EntityRegistry.addSpawn(EnderReaper.class, 2, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.FOREST_HILLS });
-      EntityRegistry.addSpawn(EnderReaper.class, 2, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.JUNGLE_HILLS });
-      EntityRegistry.addSpawn(EnderReaper.class, 1, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.PLAINS });
-      EntityRegistry.addSpawn(EnderReaper.class, 1, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.RIVER });
-      EntityRegistry.addSpawn(EnderReaper.class, 1, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.DESERT });
-      EntityRegistry.addSpawn(EnderReaper.class, 38, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.ROOFED_FOREST });
+      EntityRegistry.addSpawn(EnderReaper.class, 2, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.EXTREME_HILLS });
+      EntityRegistry.addSpawn(EnderReaper.class, 2, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.EXTREME_HILLS_EDGE });
+      EntityRegistry.addSpawn(EnderReaper.class, 1, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.FOREST });
+      EntityRegistry.addSpawn(EnderReaper.class, 2, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.FOREST_HILLS });
+      EntityRegistry.addSpawn(EnderReaper.class, 2, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.JUNGLE_HILLS });
+      EntityRegistry.addSpawn(EnderReaper.class, 1, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.PLAINS });
+      EntityRegistry.addSpawn(EnderReaper.class, 1, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.RIVER });
+      EntityRegistry.addSpawn(EnderReaper.class, 1, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.DESERT });
+      EntityRegistry.addSpawn(EnderReaper.class, 38, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.ROOFED_FOREST });
     }
 
     if (CoinEnable != 0) {
-      EntityRegistry.addSpawn(Coin.class, 2, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.TAIGA });
-      EntityRegistry.addSpawn(Coin.class, 2, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.FOREST });
-      EntityRegistry.addSpawn(Coin.class, 2, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.JUNGLE });
-      EntityRegistry.addSpawn(Coin.class, 2, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST });
-      EntityRegistry.addSpawn(Coin.class, 2, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.COLD_TAIGA });
-      EntityRegistry.addSpawn(Coin.class, 2, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.REDWOOD_TAIGA });
+      EntityRegistry.addSpawn(Coin.class, 2, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.TAIGA });
+      EntityRegistry.addSpawn(Coin.class, 2, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.FOREST });
+      EntityRegistry.addSpawn(Coin.class, 2, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.JUNGLE });
+      EntityRegistry.addSpawn(Coin.class, 2, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST });
+      EntityRegistry.addSpawn(Coin.class, 2, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.COLD_TAIGA });
+      EntityRegistry.addSpawn(Coin.class, 2, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.REDWOOD_TAIGA });
     }
 
     if (CricketEnable != 0) {
-      EntityRegistry.addSpawn(Cricket.class, 3, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.FOREST });
-      EntityRegistry.addSpawn(Cricket.class, 2, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.FOREST_HILLS });
-      EntityRegistry.addSpawn(Cricket.class, 3, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.JUNGLE });
-      EntityRegistry.addSpawn(Cricket.class, 2, 3, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.JUNGLE_HILLS });
-      EntityRegistry.addSpawn(Cricket.class, 3, 4, 8, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.PLAINS });
-      EntityRegistry.addSpawn(Cricket.class, 2, 2, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST });
-      EntityRegistry.addSpawn(Cricket.class, 2, 2, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST_HILLS });
-      EntityRegistry.addSpawn(Cricket.class, 3, 1, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.ROOFED_FOREST });
-      EntityRegistry.addSpawn(Cricket.class, 2, 1, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.REDWOOD_TAIGA });
-      EntityRegistry.addSpawn(Cricket.class, 2, 1, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.TAIGA });
-      EntityRegistry.addSpawn(Cricket.class, 1, 1, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.SAVANNA_PLATEAU });
+      EntityRegistry.addSpawn(Cricket.class, 3, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.FOREST });
+      EntityRegistry.addSpawn(Cricket.class, 2, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.FOREST_HILLS });
+      EntityRegistry.addSpawn(Cricket.class, 3, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.JUNGLE });
+      EntityRegistry.addSpawn(Cricket.class, 2, 3, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.JUNGLE_HILLS });
+      EntityRegistry.addSpawn(Cricket.class, 3, 4, 8, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.PLAINS });
+      EntityRegistry.addSpawn(Cricket.class, 2, 2, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST });
+      EntityRegistry.addSpawn(Cricket.class, 2, 2, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST_HILLS });
+      EntityRegistry.addSpawn(Cricket.class, 3, 1, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.ROOFED_FOREST });
+      EntityRegistry.addSpawn(Cricket.class, 2, 1, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.REDWOOD_TAIGA });
+      EntityRegistry.addSpawn(Cricket.class, 2, 1, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.TAIGA });
+      EntityRegistry.addSpawn(Cricket.class, 1, 1, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SAVANNA_PLATEAU });
     }
     if (FrogEnable != 0) {
-      EntityRegistry.addSpawn(Frog.class, 20, 3, 6, MobCategory.WATER_CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.RIVER });
-      EntityRegistry.addSpawn(Frog.class, 3, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.RIVER });
-      EntityRegistry.addSpawn(Frog.class, 3, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.JUNGLE });
-      EntityRegistry.addSpawn(Frog.class, 20, 2, 6, MobCategory.WATER_CREATURE, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.SWAMPLAND });
-      EntityRegistry.addSpawn(Frog.class, 2, 2, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.SWAMPLAND });
+      EntityRegistry.addSpawn(Frog.class, 20, 3, 6, MobCategory.WATER_CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.RIVER });
+      EntityRegistry.addSpawn(Frog.class, 3, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.RIVER });
+      EntityRegistry.addSpawn(Frog.class, 3, 3, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.JUNGLE });
+      EntityRegistry.addSpawn(Frog.class, 20, 2, 6, MobCategory.WATER_CREATURE, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SWAMPLAND });
+      EntityRegistry.addSpawn(Frog.class, 2, 2, 6, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SWAMPLAND });
     }
 
     if (PeacockEnable != 0) {
-      EntityRegistry.addSpawn(Peacock.class, 1, 1, 3, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.MESA });
-      EntityRegistry.addSpawn(Peacock.class, 1, 1, 3, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.MESA_CLEAR_ROCK });
+      EntityRegistry.addSpawn(Peacock.class, 1, 1, 3, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.MESA });
+      EntityRegistry.addSpawn(Peacock.class, 1, 1, 3, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.MESA_CLEAR_ROCK });
     }
 
     if (FairyEnable != 0) {
-      EntityRegistry.addSpawn(Fairy.class, 25, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.ROOFED_FOREST });
+      EntityRegistry.addSpawn(Fairy.class, 25, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.ROOFED_FOREST });
     }
     if (RatEnable != 0) {
-      EntityRegistry.addSpawn(Rat.class, 35, 10, 20, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.ROOFED_FOREST });
-      EntityRegistry.addSpawn(Rat.class, 25, 2, 8, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.TAIGA });
+      EntityRegistry.addSpawn(Rat.class, 35, 10, 20, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.ROOFED_FOREST });
+      EntityRegistry.addSpawn(Rat.class, 25, 2, 8, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.TAIGA });
     }
     if (DungeonBeastEnable != 0) {
-      EntityRegistry.addSpawn(DungeonBeast.class, 20, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.compat.minecraft.world.biome.Biome[] { Biomes.ROOFED_FOREST });
+      EntityRegistry.addSpawn(DungeonBeast.class, 20, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.ROOFED_FOREST });
     }
 
     int shoeid = nextEntityId++;
@@ -7261,47 +7285,223 @@ private static void registerAllCritterCages() {
 
   @SubscribeEvent
   public void onLootTableLoad(LootTableLoadEvent event) {
-    if (event.getName().equals(LootTableList.CHESTS_SIMPLE_DUNGEON)) {
-      LootPool pool = event.getTable().getPool("main");
-      if (pool != null) {
-        addLegacyLootEntry(pool, MyRuby, 3, 1, 1, "chaospersists:ruby");
-        addLegacyLootEntry(pool, MyAmethyst, 3, 1, 1, "chaospersists:amethyst");
-        addLegacyLootEntry(pool, MyThunderStaff, 2, 1, 1, "chaospersists:thunderstaff");
+    if (event.getName() == null || event.getTable() == null) {
+      return;
+    }
+    try {
+      if (event.getName().equals(LootTableList.CHESTS_SIMPLE_DUNGEON)) {
+        injectLegacyChestLoot(
+            event.getTable(),
+            "chaospersists_simple_dungeon",
+            MyRuby,
+            3,
+            1,
+            1,
+            MyAmethyst,
+            3,
+            1,
+            1,
+            MyThunderStaff,
+            2,
+            1,
+            1);
+      } else if (event.getName().equals(LootTableList.CHESTS_JUNGLE_TEMPLE)) {
+        injectLegacyChestLoot(
+            event.getTable(),
+            "chaospersists_jungle_temple",
+            MyRuby,
+            3,
+            1,
+            1,
+            MyAmethyst,
+            3,
+            1,
+            1,
+            AntRobotKit,
+            3,
+            1,
+            1);
+      } else if (event.getName().equals(LootTableList.CHESTS_DESERT_PYRAMID)) {
+        injectLegacyChestLoot(
+            event.getTable(),
+            "chaospersists_desert_pyramid",
+            MyRuby,
+            2,
+            1,
+            1,
+            MyAmethyst,
+            2,
+            1,
+            1,
+            SpiderRobotKit,
+            2,
+            1,
+            1);
       }
-    } else if (event.getName().equals(LootTableList.CHESTS_JUNGLE_TEMPLE)) {
-      LootPool pool = event.getTable().getPool("main");
-      if (pool != null) {
-        addLegacyLootEntry(pool, MyRuby, 3, 1, 1, "chaospersists:ruby");
-        addLegacyLootEntry(pool, MyAmethyst, 3, 1, 1, "chaospersists:amethyst");
-        addLegacyLootEntry(pool, AntRobotKit, 3, 1, 1, "chaospersists:antrobotkit");
-      }
-    } else if (event.getName().equals(LootTableList.CHESTS_DESERT_PYRAMID)) {
-      LootPool pool = event.getTable().getPool("main");
-      if (pool != null) {
-        addLegacyLootEntry(pool, MyRuby, 2, 1, 1, "chaospersists:ruby");
-        addLegacyLootEntry(pool, MyAmethyst, 2, 1, 1, "chaospersists:amethyst");
-        addLegacyLootEntry(pool, SpiderRobotKit, 2, 1, 1, "chaospersists:spiderrobotkit");
-      }
+    } catch (Throwable t) {
+      LOGGER.warn("ChaosPersists: failed to inject chest loot into {}", event.getName(), t);
     }
   }
 
-  private static void addLegacyLootEntry(LootPool pool, Item item, int weight, int minCount, int maxCount, String entryName) {
-    if (pool == null || item == null) {
+  /** 1.7.10 ChestGenHooks port: mix into "main" when possible, otherwise add a named extra pool. */
+  private static void injectLegacyChestLoot(
+      LootTable table,
+      String fallbackPoolName,
+      Item item1,
+      int weight1,
+      int min1,
+      int max1,
+      Item item2,
+      int weight2,
+      int min2,
+      int max2,
+      Item item3,
+      int weight3,
+      int min3,
+      int max3) {
+    if (table == null) {
       return;
     }
-    net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer entry =
-        LootItem.lootTableItem(item)
-            .setWeight(weight)
-            .setQuality(0)
-            .apply(
-                SetItemCountFunction.setCount(
-                    UniformGenerator.between((float) minCount, (float) maxCount)))
-            .build();
-    LootPoolEntryContainer[] entries =
-        ObfuscationReflectionHelper.getPrivateValue(LootPool.class, pool, "entries");
-    LootPoolEntryContainer[] merged = java.util.Arrays.copyOf(entries, entries.length + 1);
-    merged[entries.length] = entry;
-    ObfuscationReflectionHelper.setPrivateValue(LootPool.class, pool, merged, "entries");
+    LootPool main = table.getPool("main");
+    int injected = 0;
+    if (addLegacyLootEntry(main, item1, weight1, min1, max1)) {
+      injected++;
+    }
+    if (addLegacyLootEntry(main, item2, weight2, min2, max2)) {
+      injected++;
+    }
+    if (addLegacyLootEntry(main, item3, weight3, min3, max3)) {
+      injected++;
+    }
+    if (injected > 0) {
+      return;
+    }
+    LootPool.Builder builder =
+        LootPool.lootPool().name(fallbackPoolName).setRolls(ConstantValue.exactly(1.0F));
+    addLegacyPoolItem(builder, item1, weight1, min1, max1);
+    addLegacyPoolItem(builder, item2, weight2, min2, max2);
+    addLegacyPoolItem(builder, item3, weight3, min3, max3);
+    builder.add(EmptyLootItem.emptyItem().setWeight(100));
+    table.addPool(builder.build());
+  }
+
+  private static void addLegacyPoolItem(
+      LootPool.Builder builder, Item item, int weight, int minCount, int maxCount) {
+    if (builder == null || item == null || weight <= 0) {
+      return;
+    }
+    builder.add(legacyLootItem(item, weight, minCount, maxCount));
+  }
+
+  private static LootPoolEntryContainer.Builder<?> legacyLootItem(
+      Item item, int weight, int minCount, int maxCount) {
+    return LootItem.lootTableItem(item)
+        .setWeight(weight)
+        .setQuality(0)
+        .apply(
+            SetItemCountFunction.setCount(
+                UniformGenerator.between((float) minCount, (float) maxCount)));
+  }
+
+  private static boolean addLegacyLootEntry(
+      LootPool pool, Item item, int weight, int minCount, int maxCount) {
+    if (pool == null || item == null || weight <= 0) {
+      return false;
+    }
+    try {
+      LootPoolEntryContainer entry = legacyLootItem(item, weight, minCount, maxCount).build();
+      return appendLootPoolEntry(pool, entry);
+    } catch (Throwable ignored) {
+      return false;
+    }
+  }
+
+  @Nullable private static volatile Field lootPoolEntriesField;
+
+  private static volatile boolean lootPoolEntriesFieldResolved;
+
+  @Nullable
+  private static synchronized Field lootPoolEntriesField() {
+    if (lootPoolEntriesFieldResolved) {
+      return lootPoolEntriesField;
+    }
+    Field found = null;
+    try {
+      found = LootPool.class.getDeclaredField("entries");
+    } catch (NoSuchFieldException ignored) {
+    }
+    if (found == null) {
+      try {
+        found = LootPool.class.getDeclaredField("f_79023_");
+      } catch (NoSuchFieldException ignored) {
+      }
+    }
+    if (found == null) {
+      for (Field field : LootPool.class.getDeclaredFields()) {
+        if (field.getType() == LootPoolEntryContainer[].class) {
+          found = field;
+          break;
+        }
+      }
+    }
+    if (found == null) {
+      for (Field field : LootPool.class.getDeclaredFields()) {
+        if (!List.class.isAssignableFrom(field.getType())) {
+          continue;
+        }
+        java.lang.reflect.Type generic = field.getGenericType();
+        if (!(generic instanceof java.lang.reflect.ParameterizedType parameterized)) {
+          continue;
+        }
+        java.lang.reflect.Type[] args = parameterized.getActualTypeArguments();
+        if (args.length == 1 && args[0] == LootPoolEntryContainer.class) {
+          found = field;
+          break;
+        }
+      }
+    }
+    if (found != null) {
+      found.setAccessible(true);
+    }
+    lootPoolEntriesField = found;
+    lootPoolEntriesFieldResolved = true;
+    return found;
+  }
+
+  private static boolean appendLootPoolEntry(LootPool pool, LootPoolEntryContainer extra) {
+    if (pool == null || extra == null) {
+      return false;
+    }
+    Field field = lootPoolEntriesField();
+    if (field == null) {
+      return false;
+    }
+    try {
+      Object value = field.get(pool);
+      if (value instanceof LootPoolEntryContainer[]) {
+        LootPoolEntryContainer[] entries = (LootPoolEntryContainer[]) value;
+        LootPoolEntryContainer[] merged =
+            java.util.Arrays.copyOf(entries, entries.length + 1);
+        merged[entries.length] = extra;
+        field.set(pool, merged);
+        return true;
+      }
+      if (value instanceof List) {
+        @SuppressWarnings("unchecked")
+        List<LootPoolEntryContainer> entries = (List<LootPoolEntryContainer>) value;
+        try {
+          entries.add(extra);
+          return true;
+        } catch (UnsupportedOperationException immutable) {
+          List<LootPoolEntryContainer> copy = new ArrayList<>(entries);
+          copy.add(extra);
+          field.set(pool, copy);
+          return true;
+        }
+      }
+    } catch (Throwable ignored) {
+    }
+    return false;
   }
 
   @SubscribeEvent
@@ -7744,12 +7944,17 @@ private static void registerAllCritterCages() {
     ResourceLocation key = EntityType.getKey(base.getType());
     if (key != null && MODID.equals(key.getNamespace())) {
       LivingEntity currentTarget = mob.getTarget();
-      if (currentTarget != null && !MyUtils.isValidAggroTarget(currentTarget)) {
+      if (currentTarget != null
+          && (!MyUtils.isValidAggroTarget(currentTarget)
+              || MyUtils.shouldSkipCombatTarget(mob, currentTarget))) {
         mob.setTarget(null);
       }
     }
     boolean chaosHostileMob =
         key != null && MODID.equals(key.getNamespace()) && base instanceof Enemy;
+    if (base instanceof TamableAnimal tame && tame.isTame()) {
+      return;
+    }
     if (!this.isAlwaysHostileInLegacy(base.getClass()) && !chaosHostileMob) {
       return;
     }
@@ -7767,6 +7972,9 @@ private static void registerAllCritterCages() {
 
     Player target = base.level().getNearestPlayer(base.getX(), base.getY(), base.getZ(), 24.0, false);
     if (target == null || target.isCreative() || target.isSpectator()) {
+      return;
+    }
+    if (MyUtils.shouldSkipCombatTarget(mob, target)) {
       return;
     }
 

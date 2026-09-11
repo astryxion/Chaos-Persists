@@ -213,6 +213,9 @@ public class DungeonBeast extends Monster {
         if (entity == this) {
             return false;
         }
+        if (MyUtils.shouldSkipCombatTarget(this, entity)) {
+            return false;
+        }
         if (!entity.isAlive()) {
             return false;
         }

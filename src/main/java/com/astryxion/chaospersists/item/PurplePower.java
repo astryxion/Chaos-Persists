@@ -1,5 +1,9 @@
 package com.astryxion.chaospersists.item;
 
+import com.astryxion.chaospersists.compat.eeeabsmobs.EeeabsMobsBeamCompat;
+import com.astryxion.chaospersists.compat.illageandspillage.IllageAndSpillageExecuteCompat;
+import com.astryxion.chaospersists.compat.legendarymonsters.LegendaryMonstersBeamCompat;
+import com.astryxion.chaospersists.compat.mutantmonsters.MutantMonstersExecuteCompat;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.util.GenericTargetSorter;
 import com.astryxion.chaospersists.util.MyUtils;
@@ -311,6 +315,9 @@ public class PurplePower extends LivingEntity {
         if (par1EntityLiving == this) {
             return false;
         }
+        if (MyUtils.shouldSkipCombatTarget(this, par1EntityLiving)) {
+            return false;
+        }
         if (!par1EntityLiving.isAlive()) {
             return false;
         }
@@ -376,8 +383,10 @@ public class PurplePower extends LivingEntity {
     public boolean doHurtTarget(Entity par1Entity) {
         boolean var4 = false;
         if (par1Entity instanceof LivingEntity e) {
+            float intended;
             if (this.getPurpleType() == 0 || this.getPurpleType() == 10) {
-                e.setHealth(e.getHealth() / 4.0f - 1.0f);
+                intended = e.getHealth() / 4.0f - 1.0f;
+                e.setHealth(intended);
                 var4 = e.hurt(this.damageSources().mobAttack(this), e.getMaxHealth() / 8.0f);
                 if (this.getPurpleType() == 10) {
                     this.level()
@@ -392,7 +401,8 @@ public class PurplePower extends LivingEntity {
                                             : Level.ExplosionInteraction.NONE);
                 }
             } else {
-                e.setHealth(e.getHealth() * 15.0f / 16.0f);
+                intended = e.getHealth() * 15.0f / 16.0f;
+                e.setHealth(intended);
                 var4 = e.hurt(this.damageSources().mobAttack(this), 5.0f);
                 if (this.getPurpleType() == 1) {
                     e.setSecondsOnFire(10);
@@ -404,6 +414,10 @@ public class PurplePower extends LivingEntity {
                     e.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 50, 0));
                 }
             }
+            EeeabsMobsBeamCompat.enforceBeamHealth(e, intended);
+            LegendaryMonstersBeamCompat.enforceBeamHealth(e, intended);
+            MutantMonstersExecuteCompat.forceExecuteIfDowned(e);
+            IllageAndSpillageExecuteCompat.forceExecuteIfDowned(e);
         }
         return var4;
     }

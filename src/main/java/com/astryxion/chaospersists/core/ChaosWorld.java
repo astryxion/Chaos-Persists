@@ -13,16 +13,16 @@
  *  com.astryxion.chaospersists.OreStats
  *  com.astryxion.chaospersists.RubyBirdDungeon
  *  com.astryxion.chaospersists.Trees
- *  com.astryxion.chaospersists.compat.minecraft.block.Block
- *  com.astryxion.chaospersists.compat.minecraft.block.BlockChest
- *  com.astryxion.chaospersists.compat.minecraft.block.BlockGrass
- *  com.astryxion.chaospersists.compat.minecraft.block.BlockLeaves
- *  com.astryxion.chaospersists.compat.minecraft.block.BlockLiquid
- *  com.astryxion.chaospersists.compat.minecraft.block.BlockSand
+ *  com.astryxion.chaospersists.legacy.minecraft.block.Block
+ *  com.astryxion.chaospersists.legacy.minecraft.block.BlockChest
+ *  com.astryxion.chaospersists.legacy.minecraft.block.BlockGrass
+ *  com.astryxion.chaospersists.legacy.minecraft.block.BlockLeaves
+ *  com.astryxion.chaospersists.legacy.minecraft.block.BlockLiquid
+ *  com.astryxion.chaospersists.legacy.minecraft.block.BlockSand
  *  net.minecraft.entity.Entity
  *  net.minecraft.entity.EntityList
  *  net.minecraft.entity.EntityLiving
- *  com.astryxion.chaospersists.compat.minecraft.init.Blocks
+ *  com.astryxion.chaospersists.legacy.minecraft.init.Blocks
  *  net.minecraft.inventory.IInventory
  *  net.minecraft.item.Item
  *  net.minecraft.tileentity.MobSpawnerBaseLogic
@@ -30,12 +30,12 @@
  *  net.minecraft.tileentity.TileEntityChest
  *  net.minecraft.tileentity.TileEntityMobSpawner
  *  net.minecraft.util.WeightedRandomChestContent
- *  com.astryxion.chaospersists.compat.minecraft.world.World
- *  com.astryxion.chaospersists.compat.minecraft.world.WorldProvider
- *  com.astryxion.chaospersists.compat.minecraft.world.biome.Biome
- *  com.astryxion.chaospersists.compat.minecraft.world.chunk.Chunk
- *  com.astryxion.chaospersists.compat.minecraft.world.chunk.IChunkProvider
- *  com.astryxion.chaospersists.compat.minecraft.world.gen.feature.WorldGenMinable
+ *  com.astryxion.chaospersists.legacy.minecraft.world.World
+ *  com.astryxion.chaospersists.legacy.minecraft.world.WorldProvider
+ *  com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome
+ *  com.astryxion.chaospersists.legacy.minecraft.world.chunk.Chunk
+ *  com.astryxion.chaospersists.legacy.minecraft.world.chunk.IChunkProvider
+ *  com.astryxion.chaospersists.legacy.minecraft.world.gen.feature.WorldGenMinable
  */
 package com.astryxion.chaospersists.core;
 

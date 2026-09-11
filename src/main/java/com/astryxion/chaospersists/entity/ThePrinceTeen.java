@@ -113,6 +113,7 @@ public class ThePrinceTeen extends TamableAnimal {
     private int head1dir = 1;
     private int head2dir = 1;
     private int head3dir = 1;
+    private int ok_to_grow = 0;
     private int kill_count = 0;
     private int day_count = 0;
     private int is_day = 0;
@@ -934,7 +935,7 @@ public class ThePrinceTeen extends TamableAnimal {
     protected void customServerAiStep() {
         PetCombatHelper.tickPetCombat(this);
         if (this.isTame() && !RoyalPetFollowHelper.isStayingPut(this)) {
-            RoyalPetFollowHelper.syncDimensionOnly(this);
+            RoyalPetFollowHelper.syncRoyalFollow(this);
         }
         LivingEntity e;
         if (this.getActivity() == 0 && this.getPassengers().isEmpty() && !this.lacksGroundSupport()) {
@@ -957,7 +958,9 @@ public class ThePrinceTeen extends TamableAnimal {
                 this.setAttacking(0);
             }
         }
-        if (this.kill_count > 25 && this.day_count > 10) {
+        if ((ChaosPersists.PrinceAutoGrow != 0 || this.ok_to_grow != 0)
+                && this.kill_count > 25
+                && this.day_count > 10) {
             Entity ent =
                     spawnCreature(
                             this.level(),
@@ -1070,6 +1073,9 @@ public class ThePrinceTeen extends TamableAnimal {
             return false;
         }
         if (par1EntityLiving == this) {
+            return false;
+        }
+        if (MyUtils.shouldSkipCombatTarget(this, par1EntityLiving)) {
             return false;
         }
         if (!par1EntityLiving.isAlive()) {
@@ -1392,6 +1398,14 @@ public class ThePrinceTeen extends TamableAnimal {
         if (this.flyaway > 0) {
             --this.flyaway;
         }
+        if (this.isTame() && this.getHealth() / (float) this.mygetMaxHealth() < 0.25f) {
+            this.setAttacking(0);
+            this.target_in_sight = false;
+            this.setTarget(null);
+            if (has_owner) {
+                do_new = true;
+            }
+        }
         if (!toofar
                 && this.flyaway == 0
                 && this.level().getDifficulty() != Difficulty.PEACEFUL
@@ -1406,12 +1420,14 @@ public class ThePrinceTeen extends TamableAnimal {
                     this.setActivity(1);
                     this.setAttacking(0);
                     this.target_in_sight = false;
-                    do_new = false;
-                    this.currentFlightTarget =
-                            new BlockPos(
-                                    (int) (this.getX() + (this.getX() - e.getX())),
-                                    (int) (this.getY() + 1.0),
-                                    (int) (this.getZ() + (this.getZ() - e.getZ())));
+                    do_new = has_owner;
+                    if (!has_owner) {
+                        this.currentFlightTarget =
+                                new BlockPos(
+                                        (int) (this.getX() + (this.getX() - e.getX())),
+                                        (int) (this.getY() + 1.0),
+                                        (int) (this.getZ() + (this.getZ() - e.getZ())));
+                    }
                 } else {
                     this.setActivity(1);
                     this.setAttacking(1);
@@ -1624,6 +1640,7 @@ public class ThePrinceTeen extends TamableAnimal {
                 spawnTamingParticles(true);
                 this.level().broadcastEntityEvent(this, (byte) 7);
                 this.heal((float) this.mygetMaxHealth() - this.getHealth());
+                this.ok_to_grow = 1;
                 this.kill_count = 1000;
                 this.day_count = 1000;
             }
@@ -1648,11 +1665,6 @@ public class ThePrinceTeen extends TamableAnimal {
                     }
                     return InteractionResult.sidedSuccess(this.level().isClientSide);
                 }
-            }
-            if (!var2.isEmpty()
-                    && var2.is(Items.STICK)
-                    && this.isPlayerWithinPrinceReach(par1EntityPlayer, 64.0, 3.0)) {
-                return this.toggleSitStay(par1EntityPlayer);
             }
             if (!var2.isEmpty() && var2.is(Items.BEEF) && par1EntityPlayer.distanceToSqr(this) < 25.0) {
                 if (this.level().isClientSide) {
@@ -1815,6 +1827,7 @@ public class ThePrinceTeen extends TamableAnimal {
         tag.putInt("ThePrinceTeenAttacking", this.getAttacking());
         tag.putInt("ThePrinceTeenActivity", this.getActivity());
         tag.putInt("ThePrinceTeenFire", this.getThePrinceTeenFire());
+        tag.putInt("SpyroGrow", this.ok_to_grow);
         tag.putInt("SpyroKill", this.kill_count);
         tag.putInt("SpyroDay", this.day_count);
     }
@@ -1825,9 +1838,22 @@ public class ThePrinceTeen extends TamableAnimal {
         this.setAttacking(tag.getInt("ThePrinceTeenAttacking"));
         this.setActivity(tag.getInt("ThePrinceTeenActivity"));
         this.setThePrinceTeenFire(tag.getInt("ThePrinceTeenFire"));
+        this.ok_to_grow = tag.getInt("SpyroGrow");
         this.kill_count = tag.getInt("SpyroKill");
         this.day_count = tag.getInt("SpyroDay");
         this.refreshDimensions();
+    }
+
+    public int getPrinceKillCount() {
+        return this.kill_count;
+    }
+
+    public int getPrinceDayCount() {
+        return this.day_count;
+    }
+
+    public boolean isPrinceGrowthItemFed() {
+        return this.ok_to_grow != 0;
     }
 
     public static Entity spawnCreature(Level level, String par1, double par2, double par4, double par6) {

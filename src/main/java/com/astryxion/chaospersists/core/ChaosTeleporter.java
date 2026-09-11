@@ -4,23 +4,23 @@
  * Could not load the following classes:
  *  com.astryxion.chaospersists.ChaosPersists
  *  com.astryxion.chaospersists.ChaosTeleporter
- *  com.astryxion.chaospersists.compat.minecraft.block.Block
- *  com.astryxion.chaospersists.compat.minecraft.block.BlockGrass
- *  com.astryxion.chaospersists.compat.minecraft.block.BlockSand
- *  com.astryxion.chaospersists.compat.minecraft.block.BlockTallGrass
- *  com.astryxion.chaospersists.compat.minecraft.block.material.Material
+ *  com.astryxion.chaospersists.legacy.minecraft.block.Block
+ *  com.astryxion.chaospersists.legacy.minecraft.block.BlockGrass
+ *  com.astryxion.chaospersists.legacy.minecraft.block.BlockSand
+ *  com.astryxion.chaospersists.legacy.minecraft.block.BlockTallGrass
+ *  com.astryxion.chaospersists.legacy.minecraft.block.material.Material
  *  net.minecraft.entity.Entity
  *  net.minecraft.entity.EntityList
  *  net.minecraft.entity.EntityLivingBase
  *  net.minecraft.entity.passive.EntityTameable
  *  net.minecraft.entity.player.EntityPlayer
- *  com.astryxion.chaospersists.compat.minecraft.init.Blocks
+ *  com.astryxion.chaospersists.legacy.minecraft.init.Blocks
  *  net.minecraft.server.MinecraftServer
- *  com.astryxion.chaospersists.compat.minecraft.util.math.AxisAlignedBB
+ *  com.astryxion.chaospersists.legacy.minecraft.util.math.AxisAlignedBB
  *  net.minecraft.world.Teleporter
- *  com.astryxion.chaospersists.compat.minecraft.world.World
- *  com.astryxion.chaospersists.compat.minecraft.world.WorldProvider
- *  com.astryxion.chaospersists.compat.minecraft.world.WorldServer
+ *  com.astryxion.chaospersists.legacy.minecraft.world.World
+ *  com.astryxion.chaospersists.legacy.minecraft.world.WorldProvider
+ *  com.astryxion.chaospersists.legacy.minecraft.world.WorldServer
  */
 package com.astryxion.chaospersists.core;
 

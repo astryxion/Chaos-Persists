@@ -1,5 +1,6 @@
 package com.astryxion.chaospersists.util;
 
+import com.astryxion.chaospersists.compat.eeeabsmobs.EeeabsMobsCompat;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.entity.Mothra;
 import java.util.EnumSet;
@@ -46,6 +47,10 @@ public abstract class MyEntityAITarget extends Goal {
             return false;
         }
         if (!MyUtils.isValidAggroTarget(var1)) {
+            this.taskOwner.setTarget(null);
+            return false;
+        }
+        if (MyUtils.shouldSkipCombatTarget(this.taskOwner, var1)) {
             this.taskOwner.setTarget(null);
             return false;
         }
@@ -99,6 +104,9 @@ public abstract class MyEntityAITarget extends Goal {
         if (par1EntityLiving == this.taskOwner) {
             return false;
         }
+        if (MyUtils.shouldSkipCombatTarget(this.taskOwner, par1EntityLiving)) {
+            return false;
+        }
         if (!par1EntityLiving.isAlive()) {
             return false;
         }
@@ -147,7 +155,7 @@ public abstract class MyEntityAITarget extends Goal {
             if (this.targetSearchStatus == 0) {
                 this.targetSearchStatus = this.canEasilyReach(par1EntityLiving) ? 1 : 2;
             }
-            if (this.targetSearchStatus == 2) {
+            if (this.targetSearchStatus == 2 && !EeeabsMobsCompat.skipNearbyOnlyReachCheck(par1EntityLiving)) {
                 return false;
             }
         }

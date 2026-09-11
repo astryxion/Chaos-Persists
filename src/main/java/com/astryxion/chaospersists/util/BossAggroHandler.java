@@ -83,7 +83,8 @@ public final class BossAggroHandler {
         Entity responsible = source.getEntity();
         if (!(responsible instanceof LivingEntity attacker)
                 || attacker == boss
-                || !MyUtils.isValidAggroTarget(attacker)) {
+                || !MyUtils.isValidAggroTarget(attacker)
+                || MyUtils.shouldSkipCombatTarget(boss, attacker)) {
             return;
         }
         applyHurtAggro(boss, attacker);
@@ -110,7 +111,7 @@ public final class BossAggroHandler {
             resetHurtAggro(boss);
             return;
         }
-        if (!MyUtils.isValidAggroTarget(attacker)) {
+        if (!MyUtils.isValidAggroTarget(attacker) || MyUtils.shouldSkipCombatTarget(boss, attacker)) {
             resetHurtAggro(boss);
             return;
         }

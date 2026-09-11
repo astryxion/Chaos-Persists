@@ -9,7 +9,7 @@
  *  com.astryxion.chaospersists.Girlfriend
  *  com.astryxion.chaospersists.Slice
  *  net.minecraft.client.renderer.texture.IIconRegister
- *  com.astryxion.chaospersists.compat.minecraft.creativetab.CreativeTabs
+ *  com.astryxion.chaospersists.legacy.minecraft.creativetab.CreativeTabs
  *  net.minecraft.enchantment.Enchantment
  *  net.minecraft.enchantment.EnchantmentHelper
  *  net.minecraft.entity.Entity
@@ -21,7 +21,7 @@
  *  net.minecraft.item.ItemStack
  *  net.minecraft.item.ItemSword
  *  net.minecraft.util.IIcon
- *  com.astryxion.chaospersists.compat.minecraft.world.World
+ *  com.astryxion.chaospersists.legacy.minecraft.world.World
  */
 package com.astryxion.chaospersists.item;
 

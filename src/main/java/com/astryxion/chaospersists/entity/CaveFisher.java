@@ -21,6 +21,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -73,6 +74,11 @@ public class CaveFisher extends Monster {
                 .add(Attributes.MOVEMENT_SPEED, 0.2)
                 .add(Attributes.ATTACK_DAMAGE, (double) ChaosPersists.CaveFisher_stats.attack)
                 .add(Attributes.ARMOR, (double) ChaosPersists.CaveFisher_stats.defense);
+    }
+
+    @Override
+    public MobType getMobType() {
+        return MobType.ARTHROPOD;
     }
 
     @Override
@@ -207,6 +213,9 @@ public class CaveFisher extends Monster {
             return false;
         }
         if (entity == this) {
+            return false;
+        }
+        if (MyUtils.shouldSkipCombatTarget(this, entity)) {
             return false;
         }
         if (!entity.isAlive()) {

@@ -23,6 +23,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -79,8 +80,18 @@ public class HerculesBeetle extends Monster {
     }
 
     @Override
+    public MobType getMobType() {
+        return MobType.ARTHROPOD;
+    }
+
+    @Override
     public boolean fireImmune() {
         return true;
+    }
+
+    @Override
+    public int getArmorValue() {
+        return ChaosPersists.HerculesBeetle_stats.defense;
     }
 
     @Override
@@ -463,6 +474,9 @@ public class HerculesBeetle extends Monster {
             return false;
         }
         if (par1EntityLiving == this) {
+            return false;
+        }
+        if (MyUtils.shouldSkipCombatTarget(this, par1EntityLiving)) {
             return false;
         }
         if (!par1EntityLiving.isAlive()) {

@@ -6,19 +6,19 @@
  *  net.minecraftforge.fml.relauncher.SideOnly
  *  com.astryxion.chaospersists.InstantGarden
  *  com.astryxion.chaospersists.ChaosPersists
- *  com.astryxion.chaospersists.compat.minecraft.block.Block
- *  com.astryxion.chaospersists.compat.minecraft.block.BlockGrass
- *  com.astryxion.chaospersists.compat.minecraft.block.BlockSand
+ *  com.astryxion.chaospersists.legacy.minecraft.block.Block
+ *  com.astryxion.chaospersists.legacy.minecraft.block.BlockGrass
+ *  com.astryxion.chaospersists.legacy.minecraft.block.BlockSand
  *  net.minecraft.client.renderer.texture.IIconRegister
- *  com.astryxion.chaospersists.compat.minecraft.creativetab.CreativeTabs
+ *  com.astryxion.chaospersists.legacy.minecraft.creativetab.CreativeTabs
  *  net.minecraft.entity.Entity
  *  net.minecraft.entity.player.EntityPlayer
  *  net.minecraft.entity.player.PlayerCapabilities
- *  com.astryxion.chaospersists.compat.minecraft.init.Blocks
+ *  com.astryxion.chaospersists.legacy.minecraft.init.Blocks
  *  net.minecraft.item.Item
  *  net.minecraft.item.ItemStack
  *  net.minecraft.util.IIcon
- *  com.astryxion.chaospersists.compat.minecraft.world.World
+ *  com.astryxion.chaospersists.legacy.minecraft.world.World
  */
 package com.astryxion.chaospersists.item;
 

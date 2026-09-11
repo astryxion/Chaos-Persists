@@ -1,5 +1,6 @@
 package com.astryxion.chaospersists.entity;
 
+import com.astryxion.chaospersists.compat.guardvillagers.GuardVillagersArmorCompat;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.core.ChaosSounds;
 import com.astryxion.chaospersists.item.WaterBall;
@@ -878,6 +879,9 @@ public class WaterDragon extends TamableAnimal {
         if (par1EntityLiving == this) {
             return false;
         }
+        if (MyUtils.shouldSkipCombatTarget(this, par1EntityLiving)) {
+            return false;
+        }
         if (!par1EntityLiving.isAlive()) {
             return false;
         }
@@ -931,6 +935,9 @@ public class WaterDragon extends TamableAnimal {
         if (par1EntityLiving instanceof Villager) {
             return true;
         }
+        if (GuardVillagersArmorCompat.isGuard(par1EntityLiving)) {
+            return true;
+        }
         return false;
     }
 
@@ -950,6 +957,10 @@ public class WaterDragon extends TamableAnimal {
         LivingEntity e = this.getTarget();
         if (e != null && e.isAlive()) {
             return e;
+        }
+        LivingEntity revenge = this.getLastHurtByMob();
+        if (revenge != null && this.isSuitableTarget(revenge, false)) {
+            return revenge;
         }
         this.setTarget(null);
         while (var2.hasNext()) {

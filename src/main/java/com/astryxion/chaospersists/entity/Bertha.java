@@ -1,33 +1,67 @@
 package com.astryxion.chaospersists.entity;
 
 import com.astryxion.chaospersists.core.ChaosPersists;
-import java.util.Map;
-import java.util.WeakHashMap;
-import net.minecraft.util.Mth;
-import net.minecraft.world.InteractionHand;
+import com.astryxion.chaospersists.util.FriendlyWeaponHits;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Multimap;
+import java.util.UUID;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.TamableAnimal;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.minecraft.world.level.Level.ExplosionInteraction;
+import net.minecraftforge.common.ForgeMod;
 
-@Mod.EventBusSubscriber(modid = ChaosPersists.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class Bertha extends SwordItem {
-    /** Right-click interactions in 1.20.1 also call swing(); skip projectile spawn that tick only. */
-    private static final Map<Player, Integer> SUPPRESS_INTERACT_SWING_TICK = new WeakHashMap<>();
+    /**
+     * Extra {@link ForgeMod#ENTITY_REACH} while held in the main hand. Same approach as
+     * popular 1.20.1 reach weapons (e.g. EEEABs chainsword): additive on the Forge 3-block base.
+     */
+    private static final UUID ENTITY_REACH_UUID = UUID.fromString("A3C8E1B4-6D2F-4A91-8B7C-5E0F9D4A2C18");
 
     public Bertha(Tier tier) {
         super(tier, 3, -2.4f, new Properties().stacksTo(1).durability(9000));
+    }
+
+    /**
+     * Old {@link BerthaHit} allowed {@code owner.distanceToSqr(target)} up to 81 / 101 / 64
+     * (9 / {@code sqrt(101)} / 8 blocks). Forge survival entity reach is 3, so extra is those
+     * distances minus 3.
+     */
+    private double extraEntityReach() {
+        if (this == ChaosPersists.MyRoyal) {
+            return Math.sqrt(101.0) - 3.0;
+        }
+        if (this == ChaosPersists.MyHammy) {
+            return 5.0;
+        }
+        return 6.0;
+    }
+
+    @Override
+    public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(EquipmentSlot slot) {
+        if (slot != EquipmentSlot.MAINHAND) {
+            return super.getDefaultAttributeModifiers(slot);
+        }
+        ImmutableMultimap.Builder<Attribute, AttributeModifier> builder = ImmutableMultimap.builder();
+        builder.putAll(super.getDefaultAttributeModifiers(slot));
+        builder.put(
+                ForgeMod.ENTITY_REACH.get(),
+                new AttributeModifier(
+                        ENTITY_REACH_UUID,
+                        "Weapon modifier",
+                        extraEntityReach(),
+                        AttributeModifier.Operation.ADDITION));
+        return builder.build();
     }
 
     @Override
@@ -64,89 +98,14 @@ public class Bertha extends SwordItem {
 
     @Override
     public boolean onLeftClickEntity(ItemStack stack, Player player, Entity entity) {
-        if (entity != null && ChaosPersists.big_bertha_pvp == 0) {
-            if (entity instanceof Player
-                    || isGirlfriendOrBoyfriend(entity)
-                    || (entity instanceof TamableAnimal t && t.isTame())) {
-                return true;
-            }
+        if (entity != null
+                && (FriendlyWeaponHits.isCompanion(entity)
+                        || FriendlyWeaponHits.isListedIgnore(entity)
+                        || (ChaosPersists.big_bertha_pvp == 0
+                                && FriendlyWeaponHits.isFriendlyWhenPvpOff(entity)))) {
+            return true;
         }
         return false;
-    }
-
-    @Override
-    public boolean onEntitySwing(ItemStack stack, LivingEntity entityLiving) {
-        if (entityLiving instanceof Player player && !player.level().isClientSide) {
-            Integer suppressTick = SUPPRESS_INTERACT_SWING_TICK.get(player);
-            if (suppressTick == null || suppressTick != player.tickCount) {
-                InteractionHand hand = InteractionHand.MAIN_HAND;
-                if (ItemStack.isSameItemSameTags(stack, player.getOffhandItem())) {
-                    hand = InteractionHand.OFF_HAND;
-                }
-                spawnProjectile(player, stack, hand);
-            }
-        }
-        return false;
-    }
-
-    @SubscribeEvent(priority = EventPriority.HIGHEST)
-    public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
-        if (!event.getLevel().isClientSide) {
-            suppressInteractSwing(event.getEntity());
-        }
-    }
-
-    @SubscribeEvent(priority = EventPriority.HIGHEST)
-    public static void onRightClickItem(PlayerInteractEvent.RightClickItem event) {
-        if (!event.getLevel().isClientSide) {
-            suppressInteractSwing(event.getEntity());
-        }
-    }
-
-    @SubscribeEvent(priority = EventPriority.HIGHEST)
-    public static void onEntityInteract(PlayerInteractEvent.EntityInteract event) {
-        if (!event.getLevel().isClientSide) {
-            suppressInteractSwing(event.getEntity());
-        }
-    }
-
-    @SubscribeEvent(priority = EventPriority.HIGHEST)
-    public static void onEntityInteractSpecific(PlayerInteractEvent.EntityInteractSpecific event) {
-        if (!event.getLevel().isClientSide) {
-            suppressInteractSwing(event.getEntity());
-        }
-    }
-
-    private static void suppressInteractSwing(Player player) {
-        SUPPRESS_INTERACT_SWING_TICK.put(player, player.tickCount);
-    }
-
-    private void spawnProjectile(Player player, ItemStack stack, InteractionHand hand) {
-        double xzoff = 2.0;
-        double yoff = 1.55;
-        BerthaHit lb = new BerthaHit(ChaosPersists.ENTITY_TYPE_BERTHA_HIT.get(), player, player.level());
-        lb.moveTo(
-                player.getX() - xzoff * Mth.sin(player.getYHeadRot() * Mth.DEG_TO_RAD),
-                player.getY() + yoff,
-                player.getZ() + xzoff * Mth.cos(player.getYHeadRot() * Mth.DEG_TO_RAD),
-                player.getYHeadRot(),
-                player.getXRot());
-        lb.aimFromShooter(player, 2.0);
-        if (this == ChaosPersists.MyRoyal) {
-            lb.setHitType(2);
-        }
-        if (this == ChaosPersists.MyHammy) {
-            lb.setHitType(3);
-        }
-        if (!lb.tryHitAlongPath()) {
-            player.level().addFreshEntity(lb);
-        }
-        stack.hurtAndBreak(
-                1,
-                player,
-                e -> e.broadcastBreakEvent(hand == InteractionHand.MAIN_HAND
-                        ? EquipmentSlot.MAINHAND
-                        : EquipmentSlot.OFFHAND));
     }
 
     public String getMaterialName() {
@@ -156,17 +115,25 @@ public class Bertha extends SwordItem {
     @Override
     public boolean hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
         stack.hurtAndBreak(1, attacker, e -> e.broadcastBreakEvent(EquipmentSlot.MAINHAND));
+        if (this == ChaosPersists.MyHammy && !attacker.level().isClientSide) {
+            attacker.level()
+                    .explode(
+                            null,
+                            target.getX(),
+                            target.getY(),
+                            target.getZ(),
+                            1.5f,
+                            true,
+                            attacker.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)
+                                    ? ExplosionInteraction.MOB
+                                    : ExplosionInteraction.NONE);
+        }
         return true;
     }
 
     @Override
     public int getUseDuration(ItemStack stack) {
         return 9000;
-    }
-
-    private static boolean isGirlfriendOrBoyfriend(Entity e) {
-        String n = e.getClass().getSimpleName();
-        return "Girlfriend".equals(n) || "Boyfriend".equals(n);
     }
 
     @Override

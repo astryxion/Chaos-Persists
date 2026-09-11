@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    { "id": "iceandfire:dragon_multipart", "required": false },
+    { "id": "iceandfire:multipart", "required": false },
+    { "id": "iceandfire:hydra_multipart", "required": false },
+    { "id": "iceandfire:cylcops_multipart", "required": false }
+  ]
+}

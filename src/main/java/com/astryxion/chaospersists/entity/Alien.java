@@ -412,6 +412,9 @@ public class Alien extends Monster {
         if (var4 == this) {
             return false;
         }
+        if (MyUtils.shouldSkipCombatTarget(this, var4)) {
+            return false;
+        }
         if (!var4.isAlive()) {
             return false;
         }

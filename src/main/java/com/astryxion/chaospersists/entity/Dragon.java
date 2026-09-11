@@ -1150,6 +1150,9 @@ public class Dragon extends TamableAnimal {
         if (par1EntityLiving == this) {
             return false;
         }
+        if (MyUtils.shouldSkipCombatTarget(this, par1EntityLiving)) {
+            return false;
+        }
         if (!par1EntityLiving.isAlive()) {
             return false;
         }
@@ -1765,15 +1768,6 @@ public class Dragon extends TamableAnimal {
                 }
                 return InteractionResult.sidedSuccess(this.level().isClientSide);
             }
-            if (!var2.isEmpty()
-                    && var2.is(Items.STICK)
-                    && (par1EntityPlayer.distanceToSqr(this) < 64.0
-                            || this.getBoundingBox().inflate(3.0).contains(par1EntityPlayer.position()))) {
-                if (!this.level().isClientSide) {
-                    this.setOrderedToSit(!this.isOrderedToSit());
-                }
-                return InteractionResult.sidedSuccess(this.level().isClientSide);
-            }
             if (!var2.isEmpty() && var2.is(Items.BEEF) && par1EntityPlayer.distanceToSqr(this) < 25.0) {
                 if (this.level().isClientSide) {
                     spawnTamingParticles(true);
@@ -1935,6 +1929,14 @@ public class Dragon extends TamableAnimal {
                     }
                 }
                 return InteractionResult.SUCCESS;
+            }
+            if (!var2.isEmpty()
+                    && (par1EntityPlayer.distanceToSqr(this) < 64.0
+                            || this.getBoundingBox().inflate(3.0).contains(par1EntityPlayer.position()))) {
+                if (!this.level().isClientSide) {
+                    this.setOrderedToSit(!this.isOrderedToSit());
+                }
+                return InteractionResult.sidedSuccess(this.level().isClientSide);
             }
         }
         return super.mobInteract(par1EntityPlayer, hand);

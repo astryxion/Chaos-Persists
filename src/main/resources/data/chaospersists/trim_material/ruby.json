@@ -1,0 +1,9 @@
+{
+  "asset_name": "cp_ruby",
+  "description": {
+    "color": "#C41E3A",
+    "translate": "trim_material.chaospersists.ruby"
+  },
+  "ingredient": "chaospersists:ruby",
+  "item_model_index": 1.1
+}

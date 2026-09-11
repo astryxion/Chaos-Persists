@@ -95,12 +95,13 @@ public class ModelTerribleTerror extends EntityModel<TerribleTerror> {
     @Override
     public void setupAnim(TerribleTerror entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
         float f2 = ageInTicks;
-        float newangle = Mth.cos(f2 * 1.3f * this.wingspeed) * (float) Math.PI * 0.25f;
-        this.Wing1.zRot = -2.0f + newangle;
-        this.Wing2.zRot = 2.0f - newangle;
-        newangle = Mth.cos(f2 * 0.3f * this.wingspeed) * (float) Math.PI * 0.1f;
+        boolean sitting = entity.isOrderedToSit() || entity.isInSittingPose();
+        float newangle = sitting ? 0.0f : Mth.cos(f2 * 1.3f * this.wingspeed) * (float) Math.PI * 0.25f;
+        this.Wing1.zRot = sitting ? -2.356194f : -2.0f + newangle;
+        this.Wing2.zRot = sitting ? 2.356194f : 2.0f - newangle;
+        newangle = sitting ? 0.0f : Mth.cos(f2 * 0.3f * this.wingspeed) * (float) Math.PI * 0.1f;
         this.Jaw.xRot = Mth.abs(newangle);
-        newangle = Mth.cos(f2 * 1.25f) * (float) Math.PI * 0.35f;
+        newangle = sitting ? 0.0f : Mth.cos(f2 * 1.25f) * (float) Math.PI * 0.35f;
         this.FL21.xRot = 0.349f + newangle;
         this.FL22.xRot = -0.296f + newangle;
         this.BL21.xRot = -0.349f - newangle;
@@ -109,20 +110,20 @@ public class ModelTerribleTerror extends EntityModel<TerribleTerror> {
         this.FL12.xRot = -0.296f - newangle;
         this.BL11.xRot = -0.349f + newangle;
         this.BL12.xRot = 0.174f + newangle;
-        this.Tail1.xRot = newangle = Mth.cos(f2 * 0.71f * this.wingspeed) * (float) Math.PI * 0.1f;
-        this.Tail1.yRot = newangle = Mth.cos(f2 * 0.77f * this.wingspeed) * (float) Math.PI * 0.1f;
+        this.Tail1.xRot = newangle = sitting ? 0.0f : Mth.cos(f2 * 0.71f * this.wingspeed) * (float) Math.PI * 0.1f;
+        this.Tail1.yRot = newangle = sitting ? 0.0f : Mth.cos(f2 * 0.77f * this.wingspeed) * (float) Math.PI * 0.1f;
         float dist = 6.0f;
         dist = dist * Mth.cos(this.Tail1.xRot);
         this.Tail2.y = this.Tail1.y - Mth.sin(this.Tail1.xRot) * dist;
         this.Tail2.x = this.Tail1.x + Mth.sin(this.Tail1.yRot) * dist;
-        this.Tail2.xRot = newangle = Mth.cos(f2 * 0.81f * this.wingspeed) * (float) Math.PI * 0.15f;
-        this.Tail2.yRot = newangle = Mth.cos(f2 * 0.87f * this.wingspeed) * (float) Math.PI * 0.15f;
+        this.Tail2.xRot = newangle = sitting ? 0.0f : Mth.cos(f2 * 0.81f * this.wingspeed) * (float) Math.PI * 0.15f;
+        this.Tail2.yRot = newangle = sitting ? 0.0f : Mth.cos(f2 * 0.87f * this.wingspeed) * (float) Math.PI * 0.15f;
         dist = 6.0f;
         dist = dist * Mth.cos(this.Tail2.xRot);
         this.Tail3.y = this.Tail4.y = this.Tail2.y - Mth.sin(this.Tail2.xRot) * dist;
         this.Tail3.x = this.Tail4.x = this.Tail2.x + Mth.sin(this.Tail2.yRot) * dist;
-        this.Tail3.xRot = this.Tail4.xRot = (newangle = Mth.cos(f2 * 0.91f * this.wingspeed) * (float) Math.PI * 0.2f);
-        this.Tail3.yRot = this.Tail4.yRot = (newangle = Mth.cos(f2 * 0.97f * this.wingspeed) * (float) Math.PI * 0.2f);
+        this.Tail3.xRot = this.Tail4.xRot = (newangle = sitting ? 0.0f : Mth.cos(f2 * 0.91f * this.wingspeed) * (float) Math.PI * 0.2f);
+        this.Tail3.yRot = this.Tail4.yRot = (newangle = sitting ? 0.0f : Mth.cos(f2 * 0.97f * this.wingspeed) * (float) Math.PI * 0.2f);
     }
 
     @Override

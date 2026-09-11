@@ -1624,5 +1624,9 @@
     "itemGroup.chaospersists.chaos_items": "Предметы хаоса",
     "itemGroup.chaospersists.chaos_mobs": "Мобы Chaos",
     "itemGroup.chaospersists.chaos_tools": "Инструменты хаоса",
-    "itemGroup.chaospersists.chaos_weapons": "Оружие Хаоса"
+    "itemGroup.chaospersists.chaos_weapons": "Оружие Хаоса",
+    "trim_material.chaospersists.ruby": "Рубиновый материал",
+    "trim_material.chaospersists.amethyst": "Аметистовый материал",
+    "trim_material.chaospersists.uranium": "Урановый материал",
+    "trim_material.chaospersists.titanium": "Титановый материал"
 }

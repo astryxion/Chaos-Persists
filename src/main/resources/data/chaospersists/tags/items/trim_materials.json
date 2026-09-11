@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "chaospersists:ruby",
+    "chaospersists:amethyst",
+    "chaospersists:ingoturanium",
+    "chaospersists:ingottitanium"
+  ]
+}

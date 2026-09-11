@@ -1,5 +1,7 @@
 package com.astryxion.chaospersists.item;
 
+import com.astryxion.chaospersists.compat.illageandspillage.IllageAndSpillageExecuteCompat;
+import com.astryxion.chaospersists.compat.mutantmonsters.MutantMonstersExecuteCompat;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.Entity;
@@ -44,6 +46,10 @@ public class ThunderBolt extends ThrowableProjectile {
             hit.hurt(this.damageSources().thrown(this, this.getOwner()), var2 / 2.0f);
             if (this.getOwner() instanceof LivingEntity thrower) {
                 hit.hurt(this.damageSources().mobAttack(thrower), var2 / 2.0f);
+            }
+            if (hit instanceof LivingEntity living) {
+                MutantMonstersExecuteCompat.forceExecuteIfDowned(living);
+                IllageAndSpillageExecuteCompat.forceExecuteIfDowned(living);
             }
             hit.setRemainingFireTicks(20);
         }

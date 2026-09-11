@@ -151,6 +151,7 @@ dependencies {
     runtimeOnly fg.deobf("mezz.jei:jei-1.20.1-forge:15.2.0.27")
 
     // Dev client/server only — WAILA-style block/entity inspector (not shipped in the mod jar)
+    compileOnly fg.deobf("maven.modrinth:jade:${jade_version}")
     runtimeOnly fg.deobf("maven.modrinth:jade:${jade_version}")
 
     // Example mod dependency using a mod jar from ./libs with a flat dir repository

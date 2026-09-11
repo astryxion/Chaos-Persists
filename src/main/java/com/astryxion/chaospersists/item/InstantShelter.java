@@ -6,22 +6,22 @@
  *  net.minecraftforge.fml.relauncher.SideOnly
  *  com.astryxion.chaospersists.InstantShelter
  *  com.astryxion.chaospersists.ChaosPersists
- *  com.astryxion.chaospersists.compat.minecraft.block.Block
- *  com.astryxion.chaospersists.compat.minecraft.block.BlockChest
+ *  com.astryxion.chaospersists.legacy.minecraft.block.Block
+ *  com.astryxion.chaospersists.legacy.minecraft.block.BlockChest
  *  net.minecraft.client.renderer.texture.IIconRegister
- *  com.astryxion.chaospersists.compat.minecraft.creativetab.CreativeTabs
+ *  com.astryxion.chaospersists.legacy.minecraft.creativetab.CreativeTabs
  *  net.minecraft.entity.Entity
  *  net.minecraft.entity.player.EntityPlayer
  *  net.minecraft.entity.player.PlayerCapabilities
- *  com.astryxion.chaospersists.compat.minecraft.init.Blocks
- *  com.astryxion.chaospersists.compat.minecraft.init.Items
+ *  com.astryxion.chaospersists.legacy.minecraft.init.Blocks
+ *  com.astryxion.chaospersists.legacy.minecraft.init.Items
  *  net.minecraft.item.Item
  *  net.minecraft.item.ItemEmptyMap
  *  net.minecraft.item.ItemStack
  *  net.minecraft.tileentity.TileEntity
  *  net.minecraft.tileentity.TileEntityChest
  *  net.minecraft.util.IIcon
- *  com.astryxion.chaospersists.compat.minecraft.world.World
+ *  com.astryxion.chaospersists.legacy.minecraft.world.World
  */
 package com.astryxion.chaospersists.item;
 

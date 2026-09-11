@@ -1,0 +1,9 @@
+{
+  "asset_name": "cp_titanium",
+  "description": {
+    "color": "#8A9BA8",
+    "translate": "trim_material.chaospersists.titanium"
+  },
+  "ingredient": "chaospersists:ingottitanium",
+  "item_model_index": 1.4
+}

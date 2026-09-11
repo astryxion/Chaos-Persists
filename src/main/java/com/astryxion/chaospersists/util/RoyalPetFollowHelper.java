@@ -4,6 +4,7 @@ import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.entity.Dragon;
 import com.astryxion.chaospersists.entity.Spyro;
 import com.astryxion.chaospersists.entity.Stinky;
+import com.astryxion.chaospersists.entity.TerribleTerror;
 import com.astryxion.chaospersists.entity.ThePrince;
 import com.astryxion.chaospersists.entity.ThePrinceAdult;
 import com.astryxion.chaospersists.entity.ThePrinceTeen;
@@ -53,6 +54,9 @@ public final class RoyalPetFollowHelper {
 
     /** Flyers that use activity/chaos flight — must not be force-warped onto ground. */
     public static boolean isChaosFlyerPet(TamableAnimal pet) {
+        if (pet instanceof TerribleTerror terror) {
+            return terror.isTame() && !isStayingPut(terror);
+        }
         if (pet instanceof Stinky stinky) {
             return stinky.getActivity() == 2;
         }
@@ -146,6 +150,12 @@ public final class RoyalPetFollowHelper {
         }
     }
 
+    /**
+     * 20 blocks: outside normal owner-orbit waypoints. Flying royals skip
+     * {@code MyEntityAIFollowOwner}, so they must warp themselves when you run.
+     */
+    private static final double FLYING_CATCHUP_DIST_SQ = 400.0;
+
     /** Teleport only when the owner is in another dimension (does not affect in-flight movement). */
     public static void syncDimensionOnly(TamableAnimal pet) {
         if (pet.level().isClientSide
@@ -164,6 +174,38 @@ public final class RoyalPetFollowHelper {
             return;
         }
         teleportNearOwner(pet, owner);
+    }
+
+    /**
+     * Dimension catch-up plus same-world warp while flying. Follow-owner AI is disabled during
+     * chaos flight, which is why prince/princess used to keep the boss fight after you fled.
+     */
+    public static void syncRoyalFollow(TamableAnimal pet) {
+        syncDimensionOnly(pet);
+        catchUpFlyingRoyal(pet);
+    }
+
+    public static boolean catchUpFlyingRoyal(TamableAnimal pet) {
+        if (pet.level().isClientSide
+                || !pet.isAlive()
+                || pet.isRemoved()
+                || !pet.isTame()
+                || isStayingPut(pet)
+                || !(isRoyalPet(pet) || pet instanceof Stinky || pet instanceof TerribleTerror)
+                || !pet.getPassengers().isEmpty()) {
+            return false;
+        }
+        if (!MyUtils.isPrinceFlying(pet)) {
+            return false;
+        }
+        LivingEntity owner = pet.getOwner();
+        if (owner == null || pet.level() != owner.level()) {
+            return false;
+        }
+        if (pet.distanceToSqr(owner) < FLYING_CATCHUP_DIST_SQ) {
+            return false;
+        }
+        return teleportNearOwner(pet, owner);
     }
 
     /**

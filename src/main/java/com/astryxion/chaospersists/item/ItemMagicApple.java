@@ -8,14 +8,14 @@
  *  com.astryxion.chaospersists.ChaosPersists
  *  com.astryxion.chaospersists.TheKing
  *  com.astryxion.chaospersists.TheQueen
- *  com.astryxion.chaospersists.compat.minecraft.block.Block
- *  com.astryxion.chaospersists.compat.minecraft.block.BlockChest
- *  com.astryxion.chaospersists.compat.minecraft.block.BlockFlower
- *  com.astryxion.chaospersists.compat.minecraft.block.BlockGrass
- *  com.astryxion.chaospersists.compat.minecraft.block.BlockLeaves
- *  com.astryxion.chaospersists.compat.minecraft.block.BlockTallGrass
+ *  com.astryxion.chaospersists.legacy.minecraft.block.Block
+ *  com.astryxion.chaospersists.legacy.minecraft.block.BlockChest
+ *  com.astryxion.chaospersists.legacy.minecraft.block.BlockFlower
+ *  com.astryxion.chaospersists.legacy.minecraft.block.BlockGrass
+ *  com.astryxion.chaospersists.legacy.minecraft.block.BlockLeaves
+ *  com.astryxion.chaospersists.legacy.minecraft.block.BlockTallGrass
  *  net.minecraft.client.renderer.texture.IIconRegister
- *  com.astryxion.chaospersists.compat.minecraft.creativetab.CreativeTabs
+ *  com.astryxion.chaospersists.legacy.minecraft.creativetab.CreativeTabs
  *  net.minecraft.enchantment.Enchantment
  *  net.minecraft.enchantment.EnchantmentHelper
  *  net.minecraft.entity.Entity
@@ -23,8 +23,8 @@
  *  net.minecraft.entity.EntityLiving
  *  net.minecraft.entity.player.EntityPlayer
  *  net.minecraft.entity.player.PlayerCapabilities
- *  com.astryxion.chaospersists.compat.minecraft.init.Blocks
- *  com.astryxion.chaospersists.compat.minecraft.init.Items
+ *  com.astryxion.chaospersists.legacy.minecraft.init.Blocks
+ *  com.astryxion.chaospersists.legacy.minecraft.init.Items
  *  net.minecraft.inventory.IInventory
  *  net.minecraft.item.Item
  *  net.minecraft.item.ItemArmor
@@ -34,8 +34,8 @@
  *  net.minecraft.tileentity.TileEntityChest
  *  net.minecraft.util.IIcon
  *  net.minecraft.util.WeightedRandomChestContent
- *  com.astryxion.chaospersists.compat.minecraft.world.World
- *  com.astryxion.chaospersists.compat.minecraft.world.chunk.Chunk
+ *  com.astryxion.chaospersists.legacy.minecraft.world.World
+ *  com.astryxion.chaospersists.legacy.minecraft.world.chunk.Chunk
  */
 package com.astryxion.chaospersists.item;
 

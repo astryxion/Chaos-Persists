@@ -1,6 +1,6 @@
 package com.astryxion.chaospersists.world.dimension.chunkgenerator;
 
-import com.astryxion.chaospersists.compat.minecraft.world.gen.NoiseGeneratorOctaves;
+import com.astryxion.chaospersists.legacy.minecraft.world.gen.NoiseGeneratorOctaves;
 import java.util.Random;
 
 /** 1.12 {@code ChunkProviderChaos6#initializeNoiseField}. */

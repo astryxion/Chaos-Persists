@@ -2,5 +2,91 @@
   "parent": "item/generated",
   "textures": {
     "layer0": "chaospersists:item/ruby_leggings"
-  }
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "trim_type": 0.1
+      },
+      "model": "chaospersists:item/ruby_leggings_quartz_trim"
+    },
+    {
+      "predicate": {
+        "trim_type": 0.2
+      },
+      "model": "chaospersists:item/ruby_leggings_iron_trim"
+    },
+    {
+      "predicate": {
+        "trim_type": 0.3
+      },
+      "model": "chaospersists:item/ruby_leggings_netherite_trim"
+    },
+    {
+      "predicate": {
+        "trim_type": 0.4
+      },
+      "model": "chaospersists:item/ruby_leggings_redstone_trim"
+    },
+    {
+      "predicate": {
+        "trim_type": 0.5
+      },
+      "model": "chaospersists:item/ruby_leggings_copper_trim"
+    },
+    {
+      "predicate": {
+        "trim_type": 0.6
+      },
+      "model": "chaospersists:item/ruby_leggings_gold_trim"
+    },
+    {
+      "predicate": {
+        "trim_type": 0.7
+      },
+      "model": "chaospersists:item/ruby_leggings_emerald_trim"
+    },
+    {
+      "predicate": {
+        "trim_type": 0.8
+      },
+      "model": "chaospersists:item/ruby_leggings_diamond_trim"
+    },
+    {
+      "predicate": {
+        "trim_type": 0.9
+      },
+      "model": "chaospersists:item/ruby_leggings_lapis_trim"
+    },
+    {
+      "predicate": {
+        "trim_type": 1.0
+      },
+      "model": "chaospersists:item/ruby_leggings_amethyst_trim"
+    },
+    {
+      "predicate": {
+        "trim_type": 1.1
+      },
+      "model": "chaospersists:item/ruby_leggings_cp_ruby_trim"
+    },
+    {
+      "predicate": {
+        "trim_type": 1.2
+      },
+      "model": "chaospersists:item/ruby_leggings_cp_amethyst_trim"
+    },
+    {
+      "predicate": {
+        "trim_type": 1.3
+      },
+      "model": "chaospersists:item/ruby_leggings_cp_uranium_trim"
+    },
+    {
+      "predicate": {
+        "trim_type": 1.4
+      },
+      "model": "chaospersists:item/ruby_leggings_cp_titanium_trim"
+    }
+  ]
 }

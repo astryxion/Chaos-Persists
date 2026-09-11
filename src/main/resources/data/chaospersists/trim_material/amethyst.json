@@ -1,0 +1,9 @@
+{
+  "asset_name": "cp_amethyst",
+  "description": {
+    "color": "#8B4FC9",
+    "translate": "trim_material.chaospersists.amethyst"
+  },
+  "ingredient": "chaospersists:amethyst",
+  "item_model_index": 1.2
+}

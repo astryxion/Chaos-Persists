@@ -250,7 +250,7 @@ public class WormLarge extends Monster {
                 this.doHurtTarget(target);
                 if (this.getRandom().nextInt(4) == 1) {
                     boots = target.getItemBySlot(EquipmentSlot.FEET);
-                    if (!boots.isEmpty()) {
+                    if (MyUtils.canMobStripItem(boots)) {
                         target.setItemSlot(EquipmentSlot.FEET, ItemStack.EMPTY);
                         bid = boots.getMaxDamage() - boots.getDamageValue();
                         bid = bid > 10 ? bid / 10 : 1;
@@ -269,7 +269,7 @@ public class WormLarge extends Monster {
                         this.level().addFreshEntity(dropped);
                     } else {
                         boots = target.getItemBySlot(EquipmentSlot.LEGS);
-                        if (!boots.isEmpty()) {
+                        if (MyUtils.canMobStripItem(boots)) {
                             target.setItemSlot(EquipmentSlot.LEGS, ItemStack.EMPTY);
                             bid = boots.getMaxDamage() - boots.getDamageValue();
                             bid = bid > 10 ? bid / 10 : 1;
@@ -290,7 +290,7 @@ public class WormLarge extends Monster {
                     }
                 }
                 if (this.getRandom().nextInt(4) == 1
-                        && !(boots = target.getItemBySlot(EquipmentSlot.MAINHAND)).isEmpty()) {
+                        && MyUtils.canMobStripItem(boots = target.getItemBySlot(EquipmentSlot.MAINHAND))) {
                     target.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
                     bid = boots.getMaxDamage() - boots.getDamageValue();
                     bid = bid > 10 ? bid / 10 : 1;

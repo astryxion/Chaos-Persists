@@ -25,6 +25,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -90,9 +91,19 @@ public class TrooperBug extends Monster {
     }
 
     @Override
+    public MobType getMobType() {
+        return MobType.ARTHROPOD;
+    }
+
+    @Override
     protected void defineSynchedData() {
         super.defineSynchedData();
         this.entityData.define(ATTACKING, (byte) 0);
+    }
+
+    @Override
+    public int getArmorValue() {
+        return ChaosPersists.TrooperBug_stats.defense;
     }
 
     @Override
@@ -562,6 +573,9 @@ public class TrooperBug extends Monster {
             return false;
         }
         if (entity == this) {
+            return false;
+        }
+        if (MyUtils.shouldSkipCombatTarget(this, entity)) {
             return false;
         }
         if (!entity.isAlive()) {

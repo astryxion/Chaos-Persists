@@ -1,0 +1,9 @@
+{
+  "asset_name": "cp_uranium",
+  "description": {
+    "color": "#A4C639",
+    "translate": "trim_material.chaospersists.uranium"
+  },
+  "ingredient": "chaospersists:ingoturanium",
+  "item_model_index": 1.3
+}

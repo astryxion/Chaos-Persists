@@ -20,6 +20,7 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
@@ -68,6 +69,11 @@ public class Brutalfly extends Monster {
                 .add(Attributes.MOVEMENT_SPEED, (double) 0.35f)
                 .add(Attributes.ATTACK_DAMAGE, (double) ChaosPersists.Brutalfly_stats.attack)
                 .add(Attributes.ARMOR, (double) ChaosPersists.Brutalfly_stats.defense);
+    }
+
+    @Override
+    public MobType getMobType() {
+        return MobType.ARTHROPOD;
     }
 
     @Override
@@ -594,6 +600,9 @@ public class Brutalfly extends Monster {
             return false;
         }
         if (par1EntityLiving == this) {
+            return false;
+        }
+        if (MyUtils.shouldSkipCombatTarget(this, par1EntityLiving)) {
             return false;
         }
         if (!par1EntityLiving.isAlive()) {

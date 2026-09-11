@@ -24,6 +24,12 @@ import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.goal.FloatGoal;
+import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
+import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
+import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
+import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
+import com.astryxion.chaospersists.util.ChaosHurtByTargetGoal;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -49,7 +55,7 @@ public class EnderReaper extends Monster {
             new AttributeModifier(
                     ATTACKING_SPEED_BOOST_UUID,
                     "Attacking speed boost",
-                    6.199999809265137,
+                    0.15000000596046448,
                     AttributeModifier.Operation.ADDITION);
     private int teleportDelay;
     private int stareTimer;
@@ -65,7 +71,18 @@ public class EnderReaper extends Monster {
                 .add(Attributes.MAX_HEALTH, (double) ChaosPersists.EnderReaper_stats.health)
                 .add(Attributes.MOVEMENT_SPEED, 0.37)
                 .add(Attributes.ATTACK_DAMAGE, (double) ChaosPersists.EnderReaper_stats.attack)
-                .add(Attributes.ARMOR, (double) ChaosPersists.EnderReaper_stats.defense);
+                .add(Attributes.ARMOR, (double) ChaosPersists.EnderReaper_stats.defense)
+                .add(Attributes.FOLLOW_RANGE, 81.0);
+    }
+
+    @Override
+    protected void registerGoals() {
+        this.goalSelector.addGoal(0, new FloatGoal(this));
+        this.goalSelector.addGoal(2, new MeleeAttackGoal(this, 1.0, false));
+        this.goalSelector.addGoal(7, new WaterAvoidingRandomStrollGoal(this, 1.0));
+        this.goalSelector.addGoal(8, new LookAtPlayerGoal(this, Player.class, 8.0F));
+        this.goalSelector.addGoal(8, new RandomLookAroundGoal(this));
+        this.targetSelector.addGoal(1, new ChaosHurtByTargetGoal(this));
     }
 
     @Override
@@ -117,34 +134,59 @@ public class EnderReaper extends Monster {
             this.teleportRandomly();
         }
         LivingEntity target = this.getTarget();
-        if (target != null) {
-            MyUtils.faceEntity(this, target, 100.0f, 100.0f);
-        }
         if (!this.level().isClientSide && this.isAlive()) {
-            if (target != null) {
-                if (target instanceof Player player && this.shouldAttackPlayer(player)) {
-                    if (this.distanceToSqr(target) < 16.0) {
-                        this.teleportRandomly();
-                    }
-                    this.teleportDelay = 0;
-                } else if (this.distanceToSqr(target) > 256.0
-                        && this.teleportDelay++ >= 30
-                        && this.teleportToEntity(target)) {
-                    this.teleportDelay = 0;
-                }
-            } else {
-                this.setScreaming(false);
-                this.teleportDelay = 0;
-            }
+            this.updateEnderCombatMovement(target);
         }
         super.tick();
+    }
+
+    private void updateEnderCombatMovement(LivingEntity target) {
+        if (target == null) {
+            this.setScreaming(false);
+            this.teleportDelay = 0;
+            return;
+        }
+        boolean staredAt = target instanceof Player player && this.shouldAttackPlayer(player);
+        boolean revenge = this.getLastHurtByMob() == target;
+        if (staredAt && !revenge && this.distanceToSqr(target) < 16.0) {
+            if (this.teleportDelay <= 0 && this.teleportRandomly()) {
+                this.getNavigation().stop();
+                this.teleportDelay = 40;
+            } else if (this.teleportDelay > 0) {
+                --this.teleportDelay;
+            }
+            return;
+        }
+        if (this.distanceToSqr(target) > 256.0
+                && this.teleportDelay++ >= 30
+                && this.teleportToEntity(target)) {
+            this.getNavigation().stop();
+            this.teleportDelay = 0;
+        }
     }
 
     @Override
     protected void customServerAiStep() {
         super.customServerAiStep();
-        Player player = this.findPlayerToAttack();
-        this.setTarget(player);
+        LivingEntity current = this.getTarget();
+        if (current != null
+                && (!current.isAlive()
+                        || !MyUtils.isValidAggroTarget(current)
+                        || MyUtils.shouldSkipCombatTarget(this, current))) {
+            this.setTarget(null);
+            current = null;
+        }
+        if (current == null) {
+            LivingEntity revenge = this.getLastHurtByMob();
+            if (revenge != null
+                    && revenge.isAlive()
+                    && MyUtils.isValidAggroTarget(revenge)
+                    && !MyUtils.shouldSkipCombatTarget(this, revenge)) {
+                this.setTarget(revenge);
+            } else {
+                this.setTarget(this.findPlayerToAttack());
+            }
+        }
     }
 
     protected Player findPlayerToAttack() {
@@ -179,6 +221,9 @@ public class EnderReaper extends Monster {
     }
 
     private boolean shouldAttackPlayer(Player par1EntityPlayer) {
+        if (MyUtils.shouldSkipCombatTarget(this, par1EntityPlayer)) {
+            return false;
+        }
         ItemStack itemstack = par1EntityPlayer.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.HEAD);
         if (!itemstack.isEmpty() && itemstack.is(Blocks.CARVED_PUMPKIN.asItem())) {
             return false;
@@ -346,9 +391,18 @@ public class EnderReaper extends Monster {
                     return true;
                 }
             }
-            return super.hurt(par1DamageSource, par2);
         }
-        return super.hurt(par1DamageSource, par2);
+        boolean hurt = super.hurt(par1DamageSource, par2);
+        if (hurt) {
+            Entity attacker = par1DamageSource.getEntity();
+            if (attacker instanceof LivingEntity living
+                    && living != this
+                    && MyUtils.isValidAggroTarget(living)
+                    && !MyUtils.shouldSkipCombatTarget(this, living)) {
+                this.setTarget(living);
+            }
+        }
+        return hurt;
     }
 
     public static boolean checkEnderReaperSpawnRules(

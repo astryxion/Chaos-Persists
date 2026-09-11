@@ -2,6 +2,7 @@ package com.astryxion.chaospersists.item;
 
 import com.astryxion.chaospersists.util.MyUtils;
 import com.astryxion.chaospersists.util.ChaosChaseMoveControl;
+import com.astryxion.chaospersists.util.ChaosHurtByTargetGoal;
 
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.entity.Boyfriend;
@@ -73,6 +74,7 @@ public class BandP extends Monster {
         this.goalSelector.addGoal(2, new LookAtPlayerGoal(this, Player.class, 10.0f));
         this.goalSelector.addGoal(3, new RandomLookAroundGoal(this));
         this.goalSelector.addGoal(4, new OpenDoorGoal(this, true));
+        this.targetSelector.addGoal(1, new ChaosHurtByTargetGoal(this));
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -210,6 +212,10 @@ public class BandP extends Monster {
         super.customServerAiStep();
         if (this.getRandom().nextInt(12) == 1) {
             LivingEntity e = this.findSomethingToAttack();
+            LivingEntity revenge = this.getLastHurtByMob();
+            if (revenge != null && this.isSuitableTarget(revenge)) {
+                e = revenge;
+            }
             if (e != null) {
                 this.setTarget(e);
                 double reach = 3.0 + (double) (this.getBbWidth() + e.getBbWidth()) * 0.5;
@@ -228,7 +234,7 @@ public class BandP extends Monster {
                         }
                         if (k >= 0) {
                             for (int i = p.getInventory().armor.size() - 1; i >= 0; --i) {
-                                if (!p.getInventory().armor.get(i).isEmpty()) {
+                                if (MyUtils.canMobStripItem(p.getInventory().armor.get(i))) {
                                     kp = i;
                                     break;
                                 }
@@ -267,6 +273,9 @@ public class BandP extends Monster {
         if (par1EntityLiving == this) {
             return false;
         }
+        if (MyUtils.shouldSkipCombatTarget(this, par1EntityLiving)) {
+            return false;
+        }
         if (!par1EntityLiving.isAlive()) {
             return false;
         }
@@ -282,6 +291,9 @@ public class BandP extends Monster {
             return true;
         }
         if (par1EntityLiving instanceof Villager) {
+            return true;
+        }
+        if (MyUtils.isVillageCombatTarget(par1EntityLiving)) {
             return true;
         }
         if (par1EntityLiving instanceof Girlfriend) {

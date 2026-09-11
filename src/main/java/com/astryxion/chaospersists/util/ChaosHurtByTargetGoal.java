@@ -18,7 +18,9 @@ public class ChaosHurtByTargetGoal extends HurtByTargetGoal {
     @Override
     public boolean canUse() {
         LivingEntity attacker = this.mob.getLastHurtByMob();
-        if (!MyUtils.isValidAggroTarget(attacker) || MyUtils.isRoyalty(attacker)) {
+        if (!MyUtils.isValidAggroTarget(attacker)
+                || MyUtils.isRoyalty(attacker)
+                || MyUtils.shouldSkipCombatTarget(this.mob, attacker)) {
             return false;
         }
         return super.canUse();
@@ -26,7 +28,9 @@ public class ChaosHurtByTargetGoal extends HurtByTargetGoal {
 
     @Override
     protected void alertOther(Mob mob, LivingEntity target) {
-        if (!MyUtils.isValidAggroTarget(target) || MyUtils.isRoyalty(target)) {
+        if (!MyUtils.isValidAggroTarget(target)
+                || MyUtils.isRoyalty(target)
+                || MyUtils.shouldSkipCombatTarget(mob, target)) {
             return;
         }
         super.alertOther(mob, target);

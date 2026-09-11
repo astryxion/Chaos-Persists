@@ -216,7 +216,7 @@ public class WormSmall extends Monster {
                 ItemStack boots;
                 this.doHurtTarget(target);
                 if (this.getRandom().nextInt(6) == 1
-                        && !(boots = target.getItemBySlot(EquipmentSlot.FEET)).isEmpty()) {
+                        && MyUtils.canMobStripItem(boots = target.getItemBySlot(EquipmentSlot.FEET))) {
                     target.setItemSlot(EquipmentSlot.FEET, ItemStack.EMPTY);
                     bid = boots.getMaxDamage() - boots.getDamageValue();
                     bid = bid > 20 ? (bid /= 20) : 1;

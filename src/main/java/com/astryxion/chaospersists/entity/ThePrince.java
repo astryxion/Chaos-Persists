@@ -389,6 +389,22 @@ public class ThePrince extends TamableAnimal {
         this.day_count = 0;
     }
 
+    public int getPrinceKillCount() {
+        return this.kill_count;
+    }
+
+    public int getPrinceFedCount() {
+        return this.fed_count;
+    }
+
+    public int getPrinceDayCount() {
+        return this.day_count;
+    }
+
+    public boolean isPrinceGrowthItemFed() {
+        return this.ok_to_grow != 0;
+    }
+
     public boolean isWheat(ItemStack par1ItemStack) {
         return !par1ItemStack.isEmpty() && par1ItemStack.is(Items.BEEF);
     }
@@ -629,7 +645,7 @@ public class ThePrince extends TamableAnimal {
 
         PetCombatHelper.tickPetCombat(this);
         if (this.isTame() && !RoyalPetFollowHelper.isStayingPut(this)) {
-            RoyalPetFollowHelper.syncDimensionOnly(this);
+            RoyalPetFollowHelper.syncRoyalFollow(this);
         }
 
         if (this.getRandom().nextInt(200) == 1) {
@@ -688,7 +704,10 @@ public class ThePrince extends TamableAnimal {
             this.doMovement();
         }
 
-        if (this.kill_count > 25 && this.fed_count > 10 && this.day_count > 10) {
+        if ((ChaosPersists.PrinceAutoGrow != 0 || this.ok_to_grow != 0)
+                && this.kill_count > 25
+                && this.fed_count > 10
+                && this.day_count > 10) {
             Entity ent =
                     spawnCreature(
                             this.level(),
@@ -763,12 +782,16 @@ public class ThePrince extends TamableAnimal {
             if (this.isTame() && this.getHealth() / (float) this.mygetMaxHealth() < 0.25f) {
                 this.setActivity(2);
                 this.setAttacking(0);
-                do_new = false;
-                this.currentFlightTarget =
-                        new BlockPos(
-                                (int) (this.getX() + (this.getX() - e.getX())),
-                                (int) (this.getY() + 1.0),
-                                (int) (this.getZ() + (this.getZ() - e.getZ())));
+                // 1.7.10: orbit the owner when hurt. Fly-away-from-enemy every tick with
+                // noPhysics sent them through walls in a straight line.
+                do_new = has_owner;
+                if (!has_owner) {
+                    this.currentFlightTarget =
+                            new BlockPos(
+                                    (int) (this.getX() + (this.getX() - e.getX())),
+                                    (int) (this.getY() + 1.0),
+                                    (int) (this.getZ() + (this.getZ() - e.getZ())));
+                }
             } else {
                 this.setActivity(2);
                 this.setAttacking(1);
@@ -837,6 +860,12 @@ public class ThePrince extends TamableAnimal {
             }
         } else {
             this.setAttacking(0);
+            if (this.isTame()
+                    && has_owner
+                    && this.getHealth() / (float) this.mygetMaxHealth() < 0.25f) {
+                this.setActivity(2);
+                do_new = true;
+            }
         }
         if (this.activity == 1) {
             MyUtils.clearChaosFlight(this);
@@ -929,6 +958,9 @@ public class ThePrince extends TamableAnimal {
             return false;
         }
         if (par1EntityLiving == this) {
+            return false;
+        }
+        if (MyUtils.shouldSkipCombatTarget(this, par1EntityLiving)) {
             return false;
         }
         if (!par1EntityLiving.isAlive()) {

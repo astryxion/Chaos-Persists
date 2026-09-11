@@ -28,6 +28,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -95,6 +96,11 @@ public class EmperorScorpion extends Monster {
     }
 
     @Override
+    public MobType getMobType() {
+        return MobType.ARTHROPOD;
+    }
+
+    @Override
     protected void defineSynchedData() {
         super.defineSynchedData();
         this.entityData.define(ATTACKING, (byte) 0);
@@ -103,6 +109,11 @@ public class EmperorScorpion extends Monster {
     @Override
     public boolean fireImmune() {
         return true;
+    }
+
+    @Override
+    public int getArmorValue() {
+        return ChaosPersists.EmperorScorpion_stats.defense;
     }
 
     @Override
@@ -558,6 +569,9 @@ public class EmperorScorpion extends Monster {
             return false;
         }
         if (entity == this) {
+            return false;
+        }
+        if (MyUtils.shouldSkipCombatTarget(this, entity)) {
             return false;
         }
         if (!entity.isAlive()) {

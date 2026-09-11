@@ -12,9 +12,12 @@ import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
+import com.astryxion.chaospersists.compat.eeeabsmobs.EeeabsMobsCompat;
 import com.astryxion.chaospersists.entity.Boyfriend;
 import com.astryxion.chaospersists.entity.Girlfriend;
 import com.astryxion.chaospersists.entity.Mothra;
+import com.astryxion.chaospersists.entity.Stinky;
+import com.astryxion.chaospersists.entity.TerribleTerror;
 
 /**
  * Owner-assist combat for all Chaos Persists attack-capable tameables (including Girlfriend /
@@ -53,6 +56,9 @@ public final class PetCombatHelper {
             return false;
         }
         if (!MyUtils.isValidAggroTarget(target)) {
+            return false;
+        }
+        if (MyUtils.shouldSkipCombatTarget(pet, target)) {
             return false;
         }
         if (MyUtils.isRoyalty(target)) {
@@ -95,12 +101,64 @@ public final class PetCombatHelper {
         return target instanceof Girlfriend || target instanceof Boyfriend;
     }
 
+    /**
+     * 16 blocks: OreSpawn 1.7.10 princess walking→fly follow, and “owner fled this fight”.
+     * Royals with noPhysics flight must drop combat here or they chase the boss forever.
+     */
+    private static final double ROYAL_OWNER_FLED_DIST_SQ = 256.0;
+
     /** Keep fighting a live, legal target (including owner-assist deer/bosses). */
     public static boolean shouldRetainTarget(TamableAnimal pet, @Nullable LivingEntity target) {
         if (RoyalPetFollowHelper.isStayingPut(pet)) {
             return false;
         }
         return wantsPetToAttack(pet, target);
+    }
+
+    /** Royals and Stinky: airborne pets whose FollowOwner AI is off while flying. */
+    private static boolean usesOwnerFledCombat(TamableAnimal pet) {
+        return RoyalPetFollowHelper.isRoyalPet(pet)
+                || pet instanceof Stinky
+                || pet instanceof TerribleTerror;
+    }
+
+    /**
+     * Stop fighting when the owner has fled, left the dimension, or the pet is below 25% health.
+     * Other enhanced-targeting pets are unchanged.
+     */
+    public static boolean shouldRoyalAbandonCombat(TamableAnimal pet) {
+        if (!pet.isTame() || !usesOwnerFledCombat(pet)) {
+            return false;
+        }
+        if (RoyalPetFollowHelper.isStayingPut(pet)) {
+            return true;
+        }
+        if (pet.getMaxHealth() > 0.0f && pet.getHealth() / pet.getMaxHealth() < 0.25f) {
+            return true;
+        }
+        LivingEntity owner = pet.getOwner();
+        if (owner == null) {
+            return false;
+        }
+        if (pet.level() != owner.level()) {
+            return true;
+        }
+        return pet.distanceToSqr(owner) > ROYAL_OWNER_FLED_DIST_SQ;
+    }
+
+    /**
+     * After the owner has retreated, do not auto-hunt a leftover boss that is still in the pet's
+     * search box. Owner-assist (the player hitting something) still pulls them back in.
+     */
+    private static boolean isRoyalAutoHuntNearOwner(TamableAnimal pet, @Nullable LivingEntity target) {
+        if (target == null || !usesOwnerFledCombat(pet) || !pet.isTame()) {
+            return true;
+        }
+        LivingEntity owner = pet.getOwner();
+        if (owner == null) {
+            return true;
+        }
+        return target.distanceToSqr(owner) <= ROYAL_OWNER_FLED_DIST_SQ;
     }
 
     /**
@@ -164,6 +222,14 @@ public final class PetCombatHelper {
             SEEN_OWNER_COMBAT.put(pet.getUUID(), new int[] {owner.getLastHurtMobTimestamp(), hurtByTs});
             return ownerAttacker;
         }
+        LivingEntity eeeab = EeeabsMobsCompat.findOwnerAssistAttacker(owner);
+        if (wantsPetToAttack(pet, eeeab)) {
+            return eeeab;
+        }
+        LivingEntity retaliate = pet.getLastHurtByMob();
+        if (EeeabsMobsCompat.isCombatMob(retaliate) && wantsPetToAttack(pet, retaliate)) {
+            return retaliate;
+        }
         return null;
     }
 
@@ -178,6 +244,11 @@ public final class PetCombatHelper {
             syncOwnerAssistSeen(pet);
             return null;
         }
+        if (shouldRoyalAbandonCombat(pet)) {
+            // Forget the owner's last hit so catching up next to you does not resume the boss.
+            syncOwnerAssistSeen(pet);
+            return null;
+        }
         if (shouldRetainTarget(pet, current)) {
             return current;
         }
@@ -188,7 +259,11 @@ public final class PetCombatHelper {
         if (pet.level().getDifficulty() == net.minecraft.world.Difficulty.PEACEFUL) {
             return null;
         }
-        return findAutoHunt.get();
+        LivingEntity hunt = findAutoHunt.get();
+        if (!isRoyalAutoHuntNearOwner(pet, hunt)) {
+            return null;
+        }
+        return hunt;
     }
 
     /** Predicate for {@link net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal}. */

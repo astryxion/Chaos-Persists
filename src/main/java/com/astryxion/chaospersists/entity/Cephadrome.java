@@ -15,7 +15,7 @@
  *  com.astryxion.chaospersists.ChaosPersists
  *  com.astryxion.chaospersists.RenderInfo
  *  com.astryxion.chaospersists.WaterDragon
- *  com.astryxion.chaospersists.compat.minecraft.block.Block
+ *  com.astryxion.chaospersists.legacy.minecraft.block.Block
  *  net.minecraft.enchantment.Enchantment
  *  net.minecraft.entity.DataWatcher
  *  net.minecraft.entity.Entity
@@ -41,8 +41,8 @@
  *  net.minecraft.entity.player.Player
  *  net.minecraft.entity.player.InventoryPlayer
  *  net.minecraft.entity.player.PlayerCapabilities
- *  com.astryxion.chaospersists.compat.minecraft.init.Blocks
- *  com.astryxion.chaospersists.compat.minecraft.init.Items
+ *  com.astryxion.chaospersists.legacy.minecraft.init.Blocks
+ *  com.astryxion.chaospersists.legacy.minecraft.init.Items
  *  net.minecraft.item.Item
  *  net.minecraft.item.ItemStack
  *  net.minecraft.nbt.NBTTagCompound
@@ -50,12 +50,12 @@
  *  net.minecraft.tileentity.MobSpawnerBaseLogic
  *  net.minecraft.tileentity.TileEntity
  *  net.minecraft.tileentity.SpawnerBlockEntity
- *  com.astryxion.chaospersists.compat.minecraft.util.math.AxisAlignedBB
+ *  com.astryxion.chaospersists.legacy.minecraft.util.math.AxisAlignedBB
  *  net.minecraft.util.DamageSource
  *  net.minecraft.util.MathHelper
  *  net.minecraft.world.EnumDifficulty
  *  net.minecraft.world.Explosion
- *  com.astryxion.chaospersists.compat.minecraft.world.World
+ *  com.astryxion.chaospersists.legacy.minecraft.world.World
  */
 package com.astryxion.chaospersists.entity;
 
@@ -1038,6 +1038,9 @@ public class Cephadrome extends PathfinderMob {
             return false;
         }
         if (par1EntityLiving == this) {
+            return false;
+        }
+        if (MyUtils.shouldSkipCombatTarget(this, par1EntityLiving)) {
             return false;
         }
         if (!par1EntityLiving.isAlive()) {

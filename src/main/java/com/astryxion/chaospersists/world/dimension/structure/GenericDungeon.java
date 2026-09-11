@@ -7,25 +7,25 @@
  *  com.astryxion.chaospersists.ItemChaosArmor
  *  com.astryxion.chaospersists.OreGenericEgg
  *  com.astryxion.chaospersists.ChaosPersists
- *  com.astryxion.chaospersists.compat.minecraft.block.Block
- *  com.astryxion.chaospersists.compat.minecraft.block.BlockBush
- *  com.astryxion.chaospersists.compat.minecraft.block.BlockChest
- *  com.astryxion.chaospersists.compat.minecraft.block.BlockDeadBush
- *  com.astryxion.chaospersists.compat.minecraft.block.BlockFire
- *  com.astryxion.chaospersists.compat.minecraft.block.BlockFlower
- *  com.astryxion.chaospersists.compat.minecraft.block.BlockGrass
- *  com.astryxion.chaospersists.compat.minecraft.block.BlockLeaves
- *  com.astryxion.chaospersists.compat.minecraft.block.BlockLiquid
- *  com.astryxion.chaospersists.compat.minecraft.block.BlockPistonBase
- *  com.astryxion.chaospersists.compat.minecraft.block.BlockPistonMoving
- *  com.astryxion.chaospersists.compat.minecraft.block.BlockSand
- *  com.astryxion.chaospersists.compat.minecraft.block.BlockSlab
- *  com.astryxion.chaospersists.compat.minecraft.block.BlockTallGrass
+ *  com.astryxion.chaospersists.legacy.minecraft.block.Block
+ *  com.astryxion.chaospersists.legacy.minecraft.block.BlockBush
+ *  com.astryxion.chaospersists.legacy.minecraft.block.BlockChest
+ *  com.astryxion.chaospersists.legacy.minecraft.block.BlockDeadBush
+ *  com.astryxion.chaospersists.legacy.minecraft.block.BlockFire
+ *  com.astryxion.chaospersists.legacy.minecraft.block.BlockFlower
+ *  com.astryxion.chaospersists.legacy.minecraft.block.BlockGrass
+ *  com.astryxion.chaospersists.legacy.minecraft.block.BlockLeaves
+ *  com.astryxion.chaospersists.legacy.minecraft.block.BlockLiquid
+ *  com.astryxion.chaospersists.legacy.minecraft.block.BlockPistonBase
+ *  com.astryxion.chaospersists.legacy.minecraft.block.BlockPistonMoving
+ *  com.astryxion.chaospersists.legacy.minecraft.block.BlockSand
+ *  com.astryxion.chaospersists.legacy.minecraft.block.BlockSlab
+ *  com.astryxion.chaospersists.legacy.minecraft.block.BlockTallGrass
  *  net.minecraft.entity.Entity
  *  net.minecraft.entity.EntityList
  *  net.minecraft.entity.item.EntityEnderCrystal
- *  com.astryxion.chaospersists.compat.minecraft.init.Blocks
- *  com.astryxion.chaospersists.compat.minecraft.init.Items
+ *  com.astryxion.chaospersists.legacy.minecraft.init.Blocks
+ *  com.astryxion.chaospersists.legacy.minecraft.init.Items
  *  net.minecraft.inventory.IInventory
  *  net.minecraft.item.Item
  *  net.minecraft.item.ItemArmor
@@ -37,7 +37,7 @@
  *  net.minecraft.tileentity.TileEntityChest
  *  net.minecraft.tileentity.SpawnerBlockEntity
  *  net.minecraft.util.WeightedRandomChestContent
- *  com.astryxion.chaospersists.compat.minecraft.world.World
+ *  com.astryxion.chaospersists.legacy.minecraft.world.World
  */
 package com.astryxion.chaospersists.world.dimension.structure;
 
@@ -64,7 +64,7 @@ import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.state.properties.ChestType;
 import net.minecraft.world.level.block.entity.SpawnerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import com.astryxion.chaospersists.compat.forge.common.util.EnumHelper;
+import com.astryxion.chaospersists.legacy.forge.common.util.EnumHelper;
 
 public class GenericDungeon {
     private final WeightedRandomChestContent[] RainbowContentsList = new WeightedRandomChestContent[]{new WeightedRandomChestContent(ChaosPersists.MagicApple, 0, 1, 1, 25), new WeightedRandomChestContent(ChaosPersists.CloudSharkEgg, 0, 4, 10, 25), new WeightedRandomChestContent(Items.BONE, 0, 2, 16, 25), new WeightedRandomChestContent(Items.STRING, 0, 2, 16, 25), new WeightedRandomChestContent(Items.ROTTEN_FLESH, 0, 3, 10, 25), new WeightedRandomChestContent(Items.EXPERIENCE_BOTTLE, 0, 4, 10, 25)};

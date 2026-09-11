@@ -1686,5 +1686,16 @@
     "itemGroup.chaospersists.chaos_items": "Chaos Items",
     "itemGroup.chaospersists.chaos_mobs": "Chaos Mobs",
     "itemGroup.chaospersists.chaos_tools": "Chaos Tools",
-    "itemGroup.chaospersists.chaos_weapons": "Chaos Weapons"
+    "itemGroup.chaospersists.chaos_weapons": "Chaos Weapons",
+    "config.jade.plugin_chaospersists.prince_grow": "Prince growth",
+    "jade.chaospersists.prince_grow.natural": "Growth: natural (kills / food / days)",
+    "jade.chaospersists.prince_grow.diamond_only": "Growth: feed a Diamond Block",
+    "jade.chaospersists.prince_grow.diamond_ready": "Growth: Diamond Block fed",
+    "jade.chaospersists.prince_grow.kills": "Kills: %s / %s",
+    "jade.chaospersists.prince_grow.food": "Food: %s / %s",
+    "jade.chaospersists.prince_grow.days": "Days: %s / %s",
+    "trim_material.chaospersists.ruby": "Ruby Material",
+    "trim_material.chaospersists.amethyst": "Amethyst Material",
+    "trim_material.chaospersists.uranium": "Uranium Material",
+    "trim_material.chaospersists.titanium": "Titanium Material"
 }

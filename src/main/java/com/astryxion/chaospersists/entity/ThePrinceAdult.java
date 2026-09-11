@@ -904,7 +904,7 @@ public class ThePrinceAdult extends TamableAnimal {
     protected void customServerAiStep() {
         PetCombatHelper.tickPetCombat(this);
         if (this.isTame() && !RoyalPetFollowHelper.isStayingPut(this)) {
-            RoyalPetFollowHelper.syncDimensionOnly(this);
+            RoyalPetFollowHelper.syncRoyalFollow(this);
         }
         LivingEntity e;
         if (this.getActivity() == 0 && this.getPassengers().isEmpty() && !this.lacksGroundSupport()) {
@@ -1032,6 +1032,9 @@ public class ThePrinceAdult extends TamableAnimal {
             return false;
         }
         if (par1EntityLiving == this) {
+            return false;
+        }
+        if (MyUtils.shouldSkipCombatTarget(this, par1EntityLiving)) {
             return false;
         }
         if (!par1EntityLiving.isAlive()) {
@@ -1354,6 +1357,14 @@ public class ThePrinceAdult extends TamableAnimal {
         if (this.flyaway > 0) {
             --this.flyaway;
         }
+        if (this.isTame() && this.getHealth() / (float) this.mygetMaxHealth() < 0.25f) {
+            this.setAttacking(0);
+            this.target_in_sight = false;
+            this.setTarget(null);
+            if (has_owner) {
+                do_new = true;
+            }
+        }
         if (!toofar
                 && this.flyaway == 0
                 && this.level().getDifficulty() != Difficulty.PEACEFUL
@@ -1368,12 +1379,14 @@ public class ThePrinceAdult extends TamableAnimal {
                     this.setActivity(1);
                     this.setAttacking(0);
                     this.target_in_sight = false;
-                    do_new = false;
-                    this.currentFlightTarget =
-                            new BlockPos(
-                                    (int) (this.getX() + (this.getX() - e.getX())),
-                                    (int) (this.getY() + 1.0),
-                                    (int) (this.getZ() + (this.getZ() - e.getZ())));
+                    do_new = has_owner;
+                    if (!has_owner) {
+                        this.currentFlightTarget =
+                                new BlockPos(
+                                        (int) (this.getX() + (this.getX() - e.getX())),
+                                        (int) (this.getY() + 1.0),
+                                        (int) (this.getZ() + (this.getZ() - e.getZ())));
+                    }
                 } else {
                     this.setActivity(1);
                     this.setAttacking(1);
@@ -1602,11 +1615,6 @@ public class ThePrinceAdult extends TamableAnimal {
                     }
                     return InteractionResult.sidedSuccess(this.level().isClientSide);
                 }
-            }
-            if (!var2.isEmpty()
-                    && var2.is(Items.STICK)
-                    && this.isPlayerWithinPrinceReach(par1EntityPlayer, 64.0, 4.0)) {
-                return this.toggleSitStay(par1EntityPlayer);
             }
             if (!var2.isEmpty() && var2.is(Items.BEEF) && par1EntityPlayer.distanceToSqr(this) < 36.0) {
                 if (this.level().isClientSide) {

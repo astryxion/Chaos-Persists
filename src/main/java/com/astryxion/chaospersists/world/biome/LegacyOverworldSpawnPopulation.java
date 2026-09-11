@@ -1,6 +1,6 @@
 package com.astryxion.chaospersists.world.biome;
 
-import com.astryxion.chaospersists.compat.forge.fml.common.registry.EntityRegistry;
+import com.astryxion.chaospersists.legacy.forge.fml.common.registry.EntityRegistry;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import java.util.List;
 import net.minecraft.core.BlockPos;

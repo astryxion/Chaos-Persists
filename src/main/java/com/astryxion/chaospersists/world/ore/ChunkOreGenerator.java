@@ -6,11 +6,11 @@
  *  com.astryxion.chaospersists.OreGenericEgg
  *  com.astryxion.chaospersists.ChaosPersists
  *  com.astryxion.chaospersists.OreStats
- *  com.astryxion.chaospersists.compat.minecraft.block.Block
- *  com.astryxion.chaospersists.compat.minecraft.init.Blocks
+ *  com.astryxion.chaospersists.legacy.minecraft.block.Block
+ *  com.astryxion.chaospersists.legacy.minecraft.init.Blocks
  *  net.minecraft.util.MathHelper
- *  com.astryxion.chaospersists.compat.minecraft.world.World
- *  com.astryxion.chaospersists.compat.minecraft.world.chunk.Chunk
+ *  com.astryxion.chaospersists.legacy.minecraft.world.World
+ *  com.astryxion.chaospersists.legacy.minecraft.world.chunk.Chunk
  */
 package com.astryxion.chaospersists.world.ore;
 

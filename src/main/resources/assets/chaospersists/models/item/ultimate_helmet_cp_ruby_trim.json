@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "chaospersists:item/ultimate_helmet",
+    "layer1": "minecraft:trims/items/helmet_trim_cp_ruby"
+  }
+}

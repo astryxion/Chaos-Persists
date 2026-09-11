@@ -1,7 +1,7 @@
 package com.astryxion.chaospersists.item;
 
 import com.astryxion.chaospersists.core.ChaosPersists;
-import com.astryxion.chaospersists.compat.forge.common.util.EnumHelper;
+import com.astryxion.chaospersists.legacy.forge.common.util.EnumHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EquipmentSlot;

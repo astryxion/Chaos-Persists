@@ -2,7 +2,7 @@
 name: Bug Report
 about: Report a bug or issue
 title: "[1.12.2 or 1.20.1] [BUG] "
-labels: bug
+labels: bug, 1.12 or 1.20
 assignees: ''
 
 ---

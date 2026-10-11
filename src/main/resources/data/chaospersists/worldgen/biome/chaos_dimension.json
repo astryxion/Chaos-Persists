@@ -108,12 +108,6 @@
         "maxCount": 5
       },
       {
-        "type": "chaospersists:emperor_scorpion",
-        "weight": 1,
-        "minCount": 1,
-        "maxCount": 1
-      },
-      {
         "type": "chaospersists:ender_knight",
         "weight": 2,
         "minCount": 1,
@@ -216,12 +210,6 @@
         "maxCount": 1
       },
       {
-        "type": "chaospersists:mantis",
-        "weight": 1,
-        "minCount": 1,
-        "maxCount": 1
-      },
-      {
         "type": "chaospersists:lurking_terror",
         "weight": 1,
         "minCount": 1,
@@ -244,6 +232,12 @@
         "weight": 2,
         "minCount": 2,
         "maxCount": 4
+      },
+      {
+        "type": "chaospersists:mantis",
+        "weight": 1,
+        "minCount": 1,
+        "maxCount": 1
       }
     ],
     "creature": [
@@ -268,12 +262,6 @@
       {
         "type": "chaospersists:enchanted_golden_apple_cow",
         "weight": 1,
-        "minCount": 2,
-        "maxCount": 4
-      },
-      {
-        "type": "chaospersists:bird",
-        "weight": 10,
         "minCount": 2,
         "maxCount": 4
       },
@@ -321,6 +309,18 @@
       }
     ],
     "ambient": [
+      {
+        "type": "chaospersists:emperor_scorpion",
+        "weight": 1,
+        "minCount": 1,
+        "maxCount": 1
+      },
+      {
+        "type": "chaospersists:bird",
+        "weight": 10,
+        "minCount": 2,
+        "maxCount": 4
+      },
       {
         "type": "chaospersists:butterfly",
         "weight": 20,

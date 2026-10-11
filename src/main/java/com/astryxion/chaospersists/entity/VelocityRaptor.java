@@ -1,5 +1,6 @@
 package com.astryxion.chaospersists.entity;
 
+import com.astryxion.chaospersists.loot.DatapackLoot;
 import com.astryxion.chaospersists.util.MyUtils;
 
 import com.astryxion.chaospersists.core.ChaosPersists;
@@ -7,6 +8,7 @@ import com.astryxion.chaospersists.core.ChaosSounds;
 import com.astryxion.chaospersists.util.MyEntityAIAvoidEntity;
 import com.astryxion.chaospersists.util.MyEntityAIFollowOwner;
 import com.astryxion.chaospersists.util.MyEntityAIWander;
+import com.astryxion.chaospersists.util.PetOrderInteract;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -248,7 +250,7 @@ public class VelocityRaptor extends EntityCannonFodder {
             if (this.closest < 99999) {
                 this.getNavigation().moveTo((double) this.tx, (double) this.ty, (double) this.tz, 1.0);
                 if (this.closest < 12) {
-                    if (this.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+                    if (com.astryxion.chaospersists.config.ChaosGriefing.canGrief(this)) {
                         this.level()
                                 .setBlock(
                                         new BlockPos(this.tx, this.ty, this.tz),
@@ -321,6 +323,9 @@ public class VelocityRaptor extends EntityCannonFodder {
                     }
                 }
             } else if (this.isOwnedBy(par1EntityPlayer)) {
+                if ((float) this.mygetMaxHealth() <= this.getHealth()) {
+                    return InteractionResult.SUCCESS;
+                }
                 if (this.level().isClientSide) {
                     spawnTamingParticles(true);
                     this.level().broadcastEntityEvent(this, (byte) 7);
@@ -328,9 +333,7 @@ public class VelocityRaptor extends EntityCannonFodder {
                             .getAttribute(Attributes.MOVEMENT_SPEED)
                             .setBaseValue(0.6000000238418579);
                 }
-                if ((float) this.mygetMaxHealth() > this.getHealth()) {
-                    this.heal((float) this.mygetMaxHealth() - this.getHealth());
-                }
+                this.heal((float) this.mygetMaxHealth() - this.getHealth());
             }
             if (!par1EntityPlayer.getAbilities().instabuild) {
                 var2.shrink(1);
@@ -379,11 +382,7 @@ public class VelocityRaptor extends EntityCannonFodder {
         if (this.isTame()
                 && par1EntityPlayer.distanceToSqr(this) < 16.0
                 && this.isOwnedBy(par1EntityPlayer)) {
-            if (!this.isInSittingPose()) {
-                this.setOrderedToSit(true);
-            } else {
-                this.setOrderedToSit(false);
-            }
+            PetOrderInteract.setSit(par1EntityPlayer, this, !this.isInSittingPose());
             if (this.level().isClientSide) {
                 par1EntityPlayer.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(0.30000001192092896);
             }
@@ -414,6 +413,9 @@ public class VelocityRaptor extends EntityCannonFodder {
 
     @Override
     protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+        if (DatapackLoot.useEntityTable(this)) {
+            return;
+        }
         if (this.isTame()) {
             int var3 = this.getRandom().nextInt(5);
             var3 += 2;

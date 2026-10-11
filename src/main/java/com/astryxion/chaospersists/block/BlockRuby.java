@@ -1,5 +1,6 @@
 package com.astryxion.chaospersists.block;
 
+import com.astryxion.chaospersists.loot.DatapackLoot;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.util.MiningDropHelper;
 import java.util.List;
@@ -28,6 +29,10 @@ public class BlockRuby extends Block {
 
     @Override
     public List<ItemStack> getDrops(BlockState state, LootParams.Builder builder) {
+        var datapackDrops = DatapackLoot.tryBlockTable(this, state, builder);
+        if (datapackDrops != null) {
+            return datapackDrops;
+        }
         return MiningDropHelper.selfDrops(this, builder);
     }
 

@@ -1,5 +1,6 @@
 package com.astryxion.chaospersists.entity;
 
+import com.astryxion.chaospersists.loot.DatapackLoot;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.core.ChaosSounds;
 import com.astryxion.chaospersists.util.MyEntityAIWander;
@@ -103,6 +104,9 @@ public class Baryonyx extends Animal {
     @Override
     protected void dropCustomDeathLoot(
             net.minecraft.world.damagesource.DamageSource source, int looting, boolean recentlyHit) {
+        if (DatapackLoot.useEntityTable(this)) {
+            return;
+        }
         int var3 = this.getRandom().nextInt(5) + 2;
         for (int var4 = 0; var4 < var3; ++var4) {
             this.spawnAtLocation(Items.BEEF);
@@ -222,7 +226,7 @@ public class Baryonyx extends Animal {
             if (this.closest < 99999) {
                 this.getNavigation().moveTo(this.tx, this.ty, this.tz, 1.0);
                 if (this.closest < 12) {
-                    if (this.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+                    if (com.astryxion.chaospersists.config.ChaosGriefing.canGrief(this)) {
                         this.level()
                                 .setBlock(
                                         new BlockPos(this.tx, this.ty, this.tz),

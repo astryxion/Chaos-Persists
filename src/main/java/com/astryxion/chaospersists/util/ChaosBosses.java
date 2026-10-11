@@ -19,6 +19,7 @@ import com.astryxion.chaospersists.entity.Godzilla;
 import com.astryxion.chaospersists.entity.GodzillaHead;
 import com.astryxion.chaospersists.entity.Hammerhead;
 import com.astryxion.chaospersists.entity.HerculesBeetle;
+import com.astryxion.chaospersists.entity.KingHead;
 import com.astryxion.chaospersists.entity.Kraken;
 import com.astryxion.chaospersists.entity.Kyuubi;
 import com.astryxion.chaospersists.entity.Leon;
@@ -72,6 +73,7 @@ public final class ChaosBosses {
                 || entity instanceof Godzilla
                 || entity instanceof GodzillaHead
                 || entity instanceof TheKing
+                || entity instanceof KingHead
                 || entity instanceof TheQueen
                 || entity instanceof Kraken
                 || entity instanceof PitchBlack

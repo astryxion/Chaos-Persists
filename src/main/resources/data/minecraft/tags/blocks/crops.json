@@ -1,0 +1,24 @@
+{
+  "replace": false,
+  "values": [
+    "chaospersists:tomato_plant0",
+    "chaospersists:tomato_plant1",
+    "chaospersists:tomato_plant2",
+    "chaospersists:tomato_plant3",
+    "chaospersists:lettuce_0",
+    "chaospersists:lettuce_1",
+    "chaospersists:lettuce_2",
+    "chaospersists:lettuce_3",
+    "chaospersists:corn_plant0",
+    "chaospersists:corn_plant1",
+    "chaospersists:corn_plant2",
+    "chaospersists:corn_plant3",
+    "chaospersists:radish_plant",
+    "chaospersists:rice_plant",
+    "chaospersists:strawberry_plant",
+    "chaospersists:quinoa_0",
+    "chaospersists:quinoa_1",
+    "chaospersists:quinoa_2",
+    "chaospersists:quinoa_3"
+  ]
+}

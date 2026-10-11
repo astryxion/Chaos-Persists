@@ -1,17 +1,24 @@
 package com.astryxion.chaospersists.entity;
 
+import com.astryxion.chaospersists.loot.DatapackLoot;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.core.ChaosSounds;
-import com.astryxion.chaospersists.render.RenderInfo;
+import com.astryxion.chaospersists.entity.RenderInfo;
+import com.astryxion.chaospersists.entity.util.ChaosGroundMount;
+import com.astryxion.chaospersists.entity.util.ChaosMountGround;
 import com.astryxion.chaospersists.util.ChaosMountHelper;
 import com.astryxion.chaospersists.util.MyEntityAIAvoidEntity;
 import com.astryxion.chaospersists.util.MyEntityAIFollowOwner;
 import com.astryxion.chaospersists.util.MyEntityAIWander;
 import com.astryxion.chaospersists.util.MyUtils;
+import com.astryxion.chaospersists.util.PetOrderInteract;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
@@ -51,10 +58,14 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.util.RandomSource;
-import net.minecraft.client.player.LocalPlayer;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.registries.ForgeRegistries;
 
-public class Ostrich extends EntityCannonFodder {
+public class Ostrich extends EntityCannonFodder implements ChaosGroundMount {
+    private static final EntityDataAccessor<Byte> CONTROL_STATE =
+            SynchedEntityData.defineId(Ostrich.class, EntityDataSerializers.BYTE);
+    private final ChaosMountGround mountGround = new ChaosMountGround(this);
     private float moveSpeed = 0.38f;
     private RenderInfo renderdata = new RenderInfo();
     private int dismountCooldown = 0;
@@ -89,6 +100,7 @@ public class Ostrich extends EntityCannonFodder {
     @Override
     protected void defineSynchedData() {
         super.defineSynchedData();
+        this.entityData.define(CONTROL_STATE, (byte) 0);
         if (this.renderdata == null) {
             this.renderdata = new RenderInfo();
         }
@@ -198,34 +210,36 @@ public class Ostrich extends EntityCannonFodder {
     }
 
     @Override
+    public byte getControlState() {
+        return this.entityData.get(CONTROL_STATE);
+    }
+
+    @Override
+    public void setControlState(byte state) {
+        this.entityData.set(CONTROL_STATE, state);
+    }
+
+    @Override
     protected void tickRidden(Player player, Vec3 travelVector) {
         super.tickRidden(player, travelVector);
-        this.xxa = player.xxa;
-        this.zza = player.zza;
-        this.setRot(player.getYRot(), player.getXRot() * 0.5f);
-        this.yRotO = this.yBodyRot = this.yHeadRot = this.getYRot();
+        this.mountGround.applyRiderRotation(player);
     }
 
     @Override
     public void travel(Vec3 travelVector) {
-        if (this.isVehicle() && this.getControllingPassenger() instanceof Player player) {
-            float forward = player.zza;
-            float strafe = player.xxa;
-            if (this.level().isClientSide && player instanceof LocalPlayer local) {
-                forward = local.input.forwardImpulse;
-                strafe = local.input.leftImpulse;
-            }
-            this.xxa = strafe;
-            this.zza = forward;
-            this.setSpeed((float) this.getAttributeValue(Attributes.MOVEMENT_SPEED));
-            if (Math.abs(forward) > 0.001f || Math.abs(strafe) > 0.001f) {
-                super.travel(new Vec3(strafe, travelVector.y, forward));
-            } else {
-                super.travel(new Vec3(0.0, travelVector.y, 0.0));
-            }
+        if (this.mountGround.handleTravel(travelVector, super::travel)) {
             return;
         }
         super.travel(travelVector);
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    @Override
+    public void lerpTo(double x, double y, double z, float yaw, float pitch, int steps, boolean interpolate) {
+        if (this.isControlledByLocalInstance()) {
+            return;
+        }
+        super.lerpTo(x, y, z, yaw, pitch, steps, interpolate);
     }
 
     @Override
@@ -234,6 +248,9 @@ public class Ostrich extends EntityCannonFodder {
         if (passenger != null) {
             this.positionRider(passenger, Entity::moveTo);
         }
+        if (passenger instanceof Player) {
+            this.mountGround.onMounted();
+        }
     }
 
     @Override
@@ -241,6 +258,7 @@ public class Ostrich extends EntityCannonFodder {
         super.removePassenger(passenger);
         if (!this.level().isClientSide && this.getPassengers().isEmpty()) {
             this.dismountCooldown = ChaosMountHelper.GROUND_DISMOUNT_COOLDOWN_TICKS;
+            this.mountGround.onDismount();
             ChaosMountHelper.finishDismountLanding(this);
         }
     }
@@ -310,13 +328,14 @@ public class Ostrich extends EntityCannonFodder {
                     }
                 }
             } else if (this.isOwnedBy(par1EntityPlayer)) {
+                if ((float) this.mygetMaxHealth() <= this.getHealth()) {
+                    return InteractionResult.SUCCESS;
+                }
                 if (this.level().isClientSide) {
                     spawnTamingParticles(true);
                     this.level().broadcastEntityEvent(this, (byte) 7);
                 }
-                if ((float) this.mygetMaxHealth() > this.getHealth()) {
-                    this.heal((float) this.mygetMaxHealth() - this.getHealth());
-                }
+                this.heal((float) this.mygetMaxHealth() - this.getHealth());
             }
             if (!par1EntityPlayer.getAbilities().instabuild) {
                 var2.shrink(1);
@@ -353,10 +372,10 @@ public class Ostrich extends EntityCannonFodder {
                 if (!this.isOrderedToSit()) {
                     // Stay still on nest-like ground (OreSpawn) — expanded for 1.20 blocks
                     if (this.canNestSitHere()) {
-                        this.setOrderedToSit(true);
+                        PetOrderInteract.setSit(par1EntityPlayer, this, true);
                     }
                 } else {
-                    this.setOrderedToSit(false);
+                    PetOrderInteract.setSit(par1EntityPlayer, this, false);
                 }
             }
             return InteractionResult.SUCCESS;
@@ -417,6 +436,9 @@ public class Ostrich extends EntityCannonFodder {
 
     @Override
     protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+        if (DatapackLoot.useEntityTable(this)) {
+            return;
+        }
         if (this.isTame()) {
             int var3 = this.getRandom().nextInt(5);
             var3 += 2;

@@ -1,0 +1,12 @@
+{
+  "replace": false,
+  "values": [
+    "#forge:seeds/tomato",
+    "#forge:seeds/lettuce",
+    "#forge:seeds/corn",
+    "#forge:seeds/radish",
+    "#forge:seeds/rice",
+    "#forge:seeds/strawberry",
+    "#forge:seeds/quinoa"
+  ]
+}

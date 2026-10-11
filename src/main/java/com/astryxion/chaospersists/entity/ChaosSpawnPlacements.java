@@ -27,9 +27,9 @@ import net.minecraftforge.registries.ForgeRegistries;
  * registration. Called once at the end of {@code preInit} after {@link EntityRegistry#addSpawn}
  * records legacy categories.
  *
- * <p>Most OreSpawn {@code waterCreature} mobs are not vanilla {@code WaterAnimal} — they spawn on
- * beaches and river banks (Y {@code >=} 50, daytime) without requiring a water block at the spawn
- * position. Only truly submerged mobs (whale, sea monster) use {@link SpawnPlacements.Type#IN_WATER}.
+ * <p>OreSpawn 1.7.10 {@code waterCreature} used {@code Material.water}: spawn position must be in
+ * water (Y {@code >=} 50). 1.20 {@code NO_RESTRICTIONS} plus {@code Y >= 50} only let lizards and
+ * ducks spawn in mid-air on skylands and floating structures.
  */
 public final class ChaosSpawnPlacements {
   private ChaosSpawnPlacements() {}
@@ -125,13 +125,13 @@ public final class ChaosSpawnPlacements {
       case "attack_squid" ->
           SpawnPlacements.register(
               (EntityType<AttackSquid>) type,
-              SpawnPlacements.Type.NO_RESTRICTIONS,
+              SpawnPlacements.Type.IN_WATER,
               Heightmap.Types.MOTION_BLOCKING,
               AttackSquid::checkAttackSquidSpawnRules);
       case "sea_viper" ->
           SpawnPlacements.register(
               (EntityType<SeaViper>) type,
-              SpawnPlacements.Type.NO_RESTRICTIONS,
+              SpawnPlacements.Type.IN_WATER,
               Heightmap.Types.MOTION_BLOCKING,
               SeaViper::checkSeaViperSpawnRules);
       case "whale", "sea_monster" ->
@@ -196,10 +196,11 @@ public final class ChaosSpawnPlacements {
       case WATER_CREATURE, WATER_AMBIENT ->
           SpawnPlacements.register(
               type,
-              SpawnPlacements.Type.NO_RESTRICTIONS,
+              SpawnPlacements.Type.IN_WATER,
               Heightmap.Types.MOTION_BLOCKING,
               (entityType, level, spawnType, pos, random) ->
-                  invoker.test(entityType, level, spawnType, pos, random));
+                  isLegacyWaterCreaturePosition(level, pos)
+                      && invoker.test(entityType, level, spawnType, pos, random));
       default ->
           SpawnPlacements.register(
               type,
@@ -249,7 +250,7 @@ public final class ChaosSpawnPlacements {
       case WATER_CREATURE, WATER_AMBIENT ->
           SpawnPlacements.register(
               (EntityType<? extends Mob>) type,
-              SpawnPlacements.Type.NO_RESTRICTIONS,
+              SpawnPlacements.Type.IN_WATER,
               Heightmap.Types.MOTION_BLOCKING,
               ChaosSpawnPlacements::checkLegacyWaterCreatureSpawnRules);
       default ->
@@ -334,14 +335,18 @@ public final class ChaosSpawnPlacements {
     return Monster.checkMonsterSpawnRules(type, level, spawnType, pos, random);
   }
 
-  /** OreSpawn 1.7.10 water creatures: Y >= 50; day/night handled in entity {@code checkSpawnRules}. */
+  /** OreSpawn 1.7.10 water creatures: in water, Y >= 50; day/night in entity {@code checkSpawnRules}. */
   private static boolean checkLegacyWaterCreatureSpawnRules(
       EntityType<? extends Mob> type,
       ServerLevelAccessor level,
       MobSpawnType spawnType,
       BlockPos pos,
       RandomSource random) {
-    return pos.getY() >= 50;
+    return isLegacyWaterCreaturePosition(level, pos);
+  }
+
+  private static boolean isLegacyWaterCreaturePosition(ServerLevelAccessor level, BlockPos pos) {
+    return pos.getY() >= 50 && isSubmergedInWater(level, pos);
   }
 
   /** Whales / sea monsters spawn submerged in ocean water columns. */

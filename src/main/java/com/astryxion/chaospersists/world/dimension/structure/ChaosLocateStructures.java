@@ -110,6 +110,7 @@ public final class ChaosLocateStructures {
     public static final ResourceKey<Structure> ENDER_REAPER_GRAVEYARD = key("ender_reaper_graveyard");
     public static final ResourceKey<Structure> ENDER_DRAGON_HOSPITAL = key("ender_dragon_hospital");
     public static final ResourceKey<Structure> ENDER_CASTLE = key("ender_castle");
+    public static final ResourceKey<Structure> VILLAGE_MANIA_VILLAGE = key("village_mania_village");
 
     public static List<ResourceKey<Structure>> allLocateKeys() {
         return List.of(
@@ -173,6 +174,11 @@ public final class ChaosLocateStructures {
 
     /** True when this chunk is the seed slot for {@code key} in the current dimension. */
     public static boolean isChunk(Level level, int chunkX, int chunkZ, ResourceKey<Structure> key) {
+        if (key != null
+                && !com.astryxion.chaospersists.config.ChaosPackConfig.isStructureEnabled(
+                        key.location().getPath())) {
+            return false;
+        }
         if (!(level instanceof ServerLevel serverLevel)) {
             return false;
         }
@@ -294,7 +300,7 @@ public final class ChaosLocateStructures {
             return "Mining";
         }
         if (dim.equals(ChaosPersists.getVillageDimensionKey())) {
-            return "Village";
+            return "Village Mania";
         }
         if (dim.equals(ChaosPersists.getDangerDimensionKey())) {
             return "Danger";
@@ -325,7 +331,10 @@ public final class ChaosLocateStructures {
                     ChaosPersists.getVillageDimensionKey(),
                     ChaosPersists.getMiningDimensionKey());
         }
-        if (DAMSEL_IN_DISTRESS.equals(key) || SPIDER_HANGOUT.equals(key) || RED_ANT_HANGOUT.equals(key)) {
+        if (DAMSEL_IN_DISTRESS.equals(key)
+                || SPIDER_HANGOUT.equals(key)
+                || RED_ANT_HANGOUT.equals(key)
+                || VILLAGE_MANIA_VILLAGE.equals(key)) {
             return List.of(ChaosPersists.getVillageDimensionKey());
         }
         if (ROTATOR_STATION.equals(key)

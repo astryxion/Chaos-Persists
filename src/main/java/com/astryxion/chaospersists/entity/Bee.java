@@ -1,5 +1,6 @@
 package com.astryxion.chaospersists.entity;
 
+import com.astryxion.chaospersists.loot.DatapackLoot;
 import com.astryxion.chaospersists.util.MyUtils;
 
 import com.astryxion.chaospersists.core.ChaosPersists;
@@ -154,6 +155,9 @@ public class Bee extends Monster {
 
     @Override
     protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+        if (DatapackLoot.useEntityTable(this)) {
+            return;
+        }
         int var4 = 2 + this.getRandom().nextInt(10);
         for (int i = 0; i < var4; ++i) {
             this.dropItemRand(Items.GOLD_NUGGET, 1);
@@ -349,7 +353,8 @@ public class Bee extends Monster {
         for (int k = -1; k < 2; ++k) {
             for (int j = -1; j < 2; ++j) {
                 for (int i = 1; i < 5; ++i) {
-                    if (!MyUtils.getBlockStateForSpawnRules(level, pos.offset(j, i, k)).isAir()) {
+                    if (!MyUtils.isClearForLegacySpawnVolume(
+                            MyUtils.getBlockStateForSpawnRules(level, pos.offset(j, i, k)))) {
                         return false;
                     }
                 }
@@ -391,7 +396,8 @@ public class Bee extends Monster {
         for (int k = -1; k < 2; ++k) {
             for (int j = -1; j < 2; ++j) {
                 for (int i = 1; i < 5; ++i) {
-                    if (!MyUtils.getBlockStateForSpawnRules(level, pos.offset(j, i, k)).isAir()) {
+                    if (!MyUtils.isClearForLegacySpawnVolume(
+                            MyUtils.getBlockStateForSpawnRules(level, pos.offset(j, i, k)))) {
                         return false;
                     }
                 }

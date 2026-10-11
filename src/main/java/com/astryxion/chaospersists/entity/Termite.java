@@ -285,7 +285,7 @@ public class Termite extends EntityAnt {
                 this.getNavigation().moveTo(this.tx, this.ty, this.tz, 1.0);
                 if (this.closest < 6) {
                     if (this.getRandom().nextInt(3) != 0) {
-                        if (this.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+                        if (com.astryxion.chaospersists.config.ChaosGriefing.canGrief(this)) {
                             this.level()
                                     .setBlock(
                                             new BlockPos(this.tx, this.ty, this.tz),
@@ -300,7 +300,7 @@ public class Termite extends EntityAnt {
                                     this.getZ() + 0.10000000149011612);
                         }
                     } else {
-                        if (this.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+                        if (com.astryxion.chaospersists.config.ChaosGriefing.canGrief(this)) {
                             this.level()
                                     .setBlock(
                                             new BlockPos(this.tx, this.ty, this.tz),

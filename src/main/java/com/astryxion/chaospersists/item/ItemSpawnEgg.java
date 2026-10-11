@@ -1,11 +1,16 @@
 package com.astryxion.chaospersists.item;
 
+import com.astryxion.chaospersists.config.ChaosMobAccess;
 import com.astryxion.chaospersists.util.MyUtils;
 
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.entity.Godzilla;
+import com.astryxion.chaospersists.entity.GodzillaHead;
+import com.astryxion.chaospersists.entity.KingHead;
 import com.astryxion.chaospersists.entity.PitchBlack;
+import com.astryxion.chaospersists.entity.QueenHead;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.dispenser.DispenseItemBehavior;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.MobSpawnType;
@@ -17,18 +22,20 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.SpawnerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraftforge.common.ForgeSpawnEggItem;
 import net.minecraftforge.registries.ForgeRegistries;
 
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
-public class ItemSpawnEgg extends Item {
+public class ItemSpawnEgg extends ForgeSpawnEggItem {
     public int my_id = 0;
     public final int backgroundColor;
     public final int highlightColor;
@@ -38,10 +45,35 @@ public class ItemSpawnEgg extends Item {
     }
 
     public ItemSpawnEgg(int i, int j, int backgroundColor, int highlightColor) {
-        super(new Properties().stacksTo(64));
+        super(mobTypeSupplier(j), backgroundColor, highlightColor, new Properties().stacksTo(64));
         this.my_id = j;
         this.backgroundColor = backgroundColor;
         this.highlightColor = highlightColor;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Supplier<? extends EntityType<? extends Mob>> mobTypeSupplier(int id) {
+        return () -> (EntityType<? extends Mob>) resolveEggEntityType(id);
+    }
+
+    /** Creative middle-click stack for this entity, including boss head hitboxes. */
+    public static ItemStack pickStackFor(Entity entity) {
+        EntityType<?> type = entity.getType();
+        if (entity instanceof GodzillaHead) {
+            type = ChaosPersists.ENTITY_TYPE_MOBZILLA.get();
+        } else if (entity instanceof KingHead) {
+            type = ChaosPersists.ENTITY_TYPE_THE_KING.get();
+        } else if (entity instanceof QueenHead) {
+            type = ChaosPersists.ENTITY_TYPE_THE_QUEEN.get();
+        }
+        SpawnEggItem egg = ForgeSpawnEggItem.fromEntityType(type);
+        return egg == null ? ItemStack.EMPTY : new ItemStack(egg);
+    }
+
+    @Override
+    @Nullable
+    protected DispenseItemBehavior createDispenseBehavior() {
+        return null;
     }
 
     public boolean hasSpawnEggColors() {
@@ -51,6 +83,14 @@ public class ItemSpawnEgg extends Item {
     @Override
     public InteractionResult useOn(UseOnContext context) {
         Level level = context.getLevel();
+        EntityType<?> type = resolveEggEntityType(this.my_id);
+        if (!ChaosMobAccess.isEntityEnabled(type)) {
+            Player player = context.getPlayer();
+            if (player != null) {
+                player.displayClientMessage(ChaosMobAccess.ITEM_DISABLED, true);
+            }
+            return InteractionResult.FAIL;
+        }
         if (level.isClientSide) {
             return InteractionResult.SUCCESS;
         }
@@ -58,7 +98,6 @@ public class ItemSpawnEgg extends Item {
         BlockState state = level.getBlockState(pos);
         // Same path as vanilla SpawnEggItem: configure monster spawners instead of spawning on top.
         if (level.getBlockEntity(pos) instanceof SpawnerBlockEntity spawner) {
-            EntityType<?> type = resolveEggEntityType(this.my_id);
             if (type == null) {
                 return InteractionResult.FAIL;
             }
@@ -106,7 +145,11 @@ public class ItemSpawnEgg extends Item {
     }
 
     public static Entity spawn_something(int id, Level level, double d0, double d1, double d2) {
-        return spawnEntityType(level, resolveEggEntityType(id), d0, d1, d2);
+        EntityType<?> type = resolveEggEntityType(id);
+        if (!ChaosMobAccess.isEntityEnabled(type)) {
+            return null;
+        }
+        return spawnEntityType(level, type, d0, d1, d2);
     }
 
     /** Entity type this egg configures on a monster spawner / spawns in the world. */

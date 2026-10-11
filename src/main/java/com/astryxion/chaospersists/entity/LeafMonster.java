@@ -1,5 +1,6 @@
 package com.astryxion.chaospersists.entity;
 
+import com.astryxion.chaospersists.loot.DatapackLoot;
 import com.astryxion.chaospersists.util.MyUtils;
 
 import com.astryxion.chaospersists.core.ChaosPersists;
@@ -164,6 +165,9 @@ public class LeafMonster extends Monster {
 
     @Override
     protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+        if (DatapackLoot.useEntityTable(this)) {
+            return;
+        }
         int i = this.getRandom().nextInt(3);
         Item drop = null;
         if (i == 0) {

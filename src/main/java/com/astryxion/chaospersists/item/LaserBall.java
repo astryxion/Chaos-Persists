@@ -188,7 +188,7 @@ public class LaserBall extends ThrowableProjectile {
                                 this.getY(),
                                 this.getZ(),
                                 3.0f,
-                                this.level().getGameRules().getBoolean(net.minecraft.world.level.GameRules.RULE_MOBGRIEFING)
+                                com.astryxion.chaospersists.config.ChaosGriefing.canGrief(this)
                                         ? ExplosionInteraction.MOB
                                         : ExplosionInteraction.NONE);
             }

@@ -1,0 +1,12 @@
+{
+  "replace": false,
+  "values": [
+    "#forge:crops/tomato",
+    "#forge:crops/lettuce",
+    "#forge:crops/corn",
+    "#forge:crops/radish",
+    "#forge:crops/rice",
+    "#forge:crops/strawberry",
+    "#forge:crops/quinoa"
+  ]
+}

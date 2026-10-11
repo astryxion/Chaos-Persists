@@ -1,0 +1,38 @@
+{
+  "type": "minecraft:chest",
+  "pools": [
+    {
+      "rolls": 1.0,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "chaospersists:ruby",
+          "weight": 3,
+          "functions": [
+            { "function": "minecraft:set_count", "count": 1.0 }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "chaospersists:amethyst",
+          "weight": 3,
+          "functions": [
+            { "function": "minecraft:set_count", "count": 1.0 }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "chaospersists:thunderstaff",
+          "weight": 2,
+          "functions": [
+            { "function": "minecraft:set_count", "count": 1.0 }
+          ]
+        },
+        {
+          "type": "minecraft:empty",
+          "weight": 100
+        }
+      ]
+    }
+  ]
+}

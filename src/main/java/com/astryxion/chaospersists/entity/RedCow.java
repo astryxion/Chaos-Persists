@@ -1,5 +1,6 @@
 package com.astryxion.chaospersists.entity;
 
+import com.astryxion.chaospersists.loot.DatapackLoot;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
@@ -25,11 +26,10 @@ public class RedCow extends Cow {
     }
 
     @Override
-    protected void dropFromLootTable(DamageSource damageSource, boolean attackedRecently) {
-    }
-
-    @Override
     protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+        if (DatapackLoot.useEntityTable(this)) {
+            return;
+        }
         int appleCount = 1 + this.getRandom().nextInt(2 + looting);
         for (int i = 0; i < appleCount; ++i) {
             this.spawnAtLocation(new ItemStack(Items.APPLE));

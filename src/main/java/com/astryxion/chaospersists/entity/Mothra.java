@@ -1,5 +1,6 @@
 package com.astryxion.chaospersists.entity;
 
+import com.astryxion.chaospersists.loot.DatapackLoot;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.core.ChaosSounds;
 import com.astryxion.chaospersists.item.BetterFireball;
@@ -429,6 +430,9 @@ public class Mothra extends EntityButterfly {
 
     @Override
     protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+        if (DatapackLoot.useEntityTable(this)) {
+            return;
+        }
         int var4;
         this.dropItemRand(Items.ITEM_FRAME, 1);
         for (int i = 0; i < 20; ++i) {

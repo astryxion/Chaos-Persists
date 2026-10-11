@@ -1,4 +1,5 @@
 package com.astryxion.chaospersists.entity;
+import com.astryxion.chaospersists.loot.DatapackLoot;
 import com.astryxion.chaospersists.util.MyUtils;
 
 import com.astryxion.chaospersists.core.ChaosPersists;
@@ -146,6 +147,9 @@ public class StinkBug extends Animal {
 
     @Override
     protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+        if (DatapackLoot.useEntityTable(this)) {
+            return;
+        }
         if (ChaosPersists.MyDeadStinkBug != null) {
             this.spawnAtLocation(ChaosPersists.MyDeadStinkBug);
         }

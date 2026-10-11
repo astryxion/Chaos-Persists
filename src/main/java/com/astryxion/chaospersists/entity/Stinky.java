@@ -1,7 +1,9 @@
 package com.astryxion.chaospersists.entity;
 
+import com.astryxion.chaospersists.loot.DatapackLoot;
 import com.astryxion.chaospersists.util.MyUtils;
 import com.astryxion.chaospersists.util.PetCombatHelper;
+import com.astryxion.chaospersists.util.PetOrderInteract;
 
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.core.ChaosSounds;
@@ -70,6 +72,8 @@ public class Stinky extends TamableAnimal {
             SynchedEntityData.defineId(Stinky.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> POOP_ENABLE =
             SynchedEntityData.defineId(Stinky.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> SKIN_LOCK =
+            SynchedEntityData.defineId(Stinky.class, EntityDataSerializers.INT);
 
     private BlockPos currentFlightTarget;
     private final GenericTargetSorter targetSorter;
@@ -127,6 +131,7 @@ public class Stinky extends TamableAnimal {
         this.entityData.define(ACTIVITY, this.activity);
         this.entityData.define(SPYRO_FIRE, 1);
         this.entityData.define(POOP_ENABLE, 1);
+        this.entityData.define(SKIN_LOCK, 0);
         this.setOrderedToSit(false);
         this.setTame(false);
     }
@@ -138,6 +143,7 @@ public class Stinky extends TamableAnimal {
         tag.putInt("SpyroFire", this.entityData.get(SPYRO_FIRE));
         tag.putInt("StinkySkin", this.entityData.get(SKIN_COLOR));
         tag.putInt("StinkyPoop", this.entityData.get(POOP_ENABLE));
+        tag.putInt("StinkySkinLock", this.entityData.get(SKIN_LOCK));
     }
 
     @Override
@@ -149,6 +155,7 @@ public class Stinky extends TamableAnimal {
         this.skin_color = tag.getInt("StinkySkin");
         this.entityData.set(SKIN_COLOR, this.skin_color);
         this.entityData.set(POOP_ENABLE, tag.contains("StinkyPoop") ? tag.getInt("StinkyPoop") : 1);
+        this.entityData.set(SKIN_LOCK, tag.contains("StinkySkinLock") ? tag.getInt("StinkySkinLock") : 0);
     }
 
     public int getActivity() {
@@ -186,6 +193,14 @@ public class Stinky extends TamableAnimal {
 
     public void setPoopEnable(int par1) {
         this.entityData.set(POOP_ENABLE, par1);
+    }
+
+    public int getSkinLock() {
+        return this.entityData.get(SKIN_LOCK);
+    }
+
+    public void setSkinLock(int par1) {
+        this.entityData.set(SKIN_LOCK, par1);
     }
 
     @Override
@@ -248,13 +263,14 @@ public class Stinky extends TamableAnimal {
                     }
                 }
             } else if (this.isOwnedBy(par1EntityPlayer)) {
+                if ((float) this.mygetMaxHealth() <= this.getHealth()) {
+                    return InteractionResult.SUCCESS;
+                }
                 if (this.level().isClientSide) {
                     spawnTamingParticles(true);
                     this.level().broadcastEntityEvent(this, (byte) 7);
                 }
-                if ((float) this.mygetMaxHealth() > this.getHealth()) {
-                    this.heal((float) this.mygetMaxHealth() - this.getHealth());
-                }
+                this.heal((float) this.mygetMaxHealth() - this.getHealth());
             }
             if (!par1EntityPlayer.getAbilities().instabuild) {
                 var2.shrink(1);
@@ -310,10 +326,61 @@ public class Stinky extends TamableAnimal {
             return InteractionResult.SUCCESS;
         }
         if (this.isTame()
+                && !var2.isEmpty()
+                && var2.is(Items.DIAMOND)
                 && par1EntityPlayer.distanceToSqr(this) < 16.0
                 && this.isOwnedBy(par1EntityPlayer)) {
+            if (!this.level().isClientSide) {
+                boolean nowLocked = this.getSkinLock() == 0;
+                this.setSkinLock(nowLocked ? 1 : 0);
+                spawnTamingParticles(true);
+                this.level().broadcastEntityEvent(this, (byte) 7);
+                par1EntityPlayer.displayClientMessage(
+                        Component.literal(
+                                nowLocked
+                                        ? "Stinky's skin is now locked."
+                                        : "Stinky's skin can change again."),
+                        true);
+            }
+            if (!par1EntityPlayer.getAbilities().instabuild) {
+                var2.shrink(1);
+                if (var2.isEmpty()) {
+                    par1EntityPlayer.setItemInHand(hand, ItemStack.EMPTY);
+                }
+            }
+            return InteractionResult.SUCCESS;
+        }
+        if (this.isTame()
+                && !var2.isEmpty()
+                && (var2.is(Items.DANDELION)
+                        || var2.is(ChaosPersists.CrystalFlowerYellowBlock.asItem()))
+                && par1EntityPlayer.distanceToSqr(this) < 16.0
+                && this.isOwnedBy(par1EntityPlayer)) {
+            if (!this.level().isClientSide) {
+                int nextSkin = this.getSkin() + 1;
+                if (nextSkin > 18) {
+                    nextSkin = 0;
+                }
+                this.setSkin(nextSkin);
+                spawnTamingParticles(true);
+                this.level().broadcastEntityEvent(this, (byte) 7);
+            }
+            if (!par1EntityPlayer.getAbilities().instabuild) {
+                var2.shrink(1);
+                if (var2.isEmpty()) {
+                    par1EntityPlayer.setItemInHand(hand, ItemStack.EMPTY);
+                }
+            }
+            return InteractionResult.SUCCESS;
+        }
+        if (this.isTame()
+                && par1EntityPlayer.distanceToSqr(this) < 16.0
+                && this.isOwnedBy(par1EntityPlayer)) {
+            if (PetOrderInteract.shouldPassItemUse(var2, par1EntityPlayer)) {
+                return InteractionResult.PASS;
+            }
             // OreSpawn 1.7.10 setSitting toggled one flag; on 1.20 ordered-sit and pose are separate.
-            this.setOrderedToSit(!this.isOrderedToSit());
+            PetOrderInteract.toggleSit(par1EntityPlayer, this);
             return InteractionResult.SUCCESS;
         }
         return super.mobInteract(par1EntityPlayer, hand);
@@ -361,6 +428,9 @@ public class Stinky extends TamableAnimal {
 
     @Override
     protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+        if (DatapackLoot.useEntityTable(this)) {
+            return;
+        }
         super.dropCustomDeathLoot(source, looting, recentlyHit);
         if (this.isTame()) {
             // Was `var4 < ++var3` (OreSpawn copy) — increments every check and never ends.
@@ -588,7 +658,9 @@ public class Stinky extends TamableAnimal {
         if (this.isInWater()) {
             this.setDeltaMovement(this.getDeltaMovement().add(0.0, 0.07, 0.0));
         }
-        if (!this.level().isClientSide && this.getRandom().nextInt(2000) == 1) {
+        if (!this.level().isClientSide
+                && this.getSkinLock() == 0
+                && this.getRandom().nextInt(2000) == 1) {
             int i = this.getRandom().nextInt(19);
             this.setSkin(i);
         }

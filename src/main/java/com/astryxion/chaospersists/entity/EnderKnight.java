@@ -1,5 +1,6 @@
 package com.astryxion.chaospersists.entity;
 
+import com.astryxion.chaospersists.loot.DatapackLoot;
 import com.astryxion.chaospersists.util.MyUtils;
 
 import com.astryxion.chaospersists.core.ChaosPersists;
@@ -372,6 +373,9 @@ public class EnderKnight extends Monster {
 
     @Override
     protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+        if (DatapackLoot.useEntityTable(this)) {
+            return;
+        }
         int k = this.random.nextInt(2 + looting);
         for (int l = 0; l < k; ++l) {
             if (this.random.nextInt(2) == 1) {

@@ -43,8 +43,15 @@ public class ItemThunderStaff extends Item {
             lb.setPos(px, py, pz);
             lb.setYRot(player.getYRot());
             lb.setXRot(player.getXRot());
-            // Match OreSpawn 1.7.10: EntityThrowable shoots at 1.5F, then motion *= 3.0.
-            lb.shootFromRotation(player, player.getXRot(), player.getYRot(), 0.0F, 1.5F, 1.0F);
+            // 1.7.10 EntityThrowable.setThrowableHeading: look direction only, then motion *= 3.
+            // Do not use shootFromRotation — it adds shooter velocity, so staff recoil (and
+            // flight) gets tripled into later shots and they drift backward when spammed.
+            float xRot = player.getXRot();
+            float yRot = player.getYRot();
+            float lookX = -Mth.sin(yRot * Mth.DEG_TO_RAD) * Mth.cos(xRot * Mth.DEG_TO_RAD);
+            float lookY = -Mth.sin(xRot * Mth.DEG_TO_RAD);
+            float lookZ = Mth.cos(yRot * Mth.DEG_TO_RAD) * Mth.cos(xRot * Mth.DEG_TO_RAD);
+            lb.shoot(lookX, lookY, lookZ, 1.5F, 1.0F);
             lb.setDeltaMovement(lb.getDeltaMovement().scale(3.0));
             level.addFreshEntity(lb);
         }

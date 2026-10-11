@@ -76,14 +76,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraft.world.level.storage.loot.LootPool;
-import net.minecraft.world.level.storage.loot.LootTable;
-import net.minecraft.world.level.storage.loot.entries.EmptyLootItem;
-import net.minecraft.world.level.storage.loot.entries.LootItem;
-import net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer;
-import net.minecraft.world.level.storage.loot.functions.SetItemCountFunction;
-import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
-import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -108,13 +100,12 @@ import com.astryxion.chaospersists.legacy.forge.fml.common.event.FMLPostInitiali
 import com.astryxion.chaospersists.legacy.forge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import com.astryxion.chaospersists.legacy.minecraft.block.BlockDispenser;
-import com.astryxion.chaospersists.legacy.minecraft.world.storage.loot.LootTableList;
 import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.ArmorMaterial;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraftforge.common.extensions.IForgeMenuType;
-import com.astryxion.chaospersists.container.ContainerCrystalWorkbench;
+import com.astryxion.chaospersists.menu.ContainerCrystalWorkbench;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraft.client.renderer.entity.ArrowRenderer;
@@ -128,6 +119,7 @@ import com.astryxion.chaospersists.legacy.forge.common.util.EnumHelper;
 import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
+import net.minecraftforge.event.entity.EntityTravelToDimensionEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.living.MobSpawnEvent;
@@ -136,6 +128,7 @@ import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.Mob;
 import net.minecraftforge.event.level.ChunkEvent;
 import net.minecraftforge.event.level.LevelEvent;
+import com.astryxion.chaospersists.util.PetCombatHelper;
 import com.astryxion.chaospersists.util.RoyalPetFollowHelper;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.TickEvent;
@@ -148,125 +141,124 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegisterEvent;
 import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
 import net.minecraftforge.event.furnace.FurnaceFuelBurnTimeEvent;
-import net.minecraftforge.event.LootTableLoadEvent;
-import com.astryxion.chaospersists.model.*;
-import com.astryxion.chaospersists.render.RenderAlien;
-import com.astryxion.chaospersists.render.RenderBoyfriend;
-import com.astryxion.chaospersists.render.RenderCage;
-import com.astryxion.chaospersists.render.RenderElevator;
-import com.astryxion.chaospersists.render.RenderGirlfriend;
-import com.astryxion.chaospersists.render.RenderItemUrchin;
-import com.astryxion.chaospersists.render.RenderPurplePower;
-import com.astryxion.chaospersists.render.RenderShoe;
-import com.astryxion.chaospersists.render.RenderSpiderDriver;
-import com.astryxion.chaospersists.render.RenderThrowableBillboard;
-import com.astryxion.chaospersists.render.RenderUltimateArrow;
-import com.astryxion.chaospersists.render.RenderUltimateFishHook;
-import com.astryxion.chaospersists.render.RenderAlosaurus;
-import com.astryxion.chaospersists.render.RenderAnt;
-import com.astryxion.chaospersists.render.RenderAntRobot;
-import com.astryxion.chaospersists.render.RenderAttackSquid;
-import com.astryxion.chaospersists.render.RenderBandP;
-import com.astryxion.chaospersists.render.RenderBaryonyx;
-import com.astryxion.chaospersists.render.RenderBasilisk;
-import com.astryxion.chaospersists.render.RenderBeaver;
-import com.astryxion.chaospersists.render.RenderBee;
-import com.astryxion.chaospersists.render.RenderBrutalfly;
-import com.astryxion.chaospersists.render.RenderButterfly;
-import com.astryxion.chaospersists.render.RenderCamarasaurus;
-import com.astryxion.chaospersists.render.RenderCassowary;
-import com.astryxion.chaospersists.render.RenderCaterKiller;
-import com.astryxion.chaospersists.render.RenderCaveFisher;
-import com.astryxion.chaospersists.render.RenderCephadrome;
-import com.astryxion.chaospersists.render.RenderChipmunk;
-import com.astryxion.chaospersists.render.RenderCliffRacer;
-import com.astryxion.chaospersists.render.RenderCloudShark;
-import com.astryxion.chaospersists.render.RenderCockateil;
-import com.astryxion.chaospersists.render.RenderCoin;
-import com.astryxion.chaospersists.render.RenderCrab;
-import com.astryxion.chaospersists.render.RenderCreepingHorror;
-import com.astryxion.chaospersists.render.RenderCricket;
-import com.astryxion.chaospersists.render.RenderCryolophosaurus;
-import com.astryxion.chaospersists.render.RenderDragon;
-import com.astryxion.chaospersists.render.RenderDragonfly;
-import com.astryxion.chaospersists.render.RenderDungeonBeast;
-import com.astryxion.chaospersists.render.RenderEasterBunny;
-import com.astryxion.chaospersists.render.RenderEmperorScorpion;
-import com.astryxion.chaospersists.render.RenderEnchantedCow;
-import com.astryxion.chaospersists.render.RenderEnderKnight;
-import com.astryxion.chaospersists.render.RenderEnderReaper;
-import com.astryxion.chaospersists.render.RenderFairy;
-import com.astryxion.chaospersists.render.RenderFirefly;
-import com.astryxion.chaospersists.render.RenderFlounder;
-import com.astryxion.chaospersists.render.RenderFrog;
-import com.astryxion.chaospersists.render.RenderGammaMetroid;
-import com.astryxion.chaospersists.render.RenderGazelle;
-import com.astryxion.chaospersists.render.RenderGhost;
-import com.astryxion.chaospersists.render.RenderGhostSkelly;
-import com.astryxion.chaospersists.render.RenderGiantRobot;
-import com.astryxion.chaospersists.render.RenderGodzilla;
-import com.astryxion.chaospersists.render.RenderGodzillaHead;
-import com.astryxion.chaospersists.render.RenderKingHead;
-import com.astryxion.chaospersists.render.RenderQueenHead;
-import com.astryxion.chaospersists.render.RenderThrownRock;
-import com.astryxion.chaospersists.render.RenderGoldFish;
-import com.astryxion.chaospersists.render.RenderHammerhead;
-import com.astryxion.chaospersists.render.RenderHerculesBeetle;
-import com.astryxion.chaospersists.render.RenderHydrolisc;
-import com.astryxion.chaospersists.render.RenderIrukandji;
-import com.astryxion.chaospersists.render.RenderIsland;
-import com.astryxion.chaospersists.render.RenderIslandToo;
-import com.astryxion.chaospersists.render.RenderKraken;
-import com.astryxion.chaospersists.render.RenderKyuubi;
-import com.astryxion.chaospersists.render.RenderLeafMonster;
-import com.astryxion.chaospersists.render.RenderLeon;
-import com.astryxion.chaospersists.render.RenderLizard;
-import com.astryxion.chaospersists.render.RenderLurkingTerror;
-import com.astryxion.chaospersists.render.RenderMantis;
-import com.astryxion.chaospersists.render.RenderMolenoid;
-import com.astryxion.chaospersists.render.RenderMosquito;
-import com.astryxion.chaospersists.render.RenderNastysaurus;
-import com.astryxion.chaospersists.render.RenderOstrich;
-import com.astryxion.chaospersists.render.RenderPeacock;
-import com.astryxion.chaospersists.render.RenderPitchBlack;
-import com.astryxion.chaospersists.render.RenderPointysaurus;
-import com.astryxion.chaospersists.render.RenderRat;
-import com.astryxion.chaospersists.render.RenderRobot1;
-import com.astryxion.chaospersists.render.RenderRobot2;
-import com.astryxion.chaospersists.render.RenderRobot3;
-import com.astryxion.chaospersists.render.RenderRobot4;
-import com.astryxion.chaospersists.render.RenderRobot5;
-import com.astryxion.chaospersists.render.RenderRockBase;
-import com.astryxion.chaospersists.render.RenderRotator;
-import com.astryxion.chaospersists.render.RenderRubberDucky;
-import com.astryxion.chaospersists.render.RenderScorpion;
-import com.astryxion.chaospersists.render.RenderSeaMonster;
-import com.astryxion.chaospersists.render.RenderSeaViper;
-import com.astryxion.chaospersists.render.RenderSkate;
-import com.astryxion.chaospersists.render.RenderSpiderRobot;
-import com.astryxion.chaospersists.render.RenderSpitBug;
-import com.astryxion.chaospersists.render.RenderSpyro;
-import com.astryxion.chaospersists.render.RenderStinkBug;
-import com.astryxion.chaospersists.render.RenderStinky;
-import com.astryxion.chaospersists.render.RenderTRex;
-import com.astryxion.chaospersists.render.RenderTerribleTerror;
-import com.astryxion.chaospersists.render.RenderTheKing;
-import com.astryxion.chaospersists.render.RenderThePrince;
-import com.astryxion.chaospersists.render.RenderThePrinceAdult;
-import com.astryxion.chaospersists.render.RenderThePrinceTeen;
-import com.astryxion.chaospersists.render.RenderThePrincess;
-import com.astryxion.chaospersists.render.RenderTheQueen;
-import com.astryxion.chaospersists.render.RenderTriffid;
-import com.astryxion.chaospersists.render.RenderTrooperBug;
-import com.astryxion.chaospersists.render.RenderTshirt;
-import com.astryxion.chaospersists.render.RenderUrchin;
-import com.astryxion.chaospersists.render.RenderVelocityRaptor;
-import com.astryxion.chaospersists.render.RenderVortex;
-import com.astryxion.chaospersists.render.RenderWaterDragon;
-import com.astryxion.chaospersists.render.RenderWhale;
-import com.astryxion.chaospersists.render.RenderWormLarge;
-import com.astryxion.chaospersists.render.RenderWormMedium;
-import com.astryxion.chaospersists.render.RenderWormSmall;
+import com.astryxion.chaospersists.client.model.*;
+import com.astryxion.chaospersists.client.render.RenderAlien;
+import com.astryxion.chaospersists.client.render.RenderBoyfriend;
+import com.astryxion.chaospersists.client.render.RenderCage;
+import com.astryxion.chaospersists.client.render.RenderElevator;
+import com.astryxion.chaospersists.client.render.RenderGirlfriend;
+import com.astryxion.chaospersists.client.render.RenderItemUrchin;
+import com.astryxion.chaospersists.client.render.RenderPurplePower;
+import com.astryxion.chaospersists.client.render.RenderShoe;
+import com.astryxion.chaospersists.client.render.RenderSpiderDriver;
+import com.astryxion.chaospersists.client.render.RenderThrowableBillboard;
+import com.astryxion.chaospersists.client.render.RenderUltimateArrow;
+import com.astryxion.chaospersists.client.render.RenderUltimateFishHook;
+import com.astryxion.chaospersists.client.render.RenderAlosaurus;
+import com.astryxion.chaospersists.client.render.RenderAnt;
+import com.astryxion.chaospersists.client.render.RenderAntRobot;
+import com.astryxion.chaospersists.client.render.RenderAttackSquid;
+import com.astryxion.chaospersists.client.render.RenderBandP;
+import com.astryxion.chaospersists.client.render.RenderBaryonyx;
+import com.astryxion.chaospersists.client.render.RenderBasilisk;
+import com.astryxion.chaospersists.client.render.RenderBeaver;
+import com.astryxion.chaospersists.client.render.RenderBee;
+import com.astryxion.chaospersists.client.render.RenderBrutalfly;
+import com.astryxion.chaospersists.client.render.RenderButterfly;
+import com.astryxion.chaospersists.client.render.RenderCamarasaurus;
+import com.astryxion.chaospersists.client.render.RenderCassowary;
+import com.astryxion.chaospersists.client.render.RenderCaterKiller;
+import com.astryxion.chaospersists.client.render.RenderCaveFisher;
+import com.astryxion.chaospersists.client.render.RenderCephadrome;
+import com.astryxion.chaospersists.client.render.RenderChipmunk;
+import com.astryxion.chaospersists.client.render.RenderCliffRacer;
+import com.astryxion.chaospersists.client.render.RenderCloudShark;
+import com.astryxion.chaospersists.client.render.RenderCockateil;
+import com.astryxion.chaospersists.client.render.RenderCoin;
+import com.astryxion.chaospersists.client.render.RenderCrab;
+import com.astryxion.chaospersists.client.render.RenderCreepingHorror;
+import com.astryxion.chaospersists.client.render.RenderCricket;
+import com.astryxion.chaospersists.client.render.RenderCryolophosaurus;
+import com.astryxion.chaospersists.client.render.RenderDragon;
+import com.astryxion.chaospersists.client.render.RenderDragonfly;
+import com.astryxion.chaospersists.client.render.RenderDungeonBeast;
+import com.astryxion.chaospersists.client.render.RenderEasterBunny;
+import com.astryxion.chaospersists.client.render.RenderEmperorScorpion;
+import com.astryxion.chaospersists.client.render.RenderEnchantedCow;
+import com.astryxion.chaospersists.client.render.RenderEnderKnight;
+import com.astryxion.chaospersists.client.render.RenderEnderReaper;
+import com.astryxion.chaospersists.client.render.RenderFairy;
+import com.astryxion.chaospersists.client.render.RenderFirefly;
+import com.astryxion.chaospersists.client.render.RenderFlounder;
+import com.astryxion.chaospersists.client.render.RenderFrog;
+import com.astryxion.chaospersists.client.render.RenderGammaMetroid;
+import com.astryxion.chaospersists.client.render.RenderGazelle;
+import com.astryxion.chaospersists.client.render.RenderGhost;
+import com.astryxion.chaospersists.client.render.RenderGhostSkelly;
+import com.astryxion.chaospersists.client.render.RenderGiantRobot;
+import com.astryxion.chaospersists.client.render.RenderGodzilla;
+import com.astryxion.chaospersists.client.render.RenderGodzillaHead;
+import com.astryxion.chaospersists.client.render.RenderKingHead;
+import com.astryxion.chaospersists.client.render.RenderQueenHead;
+import com.astryxion.chaospersists.client.render.RenderThrownRock;
+import com.astryxion.chaospersists.client.render.RenderGoldFish;
+import com.astryxion.chaospersists.client.render.RenderHammerhead;
+import com.astryxion.chaospersists.client.render.RenderHerculesBeetle;
+import com.astryxion.chaospersists.client.render.RenderHydrolisc;
+import com.astryxion.chaospersists.client.render.RenderIrukandji;
+import com.astryxion.chaospersists.client.render.RenderIsland;
+import com.astryxion.chaospersists.client.render.RenderIslandToo;
+import com.astryxion.chaospersists.client.render.RenderKraken;
+import com.astryxion.chaospersists.client.render.RenderKyuubi;
+import com.astryxion.chaospersists.client.render.RenderLeafMonster;
+import com.astryxion.chaospersists.client.render.RenderLeon;
+import com.astryxion.chaospersists.client.render.RenderLizard;
+import com.astryxion.chaospersists.client.render.RenderLurkingTerror;
+import com.astryxion.chaospersists.client.render.RenderMantis;
+import com.astryxion.chaospersists.client.render.RenderMolenoid;
+import com.astryxion.chaospersists.client.render.RenderMosquito;
+import com.astryxion.chaospersists.client.render.RenderNastysaurus;
+import com.astryxion.chaospersists.client.render.RenderOstrich;
+import com.astryxion.chaospersists.client.render.RenderPeacock;
+import com.astryxion.chaospersists.client.render.RenderPitchBlack;
+import com.astryxion.chaospersists.client.render.RenderPointysaurus;
+import com.astryxion.chaospersists.client.render.RenderRat;
+import com.astryxion.chaospersists.client.render.RenderRobot1;
+import com.astryxion.chaospersists.client.render.RenderRobot2;
+import com.astryxion.chaospersists.client.render.RenderRobot3;
+import com.astryxion.chaospersists.client.render.RenderRobot4;
+import com.astryxion.chaospersists.client.render.RenderRobot5;
+import com.astryxion.chaospersists.client.render.RenderRockBase;
+import com.astryxion.chaospersists.client.render.RenderRotator;
+import com.astryxion.chaospersists.client.render.RenderRubberDucky;
+import com.astryxion.chaospersists.client.render.RenderScorpion;
+import com.astryxion.chaospersists.client.render.RenderSeaMonster;
+import com.astryxion.chaospersists.client.render.RenderSeaViper;
+import com.astryxion.chaospersists.client.render.RenderSkate;
+import com.astryxion.chaospersists.client.render.RenderSpiderRobot;
+import com.astryxion.chaospersists.client.render.RenderSpitBug;
+import com.astryxion.chaospersists.client.render.RenderSpyro;
+import com.astryxion.chaospersists.client.render.RenderStinkBug;
+import com.astryxion.chaospersists.client.render.RenderStinky;
+import com.astryxion.chaospersists.client.render.RenderTRex;
+import com.astryxion.chaospersists.client.render.RenderTerribleTerror;
+import com.astryxion.chaospersists.client.render.RenderTheKing;
+import com.astryxion.chaospersists.client.render.RenderThePrince;
+import com.astryxion.chaospersists.client.render.RenderThePrinceAdult;
+import com.astryxion.chaospersists.client.render.RenderThePrinceTeen;
+import com.astryxion.chaospersists.client.render.RenderThePrincess;
+import com.astryxion.chaospersists.client.render.RenderTheQueen;
+import com.astryxion.chaospersists.client.render.RenderTriffid;
+import com.astryxion.chaospersists.client.render.RenderTrooperBug;
+import com.astryxion.chaospersists.client.render.RenderTshirt;
+import com.astryxion.chaospersists.client.render.RenderUrchin;
+import com.astryxion.chaospersists.client.render.RenderVelocityRaptor;
+import com.astryxion.chaospersists.client.render.RenderVortex;
+import com.astryxion.chaospersists.client.render.RenderWaterDragon;
+import com.astryxion.chaospersists.client.render.RenderWhale;
+import com.astryxion.chaospersists.client.render.RenderWormLarge;
+import com.astryxion.chaospersists.client.render.RenderWormMedium;
+import com.astryxion.chaospersists.client.render.RenderWormSmall;
 
 import com.astryxion.chaospersists.util.ArmorStats;
 import com.astryxion.chaospersists.util.Trees;
@@ -558,7 +550,7 @@ import com.astryxion.chaospersists.item.Shoes;
 import com.astryxion.chaospersists.entity.EntityCage;
 import com.astryxion.chaospersists.item.UltimateArrow;
 import com.astryxion.chaospersists.item.IrukandjiArrow;
-import com.astryxion.chaospersists.tileentity.TileEntityCrystalFurnace;
+import com.astryxion.chaospersists.blockentity.TileEntityCrystalFurnace;
 import com.astryxion.chaospersists.item.ThunderBolt;
 import com.astryxion.chaospersists.item.CritterCage;
 import com.astryxion.chaospersists.item.ItemSpawnEgg;
@@ -720,6 +712,7 @@ public class ChaosPersists
     MENU_TYPES.register(modBus);
     CREATIVE_MODE_TABS.register(modBus);
     BIOME_MODIFIER_SERIALIZERS.register(modBus);
+    com.astryxion.chaospersists.loot.ChaosLootModifiers.register(modBus);
     com.astryxion.chaospersists.world.dimension.structure.ChaosLocateStructures.STRUCTURE_TYPES.register(modBus);
     com.astryxion.chaospersists.world.dimension.structure.ChaosLocateStructures.STRUCTURE_PIECES.register(modBus);
     registerAllCritterCages();
@@ -810,7 +803,7 @@ public class ChaosPersists
   public static final RegistryObject<EntityType<Dragonfly>> ENTITY_TYPE_DRAGONFLY = ENTITY_TYPES.register("dragonfly",
       () -> EntityType.Builder.<Dragonfly>of(Dragonfly::new, MobCategory.AMBIENT).sized(1.5f, 0.5f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("dragonfly"));
   public static final RegistryObject<EntityType<EmperorScorpion>> ENTITY_TYPE_EMPEROR_SCORPION = ENTITY_TYPES.register("emperor_scorpion",
-      () -> EntityType.Builder.<EmperorScorpion>of(EmperorScorpion::new, MobCategory.MONSTER).sized(3.5f, 3.0f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("emperor_scorpion"));
+      () -> EntityType.Builder.<EmperorScorpion>of(EmperorScorpion::new, MobCategory.AMBIENT).sized(3.5f, 3.0f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("emperor_scorpion"));
   public static final RegistryObject<EntityType<Scorpion>> ENTITY_TYPE_SCORPION = ENTITY_TYPES.register("scorpion",
       () -> EntityType.Builder.<Scorpion>of(Scorpion::new, MobCategory.MONSTER).sized(0.85f, 0.55f).clientTrackingRange(32).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("scorpion"));
   public static final RegistryObject<EntityType<CaveFisher>> ENTITY_TYPE_CAVE_FISHER = ENTITY_TYPES.register("cave_fisher",
@@ -824,15 +817,15 @@ public class ChaosPersists
   public static final RegistryObject<EntityType<GammaMetroid>> ENTITY_TYPE_WTF = ENTITY_TYPES.register("wtf",
       () -> EntityType.Builder.<GammaMetroid>of(GammaMetroid::new, MobCategory.MONSTER).sized(1.5f, 1.5f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("wtf"));
   public static final RegistryObject<EntityType<Cockateil>> ENTITY_TYPE_BIRD = ENTITY_TYPES.register("bird",
-      () -> EntityType.Builder.<Cockateil>of(Cockateil::new, MobCategory.CREATURE).sized(0.5f, 0.5f).clientTrackingRange(32).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("bird"));
+      () -> EntityType.Builder.<Cockateil>of(Cockateil::new, MobCategory.AMBIENT).sized(0.5f, 0.5f).clientTrackingRange(32).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("bird"));
   public static final RegistryObject<EntityType<RubyBird>> ENTITY_TYPE_RUBY_BIRD = ENTITY_TYPES.register("ruby_bird",
       () -> EntityType.Builder.<RubyBird>of(RubyBird::new, MobCategory.MONSTER).sized(0.6f, 1.8f).clientTrackingRange(32).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("ruby_bird"));
   public static final RegistryObject<EntityType<Kyuubi>> ENTITY_TYPE_KYUUBI = ENTITY_TYPES.register("kyuubi",
       () -> EntityType.Builder.<Kyuubi>of(Kyuubi::new, MobCategory.MONSTER).sized(0.5f, 1.25f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("kyuubi"));
   public static final RegistryObject<EntityType<WaterDragon>> ENTITY_TYPE_WATER_DRAGON = ENTITY_TYPES.register("water_dragon",
-      () -> EntityType.Builder.<WaterDragon>of(WaterDragon::new, MobCategory.MONSTER).sized(1.25f, 1.9f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("water_dragon"));
+      () -> EntityType.Builder.<WaterDragon>of(WaterDragon::new, MobCategory.WATER_CREATURE).sized(1.25f, 1.9f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("water_dragon"));
   public static final RegistryObject<EntityType<AttackSquid>> ENTITY_TYPE_ATTACK_SQUID = ENTITY_TYPES.register("attack_squid",
-      () -> EntityType.Builder.<AttackSquid>of(AttackSquid::new, MobCategory.MONSTER).sized(1.0f, 1.25f).clientTrackingRange(32).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("attack_squid"));
+      () -> EntityType.Builder.<AttackSquid>of(AttackSquid::new, MobCategory.WATER_CREATURE).sized(1.0f, 1.25f).clientTrackingRange(32).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("attack_squid"));
   public static final RegistryObject<EntityType<Alien>> ENTITY_TYPE_ALIEN = ENTITY_TYPES.register("alien",
       () -> EntityType.Builder.<Alien>of(Alien::new, MobCategory.MONSTER).sized(1.1f, 3.25f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("alien"));
   public static final RegistryObject<EntityType<Elevator>> ENTITY_TYPE_ELEVATOR = ENTITY_TYPES.register("hoverboard",
@@ -840,7 +833,7 @@ public class ChaosPersists
   public static final RegistryObject<EntityType<Kraken>> ENTITY_TYPE_THE_KRAKEN = ENTITY_TYPES.register("the_kraken",
       () -> EntityType.Builder.<Kraken>of(Kraken::new, MobCategory.MONSTER).sized(2f, 2f).clientTrackingRange(128).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("the_kraken"));
   public static final RegistryObject<EntityType<Lizard>> ENTITY_TYPE_LIZARD = ENTITY_TYPES.register("lizard",
-      () -> EntityType.Builder.<Lizard>of(Lizard::new, MobCategory.MONSTER).sized(1.5f, 1.25f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("lizard"));
+      () -> EntityType.Builder.<Lizard>of(Lizard::new, MobCategory.WATER_CREATURE).sized(1.5f, 1.25f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("lizard"));
   public static final RegistryObject<EntityType<Cephadrome>> ENTITY_TYPE_CEPHADROME = ENTITY_TYPES.register("cephadrome",
       () -> EntityType.Builder.<Cephadrome>of(Cephadrome::new, MobCategory.MISC).sized(2.5f, 2.25f).clientTrackingRange(128).updateInterval(3).setShouldReceiveVelocityUpdates(true).build("cephadrome"));
   public static final RegistryObject<EntityType<Dragon>> ENTITY_TYPE_DRAGON = ENTITY_TYPES.register("dragon",
@@ -954,9 +947,9 @@ public class ChaosPersists
   public static final RegistryObject<EntityType<Molenoid>> ENTITY_TYPE_MOLENOID = ENTITY_TYPES.register("molenoid",
       () -> EntityType.Builder.<Molenoid>of(Molenoid::new, MobCategory.MONSTER).sized(3.9f, 2.6f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("molenoid"));
   public static final RegistryObject<EntityType<SeaMonster>> ENTITY_TYPE_SEA_MONSTER = ENTITY_TYPES.register("sea_monster",
-      () -> EntityType.Builder.<SeaMonster>of(SeaMonster::new, MobCategory.MONSTER).sized(1.25f, 2.5f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("sea_monster"));
+      () -> EntityType.Builder.<SeaMonster>of(SeaMonster::new, MobCategory.WATER_CREATURE).sized(1.25f, 2.5f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("sea_monster"));
   public static final RegistryObject<EntityType<SeaViper>> ENTITY_TYPE_SEA_VIPER = ENTITY_TYPES.register("sea_viper",
-      () -> EntityType.Builder.<SeaViper>of(SeaViper::new, MobCategory.MONSTER).sized(1.5f, 2.5f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("sea_viper"));
+      () -> EntityType.Builder.<SeaViper>of(SeaViper::new, MobCategory.WATER_CREATURE).sized(1.5f, 2.5f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("sea_viper"));
   public static final RegistryObject<EntityType<EasterBunny>> ENTITY_TYPE_EASTER_BUNNY = ENTITY_TYPES.register("easter_bunny",
       () -> EntityType.Builder.<EasterBunny>of(EasterBunny::new, MobCategory.MONSTER).sized(0.5f, 0.75f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("easter_bunny"));
   public static final RegistryObject<EntityType<CaterKiller>> ENTITY_TYPE_CATERKILLER = ENTITY_TYPES.register("caterkiller",
@@ -968,9 +961,9 @@ public class ChaosPersists
   public static final RegistryObject<EntityType<Hammerhead>> ENTITY_TYPE_HAMMERHEAD = ENTITY_TYPES.register("hammerhead",
       () -> EntityType.Builder.<Hammerhead>of(Hammerhead::new, MobCategory.MONSTER).sized(3.0f, 5.0f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("hammerhead"));
   public static final RegistryObject<EntityType<RubberDucky>> ENTITY_TYPE_RUBBER_DUCKY = ENTITY_TYPES.register("rubber_ducky",
-      () -> EntityType.Builder.<RubberDucky>of(RubberDucky::new, MobCategory.CREATURE).sized(0.6f, 1.4f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("rubber_ducky"));
+      () -> EntityType.Builder.<RubberDucky>of(RubberDucky::new, MobCategory.WATER_CREATURE).sized(0.6f, 1.4f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("rubber_ducky"));
   public static final RegistryObject<EntityType<ThePrinceTeen>> ENTITY_TYPE_THE_YOUNG_PRINCE = ENTITY_TYPES.register("the_young_prince",
-      () -> EntityType.Builder.<ThePrinceTeen>of(ThePrinceTeen::new, MobCategory.MONSTER).sized(0.6f, 1.8f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("the_young_prince"));
+      () -> EntityType.Builder.<ThePrinceTeen>of(ThePrinceTeen::new, MobCategory.MONSTER).sized(0.6f, 1.8f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(true).build("the_young_prince"));
   public static final RegistryObject<EntityType<BandP>> ENTITY_TYPE_CRIMINAL = ENTITY_TYPES.register("criminal",
       () -> EntityType.Builder.<BandP>of(BandP::new, MobCategory.MONSTER).sized(0.6f, 1.8f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("criminal"));
   public static final RegistryObject<EntityType<RockBase>> ENTITY_TYPE_ROCK = ENTITY_TYPES.register("rock",
@@ -988,7 +981,7 @@ public class ChaosPersists
   public static final RegistryObject<EntityType<Frog>> ENTITY_TYPE_FROG = ENTITY_TYPES.register("frog",
       () -> EntityType.Builder.<Frog>of(Frog::new, MobCategory.WATER_CREATURE).sized(0.75f, 0.75f).clientTrackingRange(32).updateInterval(1).setShouldReceiveVelocityUpdates(true).build("frog"));
   public static final RegistryObject<EntityType<ThePrinceAdult>> ENTITY_TYPE_THE_YOUNG_ADULT_PRINCE = ENTITY_TYPES.register("the_young_adult_prince",
-      () -> EntityType.Builder.<ThePrinceAdult>of(ThePrinceAdult::new, MobCategory.MONSTER).sized(0.6f, 1.8f).clientTrackingRange(128).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("the_young_adult_prince"));
+      () -> EntityType.Builder.<ThePrinceAdult>of(ThePrinceAdult::new, MobCategory.MONSTER).sized(0.6f, 1.8f).clientTrackingRange(128).updateInterval(1).setShouldReceiveVelocityUpdates(true).build("the_young_adult_prince"));
   public static final RegistryObject<EntityType<SpiderRobot>> ENTITY_TYPE_SPIDER_ROBOT = ENTITY_TYPES.register("robot_spider",
       () -> EntityType.Builder.<SpiderRobot>of(SpiderRobot::new, MobCategory.MONSTER).sized(3.25f, 2.25f).clientTrackingRange(128).updateInterval(3).setShouldReceiveVelocityUpdates(true).build("robot_spider"));
   public static final RegistryObject<EntityType<SpiderDriver>> ENTITY_TYPE_SPIDER_DRIVER = ENTITY_TYPES.register("spider_driver",
@@ -996,9 +989,9 @@ public class ChaosPersists
   public static final RegistryObject<EntityType<GiantRobot>> ENTITY_TYPE_GIANT_ROBOT = ENTITY_TYPES.register("jeffery",
       () -> EntityType.Builder.<GiantRobot>of(GiantRobot::new, MobCategory.MONSTER).sized(3.0f, 9.75f).clientTrackingRange(128).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("jeffery"));
   public static final RegistryObject<EntityType<AntRobot>> ENTITY_TYPE_ANT_ROBOT = ENTITY_TYPES.register("robot_red_ant",
-      () -> EntityType.Builder.<AntRobot>of(AntRobot::new, MobCategory.MONSTER).sized(4.0f, 2.5f).clientTrackingRange(128).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("robot_red_ant"));
+      () -> EntityType.Builder.<AntRobot>of(AntRobot::new, MobCategory.MONSTER).sized(4.0f, 2.5f).clientTrackingRange(128).updateInterval(1).setShouldReceiveVelocityUpdates(true).build("robot_red_ant"));
   public static final RegistryObject<EntityType<Crab>> ENTITY_TYPE_CRAB = ENTITY_TYPES.register("crab",
-      () -> EntityType.Builder.<Crab>of(Crab::new, MobCategory.MONSTER).sized(0.6f, 1.8f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("crab"));
+      () -> EntityType.Builder.<Crab>of(Crab::new, MobCategory.WATER_CREATURE).sized(0.6f, 1.8f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("crab"));
   public static final RegistryObject<EntityType<Shoes>> ENTITY_TYPE_SHOES = ENTITY_TYPES.register("shoes",
       () -> EntityType.Builder.<Shoes>of(Shoes::new, MobCategory.MISC).sized(0.25f, 0.25f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(true).build("shoes"));
   public static final RegistryObject<EntityType<EntityCage>> ENTITY_TYPE_CAGE = ENTITY_TYPES.register("entity_cage",
@@ -1876,7 +1869,7 @@ private static void registerAllCritterCages() {
     instance = this;
     proxy =
         net.minecraftforge.fml.loading.FMLEnvironment.dist == net.minecraftforge.api.distmarker.Dist.CLIENT
-            ? new com.astryxion.chaospersists.proxy.ClientProxyChaos()
+            ? new com.astryxion.chaospersists.client.proxy.ClientProxyChaos()
             : new com.astryxion.chaospersists.proxy.CommonProxyChaos();
     IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
     modBus.addListener(this::commonSetup);
@@ -1885,7 +1878,7 @@ private static void registerAllCritterCages() {
     // Never bind client-only listeners on dedicated server — @OnlyIn methods are stripped and
     // resolving them causes NoSuchMethodError (registerEntityRenderers crash).
     if (net.minecraftforge.fml.loading.FMLEnvironment.dist.isClient()) {
-      com.astryxion.chaospersists.client.ClientModBusEvents.register(modBus, this);
+      com.astryxion.chaospersists.client.event.ClientModBusEvents.register(modBus, this);
     }
     MinecraftForge.EVENT_BUS.register(this);
     ensureEarlyConfigLoaded();
@@ -2363,7 +2356,7 @@ private static void registerAllCritterCages() {
     event.enqueueWork(ChaosFlowerPots::bindToVanillaFlowerPot);
   }
 
-  /** Client-only FMLClientSetup; bound from {@link com.astryxion.chaospersists.client.ClientModBusEvents}. */
+  /** Client-only FMLClientSetup; bound from {@link com.astryxion.chaospersists.client.event.ClientModBusEvents}. */
   @OnlyIn(Dist.CLIENT)
   public void clientInit(final net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent event) {
     event.enqueueWork(
@@ -2371,7 +2364,7 @@ private static void registerAllCritterCages() {
           proxy.registerBlockRenderLayers();
           net.minecraft.client.gui.screens.MenuScreens.register(
               MENU_CRYSTAL_WORKBENCH.get(),
-              com.astryxion.chaospersists.util.CrystalWorkbenchGUI::new);
+              com.astryxion.chaospersists.client.gui.CrystalWorkbenchGUI::new);
           load(new FMLInitializationEvent());
         });
   }
@@ -2403,6 +2396,9 @@ private static void registerAllCritterCages() {
         continue;
       }
       if (!isValidCreativeTabItem(item, flags)) {
+        continue;
+      }
+      if (!com.astryxion.chaospersists.config.ChaosMobAccess.isItemAllowed(item)) {
         continue;
       }
       tabItems.add(item);
@@ -2453,7 +2449,8 @@ private static void registerAllCritterCages() {
     }
     for (java.util.Map.Entry<ItemStack, CreativeModeTab.TabVisibility> entry : snapshot) {
       ItemStack stack = entry.getKey();
-      if (!isValidCreativeTabStack(stack, flags)) {
+      if (!isValidCreativeTabStack(stack, flags)
+          || !com.astryxion.chaospersists.config.ChaosMobAccess.isItemAllowed(stack.getItem())) {
         entries.remove(stack);
         continue;
       }
@@ -2821,7 +2818,7 @@ private static void registerAllCritterCages() {
     event.registerEntityRenderer(ENTITY_TYPE_TROOPER_BUG.get(), ctx -> new RenderTrooperBug(ctx, new ModelTrooperBug(0.22f), 0.95f, 1.1f));
     event.registerEntityRenderer(ENTITY_TYPE_TSHIRT.get(), ctx -> new RenderTshirt(ctx, new ModelTshirt(0.22f), 1.0f, 0.33f));
     event.registerEntityRenderer(ENTITY_TYPE_ULTIMATE_ARROW.get(), ctx -> new RenderUltimateArrow(ctx));
-    event.registerEntityRenderer(ENTITY_TYPE_ULTIMATE_FISH_HOOK.get(), ctx -> new com.astryxion.chaospersists.render.RenderUltimateFishHook(ctx));
+    event.registerEntityRenderer(ENTITY_TYPE_ULTIMATE_FISH_HOOK.get(), ctx -> new com.astryxion.chaospersists.client.render.RenderUltimateFishHook(ctx));
     event.registerEntityRenderer(ENTITY_TYPE_UNSTABLE_ANT.get(), ctx -> new RenderAnt(ctx, new ModelAnt(), 0.1f, 0.25f));
     event.registerEntityRenderer(ENTITY_TYPE_URCHIN.get(), ctx -> new RenderUrchin(ctx, new ModelUrchin(1.0f), 0.35f, 1.25f));
     event.registerEntityRenderer(ENTITY_TYPE_VELOCITY_RAPTOR.get(), ctx -> new RenderVelocityRaptor(ctx, new ModelVelocityRaptor(1.25f), 0.55f, 0.75f));
@@ -2836,8 +2833,7 @@ private static void registerAllCritterCages() {
     public static com.astryxion.chaospersists.proxy.CommonProxyChaos proxy;
 
   public static ChaosPersists instance;
-  public static com.astryxion.chaospersists.util.KeyHandler MyKeyhandler = null;
-  public static int flyup_keystate = 0;
+  public static com.astryxion.chaospersists.client.input.KeyHandler MyKeyhandler = null;
 
   public static int BaseBlockID = 2700;
   public static int BaseItemID = 9000;
@@ -2868,6 +2864,17 @@ private static void registerAllCritterCages() {
   public static int PlayNicely = 0;
   public static int MinersDreamExpensive = 0;
   public static int DisableOverworldDungeons = 0;
+  /** 1 = no Chaos Persists Overworld worldgen, spawns, ores, eggs, ants, or overworld structures. */
+  public static int DisableOverworldFeatures = 0;
+  public static int DisableOverworldNaturalSpawning = 0;
+  public static int DisableOverworldDriedOre = 0;
+  public static int DisableOverworldDriedEggs = 0;
+  public static int DisableOverworldAntNests = 0;
+  /** 0 follow mobGriefing, 1 always, 2 never. */
+  public static int RobotsGriefing = 0;
+  public static int BossesGriefing = 0;
+  public static int CrittersGriefing = 0;
+  public static int OtherMobsGriefing = 0;
   public static int FullPowerKingEnable = 0;
   /** 1 = grow naturally (kills/days) and with a Diamond Block. 0 = Diamond Block only. */
   public static int PrinceAutoGrow = 1;
@@ -2888,6 +2895,8 @@ private static void registerAllCritterCages() {
   public static ArmorStats Queen_armorstats = null;
 
   public static int AllMobsDisable = 0;
+  /** 1 = percent-of-max-HP hits on Chaos mobs are treated as if the mob had 100 HP. */
+  public static int IgnorePercentHealthDamage = 1;
   public static int MosquitoEnable = 1;
   public static int RockEnable = 1;
   public static int GhostEnable = 1;
@@ -4108,6 +4117,13 @@ private static void registerAllCritterCages() {
     getMobs(config, mobs);
 
     AllMobsDisable = config.get(tweaks, "AllMobsDisable", 0).getInt();
+    IgnorePercentHealthDamage =
+        config.get(
+                tweaks,
+                "IgnorePercentHealthDamage",
+                1,
+                "1 = hits that include a percent of max health (Cataclysm bosses and similar) are treated as if this Chaos mob had 100 HP. Stops huge OreSpawn health pools from making bosses weaker. 0 = vanilla percent scaling.")
+            .getInt();
     LessOre = config.get(tweaks, "LessOre", 0).getInt();
     LessLag = config.get(tweaks, "LessLag", 0).getInt();
     RatPlayerFriendly = config.get(tweaks, "RatPlayerFriendly", 1).getInt();
@@ -4126,6 +4142,7 @@ private static void registerAllCritterCages() {
     PlayNicely = config.get(tweaks, "PlayNicely", 0).getInt();
     MinersDreamExpensive = config.get(tweaks, "MinersDreamExpensive", 0).getInt();
     DisableOverworldDungeons = config.get(tweaks, "DisableOverworldDungeons", 0).getInt();
+    com.astryxion.chaospersists.config.ChaosPackConfig.load(config);
     FullPowerKingEnable = config.get(tweaks, "FullPowerKingEnable", 0).getInt();
     PrinceAutoGrow =
         config.get(
@@ -4218,10 +4235,6 @@ private static void registerAllCritterCages() {
     BlkGold_stats = get_orestats(config, ores, "BlockGold", 2, 4, 0, 25);
 
     config.save();
-
-    if (AllMobsDisable != 0) {
-      disableAllMobs();
-    }
 
     BiomeUtopiaID = BaseBiomeID;
     BiomeIslandsID = BaseBiomeID + 1;
@@ -6819,28 +6832,29 @@ private static void registerAllCritterCages() {
     }
 
     if (BeeEnable != 0) {
-      EntityRegistry.addSpawn(Bee.class, 2, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.FOREST });
-      EntityRegistry.addSpawn(Bee.class, 2, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.FOREST_HILLS });
-      EntityRegistry.addSpawn(Bee.class, 5, 3, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.JUNGLE });
-      EntityRegistry.addSpawn(Bee.class, 5, 2, 5, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.JUNGLE_HILLS });
-      EntityRegistry.addSpawn(Bee.class, 3, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST });
-      EntityRegistry.addSpawn(Bee.class, 3, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST_HILLS });
-      EntityRegistry.addSpawn(Bee.class, 5, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.REDWOOD_TAIGA });
-      EntityRegistry.addSpawn(Bee.class, 5, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.TAIGA });
-      EntityRegistry.addSpawn(Bee.class, 3, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SAVANNA });
-      EntityRegistry.addSpawn(Bee.class, 2, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SAVANNA_PLATEAU });
+      EntityRegistry.addSpawn(Bee.class, 4, 1, 2, MobCategory.MONSTER, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.FOREST });
+      EntityRegistry.addSpawn(Bee.class, 4, 1, 2, MobCategory.MONSTER, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.FOREST_HILLS });
+      EntityRegistry.addSpawn(Bee.class, 8, 3, 5, MobCategory.MONSTER, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.JUNGLE });
+      EntityRegistry.addSpawn(Bee.class, 8, 2, 5, MobCategory.MONSTER, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.JUNGLE_HILLS });
+      EntityRegistry.addSpawn(Bee.class, 5, 2, 4, MobCategory.MONSTER, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST });
+      EntityRegistry.addSpawn(Bee.class, 5, 2, 4, MobCategory.MONSTER, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST_HILLS });
+      EntityRegistry.addSpawn(Bee.class, 6, 1, 2, MobCategory.MONSTER, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.REDWOOD_TAIGA });
+      EntityRegistry.addSpawn(Bee.class, 6, 1, 2, MobCategory.MONSTER, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.TAIGA });
+      EntityRegistry.addSpawn(Bee.class, 5, 1, 2, MobCategory.MONSTER, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.PLAINS });
+      EntityRegistry.addSpawn(Bee.class, 5, 1, 1, MobCategory.MONSTER, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SAVANNA });
+      EntityRegistry.addSpawn(Bee.class, 4, 1, 1, MobCategory.MONSTER, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SAVANNA_PLATEAU });
     }
 
     if (MantisEnable != 0) {
-      EntityRegistry.addSpawn(Mantis.class, 1, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.FOREST });
-      EntityRegistry.addSpawn(Mantis.class, 1, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.FOREST_HILLS });
-      EntityRegistry.addSpawn(Mantis.class, 5, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.JUNGLE });
-      EntityRegistry.addSpawn(Mantis.class, 1, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.PLAINS });
-      EntityRegistry.addSpawn(Mantis.class, 1, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SWAMPLAND });
-      EntityRegistry.addSpawn(Mantis.class, 1, 2, 4, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST });
-      EntityRegistry.addSpawn(Mantis.class, 1, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.REDWOOD_TAIGA });
-      EntityRegistry.addSpawn(Mantis.class, 1, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SAVANNA });
-      EntityRegistry.addSpawn(Mantis.class, 1, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SAVANNA_PLATEAU });
+      EntityRegistry.addSpawn(Mantis.class, 8, 1, 2, MobCategory.MONSTER, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.FOREST });
+      EntityRegistry.addSpawn(Mantis.class, 8, 1, 2, MobCategory.MONSTER, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.FOREST_HILLS });
+      EntityRegistry.addSpawn(Mantis.class, 12, 1, 2, MobCategory.MONSTER, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.JUNGLE });
+      EntityRegistry.addSpawn(Mantis.class, 10, 1, 2, MobCategory.MONSTER, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.PLAINS });
+      EntityRegistry.addSpawn(Mantis.class, 6, 1, 2, MobCategory.MONSTER, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SWAMPLAND });
+      EntityRegistry.addSpawn(Mantis.class, 6, 2, 4, MobCategory.MONSTER, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.BIRCH_FOREST });
+      EntityRegistry.addSpawn(Mantis.class, 6, 1, 2, MobCategory.MONSTER, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.REDWOOD_TAIGA });
+      EntityRegistry.addSpawn(Mantis.class, 6, 1, 1, MobCategory.MONSTER, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SAVANNA });
+      EntityRegistry.addSpawn(Mantis.class, 6, 1, 1, MobCategory.MONSTER, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SAVANNA_PLATEAU });
     }
 
     if (HerculesBeetleEnable != 0) {
@@ -7009,8 +7023,8 @@ private static void registerAllCritterCages() {
       EntityRegistry.addSpawn(Basilisk.class, 15, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.ROOFED_FOREST });
     }
     if (EmperorScorpionEnable != 0) {
-      EntityRegistry.addSpawn(EmperorScorpion.class, 1, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.DESERT });
-      EntityRegistry.addSpawn(EmperorScorpion.class, 2, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SAVANNA });
+      EntityRegistry.addSpawn(EmperorScorpion.class, 8, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.DESERT });
+      EntityRegistry.addSpawn(EmperorScorpion.class, 6, 1, 1, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SAVANNA });
     }
     if (TrooperBugEnable != 0) {
       EntityRegistry.addSpawn(TrooperBug.class, 3, 1, 2, MobCategory.AMBIENT, new com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome[] { Biomes.SWAMPLAND });
@@ -7284,227 +7298,6 @@ private static void registerAllCritterCages() {
   }
 
   @SubscribeEvent
-  public void onLootTableLoad(LootTableLoadEvent event) {
-    if (event.getName() == null || event.getTable() == null) {
-      return;
-    }
-    try {
-      if (event.getName().equals(LootTableList.CHESTS_SIMPLE_DUNGEON)) {
-        injectLegacyChestLoot(
-            event.getTable(),
-            "chaospersists_simple_dungeon",
-            MyRuby,
-            3,
-            1,
-            1,
-            MyAmethyst,
-            3,
-            1,
-            1,
-            MyThunderStaff,
-            2,
-            1,
-            1);
-      } else if (event.getName().equals(LootTableList.CHESTS_JUNGLE_TEMPLE)) {
-        injectLegacyChestLoot(
-            event.getTable(),
-            "chaospersists_jungle_temple",
-            MyRuby,
-            3,
-            1,
-            1,
-            MyAmethyst,
-            3,
-            1,
-            1,
-            AntRobotKit,
-            3,
-            1,
-            1);
-      } else if (event.getName().equals(LootTableList.CHESTS_DESERT_PYRAMID)) {
-        injectLegacyChestLoot(
-            event.getTable(),
-            "chaospersists_desert_pyramid",
-            MyRuby,
-            2,
-            1,
-            1,
-            MyAmethyst,
-            2,
-            1,
-            1,
-            SpiderRobotKit,
-            2,
-            1,
-            1);
-      }
-    } catch (Throwable t) {
-      LOGGER.warn("ChaosPersists: failed to inject chest loot into {}", event.getName(), t);
-    }
-  }
-
-  /** 1.7.10 ChestGenHooks port: mix into "main" when possible, otherwise add a named extra pool. */
-  private static void injectLegacyChestLoot(
-      LootTable table,
-      String fallbackPoolName,
-      Item item1,
-      int weight1,
-      int min1,
-      int max1,
-      Item item2,
-      int weight2,
-      int min2,
-      int max2,
-      Item item3,
-      int weight3,
-      int min3,
-      int max3) {
-    if (table == null) {
-      return;
-    }
-    LootPool main = table.getPool("main");
-    int injected = 0;
-    if (addLegacyLootEntry(main, item1, weight1, min1, max1)) {
-      injected++;
-    }
-    if (addLegacyLootEntry(main, item2, weight2, min2, max2)) {
-      injected++;
-    }
-    if (addLegacyLootEntry(main, item3, weight3, min3, max3)) {
-      injected++;
-    }
-    if (injected > 0) {
-      return;
-    }
-    LootPool.Builder builder =
-        LootPool.lootPool().name(fallbackPoolName).setRolls(ConstantValue.exactly(1.0F));
-    addLegacyPoolItem(builder, item1, weight1, min1, max1);
-    addLegacyPoolItem(builder, item2, weight2, min2, max2);
-    addLegacyPoolItem(builder, item3, weight3, min3, max3);
-    builder.add(EmptyLootItem.emptyItem().setWeight(100));
-    table.addPool(builder.build());
-  }
-
-  private static void addLegacyPoolItem(
-      LootPool.Builder builder, Item item, int weight, int minCount, int maxCount) {
-    if (builder == null || item == null || weight <= 0) {
-      return;
-    }
-    builder.add(legacyLootItem(item, weight, minCount, maxCount));
-  }
-
-  private static LootPoolEntryContainer.Builder<?> legacyLootItem(
-      Item item, int weight, int minCount, int maxCount) {
-    return LootItem.lootTableItem(item)
-        .setWeight(weight)
-        .setQuality(0)
-        .apply(
-            SetItemCountFunction.setCount(
-                UniformGenerator.between((float) minCount, (float) maxCount)));
-  }
-
-  private static boolean addLegacyLootEntry(
-      LootPool pool, Item item, int weight, int minCount, int maxCount) {
-    if (pool == null || item == null || weight <= 0) {
-      return false;
-    }
-    try {
-      LootPoolEntryContainer entry = legacyLootItem(item, weight, minCount, maxCount).build();
-      return appendLootPoolEntry(pool, entry);
-    } catch (Throwable ignored) {
-      return false;
-    }
-  }
-
-  @Nullable private static volatile Field lootPoolEntriesField;
-
-  private static volatile boolean lootPoolEntriesFieldResolved;
-
-  @Nullable
-  private static synchronized Field lootPoolEntriesField() {
-    if (lootPoolEntriesFieldResolved) {
-      return lootPoolEntriesField;
-    }
-    Field found = null;
-    try {
-      found = LootPool.class.getDeclaredField("entries");
-    } catch (NoSuchFieldException ignored) {
-    }
-    if (found == null) {
-      try {
-        found = LootPool.class.getDeclaredField("f_79023_");
-      } catch (NoSuchFieldException ignored) {
-      }
-    }
-    if (found == null) {
-      for (Field field : LootPool.class.getDeclaredFields()) {
-        if (field.getType() == LootPoolEntryContainer[].class) {
-          found = field;
-          break;
-        }
-      }
-    }
-    if (found == null) {
-      for (Field field : LootPool.class.getDeclaredFields()) {
-        if (!List.class.isAssignableFrom(field.getType())) {
-          continue;
-        }
-        java.lang.reflect.Type generic = field.getGenericType();
-        if (!(generic instanceof java.lang.reflect.ParameterizedType parameterized)) {
-          continue;
-        }
-        java.lang.reflect.Type[] args = parameterized.getActualTypeArguments();
-        if (args.length == 1 && args[0] == LootPoolEntryContainer.class) {
-          found = field;
-          break;
-        }
-      }
-    }
-    if (found != null) {
-      found.setAccessible(true);
-    }
-    lootPoolEntriesField = found;
-    lootPoolEntriesFieldResolved = true;
-    return found;
-  }
-
-  private static boolean appendLootPoolEntry(LootPool pool, LootPoolEntryContainer extra) {
-    if (pool == null || extra == null) {
-      return false;
-    }
-    Field field = lootPoolEntriesField();
-    if (field == null) {
-      return false;
-    }
-    try {
-      Object value = field.get(pool);
-      if (value instanceof LootPoolEntryContainer[]) {
-        LootPoolEntryContainer[] entries = (LootPoolEntryContainer[]) value;
-        LootPoolEntryContainer[] merged =
-            java.util.Arrays.copyOf(entries, entries.length + 1);
-        merged[entries.length] = extra;
-        field.set(pool, merged);
-        return true;
-      }
-      if (value instanceof List) {
-        @SuppressWarnings("unchecked")
-        List<LootPoolEntryContainer> entries = (List<LootPoolEntryContainer>) value;
-        try {
-          entries.add(extra);
-          return true;
-        } catch (UnsupportedOperationException immutable) {
-          List<LootPoolEntryContainer> copy = new ArrayList<>(entries);
-          copy.add(extra);
-          field.set(pool, copy);
-          return true;
-        }
-      }
-    } catch (Throwable ignored) {
-    }
-    return false;
-  }
-
-  @SubscribeEvent
   public void onFurnaceFuelBurnTime(FurnaceFuelBurnTimeEvent event) {
     if (event.getItemStack().isEmpty()) return;
     if (event.getItemStack().getItem() == Item.byBlock(CrystalCoal)) {
@@ -7560,6 +7353,7 @@ private static void registerAllCritterCages() {
    * 1.7.10 parity: OreSpawn armor used legacy linear reduction (damage * (1 - armor/25)).
    * In 1.12+/1.20+, high-damage hits penetrate armor more aggressively via toughness,
    * so players in Ultimate/Mobzilla/etc. and high-defense mobs take far too much damage.
+   * Vanilla mobs wearing OreSpawn armor (zombies, skeletons, husks, etc.) use the same curve.
    */
   @SubscribeEvent
   public void onLivingHurtLegacyArmorParity(LivingHurtEvent event) {
@@ -7572,8 +7366,8 @@ private static void registerAllCritterCages() {
     }
     ResourceLocation id = EntityType.getKey(living.getType());
     boolean chaosMob = id != null && "chaospersists".equals(id.getNamespace());
-    boolean playerInChaosArmor = living instanceof Player && hasChaosArmorEquipped(living);
-    if (!chaosMob && !playerInChaosArmor) {
+    boolean chaosArmor = hasChaosArmorEquipped(living);
+    if (!chaosMob && !chaosArmor) {
       return;
     }
     DamageSource source = event.getSource();
@@ -7592,6 +7386,11 @@ private static void registerAllCritterCages() {
 
     // 1.7.10-style final damage expectation (armor above 20 still helps).
     float legacyFinal = Math.max(0.0f, incoming * (25.0f - (float)armor) / 25.0f);
+    // Full Ultimate/Royal/Queen is 25+ armor, which is 0 damage in 1.7. Players keep that.
+    // Vanilla mobs with 20 HP would be immortal; leave a small chip so they still die.
+    if (legacyFinal <= 0.0f && !chaosMob && !(living instanceof Player)) {
+      legacyFinal = Math.min(incoming, Math.max(1.0f, living.getMaxHealth() * 0.1f));
+    }
 
     float toughness = 0.0f;
     AttributeInstance toughAttr = living.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ARMOR_TOUGHNESS);
@@ -7689,6 +7488,19 @@ private static void registerAllCritterCages() {
       }
     }
     return false;
+  }
+
+  @SubscribeEvent
+  public void onBlockOverworldNaturalChaosSpawns(MobSpawnEvent.FinalizeSpawn event) {
+    if (event == null || event.getEntity() == null) {
+      return;
+    }
+    Mob mob = event.getEntity();
+    if (com.astryxion.chaospersists.config.ChaosPackConfig.shouldBlockOverworldNaturalSpawn(
+            mob.getType(), mob.level(), event.getSpawnType())) {
+      event.setSpawnCancelled(true);
+      event.setCanceled(true);
+    }
   }
 
   @SubscribeEvent
@@ -7849,7 +7661,21 @@ private static void registerAllCritterCages() {
     if (!(event.getEntity() instanceof ServerPlayer player)) {
       return;
     }
-    RoyalPetFollowHelper.bringRoyalPetsToPlayer(player);
+    RoyalPetFollowHelper.bringFollowingPetsToPlayer(player);
+  }
+
+  /** Crystal is a naked start; tamed followers (princess, girlfriend, wolves, etc.) stay behind. */
+  @SubscribeEvent
+  public void onEntityTravelToDimensionBlockCrystalPets(EntityTravelToDimensionEvent event) {
+    if (event == null || event.getEntity() == null) {
+      return;
+    }
+    if (!getCrystalDimensionKey().equals(event.getDimension())) {
+      return;
+    }
+    if (event.getEntity() instanceof TamableAnimal tame && tame.isTame()) {
+      event.setCanceled(true);
+    }
   }
 
   /** Keep loaded ground pets catching up onto solid ground (never midair) when the owner moves far. */
@@ -7941,6 +7767,7 @@ private static void registerAllCritterCages() {
     if (!(base instanceof Mob mob)) {
       return;
     }
+    PetCombatHelper.dropAlliedCompanionFight(mob);
     ResourceLocation key = EntityType.getKey(base.getType());
     if (key != null && MODID.equals(key.getNamespace())) {
       LivingEntity currentTarget = mob.getTarget();
@@ -8410,8 +8237,8 @@ private static void registerAllCritterCages() {
     }
     return pathLower.contains("plant")
         || pathLower.contains("sapling")
-        || pathLower.startsWith("lettuce_")
-        || pathLower.startsWith("quinoa_")
+        || pathLower.matches("lettuce_[0-3]")
+        || pathLower.matches("quinoa_[0-3]")
         || pathLower.startsWith("potted_")
         || "dungeonspawner".equals(pathLower);
   }
@@ -8695,10 +8522,14 @@ private static void registerAllCritterCages() {
           CreativeTabCompat.setCreativeTab(item, null);
           continue;
         }
+        // Edible crop items (corn, tomato, radish, quinoa, rice, lettuce) and pizza
+        // are BlockItems, but belong in Chaos Foods like vanilla cake.
+        if (item.isEdible() || "pizza".equals(lower)) {
+          CreativeTabCompat.setCreativeTab(item, tabChaosFoods);
+          continue;
+        }
 
         CreativeTabCompat.setCreativeTab(item, tabChaosBlocks);
-      } else if ("pizza".equals(lower)) {
-        CreativeTabCompat.setCreativeTab(item, tabChaosFoods);
       } else if ("ducttape".equals(lower)) {
         CreativeTabCompat.setCreativeTab(item, tabChaosTools);
       } else if ("step_up".equals(lower) || "step_down".equals(lower) || "step_accross".equals(lower)) {
@@ -9002,6 +8833,8 @@ private static void registerAllCritterCages() {
       }
     }
     if (state.getBlock() instanceof net.minecraft.world.level.block.LeavesBlock leaves) {
+      // Fast worldgen writes leaves at DISTANCE=7. Persist so vanilla distance-decay does not
+      // strip standing trees; apple/crystal/scary decay themselves in randomTick (1.7).
       state = state.setValue(leaves.PERSISTENT, true);
     }
     return state;
@@ -9231,11 +9064,7 @@ private static void registerAllCritterCages() {
     MobStats m = new MobStats();
 
     m.health = config.get(arm, s + "_health", health).getInt();
-    if (m.health < health / 2) m.health = (health / 2);
-    if (m.health > health * 2) m.health = (health * 2);
     m.attack = config.get(arm, s + "_attack", attack).getInt();
-    if (m.attack < attack / 2) m.attack = (attack / 2);
-    if (m.attack > attack * 2) m.attack = (attack * 2);
     m.defense = config.get(arm, s + "_defense", defense).getInt();
     if (m.defense < defense - 4) m.defense = (defense - 4);
     if (m.defense > defense + 4) m.defense = (defense + 4);

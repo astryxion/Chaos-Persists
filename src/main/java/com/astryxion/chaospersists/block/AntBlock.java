@@ -1,5 +1,6 @@
 package com.astryxion.chaospersists.block;
 
+import com.astryxion.chaospersists.loot.DatapackLoot;
 import com.astryxion.chaospersists.util.MyUtils;
 
 import com.astryxion.chaospersists.core.ChaosPersists;
@@ -94,6 +95,10 @@ public class AntBlock extends GrassBlock {
 
     @Override
     public List<ItemStack> getDrops(BlockState state, net.minecraft.world.level.storage.loot.LootParams.Builder builder) {
+        var datapackDrops = DatapackLoot.tryBlockTable(this, state, builder);
+        if (datapackDrops != null) {
+            return datapackDrops;
+        }
         return com.astryxion.chaospersists.util.MiningDropHelper.selfDrops(this, builder);
     }
 

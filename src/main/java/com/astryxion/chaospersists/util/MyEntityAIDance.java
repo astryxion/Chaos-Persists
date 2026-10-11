@@ -2,7 +2,6 @@ package com.astryxion.chaospersists.util;
 
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.entity.Girlfriend;
-import java.util.EnumSet;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
@@ -24,7 +23,6 @@ public class MyEntityAIDance extends Goal {
     public MyEntityAIDance(Girlfriend par1EntityTameable) {
         this.thePet = par1EntityTameable;
         this.theWorld = par1EntityTameable.level();
-        this.setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK));
     }
 
     public boolean is_dance_block(Block bid) {

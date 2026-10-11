@@ -1,5 +1,6 @@
 package com.astryxion.chaospersists.entity;
 
+import com.astryxion.chaospersists.loot.DatapackLoot;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.core.ChaosSounds;
 import com.astryxion.chaospersists.item.BetterFireball;
@@ -59,6 +60,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.registries.ForgeRegistries;
 import com.astryxion.chaospersists.util.MyUtils;
 import com.astryxion.chaospersists.util.PetCombatHelper;
+import com.astryxion.chaospersists.util.PetOrderInteract;
 import com.astryxion.chaospersists.util.RoyalPetFollowHelper;
 
 public class ThePrince extends TamableAnimal {
@@ -295,6 +297,9 @@ public class ThePrince extends TamableAnimal {
                 && var2.is(Blocks.ICE.asItem())
                 && par1EntityPlayer.distanceToSqr(this) < 16.0
                 && this.isOwnedBy(par1EntityPlayer)) {
+            if (this.getSpyroFire() == 0) {
+                return InteractionResult.SUCCESS;
+            }
             if (!this.level().isClientSide) {
                 spawnTamingParticles(true);
                 this.level().broadcastEntityEvent(this, (byte) 6);
@@ -344,9 +349,7 @@ public class ThePrince extends TamableAnimal {
                             this.getY(),
                             this.getZ());
             if (ent != null) {
-                if (this.isTame()) {
-                    transferTameToYoungPrince(ent, this.getOwnerUUID());
-                }
+                transferTameToYoungPrince(ent, this.isTame() ? this.getOwnerUUID() : null);
                 this.discard();
             }
             if (!par1EntityPlayer.getAbilities().instabuild) {
@@ -374,8 +377,11 @@ public class ThePrince extends TamableAnimal {
         if (this.isTame()
                 && par1EntityPlayer.distanceToSqr(this) < 16.0
                 && this.isOwnedBy(par1EntityPlayer)) {
+            if (PetOrderInteract.shouldPassItemUse(var2, par1EntityPlayer)) {
+                return InteractionResult.PASS;
+            }
             if (!this.level().isClientSide) {
-                this.setOrderedToSit(!this.isOrderedToSit());
+                PetOrderInteract.toggleSit(par1EntityPlayer, this);
             }
             return InteractionResult.sidedSuccess(this.level().isClientSide);
         }
@@ -447,10 +453,12 @@ public class ThePrince extends TamableAnimal {
 
     @Override
     protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+        if (DatapackLoot.useEntityTable(this)) {
+            return;
+        }
         super.dropCustomDeathLoot(source, looting, recentlyHit);
-        int var3 = this.getRandom().nextInt(4) + 1;
-        for (int var4 = 0; var4 < var3; ++var4) {
-            this.spawnAtLocation(Items.BEEF);
+        if (ChaosPersists.ThePrinceEgg != null) {
+            this.spawnAtLocation(ChaosPersists.ThePrinceEgg);
         }
     }
 
@@ -716,9 +724,7 @@ public class ThePrince extends TamableAnimal {
                             this.getY(),
                             this.getZ());
             if (ent != null) {
-                if (this.isTame()) {
-                    transferTameToYoungPrince(ent, this.getOwnerUUID());
-                }
+                transferTameToYoungPrince(ent, this.isTame() ? this.getOwnerUUID() : null);
                 this.discard();
             }
         }
@@ -1119,22 +1125,42 @@ public class ThePrince extends TamableAnimal {
         this.level().addFreshEntity(lb);
     }
 
-    private static void transferTameToYoungPrince(Entity ent, UUID ownerUuid) {
+    private void transferTameToYoungPrince(Entity ent, UUID ownerUuid) {
         if (ent == null) {
             return;
         }
-        if (ent instanceof TamableAnimal tame) {
+        if (ent instanceof TamableAnimal tame && ownerUuid != null) {
             tame.setTame(true);
-            if (ownerUuid != null) {
-                tame.setOwnerUUID(ownerUuid);
-            }
+            tame.setOwnerUUID(ownerUuid);
+        }
+        copyPrinceControlState(ent, this);
+    }
+
+    static void copyPrinceControlState(Entity dest, TamableAnimal source) {
+        if (dest == null || source == null) {
             return;
         }
-        if (ent instanceof ThePrinceTeen teen) {
-            teen.setTame(true);
-            if (ownerUuid != null) {
-                teen.setOwnerUUID(ownerUuid);
-            }
+        int fire = 1;
+        if (source instanceof ThePrince prince) {
+            fire = prince.getSpyroFire();
+        } else if (source instanceof ThePrinceTeen teen) {
+            fire = teen.getThePrinceTeenFire();
+        } else if (source instanceof ThePrinceAdult adult) {
+            fire = adult.getThePrinceAdultFire();
+        }
+        if (dest instanceof ThePrince prince) {
+            prince.setSpyroFire(fire);
+        } else if (dest instanceof ThePrinceTeen teen) {
+            teen.setThePrinceTeenFire(fire);
+        } else if (dest instanceof ThePrinceAdult adult) {
+            adult.setThePrinceAdultFire(fire);
+        }
+        if (dest instanceof TamableAnimal tame) {
+            tame.setOrderedToSit(source.isOrderedToSit() || source.isInSittingPose());
+        }
+        if (source.hasCustomName()) {
+            dest.setCustomName(source.getCustomName());
+            dest.setCustomNameVisible(source.isCustomNameVisible());
         }
     }
 

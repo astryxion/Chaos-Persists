@@ -1,5 +1,6 @@
 package com.astryxion.chaospersists.block;
 
+import com.astryxion.chaospersists.loot.DatapackLoot;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import java.util.Collections;
 import java.util.List;
@@ -18,6 +19,7 @@ import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraftforge.common.IForgeShearable;
 
 public class BlockExperienceLeaves extends LeavesBlock implements IForgeShearable {
@@ -28,7 +30,20 @@ public class BlockExperienceLeaves extends LeavesBlock implements IForgeShearabl
 
     @Override
     public List<ItemStack> getDrops(BlockState state, LootParams.Builder builder) {
-        return Collections.singletonList(new ItemStack(this));
+        var datapackDrops = DatapackLoot.tryBlockTable(this, state, builder);
+        if (datapackDrops != null) {
+            return datapackDrops;
+        }
+        ItemStack tool = builder.getOptionalParameter(LootContextParams.TOOL);
+        if (BlockAppleLeaves.isSilkOrShears(tool)) {
+            return Collections.singletonList(new ItemStack(this));
+        }
+        return Collections.emptyList();
+    }
+
+    @Override
+    protected boolean decaying(BlockState state) {
+        return false;
     }
 
     @Override
@@ -87,7 +102,6 @@ public class BlockExperienceLeaves extends LeavesBlock implements IForgeShearabl
                     }
                 }
             }
-            removeLeaves(level, par2, par3, par4);
         }
     }
 
@@ -133,12 +147,6 @@ public class BlockExperienceLeaves extends LeavesBlock implements IForgeShearabl
                         (double) (worldIn.random.nextFloat() - worldIn.random.nextFloat()));
             }
         }
-    }
-
-    private void removeLeaves(ServerLevel level, int par2, int par3, int par4) {
-        BlockPos blockPos = new BlockPos(par2, par3, par4);
-        popResource(level, blockPos, new ItemStack(this));
-        level.setBlock(blockPos, Blocks.AIR.defaultBlockState(), 2);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.astryxion.chaospersists.world.ore;
 
+import com.astryxion.chaospersists.loot.DatapackLoot;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.util.MiningDropHelper;
 import java.util.Collections;
@@ -90,6 +91,10 @@ public class OreCrystalCrystal extends Block {
 
     @Override
     public List<ItemStack> getDrops(BlockState state, LootParams.Builder builder) {
+        var datapackDrops = DatapackLoot.tryBlockTable(this, state, builder);
+        if (datapackDrops != null) {
+            return datapackDrops;
+        }
         RandomSource random = builder.getLevel().getRandom();
         if (this != ChaosPersists.TigersEye) {
             return Collections.singletonList(new ItemStack(this));

@@ -1,7 +1,8 @@
 package com.astryxion.chaospersists.block;
 
+import com.astryxion.chaospersists.loot.DatapackLoot;
 import com.astryxion.chaospersists.core.ChaosPersists;
-import com.astryxion.chaospersists.tileentity.TileEntityCrystalFurnace;
+import com.astryxion.chaospersists.blockentity.TileEntityCrystalFurnace;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -43,6 +44,10 @@ public class CrystalFurnace extends BaseEntityBlock {
     @Override
     public java.util.List<ItemStack> getDrops(
             BlockState state, net.minecraft.world.level.storage.loot.LootParams.Builder builder) {
+        var datapackDrops = DatapackLoot.tryBlockTable(this, state, builder);
+        if (datapackDrops != null) {
+            return datapackDrops;
+        }
         return com.astryxion.chaospersists.util.MiningDropHelper.selfDrops(this, builder);
     }
 

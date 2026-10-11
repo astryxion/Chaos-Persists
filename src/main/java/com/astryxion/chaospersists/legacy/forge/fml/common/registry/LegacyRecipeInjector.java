@@ -25,7 +25,8 @@ final class LegacyRecipeInjector {
     }
     for (Recipe<?> recipe : recipes) {
       if (recipe != null && recipe.getId() != null) {
-        byId.put(recipe.getId(), recipe);
+        // Datapack/JSON recipes win. Java GameRegistry entries are defaults only.
+        byId.putIfAbsent(recipe.getId(), recipe);
       }
     }
     manager.replaceRecipes(new ArrayList<>(byId.values()));

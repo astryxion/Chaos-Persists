@@ -1,5 +1,6 @@
 package com.astryxion.chaospersists.entity;
 
+import com.astryxion.chaospersists.loot.DatapackLoot;
 import com.astryxion.chaospersists.compat.illageandspillage.IllageAndSpillageExecuteCompat;
 import com.astryxion.chaospersists.compat.mutantmonsters.MutantMonstersExecuteCompat;
 import com.astryxion.chaospersists.core.ChaosPersists;
@@ -12,6 +13,7 @@ import com.astryxion.chaospersists.util.MyUtils;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
@@ -26,11 +28,14 @@ import net.minecraft.util.Mth;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
+import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
@@ -46,6 +51,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DoublePlantBlock;
@@ -240,6 +246,9 @@ public class TheQueen extends Monster {
 
     @Override
     protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+        if (DatapackLoot.useEntityTable(this)) {
+            return;
+        }
         this.dropItemRand(ChaosPersists.MyRoyal, 1);
         this.dropItemRand(ChaosPersists.ThePrinceEgg, 1);
         spawnCreature(
@@ -520,7 +529,7 @@ public class TheQueen extends Monster {
                                 queenMotion.x * 3.0, queenMotion.y * 3.0, queenMotion.z * 3.0);
                     }
                 }
-            } else if (this.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+            } else if (com.astryxion.chaospersists.config.ChaosGriefing.canGrief(this)) {
                 blockGrief:
                 for (int m = 0; m < 25; ++m) {
                     int i = this.getRandom().nextInt(25) - this.getRandom().nextInt(25);
@@ -1273,6 +1282,20 @@ public class TheQueen extends Monster {
     }
 
     @Override
+    public SpawnGroupData finalizeSpawn(
+            ServerLevelAccessor level,
+            DifficultyInstance difficulty,
+            MobSpawnType spawnType,
+            @Nullable SpawnGroupData spawnData,
+            @Nullable CompoundTag dataTag) {
+        spawnData = super.finalizeSpawn(level, difficulty, spawnType, spawnData, dataTag);
+        if (spawnType == MobSpawnType.SPAWNER) {
+            this.setBadMood(1);
+        }
+        return spawnData;
+    }
+
+    @Override
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
         tag.putInt("KingHomeX", this.homex);
@@ -1336,7 +1359,8 @@ public class TheQueen extends Monster {
                     || !var4.isAlive()
                     || MyUtils.isRoyalty(var4)
                     || var4 instanceof Ghost
-                    || var4 instanceof GhostSkelly) {
+                    || var4 instanceof GhostSkelly
+                    || MyUtils.isScoreboardAlly(this, var4)) {
                 continue;
             }
             var4.hurt(this.damageSources().explosion(null), (float) damage / 2.0f);

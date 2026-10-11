@@ -1,5 +1,6 @@
 package com.astryxion.chaospersists.item;
 
+import com.astryxion.chaospersists.loot.DatapackLoot;
 import com.astryxion.chaospersists.util.MyUtils;
 import com.astryxion.chaospersists.util.ChaosChaseMoveControl;
 import com.astryxion.chaospersists.util.ChaosHurtByTargetGoal;
@@ -30,12 +31,14 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.goal.AvoidEntityGoal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.MoveThroughVillageGoal;
 import net.minecraft.world.entity.ai.goal.OpenDoorGoal;
@@ -57,6 +60,8 @@ import net.minecraft.world.phys.AABB;
 public class BandP extends Monster {
     private static final EntityDataAccessor<Byte> ATTACKING =
             SynchedEntityData.defineId(BandP.class, EntityDataSerializers.BYTE);
+    /** Same idea as creeper/cat: flee when a village defender is this close and in sight. */
+    private static final float DEFENDER_FLEE_DISTANCE = 8.0f;
     private final GenericTargetSorter targetSorter;
     private final float moveSpeed = 0.32f;
     private int whatset = 0;
@@ -69,11 +74,21 @@ public class BandP extends Monster {
         this.moveControl = new ChaosChaseMoveControl(this);
         this.xpReward = 1000;
         this.targetSorter = new GenericTargetSorter(this);
-        this.goalSelector.addGoal(0, new MoveThroughVillageGoal(this, 0.5, false, 4, () -> false));
-        this.goalSelector.addGoal(1, new MyEntityAIWanderALot(this, 16, 0.5));
-        this.goalSelector.addGoal(2, new LookAtPlayerGoal(this, Player.class, 10.0f));
-        this.goalSelector.addGoal(3, new RandomLookAroundGoal(this));
-        this.goalSelector.addGoal(4, new OpenDoorGoal(this, true));
+        this.goalSelector.addGoal(
+                0,
+                new AvoidEntityGoal<>(
+                        this,
+                        LivingEntity.class,
+                        MyUtils::isVillageCombatTarget,
+                        DEFENDER_FLEE_DISTANCE,
+                        1.25,
+                        1.5,
+                        EntitySelector.NO_CREATIVE_OR_SPECTATOR::test));
+        this.goalSelector.addGoal(1, new MoveThroughVillageGoal(this, 0.5, false, 4, () -> false));
+        this.goalSelector.addGoal(2, new MyEntityAIWanderALot(this, 16, 0.5));
+        this.goalSelector.addGoal(3, new LookAtPlayerGoal(this, Player.class, 10.0f));
+        this.goalSelector.addGoal(4, new RandomLookAroundGoal(this));
+        this.goalSelector.addGoal(5, new OpenDoorGoal(this, true));
         this.targetSelector.addGoal(1, new ChaosHurtByTargetGoal(this));
     }
 
@@ -175,6 +190,9 @@ public class BandP extends Monster {
 
     @Override
     protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+        if (DatapackLoot.useEntityTable(this)) {
+            return;
+        }
         int var4 = 10 + this.random.nextInt(5);
         int i;
         for (i = 0; i < var4; ++i) {
@@ -210,6 +228,10 @@ public class BandP extends Monster {
             return;
         }
         super.customServerAiStep();
+        if (this.findVillageDefenderToFleeFrom() != null) {
+            this.setTarget(null);
+            return;
+        }
         if (this.getRandom().nextInt(12) == 1) {
             LivingEntity e = this.findSomethingToAttack();
             LivingEntity revenge = this.getLastHurtByMob();
@@ -290,10 +312,10 @@ public class BandP extends Monster {
             }
             return true;
         }
-        if (par1EntityLiving instanceof Villager) {
-            return true;
-        }
         if (MyUtils.isVillageCombatTarget(par1EntityLiving)) {
+            return false;
+        }
+        if (par1EntityLiving instanceof Villager) {
             return true;
         }
         if (par1EntityLiving instanceof Girlfriend) {
@@ -324,6 +346,25 @@ public class BandP extends Monster {
             }
         }
         return null;
+    }
+
+    private LivingEntity findVillageDefenderToFleeFrom() {
+        List<LivingEntity> defenders =
+                this.level()
+                        .getEntitiesOfClass(
+                                LivingEntity.class,
+                                this.getBoundingBox()
+                                        .inflate(DEFENDER_FLEE_DISTANCE, 3.0, DEFENDER_FLEE_DISTANCE),
+                                e ->
+                                        e != this
+                                                && e.isAlive()
+                                                && MyUtils.isVillageCombatTarget(e)
+                                                && this.getSensing().hasLineOfSight(e));
+        if (defenders.isEmpty()) {
+            return null;
+        }
+        Collections.sort(defenders, this.targetSorter);
+        return defenders.get(0);
     }
 
     public int getWhat() {

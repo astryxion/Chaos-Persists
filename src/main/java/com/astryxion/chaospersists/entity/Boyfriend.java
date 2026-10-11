@@ -1,6 +1,8 @@
 package com.astryxion.chaospersists.entity;
+import com.astryxion.chaospersists.loot.DatapackLoot;
 import com.astryxion.chaospersists.util.MyUtils;
 import com.astryxion.chaospersists.util.PetCombatHelper;
+import com.astryxion.chaospersists.util.PetOrderInteract;
 
 import com.astryxion.chaospersists.compat.eeeabsmobs.EeeabsMobsCompat;
 import com.astryxion.chaospersists.core.ChaosPersists;
@@ -654,13 +656,14 @@ public class Boyfriend extends TamableAnimal implements RangedAttackMob {
                     }
                 }
             } else if (this.isOwnedBy(player)) {
+                if ((float) this.mygetMaxHealth() <= this.getHealth()) {
+                    return true;
+                }
                 if (this.level().isClientSide) {
                     this.spawnTamingParticles(true);
                     this.level().broadcastEntityEvent(this, (byte) 7);
                 }
-                if ((float) this.mygetMaxHealth() > this.getHealth()) {
-                    this.heal((float) this.mygetMaxHealth() - this.getHealth());
-                }
+                this.heal((float) this.mygetMaxHealth() - this.getHealth());
             }
             if (!player.getAbilities().instabuild) {
                 var2.shrink(1);
@@ -762,9 +765,11 @@ public class Boyfriend extends TamableAnimal implements RangedAttackMob {
         }
         if (this.isTame() && !var2.isEmpty() && this.isOwnedBy(player) && player.distanceToSqr(this) < 16.0) {
             if (var2.getItem().isEdible()) {
+                if ((float) this.mygetMaxHealth() <= this.getHealth()) {
+                    return true;
+                }
                 if (!this.level().isClientSide) {
-                    if ((float) this.mygetMaxHealth() > this.getHealth()
-                            && var2.getFoodProperties(this) != null) {
+                    if (var2.getFoodProperties(this) != null) {
                         this.heal((float) (var2.getFoodProperties(this).getNutrition() * 5));
                     }
                     this.spawnTamingParticles(true);
@@ -811,11 +816,7 @@ public class Boyfriend extends TamableAnimal implements RangedAttackMob {
                 ItemStack var3 = this.getMainHandItem();
                 if (!this.level().isClientSide) {
                     this.setItemSlot(EquipmentSlot.MAINHAND, var2);
-                    if (var2.is(Items.DIAMOND)) {
-                        this.setOrderedToSit(true);
-                    } else {
-                        this.setOrderedToSit(false);
-                    }
+                    PetOrderInteract.setSit(player, this, var2.is(Items.DIAMOND));
                 }
                 if (!var3.isEmpty()) {
                     player.setItemInHand(InteractionHand.MAIN_HAND, var3);
@@ -869,7 +870,7 @@ public class Boyfriend extends TamableAnimal implements RangedAttackMob {
             if (slotToStrip != null) {
                 player.setItemInHand(InteractionHand.MAIN_HAND, toGive);
                 this.setItemSlot(slotToStrip, ItemStack.EMPTY);
-                this.setOrderedToSit(false);
+                PetOrderInteract.setSit(player, this, false);
                 if (!this.level().isClientSide) {
                     this.level().broadcastEntityEvent(this, (byte) 6);
                 }
@@ -980,6 +981,9 @@ public class Boyfriend extends TamableAnimal implements RangedAttackMob {
 
     @Override
     protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+        if (DatapackLoot.useEntityTable(this)) {
+            return;
+        }
         int var3;
         if (this.isTame()) {
             var3 = this.getRandom().nextInt(5) + 2;

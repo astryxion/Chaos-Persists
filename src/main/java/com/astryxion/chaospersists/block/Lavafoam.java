@@ -36,6 +36,10 @@ public class Lavafoam extends Block {
     @Override
     public java.util.List<net.minecraft.world.item.ItemStack> getDrops(
             BlockState state, net.minecraft.world.level.storage.loot.LootParams.Builder builder) {
+        var datapackDrops = com.astryxion.chaospersists.loot.DatapackLoot.tryBlockTable(this, state, builder);
+        if (datapackDrops != null) {
+            return datapackDrops;
+        }
         return com.astryxion.chaospersists.util.MiningDropHelper.selfDrops(this, builder);
     }
 

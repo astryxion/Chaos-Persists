@@ -5,6 +5,8 @@ import java.util.UUID;
 import java.util.WeakHashMap;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.OwnableEntity;
@@ -12,7 +14,14 @@ import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraftforge.event.entity.living.LivingAttackEvent;
+import net.minecraftforge.event.entity.living.LivingChangeTargetEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 import com.astryxion.chaospersists.compat.eeeabsmobs.EeeabsMobsCompat;
+import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.entity.Boyfriend;
 import com.astryxion.chaospersists.entity.Girlfriend;
 import com.astryxion.chaospersists.entity.Mothra;
@@ -32,8 +41,10 @@ import com.astryxion.chaospersists.entity.TerribleTerror;
  *
  * <p>Guards: never assist against tamed/owned companions (except OreSpawn BF/GF jealousy); while
  * sitting, sync owner-combat timestamps so standing up does not resume a fight the owner started
- * while the pet was sat.
+ * while the pet was sat. Same-owner tames (Chaos, vanilla, and other mods) also do not damage or
+ * retaliate against each other from stray hits.
  */
+@Mod.EventBusSubscriber(modid = ChaosPersists.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public final class PetCombatHelper {
     private static final Map<UUID, int[]> SEEN_OWNER_COMBAT = new WeakHashMap<>();
 
@@ -94,11 +105,102 @@ public final class PetCombatHelper {
         return true;
     }
 
-    private static boolean isPartnerJealousyTarget(TamableAnimal pet, LivingEntity target) {
+    private static boolean isPartnerJealousyTarget(Entity pet, Entity target) {
         if (!(pet instanceof Girlfriend || pet instanceof Boyfriend)) {
             return false;
         }
         return target instanceof Girlfriend || target instanceof Boyfriend;
+    }
+
+    @Nullable
+    public static UUID companionOwnerId(@Nullable Entity entity) {
+        Entity e = FriendlyWeaponHits.root(entity);
+        if (e instanceof Player) {
+            return null;
+        }
+        if (e instanceof TamableAnimal tame) {
+            return tame.isTame() ? tame.getOwnerUUID() : null;
+        }
+        if (e instanceof AbstractHorse horse) {
+            return horse.isTamed() ? horse.getOwnerUUID() : null;
+        }
+        if (e instanceof OwnableEntity ownable) {
+            return ownable.getOwnerUUID();
+        }
+        return null;
+    }
+
+    /**
+     * Same owner's tamed/owned companions (Chaos, vanilla wolves, other mods). OreSpawn BF/GF
+     * jealousy is left alone so they can still fight each other.
+     */
+    public static boolean areAlliedOwnedCompanions(@Nullable Entity a, @Nullable Entity b) {
+        Entity left = FriendlyWeaponHits.root(a);
+        Entity right = FriendlyWeaponHits.root(b);
+        if (left == null || right == null || left == right) {
+            return false;
+        }
+        if (isPartnerJealousyTarget(left, right) || isPartnerJealousyTarget(right, left)) {
+            return false;
+        }
+        UUID ownerA = companionOwnerId(left);
+        UUID ownerB = companionOwnerId(right);
+        return ownerA != null && ownerA.equals(ownerB);
+    }
+
+    @Nullable
+    public static Entity combatAttacker(@Nullable DamageSource source) {
+        if (source == null) {
+            return null;
+        }
+        Entity entity = source.getEntity();
+        if (entity != null) {
+            return FriendlyWeaponHits.root(entity);
+        }
+        Entity direct = source.getDirectEntity();
+        if (direct instanceof Projectile projectile && projectile.getOwner() != null) {
+            return FriendlyWeaponHits.root(projectile.getOwner());
+        }
+        return FriendlyWeaponHits.root(direct);
+    }
+
+    /** Drop an illegal same-owner target / revenge so vanilla wolves do not keep the fight. */
+    public static void dropAlliedCompanionFight(Mob mob) {
+        if (areAlliedOwnedCompanions(mob, mob.getTarget())) {
+            mob.setTarget(null);
+        }
+        if (areAlliedOwnedCompanions(mob, mob.getLastHurtByMob())) {
+            mob.setLastHurtByMob(null);
+        }
+    }
+
+    @SubscribeEvent(priority = EventPriority.HIGH)
+    public static void onAlliedCompanionAttack(LivingAttackEvent event) {
+        if (event == null || event.getEntity() == null) {
+            return;
+        }
+        Entity attacker = combatAttacker(event.getSource());
+        LivingEntity victim = event.getEntity();
+        if (!areAlliedOwnedCompanions(attacker, victim)) {
+            return;
+        }
+        event.setCanceled(true);
+        if (victim instanceof Mob mob) {
+            dropAlliedCompanionFight(mob);
+        }
+        if (attacker instanceof Mob attackerMob) {
+            dropAlliedCompanionFight(attackerMob);
+        }
+    }
+
+    @SubscribeEvent(priority = EventPriority.HIGH)
+    public static void onAlliedCompanionTarget(LivingChangeTargetEvent event) {
+        if (event == null || event.getNewTarget() == null) {
+            return;
+        }
+        if (areAlliedOwnedCompanions(event.getEntity(), event.getNewTarget())) {
+            event.setCanceled(true);
+        }
     }
 
     /**

@@ -1,5 +1,6 @@
 package com.astryxion.chaospersists.entity;
 
+import com.astryxion.chaospersists.loot.DatapackLoot;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.core.ChaosSounds;
 import com.astryxion.chaospersists.item.BetterFireball;
@@ -11,6 +12,7 @@ import com.astryxion.chaospersists.util.MyEntityAIFollowOwner;
 import com.astryxion.chaospersists.util.MyEntityAIWander;
 import com.astryxion.chaospersists.util.MyUtils;
 import com.astryxion.chaospersists.util.PetCombatHelper;
+import com.astryxion.chaospersists.util.PetOrderInteract;
 import com.astryxion.chaospersists.util.RoyalPetFollowHelper;
 import java.util.Collections;
 import java.util.Iterator;
@@ -73,6 +75,8 @@ public class ThePrincess extends TamableAnimal {
     private static final EntityDataAccessor<Integer> POWER =
             SynchedEntityData.defineId(ThePrincess.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> CRYSTAL_POWER =
+            SynchedEntityData.defineId(ThePrincess.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> LIFE_SPREAD =
             SynchedEntityData.defineId(ThePrincess.class, EntityDataSerializers.INT);
 
     private BlockPos currentFlightTarget;
@@ -149,6 +153,7 @@ public class ThePrincess extends TamableAnimal {
         this.entityData.define(SPYRO_FIRE, 1);
         this.entityData.define(POWER, this.attack_level);
         this.entityData.define(CRYSTAL_POWER, 1);
+        this.entityData.define(LIFE_SPREAD, 1);
         this.setOrderedToSit(false);
         this.setTame(false);
         this.noPhysics = false;
@@ -160,6 +165,7 @@ public class ThePrincess extends TamableAnimal {
         tag.putInt("SpyroActivity", this.entityData.get(ACTIVITY));
         tag.putInt("SpyroFire", this.entityData.get(SPYRO_FIRE));
         tag.putInt("PrincessCrystal", this.entityData.get(CRYSTAL_POWER));
+        tag.putInt("PrincessLifeSpread", this.entityData.get(LIFE_SPREAD));
         tag.putInt("SpyroGrow", this.ok_to_grow);
         tag.putInt("SpyroKill", this.kill_count);
         tag.putInt("SpyroFed", this.fed_count);
@@ -173,6 +179,7 @@ public class ThePrincess extends TamableAnimal {
         this.entityData.set(ACTIVITY, this.activity);
         this.entityData.set(SPYRO_FIRE, tag.getInt("SpyroFire"));
         this.entityData.set(CRYSTAL_POWER, tag.contains("PrincessCrystal") ? tag.getInt("PrincessCrystal") : 1);
+        this.entityData.set(LIFE_SPREAD, tag.contains("PrincessLifeSpread") ? tag.getInt("PrincessLifeSpread") : 1);
         this.ok_to_grow = tag.getInt("SpyroGrow");
         this.kill_count = tag.getInt("SpyroKill");
         this.fed_count = tag.getInt("SpyroFed");
@@ -214,6 +221,14 @@ public class ThePrincess extends TamableAnimal {
 
     public void setCrystalPower(int par1) {
         this.entityData.set(CRYSTAL_POWER, par1);
+    }
+
+    public int getLifeSpread() {
+        return this.entityData.get(LIFE_SPREAD);
+    }
+
+    public void setLifeSpread(int par1) {
+        this.entityData.set(LIFE_SPREAD, par1);
     }
 
     public int getAttacking() {
@@ -322,6 +337,9 @@ public class ThePrincess extends TamableAnimal {
                 && var2.is(Blocks.ICE.asItem())
                 && par1EntityPlayer.distanceToSqr(this) < 16.0
                 && this.isOwnedBy(par1EntityPlayer)) {
+            if (this.getSpyroFire() == 0) {
+                return InteractionResult.SUCCESS;
+            }
             if (!this.level().isClientSide) {
                 spawnTamingParticles(true);
                 this.level().broadcastEntityEvent(this, (byte) 6);
@@ -342,12 +360,15 @@ public class ThePrincess extends TamableAnimal {
                 && var2.is(Blocks.DEAD_BUSH.asItem())
                 && par1EntityPlayer.distanceToSqr(this) < 16.0
                 && this.isOwnedBy(par1EntityPlayer)) {
+            if (this.getLifeSpread() == 0) {
+                return InteractionResult.SUCCESS;
+            }
             if (!this.level().isClientSide) {
                 spawnTamingParticles(true);
                 this.level().broadcastEntityEvent(this, (byte) 6);
-                this.setCrystalPower(0);
+                this.setLifeSpread(0);
                 par1EntityPlayer.displayClientMessage(
-                        Component.literal("Princess crystal power extinguished."), true);
+                        Component.literal("Princess will no longer plant and spawn animals."), true);
             }
             if (!par1EntityPlayer.getAbilities().instabuild) {
                 var2.shrink(1);
@@ -365,9 +386,34 @@ public class ThePrincess extends TamableAnimal {
             if (!this.level().isClientSide) {
                 spawnTamingParticles(true);
                 this.level().broadcastEntityEvent(this, (byte) 6);
-                this.setCrystalPower(1);
+                this.setLifeSpread(1);
                 par1EntityPlayer.displayClientMessage(
-                        Component.literal("Princess crystal power lit!"), true);
+                        Component.literal("Princess will plant and spawn animals again."), true);
+            }
+            if (!par1EntityPlayer.getAbilities().instabuild) {
+                var2.shrink(1);
+                if (var2.isEmpty()) {
+                    par1EntityPlayer.setItemInHand(hand, ItemStack.EMPTY);
+                }
+            }
+            return InteractionResult.SUCCESS;
+        }
+        if (this.isTame()
+                && !var2.isEmpty()
+                && isCrystalEnergy(var2)
+                && par1EntityPlayer.distanceToSqr(this) < 16.0
+                && this.isOwnedBy(par1EntityPlayer)) {
+            if (!this.level().isClientSide) {
+                boolean nowEnabled = this.getCrystalPower() == 0;
+                this.setCrystalPower(nowEnabled ? 1 : 0);
+                spawnTamingParticles(true);
+                this.level().broadcastEntityEvent(this, (byte) 6);
+                par1EntityPlayer.displayClientMessage(
+                        Component.literal(
+                                nowEnabled
+                                        ? "Princess crystal power lit!"
+                                        : "Princess crystal power extinguished."),
+                        true);
             }
             if (!par1EntityPlayer.getAbilities().instabuild) {
                 var2.shrink(1);
@@ -414,8 +460,11 @@ public class ThePrincess extends TamableAnimal {
         if (this.isTame()
                 && par1EntityPlayer.distanceToSqr(this) < 16.0
                 && this.isOwnedBy(par1EntityPlayer)) {
+            if (PetOrderInteract.shouldPassItemUse(var2, par1EntityPlayer)) {
+                return InteractionResult.PASS;
+            }
             if (!this.level().isClientSide) {
-                this.setOrderedToSit(!this.isOrderedToSit());
+                PetOrderInteract.toggleSit(par1EntityPlayer, this);
             }
             return InteractionResult.sidedSuccess(this.level().isClientSide);
         }
@@ -445,6 +494,10 @@ public class ThePrincess extends TamableAnimal {
 
     private static boolean isCrystalFlowerItem(Block block, ItemStack stack) {
         return block != null && stack.is(block.asItem());
+    }
+
+    private static boolean isCrystalEnergy(ItemStack stack) {
+        return isCrystalFlowerItem(ChaosPersists.CrystalCoal, stack);
     }
 
     @Override
@@ -485,10 +538,12 @@ public class ThePrincess extends TamableAnimal {
 
     @Override
     protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+        if (DatapackLoot.useEntityTable(this)) {
+            return;
+        }
         super.dropCustomDeathLoot(source, looting, recentlyHit);
-        int var3 = this.getRandom().nextInt(4) + 1;
-        for (int var4 = 0; var4 < var3; ++var4) {
-            this.spawnAtLocation(Items.BEEF);
+        if (ChaosPersists.ThePrincessEgg != null) {
+            this.spawnAtLocation(ChaosPersists.ThePrincessEgg);
         }
     }
 
@@ -764,7 +819,8 @@ public class ThePrincess extends TamableAnimal {
                 }
             }
 
-            if (this.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+            if (this.getLifeSpread() != 0
+                    && com.astryxion.chaospersists.config.ChaosGriefing.canGrief(this)) {
                 for (int m = 0; m < 5; ++m) {
                     int i = this.getRandom().nextInt(5) - this.getRandom().nextInt(5);
                     int k = this.getRandom().nextInt(5) - this.getRandom().nextInt(5);
@@ -853,23 +909,25 @@ public class ThePrincess extends TamableAnimal {
                 }
             }
 
-            for (int m = 0; m < 2; ++m) {
-                int i = this.getRandom().nextInt(4) - this.getRandom().nextInt(4);
-                int k = this.getRandom().nextInt(4) - this.getRandom().nextInt(4);
-                int j = 1 + this.getRandom().nextInt(4);
-                BlockPos spawnPos =
-                        new BlockPos((int) this.getX() + i, (int) this.getY() + j, (int) this.getZ() + k);
-                if (this.level().getBlockState(spawnPos).getBlock() == Blocks.AIR) {
-                    if (this.getRandom().nextInt(2) == 0) {
-                        spawnCreature(
-                                this.level(),
-                                "butterfly",
-                                this.getX() + i,
-                                this.getY() + j,
-                                this.getZ() + k);
-                    } else {
-                        spawnCreature(
-                                this.level(), "bird", this.getX() + i, this.getY() + j, this.getZ() + k);
+            if (this.getLifeSpread() != 0) {
+                for (int m = 0; m < 2; ++m) {
+                    int i = this.getRandom().nextInt(4) - this.getRandom().nextInt(4);
+                    int k = this.getRandom().nextInt(4) - this.getRandom().nextInt(4);
+                    int j = 1 + this.getRandom().nextInt(4);
+                    BlockPos spawnPos =
+                            new BlockPos((int) this.getX() + i, (int) this.getY() + j, (int) this.getZ() + k);
+                    if (this.level().getBlockState(spawnPos).getBlock() == Blocks.AIR) {
+                        if (this.getRandom().nextInt(2) == 0) {
+                            spawnCreature(
+                                    this.level(),
+                                    "butterfly",
+                                    this.getX() + i,
+                                    this.getY() + j,
+                                    this.getZ() + k);
+                        } else {
+                            spawnCreature(
+                                    this.level(), "bird", this.getX() + i, this.getY() + j, this.getZ() + k);
+                        }
                     }
                 }
             }

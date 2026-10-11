@@ -159,7 +159,7 @@ public class EntityThrownRock extends ThrowableProjectile {
     }
 
     private ExplosionInteraction explosionInteraction() {
-        return this.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)
+        return com.astryxion.chaospersists.config.ChaosGriefing.canGrief(this)
                 ? ExplosionInteraction.MOB
                 : ExplosionInteraction.NONE;
     }

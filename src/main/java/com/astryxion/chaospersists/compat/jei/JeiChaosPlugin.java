@@ -43,6 +43,9 @@ public class JeiChaosPlugin implements IModPlugin {
       if (tab == null) {
         continue;
       }
+      if (!com.astryxion.chaospersists.config.ChaosMobAccess.isItemAllowed(item)) {
+        continue;
+      }
       allowed.add(new ItemStack(item));
     }
 
@@ -57,7 +60,8 @@ public class JeiChaosPlugin implements IModPlugin {
       if (rl == null || !ChaosPersists.MODID.equals(rl.getNamespace())) {
         continue;
       }
-      if (CreativeTabCompat.getCreativeTab(item) == null) {
+      if (CreativeTabCompat.getCreativeTab(item) == null
+          || !com.astryxion.chaospersists.config.ChaosMobAccess.isItemAllowed(item)) {
         toRemove.add(stack.copy());
         continue;
       }

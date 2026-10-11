@@ -656,6 +656,17 @@ public class MyUtils {
         return level.getBlockState(pos);
     }
 
+    /**
+     * 1.7.10 spawn clearance used {@code Blocks.air}. 1.20 plains/forests fill that volume with
+     * grass and flowers, which would otherwise block Mantis/Bee entirely.
+     */
+    public static boolean isClearForLegacySpawnVolume(BlockState state) {
+        if (state.isAir()) {
+            return true;
+        }
+        return state.canBeReplaced() && state.getFluidState().isEmpty();
+    }
+
     @Nullable
     public static BlockEntity getBlockEntityForSpawnRules(LevelAccessor level, BlockPos pos) {
         if (!canAccessBlockDuringWorldGen(level, pos)) {

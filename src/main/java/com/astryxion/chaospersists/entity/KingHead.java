@@ -1,6 +1,7 @@
 package com.astryxion.chaospersists.entity;
 
 import com.astryxion.chaospersists.core.ChaosPersists;
+import com.astryxion.chaospersists.item.ItemSpawnEgg;
 import java.util.List;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
@@ -71,8 +72,13 @@ public class KingHead extends LivingEntity {
     }
 
     @Override
+    public ItemStack getPickResult() {
+        return ItemSpawnEgg.pickStackFor(this);
+    }
+
+    @Override
     public boolean canBeCollidedWith() {
-        return true;
+        return false;
     }
 
     @Override

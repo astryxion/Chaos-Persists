@@ -293,7 +293,7 @@ public class Beaver extends Animal {
             if (this.closest < 99999) {
                 this.getNavigation().moveTo((double) this.tx, (double) this.ty, (double) this.tz, 1.0);
                 if (this.closest < 12) {
-                    if (this.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+                    if (com.astryxion.chaospersists.config.ChaosGriefing.canGrief(this)) {
                         this.level().setBlock(new BlockPos(this.tx, this.ty, this.tz), Blocks.AIR.defaultBlockState(), 2);
                         this.breakRecursor(this.level(), this.tx, this.ty, this.tz, this.tx, this.ty, this.tz, i);
                     }

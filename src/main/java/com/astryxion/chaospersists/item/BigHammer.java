@@ -1,6 +1,6 @@
 package com.astryxion.chaospersists.item;
 
-import com.astryxion.chaospersists.client.BigWeaponClientExtensions;
+import com.astryxion.chaospersists.client.item.BigWeaponClientExtensions;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;

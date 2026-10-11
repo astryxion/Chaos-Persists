@@ -89,6 +89,9 @@ public class GroundedJigsawStructure extends Structure {
 
     @Override
     public Optional<Structure.GenerationStub> findGenerationPoint(Structure.GenerationContext context) {
+        if (!com.astryxion.chaospersists.config.ChaosPackConfig.shouldGenerateStructure(this, context)) {
+            return Optional.empty();
+        }
         ChunkPos chunkPos = context.chunkPos();
         int height =
                 this.startHeight.sample(

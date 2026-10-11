@@ -2,6 +2,8 @@ package com.astryxion.chaospersists.item;
 
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.core.ChaosSounds;
+import com.astryxion.chaospersists.entity.util.ChaosFlyingMount;
+import com.astryxion.chaospersists.entity.util.ChaosMountFlight;
 import java.util.List;
 import org.joml.Vector3f;
 import net.minecraft.client.Minecraft;
@@ -40,7 +42,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
-public class Elevator extends Mob {
+public class Elevator extends Mob implements ChaosFlyingMount {
     private static final EntityDataAccessor<Integer> I20 =
             SynchedEntityData.defineId(Elevator.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> I21 =
@@ -53,6 +55,13 @@ public class Elevator extends Mob {
             SynchedEntityData.defineId(Elevator.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Boolean> DATA_FORWARD =
             SynchedEntityData.defineId(Elevator.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Byte> CONTROL_STATE =
+            SynchedEntityData.defineId(Elevator.class, EntityDataSerializers.BYTE);
+    private static final EntityDataAccessor<Boolean> FLYING =
+            SynchedEntityData.defineId(Elevator.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> HOVERING =
+            SynchedEntityData.defineId(Elevator.class, EntityDataSerializers.BOOLEAN);
+    private final ChaosMountFlight mountFlight = new ChaosMountFlight(this);
 
     private static final ResourceLocation TEXTURE1 =
             new ResourceLocation("chaospersists", "textures/entity/elevator1.png");
@@ -78,8 +87,6 @@ public class Elevator extends Mob {
     private int exploding = 0;
     private int color = 1;
     private int playing = 0;
-    private double hoverMoveX;
-    private double hoverMoveZ;
 
     public Elevator(EntityType<? extends Elevator> type, Level level) {
         super(type, level);
@@ -147,6 +154,9 @@ public class Elevator extends Mob {
         this.entityData.define(I20, 0);
         this.entityData.define(I21, 1);
         this.entityData.define(DATA_FORWARD, false);
+        this.entityData.define(CONTROL_STATE, (byte) 0);
+        this.entityData.define(FLYING, false);
+        this.entityData.define(HOVERING, false);
     }
 
     @Override
@@ -211,108 +221,93 @@ public class Elevator extends Mob {
         super.lerpMotion(x, y, z);
     }
 
-    private boolean isRiderMovingForward(Player rider) {
-        if (this.level().isClientSide() && rider instanceof LocalPlayer local) {
-            if (local.input.forwardImpulse > 0.001f) {
-                return true;
-            }
-            return Minecraft.getInstance().options.keyUp.isDown();
-        }
-        return rider.zza > 0.001f;
+    @Override
+    public boolean startsFlyingWhenMounted() {
+        return true;
     }
 
-    private void updateHoverMoveDirection(Player rider) {
-        double speed = 0.8;
-        if (ChaosPersists.flyup_keystate != 0) {
-            speed += 1.0;
+    @Override
+    public boolean allowMousePitchControl() {
+        return false;
+    }
+
+    @Override
+    public float getRiddenAirSpeedMultiplier() {
+        // MOVEMENT_SPEED is already 1.33; the dragon 5.2+map() formula turns that into ~9 b/t.
+        // 0.6 keeps terminal speed around the old 0.8 cruise (explosion threshold is 0.65).
+        return 0.6f;
+    }
+
+    @Override
+    public byte getControlState() {
+        return this.entityData.get(CONTROL_STATE);
+    }
+
+    @Override
+    public void setControlState(byte state) {
+        this.entityData.set(CONTROL_STATE, state);
+    }
+
+    @Override
+    public boolean isFlying() {
+        return this.entityData.get(FLYING);
+    }
+
+    @Override
+    public void setFlying(boolean flying) {
+        this.entityData.set(FLYING, flying);
+    }
+
+    @Override
+    public boolean isHovering() {
+        return this.entityData.get(HOVERING);
+    }
+
+    @Override
+    public void setHovering(boolean hovering) {
+        this.entityData.set(HOVERING, hovering);
+    }
+
+    @Override
+    protected void positionRider(Entity passenger, Entity.MoveFunction moveFunction) {
+        super.positionRider(passenger, moveFunction);
+        this.copyRiderRotation(passenger);
+    }
+
+    @Override
+    public void addPassenger(Entity passenger) {
+        super.addPassenger(passenger);
+        this.mountFlight.onMounted();
+    }
+
+    @Override
+    protected void removePassenger(Entity passenger) {
+        super.removePassenger(passenger);
+        if (this.getPassengers().isEmpty()) {
+            this.mountFlight.onDismount();
+            this.setNoGravity(true);
         }
-        double yawRad = Math.toRadians(rider.getYRot() + 90.0f);
-        this.hoverMoveX = speed * Math.cos(yawRad);
-        this.hoverMoveZ = speed * Math.sin(yawRad);
+    }
+
+    @Override
+    public void move(net.minecraft.world.entity.MoverType type, Vec3 pos) {
+        super.move(type, this.mountFlight.prepareRiddenMove(pos));
+        this.mountFlight.finishRiddenMove();
+        if (this.getRidingPlayer() == null) {
+            this.setNoGravity(true);
+        }
     }
 
     @Override
     public void travel(Vec3 travelVector) {
-        LivingEntity passenger = this.getControllingPassenger();
-        if (this.isVehicle() && passenger != null) {
-            this.setYRot(passenger.getYRot());
-            this.yRotO = this.getYRot();
-            this.setXRot(passenger.getXRot() * 0.5f);
-            this.yBodyRot = passenger.getYRot();
-            this.yHeadRot = passenger.getYRot();
-            this.setSpeed((float) this.getAttributeValue(Attributes.MOVEMENT_SPEED));
-            super.travel(new Vec3(passenger.xxa, 0.0f, 0.0f));
+        if (this.mountFlight.handleTravel(travelVector, super::travel)) {
+            Player rider = this.getRidingPlayer();
+            if (rider != null) {
+                this.entityData.set(DATA_FORWARD, rider.zza > 0.001f);
+            }
             return;
         }
         super.travel(travelVector);
-    }
-
-    private void updateHoverboardMovement() {
-        this.setNoGravity(true);
-        double distanceloc = 0.0;
-        boolean nearGround = false;
-        Player rider = this.getRiderPlayer();
-
-        if (rider != null) {
-            if (!rider.isAlive()) {
-                this.ejectPassengers();
-                return;
-            }
-            this.updateHoverMoveDirection(rider);
-            boolean movingForward = this.level().isClientSide()
-                    ? this.isRiderMovingForward(rider)
-                    : rider.zza > 0.001f;
-            this.entityData.set(DATA_FORWARD, movingForward);
-
-            for (int index = 0; index < 15; ++index) {
-                BlockPos pos = BlockPos.containing(this.getX(), this.getY() - distanceloc, this.getZ());
-                if (!this.level().getBlockState(pos).isAir()) {
-                    nearGround = true;
-                } else if (!nearGround) {
-                    distanceloc += 1.0;
-                }
-            }
-
-            if (this.tickCount % 2 != 0) {
-                return;
-            }
-
-            if (this.entityData.get(DATA_FORWARD)) {
-                if (nearGround) {
-                    this.addDeltaMovement(
-                            new Vec3(this.hoverMoveX / 3.0, 0.02, this.hoverMoveZ / 3.0));
-                } else {
-                    this.addDeltaMovement(
-                            new Vec3(this.hoverMoveX / 5.0, -0.025, this.hoverMoveZ / 5.0));
-                }
-            } else if (nearGround) {
-                this.addDeltaMovement(new Vec3(0.0, 0.02, 0.0));
-            } else {
-                this.addDeltaMovement(new Vec3(0.0, -0.025, 0.0));
-            }
-        } else {
-            this.entityData.set(DATA_FORWARD, false);
-            distanceloc = 0.0;
-            nearGround = false;
-            for (int index = 0; index < 2; ++index) {
-                BlockPos pos = BlockPos.containing(this.getX(), this.getY() - distanceloc, this.getZ());
-                if (!this.level().getBlockState(pos).isAir()) {
-                    nearGround = true;
-                } else if (!nearGround) {
-                    distanceloc += 1.0;
-                }
-            }
-
-            if (this.tickCount % 2 != 0) {
-                return;
-            }
-
-            if (nearGround) {
-                this.addDeltaMovement(new Vec3(0.0, 0.03, 0.0));
-            } else {
-                this.addDeltaMovement(new Vec3(0.0, -0.03, 0.0));
-            }
-        }
     }
 
     @Override
@@ -368,7 +363,10 @@ public class Elevator extends Mob {
             return;
         }
         super.tick();
-        this.updateHoverboardMovement();
+        this.mountFlight.tick();
+        if (this.getRidingPlayer() == null) {
+            this.setNoGravity(true);
+        }
         int k;
         double d5;
         Block bid;
@@ -514,6 +512,10 @@ public class Elevator extends Mob {
                         (this.getX() - this.xo) * (this.getX() - this.xo)
                                 + (this.getZ() - this.zo) * (this.getZ() - this.zo));
         if (horizSpeed > 0.15 && this.getControllingPassenger() != null) {
+            double visualSpeed = Math.min(horizSpeed, 0.8);
+            double pmx = Math.max(-0.35, Math.min(0.35, mx));
+            double pmy = Math.max(-0.35, Math.min(0.35, my));
+            double pmz = Math.max(-0.35, Math.min(0.35, mz));
             d4 = Math.cos(Math.toRadians(this.getYRot() + 270.0f));
             d5 = Math.sin(Math.toRadians(this.getYRot() + 270.0f));
             bid = Blocks.AIR;
@@ -526,7 +528,8 @@ public class Elevator extends Mob {
             }
             int j = 0;
             DustParticleOptions dust = new DustParticleOptions(new Vector3f(1.0f, 0.0f, 0.0f), 1.0f);
-            while ((double) j < 1.0 + horizSpeed * 10.0) {
+            int particleCount = (int) Math.min(9.0, 1.0 + visualSpeed * 10.0);
+            while (j < particleCount) {
                 double d9;
                 double d8;
                 d6 = this.getRandom().nextFloat() * 2.0f - 1.0f;
@@ -535,17 +538,17 @@ public class Elevator extends Mob {
                     d8 = this.getX() - d4 * d6 * 0.8 + d5 * d7;
                     d9 = this.getZ() - d5 * d6 * 0.8 - d4 * d7;
                     if (this.getRandom().nextBoolean()) {
-                        this.level().addParticle(ParticleTypes.SMOKE, d8, this.getY() - 0.25, d9, mx, my, mz);
+                        this.level().addParticle(ParticleTypes.SMOKE, d8, this.getY() - 0.25, d9, pmx, pmy, pmz);
                     } else {
-                        this.level().addParticle(dust, d8, this.getY() - 0.25, d9, mx, my, mz);
+                        this.level().addParticle(dust, d8, this.getY() - 0.25, d9, pmx, pmy, pmz);
                     }
                 } else {
                     d8 = this.getX() + d4 + d5 * d6 * 0.7;
                     d9 = this.getZ() + d5 - d4 * d6 * 0.7;
                     if (this.getRandom().nextBoolean()) {
-                        this.level().addParticle(ParticleTypes.SMOKE, d8, this.getY() - 0.225, d9, mx, my, mz);
+                        this.level().addParticle(ParticleTypes.SMOKE, d8, this.getY() - 0.225, d9, pmx, pmy, pmz);
                     } else {
-                        this.level().addParticle(dust, d8, this.getY() - 0.225, d9, mx, my, mz);
+                        this.level().addParticle(dust, d8, this.getY() - 0.225, d9, pmx, pmy, pmz);
                     }
                 }
                 if (bid == Blocks.WATER) {
@@ -556,9 +559,9 @@ public class Elevator extends Mob {
                                         this.getX() + (double) this.getRandom().nextFloat(),
                                         this.getY() - (double) i + 1.25,
                                         this.getZ() + (double) this.getRandom().nextFloat(),
-                                        mx / 2.0,
-                                        my + horizSpeed,
-                                        mz / 2.0);
+                                        pmx / 2.0,
+                                        pmy + visualSpeed,
+                                        pmz / 2.0);
                     }
                 }
                 ++j;

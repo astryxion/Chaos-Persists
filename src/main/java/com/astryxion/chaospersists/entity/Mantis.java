@@ -1,5 +1,6 @@
 package com.astryxion.chaospersists.entity;
 
+import com.astryxion.chaospersists.loot.DatapackLoot;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.core.ChaosSounds;
 import com.astryxion.chaospersists.util.GenericTargetSorter;
@@ -149,6 +150,9 @@ public class Mantis extends Monster {
 
     @Override
     protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+        if (DatapackLoot.useEntityTable(this)) {
+            return;
+        }
         this.dropItemRand(ChaosPersists.MyMantisClaw, 1);
         this.dropItemRand(ChaosPersists.MyMantisClaw, 1);
         this.dropItemRand(Items.ITEM_FRAME, 1);
@@ -339,7 +343,8 @@ public class Mantis extends Monster {
         for (int k = -2; k < 2; ++k) {
             for (int j = -2; j < 2; ++j) {
                 for (int i = 1; i < 6; ++i) {
-                    if (!MyUtils.getBlockStateForSpawnRules(level, pos.offset(j, i, k)).isAir()) {
+                    if (!MyUtils.isClearForLegacySpawnVolume(
+                            MyUtils.getBlockStateForSpawnRules(level, pos.offset(j, i, k)))) {
                         return false;
                     }
                 }
@@ -384,7 +389,8 @@ public class Mantis extends Monster {
         for (int k = -2; k < 2; ++k) {
             for (int j = -2; j < 2; ++j) {
                 for (int i = 1; i < 6; ++i) {
-                    if (!MyUtils.getBlockStateForSpawnRules(level, pos.offset(j, i, k)).isAir()) {
+                    if (!MyUtils.isClearForLegacySpawnVolume(
+                            MyUtils.getBlockStateForSpawnRules(level, pos.offset(j, i, k)))) {
                         return false;
                     }
                 }

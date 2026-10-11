@@ -1,6 +1,6 @@
 package com.astryxion.chaospersists.block;
 
-import com.astryxion.chaospersists.container.ContainerCrystalWorkbench;
+import com.astryxion.chaospersists.menu.ContainerCrystalWorkbench;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;

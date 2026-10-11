@@ -1,10 +1,12 @@
 package com.astryxion.chaospersists.entity;
 
+import com.astryxion.chaospersists.loot.DatapackLoot;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.core.ChaosSounds;
 import com.astryxion.chaospersists.util.MyEntityAIFollowOwner;
 import com.astryxion.chaospersists.util.MyEntityAIAvoidEntity;
 import com.astryxion.chaospersists.util.MyEntityAIWander;
+import com.astryxion.chaospersists.util.PetOrderInteract;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
@@ -25,7 +27,6 @@ import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.PanicGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
-import net.minecraft.world.entity.ai.goal.RestrictSunGoal;
 import net.minecraft.world.entity.ai.goal.TemptGoal;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
@@ -47,6 +48,8 @@ public class Hydrolisc extends TamableAnimal {
         super(type, level);
         this.setOrderedToSit(false);
         this.xpReward = 5;
+        // 1.7.10 getNavigator().setAvoidsWater(false)
+        this.getNavigation().setCanFloat(true);
         this.goalSelector.addGoal(0, new FloatGoal(this));
         this.goalSelector.addGoal(1, new BreedGoal(this, 1.0));
         this.goalSelector.addGoal(2, new MyEntityAIAvoidEntity(this, Monster.class, 8.0f, 1.0, 1.399999976158142));
@@ -56,7 +59,6 @@ public class Hydrolisc extends TamableAnimal {
         this.goalSelector.addGoal(6, new LookAtPlayerGoal(this, Player.class, 6.0f));
         this.goalSelector.addGoal(7, new MyEntityAIWander(this, 1.0f));
         this.goalSelector.addGoal(8, new RandomLookAroundGoal(this));
-        this.goalSelector.addGoal(9, new RestrictSunGoal(this));
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -70,9 +72,30 @@ public class Hydrolisc extends TamableAnimal {
     @Override
     public void tick() {
         this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue((double) this.moveSpeed);
+        this.applyTamedMaxHealth();
         super.tick();
         if (this.isInWater()) {
             this.setDeltaMovement(this.getDeltaMovement().add(0.0, 0.04, 0.0));
+        }
+    }
+
+    @Override
+    public void setTame(boolean tamed) {
+        super.setTame(tamed);
+        this.applyTamedMaxHealth();
+    }
+
+    private void applyTamedMaxHealth() {
+        var attr = this.getAttribute(Attributes.MAX_HEALTH);
+        if (attr == null) {
+            return;
+        }
+        double max = (double) this.mygetMaxHealth();
+        if (attr.getBaseValue() != max) {
+            attr.setBaseValue(max);
+            if (this.getHealth() > this.getMaxHealth()) {
+                this.setHealth(this.getMaxHealth());
+            }
         }
     }
 
@@ -195,6 +218,7 @@ public class Hydrolisc extends TamableAnimal {
                         && !this.isOrderedToSit()
                         && this.distanceToSqr(this.getOwner()) > 16.0;
         if (!followingOwner
+                && !this.isOrderedToSit()
                 && !this.isInSittingPose()
                 && (this.getRandom().nextInt(20) == 0 && this.getHydroHealth() < (int) this.getMaxHealth()
                         || this.getRandom().nextInt(100) == 0)) {
@@ -238,7 +262,7 @@ public class Hydrolisc extends TamableAnimal {
     }
 
     public int mygetMaxHealth() {
-        return 100;
+        return this.isTame() ? 200 : 100;
     }
 
     public int getHydroHealth() {
@@ -257,9 +281,6 @@ public class Hydrolisc extends TamableAnimal {
             par1EntityPlayer.setItemInHand(hand, ItemStack.EMPTY);
             var2 = ItemStack.EMPTY;
         }
-        if (super.mobInteract(par1EntityPlayer, hand) == InteractionResult.SUCCESS) {
-            return InteractionResult.SUCCESS;
-        }
         if (!var2.isEmpty() && var2.is(Items.COD) && par1EntityPlayer.distanceToSqr(this) < 16.0) {
             if (!this.isTame()) {
                 if (!this.level().isClientSide) {
@@ -275,13 +296,14 @@ public class Hydrolisc extends TamableAnimal {
                     }
                 }
             } else if (this.isOwnedBy(par1EntityPlayer)) {
+                if (this.getMaxHealth() <= this.getHealth()) {
+                    return InteractionResult.SUCCESS;
+                }
                 if (this.level().isClientSide) {
                     spawnTamingParticles(true);
                     this.level().broadcastEntityEvent(this, (byte) 7);
                 }
-                if (this.getMaxHealth() > this.getHealth()) {
-                    this.heal(this.getMaxHealth() - this.getHealth());
-                }
+                this.heal(this.getMaxHealth() - this.getHealth());
             }
             if (!par1EntityPlayer.getAbilities().instabuild) {
                 var2.shrink(1);
@@ -324,15 +346,39 @@ public class Hydrolisc extends TamableAnimal {
             }
             return InteractionResult.SUCCESS;
         }
-        if (this.isTame() && this.isOwnedBy(par1EntityPlayer) && par1EntityPlayer.distanceToSqr(this) < 16.0) {
-            if (!this.isInSittingPose()) {
-                this.setOrderedToSit(true);
-            } else {
-                this.setOrderedToSit(false);
+        if (!var2.isEmpty() && this.isFood(var2)) {
+            int age = this.getAge();
+            if (!this.level().isClientSide && age == 0 && this.canFallInLove()) {
+                this.usePlayerItem(par1EntityPlayer, hand, var2);
+                this.setInLove(par1EntityPlayer);
+                return InteractionResult.SUCCESS;
             }
+            if (this.isBaby()) {
+                this.usePlayerItem(par1EntityPlayer, hand, var2);
+                this.ageUp(getSpeedUpSecondsWhenFeeding(-age), true);
+                return InteractionResult.sidedSuccess(this.level().isClientSide);
+            }
+            if (this.level().isClientSide) {
+                return InteractionResult.CONSUME;
+            }
+        }
+        if (this.isTame() && this.isOwnedBy(par1EntityPlayer) && par1EntityPlayer.distanceToSqr(this) < 16.0) {
+            if (PetOrderInteract.shouldPassItemUse(var2, par1EntityPlayer)) {
+                return InteractionResult.PASS;
+            }
+            PetOrderInteract.toggleSit(par1EntityPlayer, this);
             return InteractionResult.SUCCESS;
         }
         return InteractionResult.PASS;
+    }
+
+    @Override
+    public void setOrderedToSit(boolean orderedToSit) {
+        super.setOrderedToSit(orderedToSit);
+        this.setInSittingPose(orderedToSit);
+        if (orderedToSit && this.getNavigation() != null) {
+            this.getNavigation().stop();
+        }
     }
 
     @Override
@@ -357,6 +403,9 @@ public class Hydrolisc extends TamableAnimal {
 
     @Override
     protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+        if (DatapackLoot.useEntityTable(this)) {
+            return;
+        }
         if (this.isTame()) {
             int var3 = this.getRandom().nextInt(5);
             var3 += 2;

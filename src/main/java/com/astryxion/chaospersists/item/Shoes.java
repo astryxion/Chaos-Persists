@@ -3,6 +3,7 @@ package com.astryxion.chaospersists.item;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.entity.Boyfriend;
 import com.astryxion.chaospersists.entity.Girlfriend;
+import com.astryxion.chaospersists.util.PetCombatHelper;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import org.joml.Vector3f;
@@ -124,7 +125,7 @@ public class Shoes extends ThrowableProjectile {
             if (ChaosPersists.valentines_day != 0) {
                 var2 = 10.0f;
             }
-            if (var2 > 0.0f) {
+            if (var2 > 0.0f && !PetCombatHelper.areAlliedOwnedCompanions(this.getOwner(), hit)) {
                 hit.hurt(this.damageSources().thrown(this, this.getOwner()), var2);
             }
         }

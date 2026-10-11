@@ -1,24 +1,26 @@
 package com.astryxion.chaospersists.entity;
 
+import com.astryxion.chaospersists.loot.DatapackLoot;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.core.ChaosSounds;
 import com.astryxion.chaospersists.item.BetterFireball;
 import com.astryxion.chaospersists.item.IceBall;
 import com.astryxion.chaospersists.item.WaterBall;
-import com.astryxion.chaospersists.render.RenderInfo;
+import com.astryxion.chaospersists.entity.RenderInfo;
 import com.astryxion.chaospersists.util.GenericTargetSorter;
 import com.astryxion.chaospersists.util.MyEntityAIFollowOwner;
 import com.astryxion.chaospersists.util.MyEntityAIWander;
 import com.astryxion.chaospersists.util.MyUtils;
 import com.astryxion.chaospersists.util.PetCombatHelper;
+import com.astryxion.chaospersists.util.PetOrderInteract;
+import com.astryxion.chaospersists.entity.util.ChaosFlyingMount;
+import com.astryxion.chaospersists.entity.util.ChaosMountFlight;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
-import net.minecraft.network.protocol.game.ServerboundPlayerInputPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -76,9 +78,8 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraft.client.player.LocalPlayer;
 
-public class Dragon extends TamableAnimal {
+public class Dragon extends TamableAnimal implements ChaosFlyingMount {
     private static final EntityDataAccessor<Byte> ATTACKING =
             SynchedEntityData.defineId(Dragon.class, EntityDataSerializers.BYTE);
     private static final EntityDataAccessor<Byte> STATE2 =
@@ -87,6 +88,13 @@ public class Dragon extends TamableAnimal {
             SynchedEntityData.defineId(Dragon.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> INT24 =
             SynchedEntityData.defineId(Dragon.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Byte> CONTROL_STATE =
+            SynchedEntityData.defineId(Dragon.class, EntityDataSerializers.BYTE);
+    private static final EntityDataAccessor<Boolean> FLYING =
+            SynchedEntityData.defineId(Dragon.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> HOVERING =
+            SynchedEntityData.defineId(Dragon.class, EntityDataSerializers.BOOLEAN);
+    private final ChaosMountFlight mountFlight = new ChaosMountFlight(this);
     private int boatPosRotationIncrements;
     private double boatX;
     private double boatY;
@@ -223,6 +231,7 @@ public class Dragon extends TamableAnimal {
     @Override
     protected void positionRider(Entity passenger, Entity.MoveFunction moveFunction) {
         if (this.hasPassenger(passenger)) {
+            this.copyRiderRotation(passenger);
             float f = 0.65f;
             double x = this.getX() - (double) f * Math.sin(Math.toRadians(this.getYRot()));
             double y = ChaosMountHelper.riderSeatY(this, passenger, this.getPassengersRidingOffset());
@@ -302,14 +311,20 @@ public class Dragon extends TamableAnimal {
         return true;
     }
 
-    /**
-     * Same pipeline as {@link ThePrinceTeen} / {@link Cephadrome}: vanilla calls {@code travel} with rider
-     * input synced from the client via {@code ServerboundPlayerInputPacket}. Flight must run here, not only in
-     * {@code aiStep}, or {@code zza} stays zero on the server and the mount cannot fly.
-     */
     @Override
     public void travel(Vec3 travelVector) {
-        if (this.isStayingPut() || this.getActivity() == 0) {
+        if (this.isStayingPut() && this.getPassengers().isEmpty()) {
+            if (this.lacksGroundSupport()) {
+                this.setOnGround(false);
+            }
+            this.setNoGravity(false);
+            super.travel(travelVector);
+            return;
+        }
+        if (this.mountFlight.handleTravel(travelVector, super::travel)) {
+            return;
+        }
+        if (this.getActivity() == 0) {
             if (this.lacksGroundSupport()) {
                 this.setOnGround(false);
             }
@@ -320,355 +335,156 @@ public class Dragon extends TamableAnimal {
         if (MyUtils.usesChaosFlight(this)) {
             return;
         }
+        this.setNoGravity(false);
+        super.travel(travelVector);
+    }
+
+    @Override
+    public void applyRiderProjectileInput(Player pp) {
+        if (pp == null || this.level().isClientSide) {
+            return;
+        }
+        if (this.fireballticker > 0) {
+            --this.fireballticker;
+            return;
+        }
+        boolean leftFire = this.isAttackingControl();
+        boolean rightFire = this.isStrikingControl();
+        if (!leftFire && !rightFire) {
+            return;
+        }
         Vec3 dm = this.getDeltaMovement();
         double mx = dm.x;
         double my = dm.y;
         double mz = dm.z;
-        if (this.isVehicle() && this.getControllingPassenger() instanceof Player pp && this.getActivity() != 0) {
-            if (pp.isDeadOrDying()) {
-                this.ejectPassengers();
-                this.setNoGravity(false);
-                super.travel(travelVector);
-                return;
+        double xzoff = 4.0;
+        double yoff = -0.25;
+        BetterFireball bf;
+        if (this.getDragonType() == 0) {
+            if (leftFire) {
+                bf = new BetterFireball(this.level(), this, 0.0, 0.0, 0.0);
+                bf.setNotMe();
+                bf.setSmall();
+                double cx = this.getX() - xzoff * Math.sin(Math.toRadians(this.getYRot()));
+                double cz = this.getZ() + xzoff * Math.cos(Math.toRadians(this.getYRot()));
+                bf.moveTo(cx, this.getY() + yoff, cz);
+                cx = Math.cos(Math.toRadians(pp.getYHeadRot() + 90.0f));
+                cz = Math.sin(Math.toRadians(pp.getYHeadRot() + 90.0f));
+                double cy = -Math.sin(Math.toRadians(pp.getXRot()));
+                double d3 = Math.sqrt(cx * cx + cy * cy + cz * cz);
+                bf.accelerationX = cx / d3 * 0.15;
+                bf.accelerationY = cy / d3 * 0.15;
+                bf.accelerationZ = cz / d3 * 0.15;
+                bf.setDeltaMovement(mx, my, mz);
+                bf.setPos(bf.getX() - mx * 9.0, bf.getY() - my * 9.0, bf.getZ() - mz * 9.0);
+                this.level()
+                        .playSound(
+                                null,
+                                this.getX(),
+                                this.getY(),
+                                this.getZ(),
+                                SoundEvents.ARROW_SHOOT,
+                                SoundSource.NEUTRAL,
+                                0.75f,
+                                1.0f / (this.getRandom().nextFloat() * 0.4f + 0.8f));
+                this.level().addFreshEntity(bf);
+                this.fireballticker = 10;
             }
-            this.setNoGravity(true);
-            double obstruction_factor;
-            double relative_g;
-            double max_speed = 0.95;
-            double gh;
-            double pi = 3.1415926545;
-            double deltav;
-            BetterFireball bf;
-
-            if (this.fireballticker > 0) {
-                --this.fireballticker;
+            if (rightFire) {
+                bf = new BetterFireball(this.level(), this, 0.0, 0.0, 0.0);
+                bf.setNotMe();
+                double cx = this.getX() - xzoff * Math.sin(Math.toRadians(this.getYRot()));
+                double cz = this.getZ() + xzoff * Math.cos(Math.toRadians(this.getYRot()));
+                bf.moveTo(cx, this.getY() + yoff, cz);
+                cx = Math.cos(Math.toRadians(pp.getYHeadRot() + 90.0f));
+                cz = Math.sin(Math.toRadians(pp.getYHeadRot() + 90.0f));
+                double cy = -Math.sin(Math.toRadians(pp.getXRot()));
+                double d3 = Math.sqrt(cx * cx + cy * cy + cz * cz);
+                bf.accelerationX = cx / d3 * 0.1;
+                bf.accelerationY = cy / d3 * 0.1;
+                bf.accelerationZ = cz / d3 * 0.1;
+                bf.setDeltaMovement(mx, my, mz);
+                bf.setPos(bf.getX() - mx * 9.0, bf.getY() - my * 9.0, bf.getZ() - mz * 9.0);
+                this.level()
+                        .playSound(
+                                null,
+                                this.getX(),
+                                this.getY(),
+                                this.getZ(),
+                                SoundEvents.TNT_PRIMED,
+                                SoundSource.NEUTRAL,
+                                1.0f,
+                                1.0f / (this.getRandom().nextFloat() * 0.4f + 0.8f));
+                this.level().addFreshEntity(bf);
+                this.fireballticker = 20;
             }
-
-            if (mx < -2.0) {
-                mx = -2.0;
+        } else {
+            if (leftFire) {
+                double cx = this.getX() - xzoff * Math.sin(Math.toRadians(this.getYRot()));
+                double cz = this.getZ() + xzoff * Math.cos(Math.toRadians(this.getYRot()));
+                WaterBall wb = new WaterBall(this.level(), cx, this.getY() + yoff, cz);
+                wb.moveTo(cx, this.getY() + yoff, cz, pp.getYRot() + 90.0f, pp.getXRot());
+                double var3 = Math.cos(Math.toRadians(pp.getYHeadRot() + 90.0f));
+                double var5 = -Math.sin(Math.toRadians(pp.getXRot()));
+                double var77 = Math.sin(Math.toRadians(pp.getYHeadRot() + 90.0f));
+                float var9 = Mth.sqrt((float) (var3 * var3 + var77 * var77)) * 0.2f;
+                wb.shoot(var3, var5 + var9, var77, 1.4f, 5.0f);
+                wb.setPos(wb.getX() - mx * 7.0, wb.getY() - my * 7.0, wb.getZ() - mz * 7.0);
+                this.level()
+                        .playSound(
+                                null,
+                                this.getX(),
+                                this.getY(),
+                                this.getZ(),
+                                SoundEvents.ARROW_SHOOT,
+                                SoundSource.NEUTRAL,
+                                0.75f,
+                                1.0f / (this.getRandom().nextFloat() * 0.4f + 0.8f));
+                this.level().addFreshEntity(wb);
+                this.fireballticker = 5;
             }
-            if (mx > 2.0) {
-                mx = 2.0;
+            if (rightFire) {
+                double cx = this.getX() - xzoff * Math.sin(Math.toRadians(this.getYRot()));
+                double cz = this.getZ() + xzoff * Math.cos(Math.toRadians(this.getYRot()));
+                IceBall ib =
+                        new IceBall(
+                                ChaosPersists.ENTITY_TYPE_ICE_BALL.get(),
+                                cx,
+                                this.getY() + yoff,
+                                cz,
+                                this.level());
+                ib.moveTo(cx, this.getY() + yoff, cz, pp.getYRot() + 90.0f, pp.getXRot());
+                ib.setSpecial();
+                ib.setIceBall();
+                double var3 = Math.cos(Math.toRadians(pp.getYRot() + 90.0f));
+                double var5 = -Math.sin(Math.toRadians(pp.getXRot()));
+                double var77 = Math.sin(Math.toRadians(pp.getYRot() + 90.0f));
+                float var9 = Mth.sqrt((float) (var3 * var3 + var77 * var77)) * 0.2f;
+                ib.shoot(var3, var5 + var9, var77, 1.4f, 5.0f);
+                ib.setPos(ib.getX() - mx * 7.0, ib.getY() - my * 7.0, ib.getZ() - mz * 7.0);
+                Vec3 ibdm = ib.getDeltaMovement();
+                ib.setDeltaMovement(ibdm.x * 2.0, ibdm.y * 2.0, ibdm.z * 2.0);
+                this.level()
+                        .playSound(
+                                null,
+                                this.getX(),
+                                this.getY(),
+                                this.getZ(),
+                                SoundEvents.FIREWORK_ROCKET_LAUNCH,
+                                SoundSource.NEUTRAL,
+                                0.75f,
+                                1.0f / (this.getRandom().nextFloat() * 0.4f + 0.8f));
+                this.level().addFreshEntity(ib);
+                this.fireballticker = 15;
             }
-            if (mz < -2.0) {
-                mz = -2.0;
-            }
-            if (mz > 2.0) {
-                mz = 2.0;
-            }
-            double velocity = Math.sqrt(mx * mx + mz * mz);
-
-            gh = 1.25;
-            BlockState ground =
-                    this.level()
-                            .getBlockState(
-                                    BlockPos.containing(
-                                            this.getX(), (float) this.getY() - (float) gh, this.getZ()));
-            if (!ground.isAir()) {
-                my += 0.03;
-                this.setPos(this.getX(), this.getY() + 0.1, this.getZ());
-            } else {
-                my -= 0.018;
-            }
-
-            obstruction_factor = 0.0;
-            int distLimit = 3 + (int) (velocity * 7.0);
-            if (distLimit < 3) {
-                distLimit = 3;
-            }
-            if (distLimit > 24) {
-                distLimit = 24;
-            }
-            int iMax = Math.min(distLimit * 2, 48);
-            for (int k = 1; k < distLimit; k++) {
-                for (int i = 1; i < iMax; i++) {
-                    double dx = i * Math.cos(Math.toRadians(this.getYRot() + 90.0f));
-                    double dz = i * Math.sin(Math.toRadians(this.getYRot() + 90.0f));
-                    BlockState scan =
-                            this.level()
-                                    .getBlockState(
-                                            BlockPos.containing(
-                                                    this.getX() + dx, this.getY() - k, this.getZ() + dz));
-                    if (!scan.isAir()) {
-                        obstruction_factor += 0.05;
-                    }
-                }
-            }
-
-            my += obstruction_factor * 0.07000000000000001;
-            this.setPos(this.getX(), this.getY() + obstruction_factor * 0.07000000000000001, this.getZ());
-            if (my > 2.0) {
-                my = 2.0;
-            }
-
-            double d4 = pp.getYRot();
-            d4 %= 360.0;
-            while (d4 < 0.0) {
-                d4 += 360.0;
-            }
-            double d5 = this.getYRot();
-            d5 %= 360.0;
-            while (d5 < 0.0) {
-                d5 += 360.0;
-            }
-            relative_g = (d4 - d5) % 180.0;
-            while (relative_g < 0.0) {
-                relative_g += 180.0;
-            }
-            if (relative_g > 90.0) {
-                relative_g -= 180.0;
-            }
-
-            if (velocity > 0.01) {
-                d4 = 1.85 - velocity;
-                d4 = Math.abs(d4);
-                if (d4 < 0.01) {
-                    d4 = 0.01;
-                }
-                if (d4 > 0.9) {
-                    d4 = 0.9;
-                }
-                this.setYRot(pp.getYRot() + (float) (relative_g * d4));
-            } else {
-                this.setYRot(pp.getYRot());
-            }
-            relative_g = Math.abs(relative_g) * velocity;
-            if (relative_g > 50.0) {
-                relative_g = 0.0;
-            }
-
-            this.setXRot(2.0f * (float) velocity);
-            this.setRot(this.getYRot(), this.getXRot());
-
-            double newvelocity = Math.sqrt(mx * mx + mz * mz);
-            double rhm = Math.atan2(mz, mx);
-            double rhdir = Math.toRadians((pp.getYRot() + 90.0f) % 360.0f);
-            double im = pp.zza;
-
-            boolean riderJumping =
-                    pp instanceof LocalPlayer lp && lp.input.jumping || ChaosPersists.flyup_keystate != 0;
-            if (riderJumping) {
-                my += 0.03;
-                my += velocity * 0.036;
-            }
-
-            double rdv = Math.abs(rhm - rhdir) % (pi * 2.0);
-            if (rdv > pi) {
-                rdv -= pi * 2.0;
-            }
-            rdv = Math.abs(rdv);
-            if (Math.abs(newvelocity) < 0.01) {
-                rdv = 0.0;
-            }
-
-            if (rdv > 1.5) {
-                newvelocity = -newvelocity;
-            }
-
-            if (Math.abs(im) > 0.001) {
-                if (im > 0.0) {
-                    deltav = 0.025;
-                    if (max_speed > 1.0) {
-                        deltav += 0.05;
-                    }
-                    if (this.deltasmooth < 0.0f) {
-                        this.deltasmooth = 0.0f;
-                    }
-                    this.deltasmooth = (float) (this.deltasmooth + deltav / 10.0);
-                    if (this.deltasmooth > deltav) {
-                        this.deltasmooth = (float) deltav;
-                    }
-                } else {
-                    max_speed = 0.35;
-                    deltav = -0.02;
-                    if (this.deltasmooth > 0.0f) {
-                        this.deltasmooth = 0.0f;
-                    }
-                    this.deltasmooth = (float) (this.deltasmooth + deltav / 10.0);
-                    if (this.deltasmooth < deltav) {
-                        this.deltasmooth = (float) deltav;
-                    }
-                }
-
-                newvelocity += this.deltasmooth;
-                if (newvelocity >= 0.0) {
-                    if (newvelocity > max_speed) {
-                        newvelocity = max_speed;
-                    }
-                    mx = Math.cos(Math.toRadians(this.getYRot() + 90.0f)) * newvelocity;
-                    mz = Math.sin(Math.toRadians(this.getYRot() + 90.0f)) * newvelocity;
-                } else {
-                    if (newvelocity < -max_speed) {
-                        newvelocity = -max_speed;
-                    }
-                    newvelocity = -newvelocity;
-                    mx = Math.cos(Math.toRadians(this.getYRot() + 270.0f)) * newvelocity;
-                    mz = Math.sin(Math.toRadians(this.getYRot() + 270.0f)) * newvelocity;
-                }
-            } else if (newvelocity >= 0.0) {
-                mx = Math.cos(Math.toRadians(this.getYRot() + 90.0f)) * newvelocity;
-                mz = Math.sin(Math.toRadians(this.getYRot() + 90.0f)) * newvelocity;
-            } else {
-                mx = Math.cos(Math.toRadians(this.getYRot() + 270.0f)) * (newvelocity * -1.0);
-                mz = Math.sin(Math.toRadians(this.getYRot() + 270.0f)) * (newvelocity * -1.0);
-            }
-
-            if (this.fireballticker == 0) {
-                double xzoff = 4.0;
-                double yoff = -0.25;
-
-                if (this.getDragonType() == 0) {
-                    if (pp.xxa > 0.001f) {
-                        bf = new BetterFireball(this.level(), this, 0.0, 0.0, 0.0);
-                        bf.setNotMe();
-                        bf.setSmall();
-                        double cx = this.getX() - xzoff * Math.sin(Math.toRadians(this.getYRot()));
-                        double cz = this.getZ() + xzoff * Math.cos(Math.toRadians(this.getYRot()));
-                        bf.moveTo(cx, this.getY() + yoff, cz);
-                        cx = Math.cos(Math.toRadians(pp.getYHeadRot() + 90.0f));
-                        cz = Math.sin(Math.toRadians(pp.getYHeadRot() + 90.0f));
-                        double cy = -Math.sin(Math.toRadians(pp.getXRot()));
-                        double d3 = Math.sqrt(cx * cx + cy * cy + cz * cz);
-                        bf.accelerationX = cx / d3 * 0.15;
-                        bf.accelerationY = cy / d3 * 0.15;
-                        bf.accelerationZ = cz / d3 * 0.15;
-                        bf.setDeltaMovement(mx, my, mz);
-                        bf.setPos(
-                                bf.getX() - mx * 9.0,
-                                bf.getY() - my * 9.0,
-                                bf.getZ() - mz * 9.0);
-                        this.level()
-                                .playSound(
-                                        null,
-                                        this.getX(),
-                                        this.getY(),
-                                        this.getZ(),
-                                        SoundEvents.ARROW_SHOOT,
-                                        SoundSource.NEUTRAL,
-                                        0.75f,
-                                        1.0f / (this.getRandom().nextFloat() * 0.4f + 0.8f));
-                        this.level().addFreshEntity(bf);
-                        this.fireballticker = 10;
-                    }
-                    if (pp.xxa < -0.001f) {
-                        bf = new BetterFireball(this.level(), this, 0.0, 0.0, 0.0);
-                        bf.setNotMe();
-                        double cx = this.getX() - xzoff * Math.sin(Math.toRadians(this.getYRot()));
-                        double cz = this.getZ() + xzoff * Math.cos(Math.toRadians(this.getYRot()));
-                        bf.moveTo(cx, this.getY() + yoff, cz);
-                        cx = Math.cos(Math.toRadians(pp.getYHeadRot() + 90.0f));
-                        cz = Math.sin(Math.toRadians(pp.getYHeadRot() + 90.0f));
-                        double cy = -Math.sin(Math.toRadians(pp.getXRot()));
-                        double d3 = Math.sqrt(cx * cx + cy * cy + cz * cz);
-                        bf.accelerationX = cx / d3 * 0.1;
-                        bf.accelerationY = cy / d3 * 0.1;
-                        bf.accelerationZ = cz / d3 * 0.1;
-                        bf.setDeltaMovement(mx, my, mz);
-                        bf.setPos(
-                                bf.getX() - mx * 9.0,
-                                bf.getY() - my * 9.0,
-                                bf.getZ() - mz * 9.0);
-                        this.level()
-                                .playSound(
-                                        null,
-                                        this.getX(),
-                                        this.getY(),
-                                        this.getZ(),
-                                        SoundEvents.TNT_PRIMED,
-                                        SoundSource.NEUTRAL,
-                                        1.0f,
-                                        1.0f / (this.getRandom().nextFloat() * 0.4f + 0.8f));
-                        this.level().addFreshEntity(bf);
-                        this.fireballticker = 20;
-                    }
-                } else {
-                    if (pp.xxa > 0.001f) {
-                        double cx = this.getX() - xzoff * Math.sin(Math.toRadians(this.getYRot()));
-                        double cz = this.getZ() + xzoff * Math.cos(Math.toRadians(this.getYRot()));
-                        WaterBall wb = new WaterBall(this.level(), cx, this.getY() + yoff, cz);
-                        wb.moveTo(cx, this.getY() + yoff, cz, pp.getYRot() + 90.0f, pp.getXRot());
-                        double var3 = Math.cos(Math.toRadians(pp.getYHeadRot() + 90.0f));
-                        double var5 = -Math.sin(Math.toRadians(pp.getXRot()));
-                        double var77 = Math.sin(Math.toRadians(pp.getYHeadRot() + 90.0f));
-                        float var9 = Mth.sqrt((float) (var3 * var3 + var77 * var77)) * 0.2f;
-                        wb.shoot(var3, var5 + var9, var77, 1.4f, 5.0f);
-                        wb.setPos(wb.getX() - mx * 7.0, wb.getY() - my * 7.0, wb.getZ() - mz * 7.0);
-                        this.level()
-                                .playSound(
-                                        null,
-                                        this.getX(),
-                                        this.getY(),
-                                        this.getZ(),
-                                        SoundEvents.ARROW_SHOOT,
-                                        SoundSource.NEUTRAL,
-                                        0.75f,
-                                        1.0f / (this.getRandom().nextFloat() * 0.4f + 0.8f));
-                        this.level().addFreshEntity(wb);
-                        this.fireballticker = 5;
-                    }
-                    if (pp.xxa < -0.001f) {
-                        double cx = this.getX() - xzoff * Math.sin(Math.toRadians(this.getYRot()));
-                        double cz = this.getZ() + xzoff * Math.cos(Math.toRadians(this.getYRot()));
-                        IceBall ib =
-                                new IceBall(
-                                        ChaosPersists.ENTITY_TYPE_ICE_BALL.get(),
-                                        cx,
-                                        this.getY() + yoff,
-                                        cz,
-                                        this.level());
-                        ib.moveTo(cx, this.getY() + yoff, cz, pp.getYRot() + 90.0f, pp.getXRot());
-                        ib.setSpecial();
-                        ib.setIceBall();
-                        double var3 = Math.cos(Math.toRadians(pp.getYRot() + 90.0f));
-                        double var5 = -Math.sin(Math.toRadians(pp.getXRot()));
-                        double var77 = Math.sin(Math.toRadians(pp.getYRot() + 90.0f));
-                        float var9 = Mth.sqrt((float) (var3 * var3 + var77 * var77)) * 0.2f;
-                        ib.shoot(var3, var5 + var9, var77, 1.4f, 5.0f);
-                        ib.setPos(ib.getX() - mx * 7.0, ib.getY() - my * 7.0, ib.getZ() - mz * 7.0);
-                        Vec3 ibdm = ib.getDeltaMovement();
-                        ib.setDeltaMovement(ibdm.x * 2.0, ibdm.y * 2.0, ibdm.z * 2.0);
-                        this.level()
-                                .playSound(
-                                        null,
-                                        this.getX(),
-                                        this.getY(),
-                                        this.getZ(),
-                                        SoundEvents.FIREWORK_ROCKET_LAUNCH,
-                                        SoundSource.NEUTRAL,
-                                        0.75f,
-                                        1.0f / (this.getRandom().nextFloat() * 0.4f + 0.8f));
-                        this.level().addFreshEntity(ib);
-                        this.fireballticker = 15;
-                    }
-                }
-            }
-
-            this.setDeltaMovement(mx, my, mz);
-            this.move(net.minecraft.world.entity.MoverType.SELF, this.getDeltaMovement());
-            dm = this.getDeltaMovement();
-            this.setDeltaMovement(dm.x * 0.985, dm.y * 0.94, dm.z * 0.985);
-
-            if (!this.level().isClientSide) {
-                List<Entity> list =
-                        this.level()
-                                .getEntities(
-                                        this,
-                                        this.getBoundingBox().inflate(2.25, 2.0, 2.25),
-                                        ent -> ent != pp && ent.isPushable() && ent.isAlive());
-                for (Entity listEntity : list) {
-                    listEntity.push(this);
-                }
-            }
-            return;
         }
-        this.setNoGravity(false);
-        super.travel(travelVector);
     }
 
     @Override
     protected void removePassenger(Entity passenger) {
         super.removePassenger(passenger);
         if (this.getPassengers().isEmpty()) {
+            this.mountFlight.onDismount();
             this.boatPosRotationIncrements = 0;
             this.noPhysics = false;
             this.setNoGravity(false);
@@ -698,6 +514,7 @@ public class Dragon extends TamableAnimal {
         }
         super.addPassenger(passenger);
         this.boatPosRotationIncrements = 0;
+        this.mountFlight.onMounted();
         if (passenger instanceof LivingEntity living) {
             living.setDeltaMovement(Vec3.ZERO);
             living.xxa = 0.0f;
@@ -729,6 +546,9 @@ public class Dragon extends TamableAnimal {
         this.entityData.define(STATE2, (byte) 0);
         this.entityData.define(INT22, 0);
         this.entityData.define(INT24, 1);
+        this.entityData.define(CONTROL_STATE, (byte) 0);
+        this.entityData.define(FLYING, false);
+        this.entityData.define(HOVERING, false);
         this.setActivity(0);
         this.setAttacking(0);
         this.setTame(false);
@@ -743,6 +563,51 @@ public class Dragon extends TamableAnimal {
         this.renderdata.ri2 = 0;
         this.renderdata.ri3 = 0;
         this.renderdata.ri4 = 0;
+    }
+
+    @Override
+    public byte getControlState() {
+        return this.entityData.get(CONTROL_STATE);
+    }
+
+    @Override
+    public void setControlState(byte state) {
+        this.entityData.set(CONTROL_STATE, state);
+    }
+
+    @Override
+    public boolean isFlying() {
+        return this.entityData.get(FLYING);
+    }
+
+    @Override
+    public void setFlying(boolean flying) {
+        this.entityData.set(FLYING, flying);
+    }
+
+    @Override
+    public boolean isHovering() {
+        return this.entityData.get(HOVERING);
+    }
+
+    @Override
+    public void setHovering(boolean hovering) {
+        this.entityData.set(HOVERING, hovering);
+    }
+
+    @Override
+    public void syncRiderFlightActivity(boolean airborne) {
+        if (this.level().isClientSide) {
+            this.entityData.set(STATE2, (byte) (airborne ? 1 : 0));
+            return;
+        }
+        this.setActivity(airborne ? 1 : 0);
+    }
+
+    @Override
+    public void move(MoverType type, Vec3 pos) {
+        super.move(type, this.mountFlight.prepareRiddenMove(pos));
+        this.mountFlight.finishRiddenMove();
     }
 
     public int mygetMaxHealth() {
@@ -886,7 +751,10 @@ public class Dragon extends TamableAnimal {
 
     @Override
     public boolean isPushable() {
-        return false;
+        // 1.7.10 canBePushed was false, but collideWithNearbyEntities still shoved the mount.
+        // 1.20 skips !isPushable in EntitySelector.pushableBy, so they become immovable walls.
+        // Ice and Fire dragons keep vanilla push; block it only while ridden.
+        return !this.isVehicle() && super.isPushable();
     }
 
     @Override
@@ -913,6 +781,9 @@ public class Dragon extends TamableAnimal {
 
     @Override
     protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+        if (DatapackLoot.useEntityTable(this)) {
+            return;
+        }
         int i = 1 + this.getRandom().nextInt(6);
         for (int var4 = 0; var4 < i; ++var4) {
             this.dropItemRand(Items.BEEF, 1);
@@ -1267,21 +1138,9 @@ public class Dragon extends TamableAnimal {
     public void lerpTo(
             double par1, double par3, double par5, float par7, float par8, int par9, boolean interpolate) {
         if (this.isControlledByLocalInstance()) {
-            this.boatPosRotationIncrements = 0;
             return;
         }
-        if (this.getPassengers().isEmpty()) {
-            super.lerpTo(par1, par3, par5, par7, par8, par9, interpolate);
-            this.resetClientInterpolation();
-            return;
-        }
-        this.boatPosRotationIncrements = par9;
-        this.boatX = par1;
-        this.boatY = par3;
-        this.boatZ = par5;
-        this.boatYaw = par7;
-        this.boatPitch = par8;
-        this.boatYawHead = par7;
+        super.lerpTo(par1, par3, par5, par7, par8, par9, interpolate);
     }
 
     @OnlyIn(Dist.CLIENT)
@@ -1308,6 +1167,7 @@ public class Dragon extends TamableAnimal {
             --this.dismountCooldown;
         }
         this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue((double) this.moveSpeed);
+        this.mountFlight.tick();
         if (this.isStayingPut() && this.getPassengers().isEmpty()) {
             if (this.getActivity() != 0) {
                 this.setActivity(0);
@@ -1323,8 +1183,6 @@ public class Dragon extends TamableAnimal {
                 this.setNoGravity(false);
                 MyUtils.clearChaosFlight(this);
             }
-        } else if (!this.level().isClientSide) {
-            this.setActivity(1);
         }
         if (!this.level().isClientSide
                 && this.getActivity() != 0
@@ -1655,12 +1513,10 @@ public class Dragon extends TamableAnimal {
                 obstruction_factor += 0.05;
             }
         }
-        my += obstruction_factor * 0.05;
-        this.setPos(this.getX(), this.getY() + obstruction_factor * 0.05, this.getZ());
         speed_factor = 0.5;
-        var1 = (double)this.currentFlightTarget.getX() + 0.5 - this.getX();
-        var3 = (double)this.currentFlightTarget.getY() + 0.1 - this.getY();
-        var5 = (double)this.currentFlightTarget.getZ() + 0.5 - this.getZ();
+        var1 = (double) this.currentFlightTarget.getX() + 0.5 - this.getX();
+        var3 = (double) this.currentFlightTarget.getY() + 0.1 - this.getY();
+        var5 = (double) this.currentFlightTarget.getZ() + 0.5 - this.getZ();
         if (this.owner_flying != 0) {
             speed_factor = 1.75;
             if (this.isTame() && this.getOwner() != null && this.distanceToSqr((e = this.getOwner())) > 49.0) {
@@ -1670,11 +1526,24 @@ public class Dragon extends TamableAnimal {
         mx += (Math.signum(var1) - mx) * 0.15 * speed_factor;
         my += (Math.signum(var3) - my) * 0.21 * speed_factor;
         mz += (Math.signum(var5) - mz) * 0.15 * speed_factor;
-        float var7 = (float)(Math.atan2(mz, mx) * 180.0 / 3.141592653589793) - 90.0f;
-        float var8 = Mth.wrapDegrees((float)(var7 - this.getYRot()));
+        float var7 = (float) (Math.atan2(mz, mx) * 180.0 / 3.141592653589793) - 90.0f;
+        float var8 = Mth.wrapDegrees((float) (var7 - this.getYRot()));
         this.zza = (float) (0.75 * speed_factor);
-        this.setYRot(this.getYRot() + var8 / 4.0f);
-        this.setDeltaMovement(mx, my, mz);
+        this.setYRot(this.getYRot() + Mth.clamp(var8, -25.0f, 25.0f));
+        this.yBodyRot = this.getYRot();
+        this.setYHeadRot(this.getYRot());
+        float yawRad = this.getYRot() * ((float) Math.PI / 180.0f);
+        double forwardX = -Mth.sin(yawRad);
+        double forwardZ = Mth.cos(yawRad);
+        double along = mx * forwardX + mz * forwardZ;
+        if (along < 0.0) {
+            along = 0.0;
+        }
+        this.setDeltaMovement(forwardX * along, my, forwardZ * along);
+        if (obstruction_factor > 0.0) {
+            Vec3 steered = this.getDeltaMovement();
+            this.setDeltaMovement(steered.x, steered.y + obstruction_factor * 0.05, steered.z);
+        }
         MyUtils.applyChaosFlightMovement(this);
     }
 
@@ -1685,41 +1554,8 @@ public class Dragon extends TamableAnimal {
             return;
         }
         super.aiStep();
-        if (this.level().isClientSide) {
-            if (this.getActivity() != 0 && !this.getPassengers().isEmpty()) {
-                Entity rider = this.getPassengers().get(0);
-                if (rider instanceof LocalPlayer pp) {
-                    pp.connection.send(
-                            new ServerboundMovePlayerPacket.Rot(pp.getYRot(), pp.getXRot(), pp.onGround()));
-                    pp.connection.send(
-                            new ServerboundPlayerInputPacket(
-                                    pp.xxa, pp.zza, pp.input.jumping, pp.input.shiftKeyDown));
-                }
-            }
-            if (this.boatPosRotationIncrements > 0
-                    && this.getActivity() != 0
-                    && !this.isControlledByLocalInstance()) {
-                double d4 = this.getX() + (this.boatX - this.getX()) / (double) this.boatPosRotationIncrements;
-                double d5 = this.getY() + (this.boatY - this.getY()) / (double) this.boatPosRotationIncrements;
-                double d11 = this.getZ() + (this.boatZ - this.getZ()) / (double) this.boatPosRotationIncrements;
-                this.setPos(d4, d5, d11);
-                this.setXRot(
-                        (float)
-                                ((double) this.getXRot()
-                                        + (this.boatPitch - (double) this.getXRot())
-                                                / (double) this.boatPosRotationIncrements));
-                double d10 = Mth.wrapDegrees(this.boatYaw - (double) this.getYRot());
-                if (!this.getPassengers().isEmpty()) {
-                    d10 =
-                            Mth.wrapDegrees(
-                                    (double) this.getPassengers().get(0).getYRot() - (double) this.getYRot());
-                }
-                this.setYRot((float) ((double) this.getYRot() + d10 / (double) this.boatPosRotationIncrements));
-                this.setRot(this.getYRot(), this.getXRot());
-                --this.boatPosRotationIncrements;
-            }
-        } else {
-            if (this.getActivity() != 0 && !this.getPassengers().isEmpty()) {
+        if (!this.level().isClientSide) {
+            if (this.getRidingPlayer() != null) {
                 this.fly_with_rider();
             }
             this.always_do();
@@ -1763,19 +1599,19 @@ public class Dragon extends TamableAnimal {
                     && ChaosMountHelper.canPlayerMount(par1EntityPlayer, this, this.dismountCooldown)) {
                 if (!this.level().isClientSide) {
                     par1EntityPlayer.startRiding(this);
-                    this.setActivity(1);
                     ChaosMountHelper.onPlayerMounted(this);
                 }
                 return InteractionResult.sidedSuccess(this.level().isClientSide);
             }
             if (!var2.isEmpty() && var2.is(Items.BEEF) && par1EntityPlayer.distanceToSqr(this) < 25.0) {
+                if ((float) this.mygetMaxHealth() <= this.getHealth()) {
+                    return InteractionResult.SUCCESS;
+                }
                 if (this.level().isClientSide) {
                     spawnTamingParticles(true);
                     this.level().broadcastEntityEvent(this, (byte) 7);
                 }
-                if ((float) this.mygetMaxHealth() > this.getHealth()) {
-                    this.heal((float) this.mygetMaxHealth() - this.getHealth());
-                }
+                this.heal((float) this.mygetMaxHealth() - this.getHealth());
                 if (!par1EntityPlayer.getAbilities().instabuild) {
                     var2.shrink(1);
                     if (var2.isEmpty()) {
@@ -1933,8 +1769,11 @@ public class Dragon extends TamableAnimal {
             if (!var2.isEmpty()
                     && (par1EntityPlayer.distanceToSqr(this) < 64.0
                             || this.getBoundingBox().inflate(3.0).contains(par1EntityPlayer.position()))) {
+                if (PetOrderInteract.shouldPassItemUse(var2, par1EntityPlayer)) {
+                    return InteractionResult.PASS;
+                }
                 if (!this.level().isClientSide) {
-                    this.setOrderedToSit(!this.isOrderedToSit());
+                    PetOrderInteract.toggleSit(par1EntityPlayer, this);
                 }
                 return InteractionResult.sidedSuccess(this.level().isClientSide);
             }

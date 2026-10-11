@@ -1,0 +1,75 @@
+package com.astryxion.chaospersists.client.render;
+
+import com.astryxion.chaospersists.client.model.ModelSlice;
+import com.astryxion.chaospersists.client.render.IItemRenderer;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
+
+public class RenderRoyal implements IItemRenderer {
+    protected ModelSlice modelSlice = new ModelSlice();
+    private static final ResourceLocation texture =
+            new ResourceLocation("chaospersists", "textures/entity/royaltexture.png");
+
+    @Override
+    public boolean handleRenderType(ItemStack item, ItemRenderType type) {
+        switch (type.ordinal()) {
+            case 1: {
+                return true;
+            }
+            case 2: {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean shouldUseRenderHelper(ItemRenderType type, ItemStack item, ItemRendererHelper helper) {
+        return true;
+    }
+
+    @Override
+    public void renderItem(ItemRenderType type, ItemStack item, Object... data) {
+        switch (type.ordinal()) {
+            case 1: {
+                this.renderSwordF5(-4.0f, 2.0f, -3.0f, 0.35f);
+                break;
+            }
+            case 2: {
+                this.renderSword(6.0f, 3.0f, -5.0f, 0.35f);
+                break;
+            }
+        }
+    }
+
+    private void renderSword(float x, float y, float z, float scale) {
+        PoseStack poseStack = new PoseStack();
+        poseStack.mulPose(Axis.XP.rotationDegrees(190.0f));
+        poseStack.mulPose(Axis.YP.rotationDegrees(25.0f));
+        poseStack.scale(scale, scale, scale);
+        poseStack.translate(x, y, z);
+        this.drawModel(poseStack);
+    }
+
+    private void renderSwordF5(float x, float y, float z, float scale) {
+        PoseStack poseStack = new PoseStack();
+        poseStack.mulPose(Axis.XP.rotationDegrees(90.0f));
+        poseStack.mulPose(Axis.YP.rotationDegrees(-90.0f));
+        poseStack.scale(scale, scale, scale);
+        poseStack.translate(x, y, z);
+        this.drawModel(poseStack);
+    }
+
+    private void drawModel(PoseStack poseStack) {
+        MultiBufferSource.BufferSource buffer = Minecraft.getInstance().renderBuffers().bufferSource();
+        var vertexConsumer = buffer.getBuffer(RenderType.entityCutoutNoCull(texture));
+        this.modelSlice.render(poseStack, vertexConsumer, 0xF000F0, OverlayTexture.NO_OVERLAY);
+        buffer.endBatch();
+    }
+}

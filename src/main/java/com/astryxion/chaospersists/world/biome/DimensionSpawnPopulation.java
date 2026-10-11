@@ -66,6 +66,15 @@ public final class DimensionSpawnPopulation {
      */
     public static void onDimensionPotentialSpawns(LevelEvent.PotentialSpawns event, ServerLevel level) {
         ResourceKey<Level> dimension = level.dimension();
+        if (dimension.equals(Level.OVERWORLD)
+                && !com.astryxion.chaospersists.config.ChaosPackConfig.allowOverworldSpawns()) {
+            for (MobSpawnSettings.SpawnerData data : new ArrayList<>(event.getSpawnerDataList())) {
+                if (com.astryxion.chaospersists.config.ChaosPackConfig.isChaosEntityType(data.type)) {
+                    event.removeSpawnerData(data);
+                }
+            }
+            return;
+        }
         if (dimension.equals(ChaosPersists.getUtopiaDimensionKey())) {
             if (event.getMobCategory() == MobCategory.MONSTER) {
                 for (MobSpawnSettings.SpawnerData data : new ArrayList<>(event.getSpawnerDataList())) {

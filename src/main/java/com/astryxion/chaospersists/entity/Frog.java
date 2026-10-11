@@ -1,5 +1,6 @@
 package com.astryxion.chaospersists.entity;
 
+import com.astryxion.chaospersists.loot.DatapackLoot;
 import com.astryxion.chaospersists.util.MyUtils;
 
 import com.astryxion.chaospersists.core.ChaosPersists;
@@ -19,6 +20,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.BiomeTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
@@ -257,6 +259,9 @@ public class Frog extends Animal {
 
     @Override
     protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+        if (DatapackLoot.useEntityTable(this)) {
+            return;
+        }
         for (int i = 0; i < 4; ++i) {
             this.spawnAtLocation(new ItemStack(Items.SLIME_BALL, 1));
         }
@@ -410,6 +415,31 @@ public class Frog extends Animal {
         return false;
     }
 
+    /**
+     * 1.18+ river biomes cut through open ocean. Frogs only belong in shallow river/swamp water,
+     * not a deep ocean column that happens to be tagged river.
+     */
+    private static boolean isOpenOceanOrDeepWater(ServerLevelAccessor level, BlockPos pos) {
+        if (level.getBiome(pos).is(BiomeTags.IS_OCEAN) || level.getBiome(pos).is(BiomeTags.IS_DEEP_OCEAN)) {
+            return true;
+        }
+        BlockPos start = pos;
+        if (!level.getFluidState(pos).is(FluidTags.WATER)) {
+            start = pos.below();
+            if (!level.getFluidState(start).is(FluidTags.WATER)) {
+                return false;
+            }
+        }
+        BlockPos.MutableBlockPos cursor = start.mutable();
+        for (int i = 0; i < 8; i++) {
+            if (!level.getFluidState(cursor).is(FluidTags.WATER)) {
+                return false;
+            }
+            cursor.move(0, -1, 0);
+        }
+        return true;
+    }
+
     public static boolean checkFrogSpawnRules(
             EntityType<Frog> type,
             ServerLevelAccessor level,
@@ -420,6 +450,9 @@ public class Frog extends Animal {
             return false;
         }
         if (!MyUtils.isDay(level)) {
+            return false;
+        }
+        if (level.getLevel().dimension().equals(Level.OVERWORLD) && isOpenOceanOrDeepWater(level, pos)) {
             return false;
         }
         if (chaosUtopiaOrVillageDimension(level)) {
@@ -441,6 +474,11 @@ public class Frog extends Animal {
             return false;
         }
         if (level instanceof Level world && !world.isDay()) {
+            return false;
+        }
+        if (level instanceof ServerLevelAccessor serverLevel
+                && serverLevel.getLevel().dimension().equals(Level.OVERWORLD)
+                && isOpenOceanOrDeepWater(serverLevel, this.blockPosition())) {
             return false;
         }
         if (this.chaosUtopiaOrVillageDimension()) {

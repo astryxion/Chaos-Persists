@@ -3,14 +3,15 @@ package com.astryxion.chaospersists.entity;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.core.ChaosSounds;
 import com.astryxion.chaospersists.item.ItemWrench;
-import com.astryxion.chaospersists.render.RenderSpiderRobotInfo;
+import com.astryxion.chaospersists.entity.RenderSpiderRobotInfo;
+import com.astryxion.chaospersists.entity.util.ChaosGroundMount;
+import com.astryxion.chaospersists.entity.util.ChaosMountGround;
 import com.astryxion.chaospersists.util.ChaosMountHelper;
 import com.astryxion.chaospersists.util.GenericTargetSorter;
 import com.astryxion.chaospersists.util.MyUtils;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
@@ -45,17 +46,14 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
-public class AntRobot extends Mob {
+public class AntRobot extends Mob implements ChaosGroundMount {
     private static final EntityDataAccessor<Integer> ATTACKING =
             SynchedEntityData.defineId(AntRobot.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Byte> OWNED =
             SynchedEntityData.defineId(AntRobot.class, EntityDataSerializers.BYTE);
-    private int boatPosRotationIncrements;
-    private double boatX;
-    private double boatY;
-    private double boatZ;
-    private double boatYaw;
-    private double boatPitch;
+    private static final EntityDataAccessor<Byte> CONTROL_STATE =
+            SynchedEntityData.defineId(AntRobot.class, EntityDataSerializers.BYTE);
+    private final ChaosMountGround mountGround = new ChaosMountGround(this);
     private int playing = 0;
     private GenericTargetSorter TargetSorter = null;
     private float moveSpeed = 0.3f;
@@ -96,6 +94,7 @@ public class AntRobot extends Mob {
         super.defineSynchedData();
         this.entityData.define(ATTACKING, 0);
         this.entityData.define(OWNED, (byte) 0);
+        this.entityData.define(CONTROL_STATE, (byte) 0);
         this.initLegData();
     }
 
@@ -590,7 +589,6 @@ public class AntRobot extends Mob {
             this.yHeadRot = living.getYRot();
         }
         super.addPassenger(passenger);
-        this.boatPosRotationIncrements = 0;
         if (passenger instanceof LivingEntity living) {
             living.setDeltaMovement(Vec3.ZERO);
             living.xxa = 0.0f;
@@ -598,6 +596,9 @@ public class AntRobot extends Mob {
         }
         if (this.hasPassenger(passenger)) {
             this.positionRider(passenger, Entity::setPos);
+        }
+        if (passenger instanceof Player) {
+            this.mountGround.onMounted();
         }
     }
 
@@ -640,7 +641,10 @@ public class AntRobot extends Mob {
 
     @Override
     public boolean isPushable() {
-        return false;
+        // 1.7.10 canBePushed was false, but collideWithNearbyEntities still shoved the mount.
+        // 1.20 skips !isPushable in EntitySelector.pushableBy, so they become immovable walls.
+        // Ice and Fire dragons keep vanilla push; block it only while ridden.
+        return !this.isVehicle() && super.isPushable();
     }
 
     @Override
@@ -655,180 +659,44 @@ public class AntRobot extends Mob {
     }
 
     @Override
+    public byte getControlState() {
+        return this.entityData.get(CONTROL_STATE);
+    }
+
+    @Override
+    public void setControlState(byte state) {
+        this.entityData.set(CONTROL_STATE, state);
+    }
+
+    @Override
+    public boolean hoversWhenRidden() {
+        return true;
+    }
+
+    @Override
+    public float getHoverMoveFactor() {
+        // Old OreSpawn max_speed 0.3 → terminal = factor / 0.1
+        return 0.03f;
+    }
+
+    @Override
     protected void tickRidden(Player player, Vec3 travelVector) {
         super.tickRidden(player, travelVector);
-        this.xxa = player.xxa;
-        this.zza = player.zza;
-    }
-
-    private Vec3 clampRiddenMotion(double mx, double my, double mz) {
-        if (my > 0.8500000238418579) {
-            my = 0.8500000238418579;
-        }
-        if (my < -0.8500000238418579) {
-            my = -0.8500000238418579;
-        }
-        if (mx < -1.25) {
-            mx = -1.25;
-        }
-        if (mx > 1.25) {
-            mx = 1.25;
-        }
-        if (mz < -1.25) {
-            mz = -1.25;
-        }
-        if (mz > 1.25) {
-            mz = 1.25;
-        }
-        return new Vec3(mx, my, mz);
-    }
-
-    /** OreSpawn 1.7.10 ridden hover + terrain climb (server onLivingUpdate when ridden). */
-    private double applyRiddenVerticalPhysics(double my, double horizontalVelocity) {
-        double gh = 2.25;
-        Block bid =
-                this.level()
-                        .getBlockState(
-                                BlockPos.containing(
-                                        this.getX(), this.getY() - gh, this.getZ()))
-                        .getBlock();
-        if (bid != Blocks.AIR && bid != Blocks.WATER && bid != Blocks.LAVA) {
-            my += 0.06;
-            this.setPos(this.getX(), this.getY() + 0.03, this.getZ());
-        } else {
-            my -= 0.02;
-        }
-        double obstruction = 0.0;
-        int scanDepth = 3 + (int) (Math.max(0.0, horizontalVelocity) * 6.0);
-        if (scanDepth > 24) {
-            scanDepth = 24;
-        }
-        for (int k = 1; k < scanDepth; ++k) {
-            for (int i = 1; i < scanDepth * 2; ++i) {
-                for (int j = -90; j <= 90; j += 30) {
-                    double scanDx =
-                            (double) i
-                                    * Math.cos(
-                                            Math.toRadians(this.getYRot() + 90.0f + (float) j));
-                    double scanDz =
-                            (double) i
-                                    * Math.sin(
-                                            Math.toRadians(this.getYRot() + 90.0f + (float) j));
-                    bid =
-                            this.level()
-                                    .getBlockState(
-                                            BlockPos.containing(
-                                                    this.getX() + scanDx,
-                                                    this.getY() - k,
-                                                    this.getZ() + scanDz))
-                                    .getBlock();
-                    if (bid == Blocks.AIR || bid == Blocks.WATER || bid == Blocks.LAVA) {
-                        continue;
-                    }
-                    obstruction += 0.02;
-                }
-            }
-        }
-        my += obstruction * 0.05;
-        if (obstruction != 0.0) {
-            this.setPos(this.getX(), this.getY() + obstruction * 0.05, this.getZ());
-        }
-        return my;
+        this.mountGround.applyRiderRotation(player);
     }
 
     @Override
     public void travel(Vec3 travelVector) {
-        if (!this.isVehicle()) {
-            super.travel(travelVector);
+        if (this.mountGround.handleTravel(travelVector, super::travel)) {
             return;
         }
-        LivingEntity rider = this.getControllingPassenger();
-        if (rider == null) {
-            super.travel(travelVector);
-            return;
-        }
-        float moveStrafe;
-        float moveForward;
-        if (this.level().isClientSide && rider instanceof LocalPlayer local) {
-            moveStrafe = local.input.leftImpulse;
-            moveForward = local.input.forwardImpulse;
-        } else {
-            moveStrafe = rider.xxa;
-            moveForward = rider.zza;
-        }
-        this.xxa = moveStrafe;
-        this.zza = moveForward;
-        Vec3 dm = this.getDeltaMovement();
-        double velocity = Math.sqrt(dm.x * dm.x + dm.z * dm.z);
-        double max_speed = 0.3;
-        double relative_g = 0.0;
-        double d4 = rider.getYRot();
-        d4 %= 360.0;
-        while (d4 < 0.0) {
-            d4 += 360.0;
-        }
-        double d5 = this.getYRot();
-        d5 %= 360.0;
-        while (d5 < 0.0) {
-            d5 += 360.0;
-        }
-        for (relative_g = (d4 - d5) % 180.0; relative_g < 0.0; relative_g += 180.0) {
-        }
-        if (relative_g > 90.0) {
-            relative_g -= 180.0;
-        }
-        float forwardInput = moveForward;
-        float strafeInput = moveStrafe;
-        boolean hasDriveInput =
-                Math.abs(forwardInput) > 0.001f || Math.abs(strafeInput) > 0.001f;
-        float yawDelta = Math.abs(Mth.wrapDegrees(rider.getYRot() - this.getYRot()));
-        if (velocity <= 0.01 || yawDelta > 2.0f) {
-            this.setYRot(rider.getYRot());
-        } else {
-            d4 = 1.85 - velocity;
-            if ((d4 = Math.abs(d4)) < 0.01) {
-                d4 = 0.01;
-            }
-            if (d4 > 0.9) {
-                d4 = 0.9;
-            }
-            this.setYRot(rider.getYRot() + (float) (relative_g * d4));
-        }
-        this.setXRot(0.0f);
-        this.setRot(this.getYRot(), this.getXRot());
-        if (forwardInput < 0.0f) {
-            max_speed = 0.25;
-        }
-        double steerYaw = hasDriveInput ? rider.getYRot() : this.getYRot();
-        double yawRad = Math.toRadians(steerYaw);
-        double sin = Math.sin(yawRad);
-        double cos = Math.cos(yawRad);
-        double vx = (-sin * (double) forwardInput + cos * (double) strafeInput * 0.5) * max_speed;
-        double vz = (cos * (double) forwardInput + sin * (double) strafeInput * 0.5) * max_speed;
-        double mx;
-        double mz;
-        if (hasDriveInput) {
-            mx = vx;
-            mz = vz;
-        } else {
-            mx = dm.x * 0.85;
-            mz = dm.z * 0.85;
-        }
-        // Player-ridden tick() skips living bounce; apply 1.7.10 climb here on controlling side.
-        double my = this.applyRiddenVerticalPhysics(dm.y, velocity);
-        Vec3 motion = this.clampRiddenMotion(mx, my, mz);
-        mx = motion.x;
-        my = motion.y;
-        mz = motion.z;
-        boolean shouldApplyMovement =
-                this.isControlledByLocalInstance()
-                        || (!this.level().isClientSide && !(rider instanceof Player));
-        if (shouldApplyMovement) {
-            this.move(MoverType.SELF, new Vec3(mx, my, mz));
-            this.setDeltaMovement(mx * 0.98, my * 0.98, mz * 0.98);
-        } else {
-            this.setDeltaMovement(Vec3.ZERO);
-        }
+        super.travel(travelVector);
+    }
+
+    @Override
+    public void move(MoverType type, Vec3 pos) {
+        super.move(type, pos);
+        this.mountGround.finishRiddenMove();
     }
 
     private boolean hasPlayerRider() {
@@ -842,8 +710,8 @@ public class AntRobot extends Mob {
 
     @Override
     public double getPassengersRidingOffset() {
-        // 1.7 getMountedYOffset
-        return 0.55 + Math.cos((float) this.rideTicker * 0.19f) * 0.02;
+        // 1.7 was 0.55, which sits on the thorax roof after the 1.20 model alignment.
+        return -0.15 + Math.cos((float) this.rideTicker * 0.19f) * 0.02;
     }
 
     @Override
@@ -866,7 +734,7 @@ public class AntRobot extends Mob {
             }
             this.dismountCooldown = ChaosMountHelper.GROUND_DISMOUNT_COOLDOWN_TICKS;
             this.fallDistance = 0.0f;
-            this.boatPosRotationIncrements = 0;
+            this.mountGround.onDismount();
             if (!this.level().isClientSide) {
                 ChaosMountHelper.finishDismountLanding(this);
                 this.moveTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), this.getXRot());
@@ -918,15 +786,9 @@ public class AntRobot extends Mob {
     @Override
     public void lerpTo(double x, double y, double z, float yaw, float pitch, int steps, boolean interpolate) {
         if (this.isControlledByLocalInstance()) {
-            this.boatPosRotationIncrements = 0;
             return;
         }
-        this.boatPosRotationIncrements = this.isVehicle() ? steps + 8 : steps;
-        this.boatX = x;
-        this.boatY = y;
-        this.boatZ = z;
-        this.boatYaw = yaw;
-        this.boatPitch = pitch;
+        super.lerpTo(x, y, z, yaw, pitch, steps, interpolate);
     }
 
     @OnlyIn(Dist.CLIENT)
@@ -994,46 +856,13 @@ public class AntRobot extends Mob {
         }
 
         if (this.hasPlayerRider()) {
-            if (this.level().isClientSide && !this.isControlledByLocalInstance() && this.boatPosRotationIncrements > 0) {
-                double d4 = this.getX() + (this.boatX - this.getX()) / (double) this.boatPosRotationIncrements;
-                double d5 = this.getY() + (this.boatY - this.getY()) / (double) this.boatPosRotationIncrements;
-                double d11 = this.getZ() + (this.boatZ - this.getZ()) / (double) this.boatPosRotationIncrements;
-                this.setPos(d4, d5, d11);
-                double d10 =
-                        Mth.wrapDegrees(
-                                (double) this.getControllingPassenger().getYRot()
-                                        - (double) this.getYRot());
-                this.setYRot(
-                        (float)
-                                ((double) this.getYRot() + d10 / (double) this.boatPosRotationIncrements));
-                this.setRot(this.getYRot(), this.getXRot());
-                --this.boatPosRotationIncrements;
-            }
             if (this.level().isClientSide) {
-                if (!this.isControlledByLocalInstance()) {
-                    this.xo = this.getX();
-                    this.yo = this.getY();
-                    this.zo = this.getZ();
-                }
                 this.updateLegs();
             }
             return;
         }
 
-        if (this.level().isClientSide && !this.isControlledByLocalInstance()) {
-            this.xo = this.getX();
-            this.yo = this.getY();
-            this.zo = this.getZ();
-            if (this.boatPosRotationIncrements > 0) {
-                double d4 = this.getX() + (this.boatX - this.getX()) / (double) this.boatPosRotationIncrements;
-                double d5 = this.getY() + (this.boatY - this.getY()) / (double) this.boatPosRotationIncrements;
-                double d11 = this.getZ() + (this.boatZ - this.getZ()) / (double) this.boatPosRotationIncrements;
-                this.setPos(d4, d5, d11);
-                double d10 = Mth.wrapDegrees(this.boatYaw - (double) this.getYRot());
-                this.setYRot((float) ((double) this.getYRot() + d10 / (double) this.boatPosRotationIncrements));
-                this.setRot(this.getYRot(), this.getXRot());
-                --this.boatPosRotationIncrements;
-            }
+        if (this.level().isClientSide) {
             this.updateLegs();
             return;
         }
@@ -1066,102 +895,53 @@ public class AntRobot extends Mob {
         if (mz > 1.25) {
             mz = 1.25;
         }
-        this.xo = this.getX();
-        this.yo = this.getY();
-        this.zo = this.getZ();
-        if (this.level().isClientSide) {
-            if (this.getControllingPassenger() == null) {
-                if (this.isNearGround(gh)) {
-                    my += 0.12;
-                    this.setPos(this.getX(), this.getY() + 0.12, this.getZ());
-                    this.boatY += 0.12;
-                } else {
-                    my -= 0.002;
-                }
-            }
-            if (this.boatPosRotationIncrements > 0 && !this.isControlledByLocalInstance()) {
-                double d4 = this.getX() + (this.boatX - this.getX()) / (double) this.boatPosRotationIncrements;
-                double d5 = this.getY() + (this.boatY - this.getY()) / (double) this.boatPosRotationIncrements;
-                double d11 = this.getZ() + (this.boatZ - this.getZ()) / (double) this.boatPosRotationIncrements;
-                this.setPos(d4, d5, d11);
-                this.setXRot(
-                        (float)
-                                ((double) this.getXRot()
-                                        + (this.boatPitch - (double) this.getXRot())
-                                                / (double) this.boatPosRotationIncrements));
-                double d10 = Mth.wrapDegrees(this.boatYaw - (double) this.getYRot());
-                if (this.getControllingPassenger() != null) {
-                    d10 = Mth.wrapDegrees(
-                            (double) this.getControllingPassenger().getYRot() - (double) this.getYRot());
-                }
-                this.setYRot((float) ((double) this.getYRot() + d10 / (double) this.boatPosRotationIncrements));
-                this.setRot(this.getYRot(), this.getXRot());
-                --this.boatPosRotationIncrements;
-            } else if (this.isVehicle() && this.isControlledByLocalInstance()) {
-                this.move(MoverType.SELF, new Vec3(mx, my, mz));
-                mx *= 0.99;
-                my *= 0.95;
-                mz *= 0.99;
+        Block bid;
+        if (this.getControllingPassenger() != null) {
+            gh = 2.25;
+            bid = this.level().getBlockState(new BlockPos((int) this.getX(), (int) ((float) this.getY() - (float) gh), (int) this.getZ())).getBlock();
+            if (bid != Blocks.AIR && bid != Blocks.WATER && bid != Blocks.LAVA) {
+                my += 0.06;
             } else {
-                double d4 = this.getX() + mx;
-                double d5 = this.getY() + my;
-                double d11 = this.getZ() + mz;
-                this.setPos(d4, d5, d11);
-                mx *= 0.99;
-                my *= 0.95;
-                mz *= 0.99;
+                my -= 0.02;
             }
-            this.updateLegs();
         } else {
-            Block bid;
-            if (this.getControllingPassenger() != null) {
-                gh = 2.25;
-                bid = this.level().getBlockState(new BlockPos((int) this.getX(), (int) ((float) this.getY() - (float) gh), (int) this.getZ())).getBlock();
-                if (bid != Blocks.AIR && bid != Blocks.WATER && bid != Blocks.LAVA) {
-                    my += 0.06;
-                } else {
-                    my -= 0.02;
-                }
+            if (this.isNearGround(gh)) {
+                my += 0.15;
+                this.setPos(this.getX(), this.getY() + 0.15, this.getZ());
             } else {
-                if (this.isNearGround(gh)) {
-                    my += 0.15;
-                    this.setPos(this.getX(), this.getY() + 0.15, this.getZ());
-                    this.boatY += 0.15;
-                } else {
-                    my -= 0.002;
-                }
+                my -= 0.002;
             }
-            if (this.getControllingPassenger() != null && this.getControllingPassenger().isRemoved()) {
-                this.ejectPassengers();
+        }
+        if (this.getControllingPassenger() != null && this.getControllingPassenger().isRemoved()) {
+            this.ejectPassengers();
+        }
+        if (this.isVehicle()) {
+            obstruction_factor = 0.0;
+            int scanDepth = 3 + (int) (Math.max(0.0, velocity) * 6.0);
+            if (scanDepth > 24) {
+                scanDepth = 24;
             }
-            if (this.isVehicle()) {
-                obstruction_factor = 0.0;
-                int scanDepth = 3 + (int) (Math.max(0.0, velocity) * 6.0);
-                if (scanDepth > 24) {
-                    scanDepth = 24;
-                }
-                for (int k = 1; k < scanDepth; ++k) {
-                    for (int i = 1; i < scanDepth * 2; ++i) {
-                        for (int j = -90; j <= 90; j += 30) {
-                            double scanDz = (double) i * Math.sin(Math.toRadians(this.getYRot() + 90.0f + (float) j));
-                            double scanDx = (double) i * Math.cos(Math.toRadians(this.getYRot() + 90.0f + (float) j));
-                            bid = this.level().getBlockState(new BlockPos((int) (this.getX() + scanDx), (int) this.getY() - k, (int) (this.getZ() + scanDz))).getBlock();
-                            if (bid == Blocks.AIR || bid == Blocks.WATER || bid == Blocks.LAVA) continue;
-                            obstruction_factor += 0.02;
-                        }
+            for (int k = 1; k < scanDepth; ++k) {
+                for (int i = 1; i < scanDepth * 2; ++i) {
+                    for (int j = -90; j <= 90; j += 30) {
+                        double scanDz = (double) i * Math.sin(Math.toRadians(this.getYRot() + 90.0f + (float) j));
+                        double scanDx = (double) i * Math.cos(Math.toRadians(this.getYRot() + 90.0f + (float) j));
+                        bid = this.level().getBlockState(new BlockPos((int) (this.getX() + scanDx), (int) this.getY() - k, (int) (this.getZ() + scanDz))).getBlock();
+                        if (bid == Blocks.AIR || bid == Blocks.WATER || bid == Blocks.LAVA) continue;
+                        obstruction_factor += 0.02;
                     }
                 }
-                my += obstruction_factor * 0.05;
-                this.move(MoverType.SELF, new Vec3(mx, my, mz));
-                mx *= 0.98;
-                my *= 0.98;
-                mz *= 0.98;
-            } else {
-                this.move(MoverType.SELF, new Vec3(mx, my, mz));
-                mx *= 0.8;
-                my *= 0.98;
-                mz *= 0.8;
             }
+            my += obstruction_factor * 0.05;
+            this.move(MoverType.SELF, new Vec3(mx, my, mz));
+            mx *= 0.98;
+            my *= 0.98;
+            mz *= 0.98;
+        } else {
+            this.move(MoverType.SELF, new Vec3(mx, my, mz));
+            mx *= 0.8;
+            my *= 0.98;
+            mz *= 0.8;
         }
 
         this.setDeltaMovement(mx, my, mz);
@@ -1202,14 +982,15 @@ public class AntRobot extends Mob {
         }
         final double interactRangeSq = 36.0;
         if (!stack.isEmpty() && stack.is(Items.IRON_INGOT) && player.distanceToSqr(this) < interactRangeSq) {
+            float healAmount = this.getMaxHealth() - this.getHealth();
+            if (healAmount <= 0.0f) {
+                return InteractionResult.SUCCESS;
+            }
             if (!this.level().isClientSide) {
-                float healAmount = this.getMaxHealth() - this.getHealth();
                 if (healAmount > 100.0f) {
                     healAmount = 100.0f;
                 }
-                if (healAmount > 0.0f) {
-                    this.heal(healAmount);
-                }
+                this.heal(healAmount);
             }
             if (!player.getAbilities().instabuild) {
                 stack.shrink(1);

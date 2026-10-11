@@ -60,7 +60,14 @@ public class WeightedRandomChestContent implements WeightedEntry {
 
     public static void generateChestContents(RandomSource random, WeightedRandomChestContent[] content, Container inv, int max) {
         List<WeightedRandomChestContent> list =
-                Arrays.stream(content).filter(e -> e != null && e.item != null).toList();
+                Arrays.stream(content)
+                        .filter(
+                                e ->
+                                        e != null
+                                                && e.item != null
+                                                && com.astryxion.chaospersists.config.ChaosMobAccess
+                                                        .isItemAllowed(e.item))
+                        .toList();
         if (list.isEmpty() || inv.getContainerSize() <= 0) {
             return;
         }

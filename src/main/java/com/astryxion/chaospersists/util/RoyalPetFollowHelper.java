@@ -35,7 +35,12 @@ public final class RoyalPetFollowHelper {
 
     private RoyalPetFollowHelper() {}
 
-    /** Only Chaos Persists tameables — never touch other mods' companions. */
+    /** Crystal is a naked-start dimension; tamed followers must not be pulled in. */
+    public static boolean isCrystalDimension(Level level) {
+        return level != null && level.dimension().equals(ChaosPersists.getCrystalDimensionKey());
+    }
+
+    /** Chaos Persists tameables (used for same-world ground catch-up only). */
     public static boolean isChaosPersistsPet(TamableAnimal pet) {
         ResourceLocation key = EntityType.getKey(pet.getType());
         return key != null && ChaosPersists.MODID.equals(key.getNamespace());
@@ -43,6 +48,31 @@ public final class RoyalPetFollowHelper {
 
     public static boolean isStayingPut(TamableAnimal pet) {
         return pet.isOrderedToSit() || pet.isInSittingPose();
+    }
+
+    /** Sitting / ridden pets stay behind; following owned tames come along. */
+    public static boolean isFollowingOwner(TamableAnimal pet, UUID ownerId) {
+        return pet.isAlive()
+                && !pet.isRemoved()
+                && pet.isTame()
+                && ownerId.equals(pet.getOwnerUUID())
+                && !isStayingPut(pet)
+                && pet.getVehicle() == null
+                && pet.getPassengers().isEmpty();
+    }
+
+    private static boolean usesAirTeleport(TamableAnimal pet) {
+        return isRoyalPet(pet) || isChaosFlyerPet(pet) || pet instanceof Dragon;
+    }
+
+    private static void teleportFollowingPetToPlayer(TamableAnimal pet, ServerPlayer player) {
+        if (usesAirTeleport(pet)) {
+            teleportNearOwner(pet, player);
+            return;
+        }
+        if (!teleportToOwnerOnGround(pet, player)) {
+            teleportNearOwner(pet, player);
+        }
     }
 
     public static boolean isRoyalPet(TamableAnimal pet) {
@@ -66,9 +96,12 @@ public final class RoyalPetFollowHelper {
         return false;
     }
 
-    /** Move tamed royal pets to the player's dimension when they change worlds. */
-    public static void bringRoyalPetsToPlayer(ServerPlayer player) {
-        if (player.level().isClientSide) {
+    /**
+     * Move following tames (Chaos, vanilla wolves/cats, other mods' TamableAnimals) to the player
+     * after a dimension change. Crystal stays a naked start — this no-ops there.
+     */
+    public static void bringFollowingPetsToPlayer(ServerPlayer player) {
+        if (player.level().isClientSide || isCrystalDimension(player.level())) {
             return;
         }
         UUID ownerId = player.getUUID();
@@ -78,24 +111,22 @@ public final class RoyalPetFollowHelper {
                 if (!(entity instanceof TamableAnimal pet)) {
                     continue;
                 }
-                if (!pet.isAlive() || pet.isRemoved()) {
+                if (!isFollowingOwner(pet, ownerId)) {
                     continue;
                 }
-                if (!isRoyalPet(pet) || !pet.isTame() || !ownerId.equals(pet.getOwnerUUID())) {
-                    continue;
-                }
-                if (isStayingPut(pet)) {
-                    continue;
-                }
-                if (pet.getVehicle() == player) {
+                if (pet.level() == player.level() && pet.distanceToSqr(player) < 16.0) {
                     continue;
                 }
                 pets.add(pet);
             }
             for (TamableAnimal pet : pets) {
-                teleportNearOwner(pet, player);
+                teleportFollowingPetToPlayer(pet, player);
             }
         }
+    }
+
+    public static void bringRoyalPetsToPlayer(ServerPlayer player) {
+        bringFollowingPetsToPlayer(player);
     }
 
     /**
@@ -104,7 +135,7 @@ public final class RoyalPetFollowHelper {
      * teleport instead of run.
      */
     public static void bringGroundFollowPetsToPlayer(ServerPlayer player) {
-        if (player.level().isClientSide) {
+        if (player.level().isClientSide || isCrystalDimension(player.level())) {
             return;
         }
         UUID ownerId = player.getUUID();
@@ -114,38 +145,32 @@ public final class RoyalPetFollowHelper {
                 if (!(entity instanceof TamableAnimal pet)) {
                     continue;
                 }
-                if (!pet.isAlive() || pet.isRemoved()) {
+                if (!isFollowingOwner(pet, ownerId)) {
                     continue;
                 }
-                // Ground catch-up is Chaos-only. Other mods' TamableAnimals (wolves, Occultism,
-                // Ice and Fire, etc.) must keep their own sit/wander/follow modes.
+                boolean otherDimension = pet.level() != player.level();
+                if (otherDimension) {
+                    pets.add(pet);
+                    continue;
+                }
+                // Same-world 48-block warp stays Chaos ground pets only so vanilla/modded
+                // follow AI is not overwritten.
                 if (!isChaosPersistsPet(pet)) {
-                    continue;
-                }
-                if (!pet.isTame() || !ownerId.equals(pet.getOwnerUUID())) {
                     continue;
                 }
                 if (isRoyalPet(pet) || pet instanceof Dragon || isChaosFlyerPet(pet)) {
                     continue;
                 }
-                if (isStayingPut(pet)) {
-                    continue;
-                }
-                if (pet.getVehicle() == player || !pet.getPassengers().isEmpty()) {
-                    continue;
-                }
                 if (MyUtils.usesChaosFlight(pet)) {
                     continue;
                 }
-                boolean far =
-                        pet.level() != player.level() || pet.distanceToSqr(player) >= 48.0 * 48.0;
-                if (!far) {
+                if (pet.distanceToSqr(player) < 48.0 * 48.0) {
                     continue;
                 }
                 pets.add(pet);
             }
             for (TamableAnimal pet : pets) {
-                teleportToOwnerOnGround(pet, player);
+                teleportFollowingPetToPlayer(pet, player);
             }
         }
     }
@@ -170,7 +195,7 @@ public final class RoyalPetFollowHelper {
             return;
         }
         LivingEntity owner = pet.getOwner();
-        if (owner == null || pet.level() == owner.level()) {
+        if (owner == null || pet.level() == owner.level() || isCrystalDimension(owner.level())) {
             return;
         }
         teleportNearOwner(pet, owner);
@@ -233,7 +258,7 @@ public final class RoyalPetFollowHelper {
         if (!pet.getPassengers().isEmpty()) {
             return false;
         }
-        if (!(owner.level() instanceof ServerLevel dest)) {
+        if (!(owner.level() instanceof ServerLevel dest) || isCrystalDimension(dest)) {
             return false;
         }
 
@@ -319,6 +344,7 @@ public final class RoyalPetFollowHelper {
 
     public static boolean teleportNearOwner(TamableAnimal pet, LivingEntity owner) {
         if (!(owner.level() instanceof ServerLevel dest)
+                || isCrystalDimension(dest)
                 || !pet.isAlive()
                 || pet.isRemoved()) {
             return false;

@@ -1,5 +1,6 @@
 package com.astryxion.chaospersists.world.ore;
 
+import com.astryxion.chaospersists.loot.DatapackLoot;
 import com.astryxion.chaospersists.entity.EntityAnt;
 import com.astryxion.chaospersists.util.MiningDropHelper;
 import java.util.List;
@@ -27,6 +28,10 @@ public class OreSalt extends Block {
 
     @Override
     public List<ItemStack> getDrops(BlockState state, LootParams.Builder builder) {
+        var datapackDrops = DatapackLoot.tryBlockTable(this, state, builder);
+        if (datapackDrops != null) {
+            return datapackDrops;
+        }
         return MiningDropHelper.selfDrops(this, builder);
     }
 

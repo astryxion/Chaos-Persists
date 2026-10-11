@@ -1,10 +1,12 @@
 package com.astryxion.chaospersists.entity;
 
+import com.astryxion.chaospersists.loot.DatapackLoot;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.core.ChaosSounds;
 import com.astryxion.chaospersists.util.MyEntityAIAvoidEntity;
 import com.astryxion.chaospersists.util.MyEntityAIFollowOwner;
 import com.astryxion.chaospersists.util.MyEntityAIWanderALot;
+import com.astryxion.chaospersists.util.PetOrderInteract;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -25,7 +27,6 @@ import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.PanicGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
-import net.minecraft.world.entity.ai.goal.RestrictSunGoal;
 import net.minecraft.world.entity.ai.goal.TemptGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.monster.Monster;
@@ -65,7 +66,6 @@ public class Chipmunk extends EntityCannonFodder {
         this.goalSelector.addGoal(8, new WaterAvoidingRandomStrollGoal(this, 1.0));
         this.goalSelector.addGoal(9, new MyEntityAIWanderALot(this, 10, 1.0));
         this.goalSelector.addGoal(10, new RandomLookAroundGoal(this));
-        this.goalSelector.addGoal(11, new RestrictSunGoal(this));
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -111,7 +111,7 @@ public class Chipmunk extends EntityCannonFodder {
         }
         if (!this.level().isClientSide
                 && this.getRandom().nextInt(600) == 1
-                && this.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+                && com.astryxion.chaospersists.config.ChaosGriefing.canGrief(this)) {
             BlockPos below = BlockPos.containing(this.getX(), this.getY() - 1.0, this.getZ());
             Block bid = this.level().getBlockState(below).getBlock();
             if (bid == Blocks.DIRT || bid == Blocks.FARMLAND) {
@@ -154,13 +154,14 @@ public class Chipmunk extends EntityCannonFodder {
                     }
                 }
             } else if (this.isOwnedBy(par1EntityPlayer)) {
+                if ((float) this.mygetMaxHealth() <= this.getHealth()) {
+                    return InteractionResult.SUCCESS;
+                }
                 if (this.level().isClientSide) {
                     spawnTamingParticles(true);
                     this.level().broadcastEntityEvent(this, (byte) 7);
                 }
-                if ((float) this.mygetMaxHealth() > this.getHealth()) {
-                    this.heal((float) this.mygetMaxHealth() - this.getHealth());
-                }
+                this.heal((float) this.mygetMaxHealth() - this.getHealth());
             }
             if (!par1EntityPlayer.getAbilities().instabuild) {
                 var2.shrink(1);
@@ -204,11 +205,7 @@ public class Chipmunk extends EntityCannonFodder {
             return InteractionResult.SUCCESS;
         }
         if (this.isTame() && this.isOwnedBy(par1EntityPlayer) && par1EntityPlayer.distanceToSqr(this) < 16.0) {
-            if (!this.isInSittingPose()) {
-                this.setOrderedToSit(true);
-            } else {
-                this.setOrderedToSit(false);
-            }
+            PetOrderInteract.setSit(par1EntityPlayer, this, !this.isInSittingPose());
             return InteractionResult.SUCCESS;
         }
         return InteractionResult.PASS;
@@ -236,6 +233,9 @@ public class Chipmunk extends EntityCannonFodder {
 
     @Override
     protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+        if (DatapackLoot.useEntityTable(this)) {
+            return;
+        }
         if (this.isTame()) {
             int var3 = this.getRandom().nextInt(5);
             var3 += 2;

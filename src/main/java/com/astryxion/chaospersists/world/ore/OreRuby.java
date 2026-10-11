@@ -1,5 +1,6 @@
 package com.astryxion.chaospersists.world.ore;
 
+import com.astryxion.chaospersists.loot.DatapackLoot;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import java.util.Collections;
 import java.util.List;
@@ -34,6 +35,10 @@ public class OreRuby extends Block {
 
     @Override
     public List<ItemStack> getDrops(BlockState state, LootParams.Builder builder) {
+        var datapackDrops = DatapackLoot.tryBlockTable(this, state, builder);
+        if (datapackDrops != null) {
+            return datapackDrops;
+        }
         ItemStack tool = builder.getOptionalParameter(LootContextParams.TOOL);
         if (tool != null && EnchantmentHelper.getItemEnchantmentLevel(Enchantments.SILK_TOUCH, tool) > 0) {
             return Collections.singletonList(new ItemStack(this));

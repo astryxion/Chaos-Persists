@@ -1,4 +1,9 @@
 {
+    "key.categories.chaospersists": "Chaos Persists",
+    "key.chaospersists.dragon_up": "坐骑上升",
+    "key.chaospersists.dragon_down": "坐骑下降",
+    "key.chaospersists.mount_fire_left": "坐骑弹射（小）",
+    "key.chaospersists.mount_fire_right": "坐骑弹射（大）",
     "biome.chaospersists.chaos_dimension": "混沌群岛",
     "biome.chaospersists.crystal_dimension": "水晶山峰",
     "biome.chaospersists.danger_dimension": "危险平原",

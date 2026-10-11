@@ -1,5 +1,6 @@
 package com.astryxion.chaospersists.block;
 
+import com.astryxion.chaospersists.loot.DatapackLoot;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import java.util.Collections;
 import java.util.List;
@@ -15,6 +16,7 @@ import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraftforge.common.IForgeShearable;
 
 public class BlockScaryLeaves extends LeavesBlock implements IForgeShearable {
@@ -25,7 +27,15 @@ public class BlockScaryLeaves extends LeavesBlock implements IForgeShearable {
 
     @Override
     public List<ItemStack> getDrops(BlockState state, LootParams.Builder builder) {
-        return Collections.singletonList(new ItemStack(this));
+        var datapackDrops = DatapackLoot.tryBlockTable(this, state, builder);
+        if (datapackDrops != null) {
+            return datapackDrops;
+        }
+        ItemStack tool = builder.getOptionalParameter(LootContextParams.TOOL);
+        if (BlockAppleLeaves.isSilkOrShears(tool)) {
+            return Collections.singletonList(new ItemStack(this));
+        }
+        return Collections.emptyList();
     }
 
     @Override
@@ -54,6 +64,13 @@ public class BlockScaryLeaves extends LeavesBlock implements IForgeShearable {
     @Override
     public void spawnAfterBreak(
             BlockState state, ServerLevel level, BlockPos pos, ItemStack tool, boolean dropExperience) {
+        if (com.astryxion.chaospersists.loot.DatapackLoot.hasTable(level, this.getLootTable())) {
+            super.spawnAfterBreak(state, level, pos, tool, dropExperience);
+            return;
+        }
+        if (BlockAppleLeaves.isSilkOrShears(tool)) {
+            return;
+        }
         maybeDropCherryOrPeach(level, pos, level.getRandom());
         super.spawnAfterBreak(state, level, pos, tool, dropExperience);
     }

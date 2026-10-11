@@ -1,5 +1,6 @@
 package com.astryxion.chaospersists.block;
 
+import com.astryxion.chaospersists.loot.DatapackLoot;
 import com.astryxion.chaospersists.util.MiningDropHelper;
 import java.util.List;
 import net.minecraft.core.BlockPos;
@@ -40,6 +41,10 @@ public class MoleDirtBlock extends Block {
 
     @Override
     public List<ItemStack> getDrops(BlockState state, LootParams.Builder builder) {
+        var datapackDrops = DatapackLoot.tryBlockTable(this, state, builder);
+        if (datapackDrops != null) {
+            return datapackDrops;
+        }
         return MiningDropHelper.selfDrops(this, builder);
     }
 

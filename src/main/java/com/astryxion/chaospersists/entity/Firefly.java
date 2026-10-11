@@ -1,4 +1,5 @@
 package com.astryxion.chaospersists.entity;
+import com.astryxion.chaospersists.loot.DatapackLoot;
 import com.astryxion.chaospersists.util.MyUtils;
 
 import com.astryxion.chaospersists.core.ChaosPersists;
@@ -227,6 +228,9 @@ public class Firefly extends AmbientCreature {
 
     @Override
     protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+        if (DatapackLoot.useEntityTable(this)) {
+            return;
+        }
         super.dropCustomDeathLoot(source, looting, recentlyHit);
         net.minecraft.world.level.block.Block block =
                 ForgeRegistries.BLOCKS.getValue(new ResourceLocation("chaospersists", "extremetorch"));

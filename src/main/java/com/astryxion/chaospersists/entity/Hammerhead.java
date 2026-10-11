@@ -1,5 +1,6 @@
 package com.astryxion.chaospersists.entity;
 
+import com.astryxion.chaospersists.loot.DatapackLoot;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.core.ChaosSounds;
 import com.astryxion.chaospersists.util.GenericTargetSorter;
@@ -125,6 +126,9 @@ public class Hammerhead extends Monster {
 
     @Override
     protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+        if (DatapackLoot.useEntityTable(this)) {
+            return;
+        }
         for (int var4 = 0; var4 < 8; ++var4) {
             this.dropItemRand(Items.EXPERIENCE_BOTTLE, 1);
         }

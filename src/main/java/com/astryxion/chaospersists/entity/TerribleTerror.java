@@ -1,10 +1,12 @@
 package com.astryxion.chaospersists.entity;
 
+import com.astryxion.chaospersists.loot.DatapackLoot;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.core.ChaosSounds;
 import com.astryxion.chaospersists.util.GenericTargetSorter;
 import com.astryxion.chaospersists.util.MyUtils;
 import com.astryxion.chaospersists.util.PetCombatHelper;
+import com.astryxion.chaospersists.util.PetOrderInteract;
 import com.astryxion.chaospersists.util.RoyalPetFollowHelper;
 import com.astryxion.chaospersists.util.SpawnerFixHelper;
 import java.util.Collections;
@@ -152,13 +154,14 @@ public class TerribleTerror extends TamableAnimal {
                     }
                 }
             } else if (this.isOwnedBy(player)) {
+                if ((float) this.mygetMaxHealth() <= this.getHealth()) {
+                    return InteractionResult.SUCCESS;
+                }
                 if (this.level().isClientSide) {
                     spawnTamingParticles(true);
                     this.level().broadcastEntityEvent(this, (byte) 7);
                 }
-                if ((float) this.mygetMaxHealth() > this.getHealth()) {
-                    this.heal((float) this.mygetMaxHealth() - this.getHealth());
-                }
+                this.heal((float) this.mygetMaxHealth() - this.getHealth());
             }
             if (!player.getAbilities().instabuild) {
                 stack.shrink(1);
@@ -190,11 +193,11 @@ public class TerribleTerror extends TamableAnimal {
             return InteractionResult.SUCCESS;
         }
         if (this.isTame()
-                && stack.isEmpty()
                 && player.distanceToSqr(this) < 16.0
-                && this.isOwnedBy(player)) {
+                && this.isOwnedBy(player)
+                && (stack.isEmpty() || PetOrderInteract.isExplicitOrderClick(stack, player))) {
             if (!this.level().isClientSide) {
-                this.setOrderedToSit(!this.isOrderedToSit());
+                PetOrderInteract.toggleSit(player, this);
             }
             return InteractionResult.SUCCESS;
         }
@@ -216,7 +219,8 @@ public class TerribleTerror extends TamableAnimal {
     }
 
     public int mygetMaxHealth() {
-        return ChaosPersists.TerribleTerror_stats.health;
+        int base = ChaosPersists.TerribleTerror_stats.health;
+        return this.isTame() ? base * 2 : base;
     }
 
     @Override
@@ -245,7 +249,31 @@ public class TerribleTerror extends TamableAnimal {
     }
 
     @Override
+    public void setTame(boolean tamed) {
+        super.setTame(tamed);
+        this.applyTamedMaxHealth();
+    }
+
+    private void applyTamedMaxHealth() {
+        if (this.getAttributes() == null) {
+            return;
+        }
+        var attr = this.getAttribute(Attributes.MAX_HEALTH);
+        if (attr == null) {
+            return;
+        }
+        double max = (double) this.mygetMaxHealth();
+        if (attr.getBaseValue() != max) {
+            attr.setBaseValue(max);
+            if (this.getHealth() > this.getMaxHealth()) {
+                this.setHealth(this.getMaxHealth());
+            }
+        }
+    }
+
+    @Override
     public void tick() {
+        this.applyTamedMaxHealth();
         boolean sitting = this.isSittingNow();
         if (sitting) {
             MyUtils.clearChaosFlight(this);
@@ -417,6 +445,9 @@ public class TerribleTerror extends TamableAnimal {
 
     @Override
     protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+        if (DatapackLoot.useEntityTable(this)) {
+            return;
+        }
         int i = this.getRandom().nextInt(3);
         Item drop = null;
         if (i == 0) {

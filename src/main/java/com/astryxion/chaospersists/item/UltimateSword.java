@@ -4,8 +4,11 @@ import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.core.ChaosSounds;
 import com.astryxion.chaospersists.util.FriendlyWeaponHits;
 import com.astryxion.chaospersists.util.MyUtils;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Multimap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.tags.BlockTags;
@@ -13,6 +16,8 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -26,13 +31,47 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
+import net.minecraftforge.common.ForgeMod;
 
 public class UltimateSword extends SwordItem {
+    private static final UUID ENTITY_REACH_UUID = UUID.fromString("B4D9F2C5-7E3A-4B80-9C8D-6F1A0E5B3D29");
+    private static final double SURVIVAL_ENTITY_REACH_BASE = 3.0;
+    private static final double QUEEN_BATTLE_AXE_REACH = 6.0;
+    private static final double CHAINSAW_REACH = 6.0;
+
     private int swingtimer = 0;
     private boolean leaf = false;
 
     public UltimateSword(Tier tier) {
         super(tier, ChaosWeaponDamage.TIER_SWORD_MODIFIER, -2.4f, new Properties().stacksTo(1).durability(3000));
+    }
+
+    @Override
+    public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(EquipmentSlot slot) {
+        double extra = extraEntityReach();
+        if (slot != EquipmentSlot.MAINHAND || extra <= 0.0) {
+            return super.getDefaultAttributeModifiers(slot);
+        }
+        ImmutableMultimap.Builder<Attribute, AttributeModifier> builder = ImmutableMultimap.builder();
+        builder.putAll(super.getDefaultAttributeModifiers(slot));
+        builder.put(
+                ForgeMod.ENTITY_REACH.get(),
+                new AttributeModifier(
+                        ENTITY_REACH_UUID,
+                        "Weapon modifier",
+                        extra,
+                        AttributeModifier.Operation.ADDITION));
+        return builder.build();
+    }
+
+    private double extraEntityReach() {
+        if (this == ChaosPersists.MyQueenBattleAxe) {
+            return QUEEN_BATTLE_AXE_REACH - SURVIVAL_ENTITY_REACH_BASE;
+        }
+        if (this == ChaosPersists.MyChainsaw) {
+            return CHAINSAW_REACH - SURVIVAL_ENTITY_REACH_BASE;
+        }
+        return 0.0;
     }
 
     @Override
@@ -153,7 +192,8 @@ public class UltimateSword extends SwordItem {
         List<LivingEntity> candidates =
                 player.level()
                         .getEntitiesOfClass(
-                                LivingEntity.class, player.getBoundingBox().inflate(5.0, 5.0, 5.0));
+                                LivingEntity.class,
+                                player.getBoundingBox().inflate(CHAINSAW_REACH, CHAINSAW_REACH, CHAINSAW_REACH));
         Iterator<LivingEntity> var2 = candidates.iterator();
         while (var2.hasNext()) {
             LivingEntity var4 = var2.next();
@@ -450,6 +490,6 @@ public class UltimateSword extends SwordItem {
 
     @Override
     public void initializeClient(java.util.function.Consumer<IClientItemExtensions> consumer) {
-        com.astryxion.chaospersists.client.BigWeaponClientExtensions.register(consumer, this);
+        com.astryxion.chaospersists.client.item.BigWeaponClientExtensions.register(consumer, this);
     }
 }

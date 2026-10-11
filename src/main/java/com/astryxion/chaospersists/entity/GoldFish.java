@@ -1,5 +1,6 @@
 package com.astryxion.chaospersists.entity;
 
+import com.astryxion.chaospersists.loot.DatapackLoot;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.core.ChaosSounds;
 import net.minecraft.core.BlockPos;
@@ -216,6 +217,9 @@ public class GoldFish extends Animal {
 
     @Override
     protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+        if (DatapackLoot.useEntityTable(this)) {
+            return;
+        }
         int i = this.getRandom().nextInt(3);
         if (i == 0) {
             this.spawnAtLocation(new ItemStack(Blocks.GOLD_BLOCK));

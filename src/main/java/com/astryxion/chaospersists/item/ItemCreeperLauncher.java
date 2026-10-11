@@ -1,10 +1,10 @@
 package com.astryxion.chaospersists.item;
 
+import com.astryxion.chaospersists.compat.creeperoverhaul.CreeperOverhaulLauncherCompat;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -32,7 +32,7 @@ public class ItemCreeperLauncher extends Item {
                 1.0f);
 
         if (!level.isClientSide) {
-            Creeper creeper = EntityType.CREEPER.create(level);
+            Creeper creeper = CreeperOverhaulLauncherCompat.createLaunchedCreeper(level, player.getRandom());
             if (creeper != null) {
                 creeper.moveTo(
                         player.getX(),

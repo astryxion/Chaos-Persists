@@ -4,6 +4,8 @@ import com.astryxion.chaospersists.compat.eeeabsmobs.EeeabsMobsBeamCompat;
 import com.astryxion.chaospersists.compat.illageandspillage.IllageAndSpillageExecuteCompat;
 import com.astryxion.chaospersists.compat.legendarymonsters.LegendaryMonstersBeamCompat;
 import com.astryxion.chaospersists.compat.mutantmonsters.MutantMonstersExecuteCompat;
+import com.astryxion.chaospersists.compat.salmonsgenesisreincarnation.SalmonsGenesisReincarnationBeamCompat;
+import com.astryxion.chaospersists.compat.torchesbecomesunlight.TorchesBecomeSunlightGravestoneCompat;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.util.GenericTargetSorter;
 import com.astryxion.chaospersists.util.MyUtils;
@@ -416,6 +418,8 @@ public class PurplePower extends LivingEntity {
             }
             EeeabsMobsBeamCompat.enforceBeamHealth(e, intended);
             LegendaryMonstersBeamCompat.enforceBeamHealth(e, intended);
+            SalmonsGenesisReincarnationBeamCompat.enforceBeamHealth(e, intended);
+            TorchesBecomeSunlightGravestoneCompat.enforceBeamHealth(e, intended);
             MutantMonstersExecuteCompat.forceExecuteIfDowned(e);
             IllageAndSpillageExecuteCompat.forceExecuteIfDowned(e);
         }

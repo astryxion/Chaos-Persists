@@ -1,9 +1,10 @@
 package com.astryxion.chaospersists.entity;
 
+import com.astryxion.chaospersists.loot.DatapackLoot;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.core.ChaosSounds;
 import com.astryxion.chaospersists.item.BetterFireball;
-import com.astryxion.chaospersists.render.RenderInfo;
+import com.astryxion.chaospersists.entity.RenderInfo;
 import com.astryxion.chaospersists.util.GenericTargetSorter;
 import com.astryxion.chaospersists.util.MyEntityAIWanderALot;
 import com.astryxion.chaospersists.util.MyUtils;
@@ -423,11 +424,11 @@ public class Godzilla extends Monster {
                         continue;
                     }
                     if (bid == Blocks.GRASS_BLOCK
-                            && this.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+                            && com.astryxion.chaospersists.config.ChaosGriefing.canGrief(this)) {
                         this.level().setBlock(crushPos, Blocks.DIRT.defaultBlockState(), 3);
                     }
                     if (bid != Blocks.FARMLAND
-                            || !this.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+                            || !com.astryxion.chaospersists.config.ChaosGriefing.canGrief(this)) {
                         continue;
                     }
                     this.level().setBlock(crushPos, Blocks.DIRT.defaultBlockState(), 3);
@@ -447,11 +448,11 @@ public class Godzilla extends Monster {
                         continue;
                     }
                     if (bid == Blocks.GRASS_BLOCK
-                            && this.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+                            && com.astryxion.chaospersists.config.ChaosGriefing.canGrief(this)) {
                         this.level().setBlock(crushPos, Blocks.DIRT.defaultBlockState(), 3);
                     }
                     if (bid != Blocks.FARMLAND
-                            || !this.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+                            || !com.astryxion.chaospersists.config.ChaosGriefing.canGrief(this)) {
                         continue;
                     }
                     this.level().setBlock(crushPos, Blocks.DIRT.defaultBlockState(), 3);
@@ -657,7 +658,8 @@ public class Godzilla extends Monster {
                     || var4 instanceof Godzilla
                     || var4 instanceof GodzillaHead
                     || var4 instanceof Ghost
-                    || var4 instanceof GhostSkelly) {
+                    || var4 instanceof GhostSkelly
+                    || MyUtils.isScoreboardAlly(this, var4)) {
                 continue;
             }
             var4.hurt(this.damageSources().explosion(null), (float) damage / 2.0f);
@@ -836,7 +838,7 @@ public class Godzilla extends Monster {
         if (bid == null) {
             return false;
         }
-        if (!this.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+        if (!com.astryxion.chaospersists.config.ChaosGriefing.canGrief(this)) {
             return false;
         }
         if (bid == Blocks.GRASS_BLOCK) {
@@ -1120,7 +1122,7 @@ public class Godzilla extends Monster {
                             e.getY(),
                             e.getZ(),
                             3.0f,
-                            this.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING),
+                            com.astryxion.chaospersists.config.ChaosGriefing.canGrief(this),
                             Level.ExplosionInteraction.MOB);
         }
         if (this.level() instanceof ServerLevel serverLevel) {
@@ -1139,6 +1141,9 @@ public class Godzilla extends Monster {
 
     @Override
     protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+        if (DatapackLoot.useEntityTable(this)) {
+            return;
+        }
         super.dropCustomDeathLoot(source, looting, recentlyHit);
         this.dropFewItems();
     }

@@ -1,10 +1,11 @@
 package com.astryxion.chaospersists.entity;
+import com.astryxion.chaospersists.loot.DatapackLoot;
 import com.astryxion.chaospersists.util.MyUtils;
 import com.astryxion.chaospersists.util.ChaosChaseMoveControl;
 
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.core.ChaosSounds;
-import com.astryxion.chaospersists.render.RenderInfo;
+import com.astryxion.chaospersists.entity.RenderInfo;
 import com.astryxion.chaospersists.util.GenericTargetSorter;
 import com.astryxion.chaospersists.util.MyEntityAIWanderALot;
 import com.astryxion.chaospersists.util.SpawnerFixHelper;
@@ -207,6 +208,9 @@ public class Alien extends Monster {
 
     @Override
     protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+        if (DatapackLoot.useEntityTable(this)) {
+            return;
+        }
         int var4;
         int var5 = 5 + this.level().getRandom().nextInt(6);
         for (var4 = 0; var4 < var5; ++var4) {
@@ -395,7 +399,7 @@ public class Alien extends Monster {
             if (this.closest < 99999) {
                 this.getNavigation().moveTo(this.tx, this.ty, this.tz, 1.0);
                 if (this.closest < 27
-                        && this.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+                        && com.astryxion.chaospersists.config.ChaosGriefing.canGrief(this)) {
                     this.level().setBlock(new BlockPos(this.tx, this.ty, this.tz), Blocks.AIR.defaultBlockState(), 2);
                 }
             }

@@ -97,7 +97,7 @@ public class ItemSquidZooka extends Item {
 
     @Override
     public void initializeClient(java.util.function.Consumer<IClientItemExtensions> consumer) {
-        com.astryxion.chaospersists.client.BigWeaponClientExtensions.register(consumer, this);
+        com.astryxion.chaospersists.client.item.BigWeaponClientExtensions.register(consumer, this);
     }
 
     public static Entity spawnCreature(Level level, double x, double y, double z) {

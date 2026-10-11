@@ -1,18 +1,29 @@
 package com.astryxion.chaospersists.proxy;
 
-import com.astryxion.chaospersists.network.RiderControlMessage;
-import com.astryxion.chaospersists.network.RiderControlMessageHandler;
-import java.util.Optional;
+import com.astryxion.chaospersists.entity.util.ICustomMoveController;
+import com.astryxion.chaospersists.network.MessageMountControl;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.network.NetworkDirection;
+import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.simple.SimpleChannel;
 
 public class CommonProxyChaos {
-    private SimpleChannel network;
+    private static final String PROTOCOL_VERSION = "1";
+
+    /** Ice and Fire {@code NETWORK_WRAPPER} — static channel, messages registered in setup. */
+    public static final SimpleChannel NETWORK =
+            NetworkRegistry.ChannelBuilder.named(new ResourceLocation("chaospersists", "main_channel"))
+                    .clientAcceptedVersions(PROTOCOL_VERSION::equals)
+                    .serverAcceptedVersions(PROTOCOL_VERSION::equals)
+                    .networkProtocolVersion(() -> PROTOCOL_VERSION)
+                    .simpleChannel();
 
     public SimpleChannel getNetwork() {
-        return this.network;
+        return NETWORK;
+    }
+
+    public Player getClientSidePlayer() {
+        return null;
     }
 
     public void registerRenderThings() {
@@ -39,19 +50,16 @@ public class CommonProxyChaos {
     public void registerKeyboardInput() {
     }
 
+    /** Client only: stamp this frame's rider keys onto the mount before travel. */
+    public void applyLocalMountControls(ICustomMoveController controller) {}
+
     public void registerNetworkStuff() {
-        this.network = NetworkRegistry.newSimpleChannel(
-                new ResourceLocation("chaospersists", "chaospersists"),
-                () -> "1.0",
-                "1.0"::equals,
-                "1.0"::equals);
-        this.network.registerMessage(
+        NETWORK.registerMessage(
                 0,
-                RiderControlMessage.class,
-                RiderControlMessage::encode,
-                RiderControlMessage::decode,
-                RiderControlMessageHandler::handle,
-                Optional.of(NetworkDirection.PLAY_TO_SERVER));
+                MessageMountControl.class,
+                MessageMountControl::encode,
+                MessageMountControl::decode,
+                MessageMountControl::handle);
     }
 
     public int setArmorPrefix(String string) {

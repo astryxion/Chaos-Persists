@@ -1,11 +1,13 @@
 package com.astryxion.chaospersists.entity;
 
+import com.astryxion.chaospersists.loot.DatapackLoot;
 import com.astryxion.chaospersists.util.MyUtils;
 import com.astryxion.chaospersists.util.PetCombatHelper;
+import com.astryxion.chaospersists.util.PetOrderInteract;
 
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.core.ChaosSounds;
-import com.astryxion.chaospersists.render.RenderInfo;
+import com.astryxion.chaospersists.entity.RenderInfo;
 import com.astryxion.chaospersists.util.GenericTargetSorter;
 import com.astryxion.chaospersists.util.MyEntityAIFollowOwner;
 import com.astryxion.chaospersists.util.MyEntityAIWanderALot;
@@ -270,6 +272,9 @@ public class RubberDucky extends TamableAnimal {
 
     @Override
     protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+        if (DatapackLoot.useEntityTable(this)) {
+            return;
+        }
         if (this.getRandom().nextInt(2) == 1) {
             this.spawnAtLocation(Items.FEATHER);
         } else if (this.getRandom().nextInt(2) == 1 && ChaosPersists.RubberDuckyEgg != null) {
@@ -302,13 +307,14 @@ public class RubberDucky extends TamableAnimal {
                     }
                 }
             } else if (this.isOwnedBy(par1EntityPlayer)) {
+                if ((float) this.mygetMaxHealth() <= this.getHealth()) {
+                    return InteractionResult.SUCCESS;
+                }
                 if (this.level().isClientSide) {
                     spawnTamingParticles(true);
                     this.level().broadcastEntityEvent(this, (byte) 7);
                 }
-                if ((float) this.mygetMaxHealth() > this.getHealth()) {
-                    this.heal((float) this.mygetMaxHealth() - this.getHealth());
-                }
+                this.heal((float) this.mygetMaxHealth() - this.getHealth());
             }
             if (!par1EntityPlayer.getAbilities().instabuild) {
                 var2.shrink(1);
@@ -339,12 +345,12 @@ public class RubberDucky extends TamableAnimal {
         }
         if (this.isTame() && this.isOwnedBy(par1EntityPlayer) && par1EntityPlayer.distanceToSqr(this) < 16.0) {
             if (!this.isInSittingPose() && this.getKillCount() < 5) {
-                this.setOrderedToSit(true);
+                PetOrderInteract.setSit(par1EntityPlayer, this, true);
                 if (!this.level().isClientSide) {
                     PetCombatHelper.onPetSit(this);
                 }
             } else {
-                this.setOrderedToSit(false);
+                PetOrderInteract.setSit(par1EntityPlayer, this, false);
             }
             return InteractionResult.SUCCESS;
         }

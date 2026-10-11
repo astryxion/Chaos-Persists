@@ -2,7 +2,7 @@ package com.astryxion.chaospersists.entity;
 import com.astryxion.chaospersists.util.MyUtils;
 
 import com.astryxion.chaospersists.core.ChaosSounds;
-import com.astryxion.chaospersists.render.RenderInfo;
+import com.astryxion.chaospersists.entity.RenderInfo;
 import com.astryxion.chaospersists.util.SpawnerFixHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;

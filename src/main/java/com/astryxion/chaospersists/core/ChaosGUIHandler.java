@@ -1,10 +1,10 @@
 package com.astryxion.chaospersists.core;
 
-import com.astryxion.chaospersists.container.ContainerCrystalFurnace;
-import com.astryxion.chaospersists.container.ContainerCrystalWorkbench;
-import com.astryxion.chaospersists.tileentity.TileEntityCrystalFurnace;
-import com.astryxion.chaospersists.util.CrystalWorkbenchGUI;
-import com.astryxion.chaospersists.util.CrystalFurnaceGUI;
+import com.astryxion.chaospersists.menu.ContainerCrystalFurnace;
+import com.astryxion.chaospersists.menu.ContainerCrystalWorkbench;
+import com.astryxion.chaospersists.blockentity.TileEntityCrystalFurnace;
+import com.astryxion.chaospersists.client.gui.CrystalWorkbenchGUI;
+import com.astryxion.chaospersists.client.gui.CrystalFurnaceGUI;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;

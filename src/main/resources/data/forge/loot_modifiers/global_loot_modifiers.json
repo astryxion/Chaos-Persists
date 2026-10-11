@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "entries": [
+    "chaospersists:simple_dungeon",
+    "chaospersists:jungle_temple",
+    "chaospersists:desert_pyramid",
+    "chaospersists:strip_disabled_items"
+  ]
+}

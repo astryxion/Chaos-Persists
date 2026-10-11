@@ -1,0 +1,10 @@
+{
+  "type": "chaospersists:inject_loot_table",
+  "conditions": [
+    {
+      "condition": "forge:loot_table_id",
+      "loot_table_id": "minecraft:chests/desert_pyramid"
+    }
+  ],
+  "loot_table": "chaospersists:inject/desert_pyramid"
+}

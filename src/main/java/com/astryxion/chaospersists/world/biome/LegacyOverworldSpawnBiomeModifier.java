@@ -29,6 +29,9 @@ public record LegacyOverworldSpawnBiomeModifier() implements BiomeModifier {
     if (LegacyBiomeMatcher.isModBiome(biome)) {
       return;
     }
+    if (!com.astryxion.chaospersists.config.ChaosPackConfig.allowOverworldSpawns()) {
+      return;
+    }
     EntityRegistry.applyLegacySpawns(biome, builder.getMobSpawnSettings());
   }
 

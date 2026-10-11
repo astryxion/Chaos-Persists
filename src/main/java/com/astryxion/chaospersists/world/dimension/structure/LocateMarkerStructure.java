@@ -29,6 +29,9 @@ public class LocateMarkerStructure extends Structure {
 
     @Override
     protected Optional<Structure.GenerationStub> findGenerationPoint(Structure.GenerationContext context) {
+        if (!com.astryxion.chaospersists.config.ChaosPackConfig.shouldGenerateStructure(this, context)) {
+            return Optional.empty();
+        }
         BlockPos pos = findLandPos(context);
         if (pos == null) {
             return Optional.empty();

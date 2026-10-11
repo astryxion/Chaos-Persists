@@ -1,5 +1,6 @@
 package com.astryxion.chaospersists.entity;
 
+import com.astryxion.chaospersists.loot.DatapackLoot;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.core.ChaosSounds;
 import com.astryxion.chaospersists.util.GenericTargetSorter;
@@ -198,6 +199,9 @@ public class CaterKiller extends Monster {
 
     @Override
     protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+        if (DatapackLoot.useEntityTable(this)) {
+            return;
+        }
         int var4;
         ItemStack is = null;
         this.dropItemRand(ChaosPersists.CaterKillerJaw, 1);
@@ -679,7 +683,7 @@ public class CaterKiller extends Monster {
                     this.getNavigation().moveTo((double) this.tx, (double) this.ty, (double) this.tz, 1.0);
                 }
                 if (this.closest < 81) {
-                    if (this.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+                    if (com.astryxion.chaospersists.config.ChaosGriefing.canGrief(this)) {
                         this.level().setBlock(new BlockPos(this.tx, this.ty, this.tz), Blocks.AIR.defaultBlockState(), 2);
                     }
                     this.heal(2.0f);

@@ -1,4 +1,9 @@
 {
+    "key.categories.chaospersists": "Chaos Persists",
+    "key.chaospersists.dragon_up": "Полёт вверх (езда)",
+    "key.chaospersists.dragon_down": "Полёт вниз (езда)",
+    "key.chaospersists.mount_fire_left": "Снаряд ездового (малый)",
+    "key.chaospersists.mount_fire_right": "Снаряд ездового (большой)",
     "biome.chaospersists.chaos_dimension": "Острова Хаоса",
     "biome.chaospersists.crystal_dimension": "Кристальные пики",
     "biome.chaospersists.danger_dimension": "Опасные равнины",

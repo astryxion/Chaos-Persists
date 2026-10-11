@@ -1,8 +1,9 @@
 package com.astryxion.chaospersists.entity;
 
+import com.astryxion.chaospersists.loot.DatapackLoot;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.core.ChaosSounds;
-import com.astryxion.chaospersists.render.RenderInfo;
+import com.astryxion.chaospersists.entity.RenderInfo;
 import com.astryxion.chaospersists.util.GenericTargetSorter;
 import com.astryxion.chaospersists.util.MyEntityAIWanderALot;
 import com.astryxion.chaospersists.util.MyUtils;
@@ -161,6 +162,9 @@ public class Robot2 extends Monster {
 
     @Override
     protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+        if (DatapackLoot.useEntityTable(this)) {
+            return;
+        }
         int var5 = 2 + this.getRandom().nextInt(8);
         for (int var4 = 0; var4 < var5; ++var4) {
             this.spawnAtLocation(new ItemStack(Blocks.IRON_BLOCK));
@@ -236,7 +240,7 @@ public class Robot2 extends Monster {
         if (state.is(Blocks.CHEST)) {
             return;
         }
-        if (!state.isAir() && this.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+        if (!state.isAir() && com.astryxion.chaospersists.config.ChaosGriefing.canGrief(this)) {
             this.level().setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
         }
     }
@@ -256,11 +260,22 @@ public class Robot2 extends Monster {
                     || state.is(Blocks.IRON_BLOCK)
                     || state.is(Blocks.CHEST)
                     || state.isAir()
-                    || !this.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+                    || !com.astryxion.chaospersists.config.ChaosGriefing.canGrief(this)) {
                 continue;
             }
             this.level().setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
         }
+    }
+
+    @Override
+    public void aiStep() {
+        super.aiStep();
+        if (this.level().isClientSide || this.isDeadOrDying()) {
+            return;
+        }
+        // 1.7.10 ran this after move/look helpers. customServerAiStep is too early in 1.20.1
+        // (path body yaw + look-at-player steal facing), so melee almost never passed rdd.
+        this.updatePounderCombat();
     }
 
     @Override
@@ -269,6 +284,9 @@ public class Robot2 extends Monster {
             return;
         }
         super.customServerAiStep();
+    }
+
+    private void updatePounderCombat() {
         if (this.getRandom().nextInt(6) == 1 && ChaosPersists.PlayNicely == 0) {
             LivingEntity e = this.getTarget();
             if (this.getRandom().nextInt(50) == 1) {
@@ -286,7 +304,7 @@ public class Robot2 extends Monster {
             }
             if (e != null) {
                 double rr = Math.atan2(e.getZ() - this.getZ(), e.getX() - this.getX());
-                double rhdir = Math.toRadians((this.getYRot() + 90.0f) % 360.0f);
+                double rhdir = Math.toRadians((this.getYHeadRot() + 90.0f) % 360.0f);
                 double pi = 3.1415926545;
                 double rdd = Math.abs(rr - rhdir) % (pi * 2.0);
                 if (rdd > pi) {
@@ -294,19 +312,17 @@ public class Robot2 extends Monster {
                 }
                 rdd = Math.abs(rdd);
                 MyUtils.faceEntity(this, e, 10.0f, 10.0f);
-                if (rdd < 1.25) {
-                    float reach = 5.0f + e.getBbWidth() / 2.0f;
-                    if (this.distanceToSqr(e) < (double) (reach * reach)) {
-                        this.setAttacking(1);
-                        if (this.getRandom().nextInt(5) == 0 || this.getRandom().nextInt(6) == 1) {
-                            this.doHurtTarget(e);
-                            for (int i = 0; i < 6; ++i) {
-                                this.destroyBlock(e);
-                            }
+                float reach = 5.0f + e.getBbWidth() / 2.0f;
+                if (this.distanceToSqr(e) < (double) (reach * reach)) {
+                    this.setAttacking(1);
+                    if (this.getRandom().nextInt(5) == 0 || this.getRandom().nextInt(6) == 1) {
+                        this.doHurtTarget(e);
+                        for (int i = 0; i < 6; ++i) {
+                            this.destroyBlock(e);
                         }
-                        this.destroyNearbyBlocks();
                     }
-                } else {
+                    this.destroyNearbyBlocks();
+                } else if (rdd >= 1.25) {
                     this.setAttacking(0);
                 }
                 this.getNavigation().moveTo(e, 1.0);

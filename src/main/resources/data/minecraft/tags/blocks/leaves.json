@@ -1,0 +1,13 @@
+{
+  "replace": false,
+  "values": [
+    "chaospersists:leaves_apple",
+    "chaospersists:leaves_experience",
+    "chaospersists:leaves_cherry",
+    "chaospersists:leaves_peach",
+    "chaospersists:leaves_scary",
+    "chaospersists:crystaltreeleaves",
+    "chaospersists:crystaltreeleaves2",
+    "chaospersists:crystaltreeleaves3"
+  ]
+}

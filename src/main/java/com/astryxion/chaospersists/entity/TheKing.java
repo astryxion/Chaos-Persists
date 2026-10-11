@@ -1,5 +1,6 @@
 package com.astryxion.chaospersists.entity;
 
+import com.astryxion.chaospersists.loot.DatapackLoot;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.core.ChaosSounds;
 import com.astryxion.chaospersists.item.BetterFireball;
@@ -231,6 +232,9 @@ public class TheKing extends Monster {
 
     @Override
     protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+        if (DatapackLoot.useEntityTable(this)) {
+            return;
+        }
         Item it;
         Block bl;
         spawnCreature(this.level(), "The Prince", this.getX(), this.getY() + 10.0, this.getZ());
@@ -1385,7 +1389,8 @@ public class TheKing extends Monster {
                     || !var4.isAlive()
                     || MyUtils.isRoyalty(var4)
                     || var4 instanceof Ghost
-                    || var4 instanceof GhostSkelly) {
+                    || var4 instanceof GhostSkelly
+                    || MyUtils.isScoreboardAlly(this, var4)) {
                 continue;
             }
             var4.hurt(this.damageSources().explosion(null), (float) damage / 2.0f);

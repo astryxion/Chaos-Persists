@@ -169,7 +169,9 @@ public class ChaosTeleporter implements ITeleporter {
             serverPlayer.fallDistance = 0.0f;
         }
 
-        if (par1Entity instanceof Player ep && this.oldWorld instanceof ServerLevel oldServer) {
+        if (par1Entity instanceof Player ep
+                && this.oldWorld instanceof ServerLevel oldServer
+                && !dest.dimension().equals(ChaosPersists.getCrystalDimensionKey())) {
             AABB bb = new AABB(oldX - 24.0D, oldY - 12.0D, oldZ - 24.0D, oldX + 24.0D, oldY + 12.0D, oldZ + 24.0D);
             List<TamableAnimal> var5 = oldServer.getEntitiesOfClass(TamableAnimal.class, bb);
 

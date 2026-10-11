@@ -1,0 +1,312 @@
+package com.astryxion.chaospersists.client.model;
+
+import com.astryxion.chaospersists.entity.SpiderRobot;
+import com.astryxion.chaospersists.entity.RenderSpiderRobotInfo;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.minecraft.client.model.EntityModel;
+import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.model.geom.PartPose;
+import net.minecraft.client.model.geom.builders.CubeListBuilder;
+import net.minecraft.client.model.geom.builders.LayerDefinition;
+import net.minecraft.client.model.geom.builders.MeshDefinition;
+import net.minecraft.client.model.geom.builders.PartDefinition;
+import net.minecraft.util.Mth;
+
+public class ModelSpiderRobot extends EntityModel<SpiderRobot> {
+    private final float wingspeed;
+    private final ModelPart Leg1p1;
+    private final ModelPart Leg1p2;
+    private final ModelPart Leg1p3;
+    private final ModelPart Foot;
+    private final ModelPart FootSpike1;
+    private final ModelPart FootSpike2;
+    private final ModelPart FootSpike3;
+    private final ModelPart FootSpike4;
+    private final ModelPart AnkleSpike1;
+    private final ModelPart AnkleSpike2;
+    private final ModelPart AnkleSpike3;
+    private final ModelPart AnkleSpike4;
+    private final ModelPart LowerKnee;
+    private final ModelPart UpperKnee;
+    private final ModelPart LegBump1;
+    private final ModelPart LegBump2;
+    private final ModelPart LowerKnee2;
+    private final ModelPart UpperKnee2;
+    private final ModelPart HipJoint;
+    private final ModelPart BodyCenter;
+    private final ModelPart Abdomen;
+    private final ModelPart Head;
+    private final ModelPart Ljaw1;
+    private final ModelPart Rjaw1;
+    private final ModelPart Ljaw2;
+    private final ModelPart Rjaw2;
+    private final ModelPart Ljaw3;
+    private final ModelPart Rjaw3;
+    private final ModelPart Tail;
+    private final ModelPart HeadSpike1;
+    private final ModelPart HeadSpike2;
+    private final ModelPart Hip1;
+    private final ModelPart Hip2;
+    private final ModelPart Hip3;
+    private final ModelPart Hip4;
+    private final ModelPart Hip5;
+    private final ModelPart Hip6;
+    private final ModelPart Hip7;
+    private final ModelPart Hip8;
+    private SpiderRobot animEntity;
+
+    public ModelSpiderRobot(float wingspeed) {
+        this(LayerDefinition.create(createMesh(), 256, 512).bakeRoot(), wingspeed);
+    }
+
+    public ModelSpiderRobot(ModelPart root, float wingspeed) {
+        this.wingspeed = wingspeed;
+        this.Leg1p1 = root.getChild("Leg1p1");
+        this.Leg1p2 = root.getChild("Leg1p2");
+        this.Leg1p3 = root.getChild("Leg1p3");
+        this.Foot = root.getChild("Foot");
+        this.FootSpike1 = root.getChild("FootSpike1");
+        this.FootSpike2 = root.getChild("FootSpike2");
+        this.FootSpike3 = root.getChild("FootSpike3");
+        this.FootSpike4 = root.getChild("FootSpike4");
+        this.AnkleSpike1 = root.getChild("AnkleSpike1");
+        this.AnkleSpike2 = root.getChild("AnkleSpike2");
+        this.AnkleSpike3 = root.getChild("AnkleSpike3");
+        this.AnkleSpike4 = root.getChild("AnkleSpike4");
+        this.LowerKnee = root.getChild("LowerKnee");
+        this.UpperKnee = root.getChild("UpperKnee");
+        this.LegBump1 = root.getChild("LegBump1");
+        this.LegBump2 = root.getChild("LegBump2");
+        this.LowerKnee2 = root.getChild("LowerKnee2");
+        this.UpperKnee2 = root.getChild("UpperKnee2");
+        this.HipJoint = root.getChild("HipJoint");
+        this.BodyCenter = root.getChild("BodyCenter");
+        this.Abdomen = root.getChild("Abdomen");
+        this.Head = root.getChild("Head");
+        this.Ljaw1 = root.getChild("Ljaw1");
+        this.Rjaw1 = root.getChild("Rjaw1");
+        this.Ljaw2 = root.getChild("Ljaw2");
+        this.Rjaw2 = root.getChild("Rjaw2");
+        this.Ljaw3 = root.getChild("Ljaw3");
+        this.Rjaw3 = root.getChild("Rjaw3");
+        this.Tail = root.getChild("Tail");
+        this.HeadSpike1 = root.getChild("HeadSpike1");
+        this.HeadSpike2 = root.getChild("HeadSpike2");
+        this.Hip1 = root.getChild("Hip1");
+        this.Hip2 = root.getChild("Hip2");
+        this.Hip3 = root.getChild("Hip3");
+        this.Hip4 = root.getChild("Hip4");
+        this.Hip5 = root.getChild("Hip5");
+        this.Hip6 = root.getChild("Hip6");
+        this.Hip7 = root.getChild("Hip7");
+        this.Hip8 = root.getChild("Hip8");
+    }
+
+    private static MeshDefinition createMesh() {
+        MeshDefinition mesh = new MeshDefinition();
+        PartDefinition root = mesh.getRoot();
+        root.addOrReplaceChild("Leg1p1", CubeListBuilder.create().texOffs(0, 149).addBox(-2.0f, -2.0f, 0.0f, 4, 4, 100), PartPose.offsetAndRotation(0.0f, 0.0f, 0.0f, 0.7853982f, 0.0f, 0.0f));
+        root.addOrReplaceChild("Leg1p2", CubeListBuilder.create().texOffs(0, 149).addBox(-1.5f, -1.5f, 0.0f, 3, 3, 100), PartPose.offsetAndRotation(0.0f, -70.0f, 70.0f, 0.0f, 0.0f, 0.0f));
+        root.addOrReplaceChild("Leg1p3", CubeListBuilder.create().texOffs(0, 149).addBox(-1.0f, -1.0f, 0.0f, 2, 2, 100), PartPose.offsetAndRotation(0.0f, -70.0f, 169.0f, -0.7853982f, 0.0f, 0.0f));
+        root.addOrReplaceChild("Foot", CubeListBuilder.create().texOffs(0, 28).addBox(-3.0f, -3.0f, 93.0f, 6, 6, 6), PartPose.offsetAndRotation(0.0f, -70.0f, 169.0f, -0.7853982f, 0.0f, 0.0f));
+        root.addOrReplaceChild("FootSpike1", CubeListBuilder.create().texOffs(29, 27).addBox(2.0f, 2.0f, 99.0f, 1, 1, 5), PartPose.offsetAndRotation(0.0f, -70.0f, 169.0f, -0.7853982f, 0.0f, 0.0f));
+        root.addOrReplaceChild("FootSpike2", CubeListBuilder.create().texOffs(29, 34).addBox(-3.0f, 2.0f, 99.0f, 1, 1, 5), PartPose.offsetAndRotation(0.0f, -70.0f, 169.0f, -0.7853982f, 0.0f, 0.0f));
+        root.addOrReplaceChild("FootSpike3", CubeListBuilder.create().texOffs(43, 27).addBox(2.0f, -3.0f, 99.0f, 1, 1, 5), PartPose.offsetAndRotation(0.0f, -70.0f, 169.0f, -0.7853982f, 0.0f, 0.0f));
+        root.addOrReplaceChild("FootSpike4", CubeListBuilder.create().texOffs(43, 34).addBox(-3.0f, -3.0f, 99.0f, 1, 1, 5), PartPose.offsetAndRotation(0.0f, -70.0f, 169.0f, -0.7853982f, 0.0f, 0.0f));
+        root.addOrReplaceChild("AnkleSpike1", CubeListBuilder.create().texOffs(1, 42).addBox(3.0f, -10.0f, 92.0f, 1, 20, 1), PartPose.offsetAndRotation(0.0f, -70.0f, 169.0f, -0.7853982f, 0.0f, 0.0f));
+        root.addOrReplaceChild("AnkleSpike2", CubeListBuilder.create().texOffs(7, 42).addBox(-4.0f, -10.0f, 92.0f, 1, 20, 1), PartPose.offsetAndRotation(0.0f, -70.0f, 169.0f, -0.7853982f, 0.0f, 0.0f));
+        root.addOrReplaceChild("AnkleSpike3", CubeListBuilder.create().texOffs(14, 42).addBox(-10.0f, 3.0f, 92.0f, 20, 1, 1), PartPose.offsetAndRotation(0.0f, -70.0f, 169.0f, -0.7853982f, 0.0f, 0.0f));
+        root.addOrReplaceChild("AnkleSpike4", CubeListBuilder.create().texOffs(14, 46).addBox(-10.0f, -4.0f, 92.0f, 20, 1, 1), PartPose.offsetAndRotation(0.0f, -70.0f, 169.0f, -0.7853982f, 0.0f, 0.0f));
+        root.addOrReplaceChild("LowerKnee", CubeListBuilder.create().texOffs(14, 49).addBox(-1.5f, -1.5f, -1.0f, 3, 3, 15), PartPose.offsetAndRotation(0.0f, -70.0f, 169.0f, -0.7853982f, 0.0f, 0.0f));
+        root.addOrReplaceChild("UpperKnee", CubeListBuilder.create().texOffs(0, 69).addBox(-2.5f, -2.5f, 81.0f, 5, 5, 20), PartPose.offsetAndRotation(0.0f, -70.0f, 70.0f, 0.0f, 0.0f, 0.0f));
+        root.addOrReplaceChild("LegBump1", CubeListBuilder.create().texOffs(52, 50).addBox(-0.5f, -2.0f, 80.0f, 1, 1, 1), PartPose.offsetAndRotation(0.0f, -70.0f, 169.0f, -0.7853982f, 0.0f, 0.0f));
+        root.addOrReplaceChild("LegBump2", CubeListBuilder.create().texOffs(52, 54).addBox(-0.5f, -2.0f, 70.0f, 1, 1, 1), PartPose.offsetAndRotation(0.0f, -70.0f, 169.0f, -0.7853982f, 0.0f, 0.0f));
+        root.addOrReplaceChild("LowerKnee2", CubeListBuilder.create().texOffs(0, 96).addBox(-2.5f, -2.5f, -1.0f, 5, 5, 15), PartPose.offsetAndRotation(0.0f, -70.0f, 70.0f, 0.0f, 0.0f, 0.0f));
+        root.addOrReplaceChild("UpperKnee2", CubeListBuilder.create().texOffs(0, 119).addBox(-3.0f, -3.0f, 81.0f, 6, 6, 20), PartPose.offsetAndRotation(0.0f, 0.0f, 0.0f, 0.7853982f, 0.0f, 0.0f));
+        root.addOrReplaceChild("HipJoint", CubeListBuilder.create().texOffs(0, 149).addBox(-4.0f, -4.0f, 0.0f, 8, 8, 16), PartPose.offsetAndRotation(0.0f, 0.0f, 0.0f, 0.7853982f, 0.0f, 0.0f));
+        root.addOrReplaceChild("BodyCenter", CubeListBuilder.create().texOffs(0, 321).addBox(-18.0f, -12.0f, -21.0f, 36, 24, 51), PartPose.offsetAndRotation(0.0f, -4.0f, 0.0f, 0.0f, 0.0f, 0.0f));
+        root.addOrReplaceChild("Abdomen", CubeListBuilder.create().texOffs(0, 398).addBox(-24.0f, -30.0f, 29.0f, 48, 40, 73), PartPose.offsetAndRotation(0.0f, -4.0f, 0.0f, 0.0f, 0.0f, 0.0f));
+        root.addOrReplaceChild("Head", CubeListBuilder.create().texOffs(0, 256).addBox(-15.0f, -16.0f, -57.0f, 30, 26, 36), PartPose.offsetAndRotation(0.0f, -4.0f, 0.0f, 0.0f, 0.0f, 0.0f));
+        root.addOrReplaceChild("Ljaw1", CubeListBuilder.create().texOffs(75, 26).addBox(-4.0f, 0.0f, -4.0f, 8, 3, 8), PartPose.offsetAndRotation(14.0f, -3.0f, -56.0f, 0.0f, 0.0f, 0.0f));
+        root.addOrReplaceChild("Rjaw1", CubeListBuilder.create().texOffs(75, 26).addBox(-4.0f, 0.0f, -4.0f, 8, 3, 8), PartPose.offsetAndRotation(-14.0f, -3.0f, -56.0f, 0.0f, 0.0f, 0.0f));
+        root.addOrReplaceChild("Ljaw2", CubeListBuilder.create().texOffs(63, 40).addBox(0.0f, 1.0f, -3.0f, 21, 2, 6), PartPose.offsetAndRotation(14.0f, -3.0f, -56.0f, 0.0f, 0.7504916f, 0.0f));
+        root.addOrReplaceChild("Rjaw2", CubeListBuilder.create().texOffs(63, 40).addBox(0.0f, 1.0f, -3.0f, 21, 2, 6), PartPose.offsetAndRotation(-14.0f, -3.0f, -56.0f, 0.0f, 2.303835f, 0.0f));
+        root.addOrReplaceChild("Ljaw3", CubeListBuilder.create().texOffs(0, 18).addBox(11.0f, 2.0f, 14.0f, 23, 1, 4), PartPose.offsetAndRotation(14.0f, -3.0f, -56.0f, 0.0f, 1.710423f, 0.0f));
+        root.addOrReplaceChild("Rjaw3", CubeListBuilder.create().texOffs(0, 18).addBox(11.0f, 2.0f, -17.0f, 23, 1, 4), PartPose.offsetAndRotation(-14.0f, -3.0f, -56.0f, 0.0f, 1.413717f, 0.0f));
+        root.addOrReplaceChild("Tail", CubeListBuilder.create().texOffs(130, 0).addBox(-5.0f, -5.0f, -5.0f, 10, 10, 49), PartPose.offsetAndRotation(0.0f, -32.0f, 69.0f, 0.0f, 0.0f, 0.0f));
+        root.addOrReplaceChild("HeadSpike1", CubeListBuilder.create().texOffs(74, 0).addBox(-1.0f, -1.0f, -10.0f, 2, 2, 21), PartPose.offsetAndRotation(6.0f, -20.0f, -60.0f, 0.0f, 0.0f, 0.0f));
+        root.addOrReplaceChild("HeadSpike2", CubeListBuilder.create().texOffs(74, 0).addBox(-1.0f, -1.0f, -10.0f, 2, 2, 21), PartPose.offsetAndRotation(-6.0f, -20.0f, -60.0f, 0.0f, 0.0f, 0.0f));
+        root.addOrReplaceChild("Hip1", CubeListBuilder.create().texOffs(70, 60).addBox(0.0f, 0.0f, 0.0f, 10, 10, 10), PartPose.offsetAndRotation(22.0f, -3.0f, 44.0f, 0.0f, 0.0f, 0.0f));
+        root.addOrReplaceChild("Hip2", CubeListBuilder.create().texOffs(70, 60).addBox(0.0f, 0.0f, 0.0f, 10, 10, 10), PartPose.offsetAndRotation(-32.0f, -3.0f, 44.0f, 0.0f, 0.0f, 0.0f));
+        root.addOrReplaceChild("Hip3", CubeListBuilder.create().texOffs(70, 60).addBox(0.0f, 0.0f, 0.0f, 10, 10, 10), PartPose.offsetAndRotation(16.0f, -1.0f, 12.0f, 0.0f, 0.0f, 0.0f));
+        root.addOrReplaceChild("Hip4", CubeListBuilder.create().texOffs(70, 60).addBox(0.0f, 0.0f, 0.0f, 10, 10, 10), PartPose.offsetAndRotation(-26.0f, -1.0f, 12.0f, 0.0f, 0.0f, 0.0f));
+        root.addOrReplaceChild("Hip5", CubeListBuilder.create().texOffs(70, 60).addBox(0.0f, 0.0f, 0.0f, 10, 10, 10), PartPose.offsetAndRotation(16.0f, -1.0f, -11.0f, 0.0f, 0.0f, 0.0f));
+        root.addOrReplaceChild("Hip6", CubeListBuilder.create().texOffs(70, 60).addBox(0.0f, 0.0f, 0.0f, 10, 10, 10), PartPose.offsetAndRotation(-26.0f, -1.0f, -11.0f, 0.0f, 0.0f, 0.0f));
+        root.addOrReplaceChild("Hip7", CubeListBuilder.create().texOffs(70, 60).addBox(0.0f, 0.0f, 0.0f, 10, 10, 10), PartPose.offsetAndRotation(13.0f, -3.0f, -33.0f, 0.0f, 0.0f, 0.0f));
+        root.addOrReplaceChild("Hip8", CubeListBuilder.create().texOffs(70, 60).addBox(0.0f, 0.0f, 0.0f, 10, 10, 10), PartPose.offsetAndRotation(-23.0f, -3.0f, -33.0f, 0.0f, 0.0f, 0.0f));
+        return mesh;
+    }
+
+    @Override
+    public void setupAnim(SpiderRobot entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
+        this.animEntity = entity;
+    }
+
+    @Override
+    public void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
+        SpiderRobot e = this.animEntity;
+        if (e == null) {
+            return;
+        }
+
+        RenderSpiderRobotInfo r = e.getRenderSpiderRobotInfo();
+        
+        for (int i = 0; i < 8; ++i) {
+            this.Leg1p2.yRot = this.Leg1p3.yRot = r.ydisplayangle[i];
+            this.Leg1p1.yRot = this.Leg1p3.yRot;
+            this.Foot.yRot = r.ydisplayangle[i];
+            this.FootSpike1.yRot = r.ydisplayangle[i];
+            this.FootSpike2.yRot = r.ydisplayangle[i];
+            this.FootSpike3.yRot = r.ydisplayangle[i];
+            this.FootSpike4.yRot = r.ydisplayangle[i];
+            this.AnkleSpike1.yRot = r.ydisplayangle[i];
+            this.AnkleSpike2.yRot = r.ydisplayangle[i];
+            this.AnkleSpike3.yRot = r.ydisplayangle[i];
+            this.AnkleSpike4.yRot = r.ydisplayangle[i];
+            this.LowerKnee.yRot = r.ydisplayangle[i];
+            this.UpperKnee.yRot = r.ydisplayangle[i];
+            this.LegBump1.yRot = r.ydisplayangle[i];
+            this.LegBump2.yRot = r.ydisplayangle[i];
+            this.LowerKnee2.yRot = r.ydisplayangle[i];
+            this.UpperKnee2.yRot = r.ydisplayangle[i];
+            this.HipJoint.yRot = r.ydisplayangle[i];
+            this.UpperKnee2.xRot = this.Leg1p1.xRot = (float)r.p1xangle[i] + r.uddisplayangle[i];
+            this.HipJoint.xRot = this.Leg1p1.xRot;
+            this.UpperKnee.xRot = this.Leg1p2.xRot = (float)r.p2xangle[i] + r.uddisplayangle[i];
+            this.LowerKnee2.xRot = this.Leg1p2.xRot;
+            this.Foot.xRot = this.Leg1p3.xRot = (float)r.p3xangle[i] + r.uddisplayangle[i];
+            this.FootSpike1.xRot = this.Leg1p3.xRot;
+            this.FootSpike2.xRot = this.Leg1p3.xRot;
+            this.FootSpike3.xRot = this.Leg1p3.xRot;
+            this.FootSpike4.xRot = this.Leg1p3.xRot;
+            this.AnkleSpike1.xRot = this.Leg1p3.xRot;
+            this.AnkleSpike2.xRot = this.Leg1p3.xRot;
+            this.AnkleSpike3.xRot = this.Leg1p3.xRot;
+            this.AnkleSpike4.xRot = this.Leg1p3.xRot;
+            this.LegBump1.xRot = this.Leg1p3.xRot;
+            this.LegBump2.xRot = this.Leg1p3.xRot;
+            this.LowerKnee.xRot = this.Leg1p3.xRot;
+            this.Leg1p1.x = (- (float)Math.cos(r.ymid[i])) * r.legoff[i] * 16.0f;
+            this.Leg1p1.z = (float)Math.sin(r.ymid[i]) * r.legoff[i] * 16.0f;
+            this.Leg1p1.y = r.yoff[i] * -16.0f;
+            this.UpperKnee2.x = this.Leg1p1.x;
+            this.UpperKnee2.y = this.Leg1p1.y;
+            this.UpperKnee2.z = this.Leg1p1.z;
+            this.HipJoint.x = this.Leg1p1.x;
+            this.HipJoint.y = this.Leg1p1.y;
+            this.HipJoint.z = this.Leg1p1.z;
+            this.Leg1p2.y = this.Leg1p1.y - (float)Math.sin(this.Leg1p1.xRot) * 99.0f;
+            this.Leg1p2.z = this.Leg1p1.z + (float)Math.cos(this.Leg1p1.xRot) * (float)Math.cos(this.Leg1p1.yRot) * 99.0f;
+            this.UpperKnee.x = this.Leg1p2.x = this.Leg1p1.x + (float)Math.cos(this.Leg1p1.xRot) * (float)Math.sin(this.Leg1p1.yRot) * 99.0f;
+            this.UpperKnee.y = this.Leg1p2.y;
+            this.UpperKnee.z = this.Leg1p2.z;
+            this.LowerKnee2.x = this.Leg1p2.x;
+            this.LowerKnee2.y = this.Leg1p2.y;
+            this.LowerKnee2.z = this.Leg1p2.z;
+            this.Leg1p3.y = this.Leg1p2.y - (float)Math.sin(this.Leg1p2.xRot) * 99.0f;
+            this.Leg1p3.z = this.Leg1p2.z + (float)Math.cos(this.Leg1p2.xRot) * (float)Math.cos(this.Leg1p2.yRot) * 99.0f;
+            this.Foot.x = this.Leg1p3.x = this.Leg1p2.x + (float)Math.cos(this.Leg1p2.xRot) * (float)Math.sin(this.Leg1p2.yRot) * 99.0f;
+            this.Foot.y = this.Leg1p3.y;
+            this.Foot.z = this.Leg1p3.z;
+            this.FootSpike1.x = this.Leg1p3.x;
+            this.FootSpike1.y = this.Leg1p3.y;
+            this.FootSpike1.z = this.Leg1p3.z;
+            this.FootSpike2.x = this.Leg1p3.x;
+            this.FootSpike2.y = this.Leg1p3.y;
+            this.FootSpike2.z = this.Leg1p3.z;
+            this.FootSpike3.x = this.Leg1p3.x;
+            this.FootSpike3.y = this.Leg1p3.y;
+            this.FootSpike3.z = this.Leg1p3.z;
+            this.FootSpike4.x = this.Leg1p3.x;
+            this.FootSpike4.y = this.Leg1p3.y;
+            this.FootSpike4.z = this.Leg1p3.z;
+            this.AnkleSpike1.x = this.Leg1p3.x;
+            this.AnkleSpike1.y = this.Leg1p3.y;
+            this.AnkleSpike1.z = this.Leg1p3.z;
+            this.AnkleSpike2.x = this.Leg1p3.x;
+            this.AnkleSpike2.y = this.Leg1p3.y;
+            this.AnkleSpike2.z = this.Leg1p3.z;
+            this.AnkleSpike3.x = this.Leg1p3.x;
+            this.AnkleSpike3.y = this.Leg1p3.y;
+            this.AnkleSpike3.z = this.Leg1p3.z;
+            this.AnkleSpike4.x = this.Leg1p3.x;
+            this.AnkleSpike4.y = this.Leg1p3.y;
+            this.AnkleSpike4.z = this.Leg1p3.z;
+            this.LegBump1.x = this.Leg1p3.x;
+            this.LegBump1.y = this.Leg1p3.y;
+            this.LegBump1.z = this.Leg1p3.z;
+            this.LegBump2.x = this.Leg1p3.x;
+            this.LegBump2.y = this.Leg1p3.y;
+            this.LegBump2.z = this.Leg1p3.z;
+            this.LowerKnee.x = this.Leg1p3.x;
+            this.LowerKnee.y = this.Leg1p3.y;
+            this.LowerKnee.z = this.Leg1p3.z;
+            this.Leg1p1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+            this.Leg1p2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+            this.Leg1p3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+            this.Foot.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+            this.FootSpike1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+            this.FootSpike2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+            this.FootSpike3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+            this.FootSpike4.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+            this.AnkleSpike1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+            this.AnkleSpike2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+            this.AnkleSpike3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+            this.AnkleSpike4.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+            this.LowerKnee.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+            this.UpperKnee.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+            this.LegBump1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+            this.LegBump2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+            this.LowerKnee2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+            this.UpperKnee2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+            this.HipJoint.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        }
+        if (e.getAttacking() == 0) {
+            this.Ljaw1.yRot = 0.0f;
+            this.Ljaw2.yRot = 0.75f;
+            this.Ljaw3.yRot = 1.71f;
+            this.Rjaw1.yRot = 0.0f;
+            this.Rjaw2.yRot = 2.3f;
+            this.Rjaw3.yRot = 1.41f;
+        } else {
+            float newangle;
+            this.Ljaw1.yRot = newangle = Mth.cos((float)((float)r.gpcounter * 0.25f)) * 3.1415927f * 0.22f;
+            this.Ljaw2.yRot = newangle + 0.75f;
+            this.Ljaw3.yRot = newangle + 1.71f;
+            this.Rjaw1.yRot = - newangle;
+            this.Rjaw2.yRot = 2.3f - newangle;
+            this.Rjaw3.yRot = 1.41f - newangle;
+        }
+        this.BodyCenter.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Abdomen.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Head.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Ljaw1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Rjaw1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Ljaw2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Rjaw2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Ljaw3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Rjaw3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Tail.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.HeadSpike1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.HeadSpike2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Hip1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Hip2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Hip3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Hip4.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Hip5.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Hip6.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Hip7.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Hip8.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+    }
+}

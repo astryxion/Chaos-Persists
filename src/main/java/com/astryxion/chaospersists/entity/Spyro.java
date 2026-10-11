@@ -1,7 +1,9 @@
 package com.astryxion.chaospersists.entity;
 
+import com.astryxion.chaospersists.loot.DatapackLoot;
 import com.astryxion.chaospersists.util.MyUtils;
 import com.astryxion.chaospersists.util.PetCombatHelper;
+import com.astryxion.chaospersists.util.PetOrderInteract;
 
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.core.ChaosSounds;
@@ -353,13 +355,14 @@ public class Spyro extends TamableAnimal {
                     }
                 }
             } else if (this.isOwnedBy(par1EntityPlayer)) {
+                if ((float) this.mygetMaxHealth() <= this.getHealth()) {
+                    return InteractionResult.SUCCESS;
+                }
                 if (this.level().isClientSide) {
                     spawnTamingParticles(true);
                     this.level().broadcastEntityEvent(this, (byte) 7);
                 }
-                if ((float) this.mygetMaxHealth() > this.getHealth()) {
-                    this.heal((float) this.mygetMaxHealth() - this.getHealth());
-                }
+                this.heal((float) this.mygetMaxHealth() - this.getHealth());
             }
             if (!par1EntityPlayer.getAbilities().instabuild) {
                 var2.shrink(1);
@@ -471,8 +474,11 @@ public class Spyro extends TamableAnimal {
         if (this.isTame()
                 && par1EntityPlayer.distanceToSqr(this) < 16.0
                 && this.isOwnedBy(par1EntityPlayer)) {
+            if (PetOrderInteract.shouldPassItemUse(var2, par1EntityPlayer)) {
+                return InteractionResult.PASS;
+            }
             // OreSpawn 1.7.10 setSitting toggled one flag; on 1.20 ordered-sit and pose are separate.
-            this.setOrderedToSit(!this.isOrderedToSit());
+            PetOrderInteract.toggleSit(par1EntityPlayer, this);
             return InteractionResult.SUCCESS;
         }
         return super.mobInteract(par1EntityPlayer, hand);
@@ -526,6 +532,9 @@ public class Spyro extends TamableAnimal {
 
     @Override
     protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+        if (DatapackLoot.useEntityTable(this)) {
+            return;
+        }
         super.dropCustomDeathLoot(source, looting, recentlyHit);
         if (this.isTame()) {
             int var3 = this.getRandom().nextInt(4);

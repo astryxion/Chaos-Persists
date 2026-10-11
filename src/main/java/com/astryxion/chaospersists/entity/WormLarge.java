@@ -1,4 +1,5 @@
 package com.astryxion.chaospersists.entity;
+import com.astryxion.chaospersists.loot.DatapackLoot;
 import com.astryxion.chaospersists.util.MyUtils;
 
 import com.astryxion.chaospersists.core.ChaosPersists;
@@ -539,6 +540,9 @@ public class WormLarge extends Monster {
 
     @Override
     protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+        if (DatapackLoot.useEntityTable(this)) {
+            return;
+        }
         super.dropCustomDeathLoot(source, looting, recentlyHit);
         int var4;
         this.dropItemRand(this.resolveModItem("wormtooth", ChaosPersists.WormTooth), 1);

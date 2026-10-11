@@ -145,6 +145,10 @@ public class ItemChaosArmor extends ArmorItem {
         }
     }
 
+    ArmorStats liveArmorStats() {
+        return getArmorStats();
+    }
+
     private ArmorStats getArmorStats() {
         return switch (this.armor_material) {
             case 1 -> ChaosPersists.LavaEel_armorstats;

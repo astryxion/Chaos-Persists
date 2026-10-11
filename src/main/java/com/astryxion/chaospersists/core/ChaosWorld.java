@@ -570,12 +570,14 @@ public class ChaosWorld {
         if (level.dimension() == net.minecraft.world.level.Level.NETHER) {
             this.generateNether(level, random, chunkX * 16, chunkZ * 16, chunk);
         } else if (level.dimension() == net.minecraft.world.level.Level.OVERWORLD) {
-            this.generateSurface(
-                    level,
-                    net.minecraft.util.RandomSource.create(random.nextLong()),
-                    chunkX * 16,
-                    chunkZ * 16);
-            this.generateOres(level, random, chunkX * 16, chunkZ * 16, chunk);
+            if (com.astryxion.chaospersists.config.ChaosPackConfig.allowOverworldWorldGen()) {
+                this.generateSurface(
+                        level,
+                        net.minecraft.util.RandomSource.create(random.nextLong()),
+                        chunkX * 16,
+                        chunkZ * 16);
+                this.generateOres(level, random, chunkX * 16, chunkZ * 16, chunk);
+            }
         } else if (level.dimension() == net.minecraft.world.level.Level.END) {
             this.generateEnd(
                     level,
@@ -976,7 +978,7 @@ public class ChaosWorld {
         if (ChaosPersists.MosquitoEnable != 0) {
             this.addMosquitos(level, random, chunkX, chunkZ);
         }
-        if (ChaosPersists.DisableOverworldDungeons == 0
+        if (com.astryxion.chaospersists.config.ChaosPackConfig.allowOverworldDungeons()
                 && level.dimension() == net.minecraft.world.level.Level.OVERWORLD) {
             this.addPlayPool(level, random, chunkX, chunkZ);
             this.addWaterDragonLair(level, random, chunkX, chunkZ);
@@ -1296,7 +1298,10 @@ public class ChaosWorld {
         int randPosZ;
         int patchy;
         int randPosX;
-        if (ChaosPersists.SpawnOres_stats.rate > 0) {
+        boolean overworld = level.dimension() == net.minecraft.world.level.Level.OVERWORLD;
+        if (ChaosPersists.SpawnOres_stats.rate > 0
+                && (!overworld
+                        || com.astryxion.chaospersists.config.ChaosPackConfig.allowOverworldDriedEggs())) {
             patchy = ChaosPersists.SpawnOres_stats.rate + random.nextInt(20);
             if (random.nextInt(20) == 0) {
                 patchy += 30;
@@ -1370,6 +1375,9 @@ public class ChaosWorld {
                         b,
                         ChaosPersists.SpawnOres_stats.clumpsize);
             }
+        }
+        if (overworld && !com.astryxion.chaospersists.config.ChaosPackConfig.allowOverworldDriedOre()) {
+            return;
         }
         if (ChaosPersists.Uranium_stats.rate > 0) {
             patchy = ChaosPersists.Uranium_stats.rate + random.nextInt(9);
@@ -2526,6 +2534,10 @@ public class ChaosWorld {
             int chunkX,
             int chunkZ,
             int redfreq) {
+        if (level.dimension() == net.minecraft.world.level.Level.OVERWORLD
+                && !com.astryxion.chaospersists.config.ChaosPackConfig.allowOverworldAntNests()) {
+            return;
+        }
         if (ChaosPersists.RedAntEnable == 0
                 && ChaosPersists.BlackAntEnable == 0
                 && ChaosPersists.RainbowAntEnable == 0

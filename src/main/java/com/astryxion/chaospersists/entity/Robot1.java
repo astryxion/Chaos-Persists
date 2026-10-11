@@ -1,8 +1,9 @@
 package com.astryxion.chaospersists.entity;
 
+import com.astryxion.chaospersists.loot.DatapackLoot;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.core.ChaosSounds;
-import com.astryxion.chaospersists.render.RenderInfo;
+import com.astryxion.chaospersists.entity.RenderInfo;
 import com.astryxion.chaospersists.util.GenericTargetSorter;
 import com.astryxion.chaospersists.util.MyEntityAIWanderALot;
 import com.astryxion.chaospersists.util.MyUtils;
@@ -142,7 +143,7 @@ public class Robot1 extends Monster {
                                 this.getY(),
                                 this.getZ(),
                                 2.5f,
-                                this.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)
+                                com.astryxion.chaospersists.config.ChaosGriefing.canGrief(this)
                                         ? ExplosionInteraction.MOB
                                         : ExplosionInteraction.NONE);
                 this.discard();
@@ -200,6 +201,9 @@ public class Robot1 extends Monster {
 
     @Override
     protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+        if (DatapackLoot.useEntityTable(this)) {
+            return;
+        }
         this.spawnAtLocation(Items.GUNPOWDER);
     }
 

@@ -1,5 +1,6 @@
 package com.astryxion.chaospersists.entity;
 
+import com.astryxion.chaospersists.loot.DatapackLoot;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.core.ChaosSounds;
 import com.astryxion.chaospersists.util.GenericTargetSorter;
@@ -184,6 +185,9 @@ public class HerculesBeetle extends Monster {
 
     @Override
     protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+        if (DatapackLoot.useEntityTable(this)) {
+            return;
+        }
         this.dropItemRand(ChaosPersists.MyBigHammer, 1);
         this.dropItemRand(Items.ITEM_FRAME, 1);
         int i = 4 + this.getRandom().nextInt(8);

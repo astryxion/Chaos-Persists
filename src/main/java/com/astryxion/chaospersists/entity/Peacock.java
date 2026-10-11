@@ -1,4 +1,5 @@
 package com.astryxion.chaospersists.entity;
+import com.astryxion.chaospersists.loot.DatapackLoot;
 import com.astryxion.chaospersists.util.MyUtils;
 
 import com.astryxion.chaospersists.core.ChaosPersists;
@@ -126,6 +127,9 @@ public class Peacock extends Animal {
 
     @Override
     protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+        if (DatapackLoot.useEntityTable(this)) {
+            return;
+        }
         this.spawnAtLocation(ChaosPersists.MyRawPeacock);
         if (this.getRandom().nextInt(3) == 1) {
             this.spawnAtLocation(ChaosPersists.MyRawPeacock);

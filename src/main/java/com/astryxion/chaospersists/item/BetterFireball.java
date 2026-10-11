@@ -1,8 +1,10 @@
 package com.astryxion.chaospersists.item;
 
 import com.astryxion.chaospersists.compat.illageandspillage.IllageAndSpillageExecuteCompat;
+import com.astryxion.chaospersists.compat.mobbattle.MobBattleTeamCompat;
 import com.astryxion.chaospersists.compat.mutantmonsters.MutantMonstersExecuteCompat;
 import com.astryxion.chaospersists.entity.Mothra;
+import com.astryxion.chaospersists.util.MyUtils;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -157,6 +159,11 @@ public class BetterFireball extends AbstractHurtingProjectile implements ItemSup
                             || entity instanceof Mothra)) {
                 continue;
             }
+            if (this.shootingEntity != null
+                    && entity instanceof LivingEntity living
+                    && MyUtils.isScoreboardAlly(this.shootingEntity, living)) {
+                continue;
+            }
             AABB box = entity.getBoundingBox().inflate(0.3);
             var hit = box.clip(start, end);
             if (hit.isPresent()) {
@@ -186,7 +193,9 @@ public class BetterFireball extends AbstractHurtingProjectile implements ItemSup
                 return;
             }
             if (hit instanceof LivingEntity living) {
-                if (hit == this.shootingEntity || isRoyaltyEntity(hit)) {
+                if (hit == this.shootingEntity
+                        || isRoyaltyEntity(hit)
+                        || MyUtils.isScoreboardAlly(this.shootingEntity, living)) {
                     this.discard();
                     return;
                 }
@@ -220,14 +229,20 @@ public class BetterFireball extends AbstractHurtingProjectile implements ItemSup
             // 1.7.10 used newExplosion(null, ...) so blast damage is not attributed to the
             // shooter. Attributing to this fireball makes getEntity() resolve to shootingEntity
             // and starts royal family feuds via Teen/Adult hurt retaliation.
-            this.level()
-                    .explode(
-                            null,
-                            this.getX(),
-                            this.getY(),
-                            this.getZ(),
-                            (float) this.explosionPower,
-                            Level.ExplosionInteraction.MOB);
+            MobBattleTeamCompat.runShooterExplosion(
+                    this.shootingEntity,
+                    () ->
+                            this.level()
+                                    .explode(
+                                            null,
+                                            this.getX(),
+                                            this.getY(),
+                                            this.getZ(),
+                                            (float) this.explosionPower,
+                                            com.astryxion.chaospersists.config.ChaosGriefing
+                                                            .canGrief(this)
+                                                    ? Level.ExplosionInteraction.MOB
+                                                    : Level.ExplosionInteraction.NONE));
         }
         this.discard();
     }

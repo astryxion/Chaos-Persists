@@ -1,5 +1,6 @@
 package com.astryxion.chaospersists.block;
 
+import com.astryxion.chaospersists.loot.DatapackLoot;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import java.util.Collections;
 import java.util.List;
@@ -128,6 +129,10 @@ public class BlockQuinoa extends Block {
 
     @Override
     public List<ItemStack> getDrops(BlockState state, LootParams.Builder builder) {
+        var datapackDrops = DatapackLoot.tryBlockTable(this, state, builder);
+        if (datapackDrops != null) {
+            return datapackDrops;
+        }
         if (this == ChaosPersists.MyQuinoaPlant4) {
             RandomSource r = builder.getLevel().getRandom();
             return Collections.singletonList(new ItemStack(ChaosPersists.MyQuinoa, 3 + r.nextInt(3)));

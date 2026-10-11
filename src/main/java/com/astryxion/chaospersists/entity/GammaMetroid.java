@@ -1,5 +1,6 @@
 package com.astryxion.chaospersists.entity;
 
+import com.astryxion.chaospersists.loot.DatapackLoot;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.core.ChaosSounds;
 import com.astryxion.chaospersists.util.GenericTargetSorter;
@@ -7,6 +8,7 @@ import com.astryxion.chaospersists.util.MyEntityAIFollowOwner;
 import com.astryxion.chaospersists.util.MyEntityAIWanderALot;
 import com.astryxion.chaospersists.util.MyUtils;
 import com.astryxion.chaospersists.util.PetCombatHelper;
+import com.astryxion.chaospersists.util.PetOrderInteract;
 import com.astryxion.chaospersists.util.ChaosChaseMoveControl;
 import com.astryxion.chaospersists.util.SpawnerFixHelper;
 import java.util.Collections;
@@ -100,9 +102,6 @@ public class GammaMetroid extends TamableAnimal {
             player.setItemInHand(hand, ItemStack.EMPTY);
             stack = ItemStack.EMPTY;
         }
-        if (super.mobInteract(player, hand) == InteractionResult.SUCCESS) {
-            return InteractionResult.SUCCESS;
-        }
         if (!stack.isEmpty() && stack.is(Items.IRON_INGOT) && player.distanceToSqr(this) < 25.0) {
             if (!this.isTame()) {
                 if (!this.level().isClientSide) {
@@ -118,13 +117,14 @@ public class GammaMetroid extends TamableAnimal {
                     }
                 }
             } else if (this.isOwnedBy(player)) {
+                if ((float) this.mygetMaxHealth() <= this.getHealth()) {
+                    return InteractionResult.SUCCESS;
+                }
                 if (this.level().isClientSide) {
                     spawnTamingParticles(true);
                     this.level().broadcastEntityEvent(this, (byte) 7);
                 }
-                if ((float) this.mygetMaxHealth() > this.getHealth()) {
-                    this.heal((float) this.mygetMaxHealth() - this.getHealth());
-                }
+                this.heal((float) this.mygetMaxHealth() - this.getHealth());
             }
             if (!player.getAbilities().instabuild) {
                 stack.shrink(1);
@@ -167,17 +167,28 @@ public class GammaMetroid extends TamableAnimal {
             }
             return InteractionResult.SUCCESS;
         }
+        if (!stack.isEmpty() && this.isFood(stack)) {
+            int age = this.getAge();
+            if (!this.level().isClientSide && age == 0 && this.canFallInLove()) {
+                this.usePlayerItem(player, hand, stack);
+                this.setInLove(player);
+                return InteractionResult.SUCCESS;
+            }
+            if (this.isBaby()) {
+                this.usePlayerItem(player, hand, stack);
+                this.ageUp(getSpeedUpSecondsWhenFeeding(-age), true);
+                return InteractionResult.sidedSuccess(this.level().isClientSide);
+            }
+            if (this.level().isClientSide) {
+                return InteractionResult.CONSUME;
+            }
+        }
         if (this.isTame() && this.isOwnedBy(player) && player.distanceToSqr(this) < 25.0) {
-            // Toggle on ordered sit (not pose) — pose was never set, so unsit never fired
             if (!this.level().isClientSide) {
                 boolean sit = !this.isOrderedToSit();
-                this.setOrderedToSit(sit);
-                this.setInSittingPose(sit);
+                PetOrderInteract.setSit(player, this, sit);
                 if (sit) {
                     PetCombatHelper.onPetSit(this);
-                    if (this.getNavigation() != null) {
-                        this.getNavigation().stop();
-                    }
                 }
             }
             return InteractionResult.SUCCESS;
@@ -249,6 +260,9 @@ public class GammaMetroid extends TamableAnimal {
 
     @Override
     protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+        if (DatapackLoot.useEntityTable(this)) {
+            return;
+        }
         int i = 5 + ChaosPersists.ChaosRand.nextInt(10);
         for (int var4 = 0; var4 < i; ++var4) {
             this.dropItemRand(Items.GOLD_NUGGET, 1);
@@ -328,7 +342,7 @@ public class GammaMetroid extends TamableAnimal {
             if (this.closest < 99999) {
                 this.getNavigation().moveTo(this.tx, this.ty, this.tz, 1.0);
                 if (this.closest < 12) {
-                    if (this.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+                    if (com.astryxion.chaospersists.config.ChaosGriefing.canGrief(this)) {
                         this.level().setBlock(new BlockPos(this.tx, this.ty, this.tz), Blocks.AIR.defaultBlockState(), 2);
                     }
                     this.heal(1.0f);

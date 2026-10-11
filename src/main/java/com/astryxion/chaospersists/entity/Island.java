@@ -1,5 +1,6 @@
 package com.astryxion.chaospersists.entity;
 
+import com.astryxion.chaospersists.loot.DatapackLoot;
 import com.astryxion.chaospersists.block.IslandBlock;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import java.util.List;
@@ -381,6 +382,9 @@ public class Island extends Animal {
 
     @Override
     protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+        if (DatapackLoot.useEntityTable(this)) {
+            return;
+        }
         this.spawnAtLocation(new ItemStack(ChaosPersists.MyIslandBlock));
     }
 

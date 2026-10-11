@@ -1,9 +1,10 @@
 package com.astryxion.chaospersists.entity;
 
+import com.astryxion.chaospersists.loot.DatapackLoot;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.core.ChaosSounds;
 import com.astryxion.chaospersists.entity.Kraken;
-import com.astryxion.chaospersists.render.RenderInfo;
+import com.astryxion.chaospersists.entity.RenderInfo;
 import com.astryxion.chaospersists.util.SpawnerFixHelper;
 import com.astryxion.chaospersists.util.GenericTargetSorter;
 import com.astryxion.chaospersists.util.MyEntityAIFollowOwner;
@@ -11,6 +12,9 @@ import com.astryxion.chaospersists.util.MyEntityAIWander;
 import com.astryxion.chaospersists.util.ChaosMountHelper;
 import com.astryxion.chaospersists.util.MyUtils;
 import com.astryxion.chaospersists.util.PetCombatHelper;
+import com.astryxion.chaospersists.util.PetOrderInteract;
+import com.astryxion.chaospersists.entity.util.ChaosFlyingMount;
+import com.astryxion.chaospersists.entity.util.ChaosMountFlight;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -75,13 +79,20 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraft.client.player.LocalPlayer;
 
-public class Leon extends TamableAnimal {
+public class Leon extends TamableAnimal implements ChaosFlyingMount {
     private static final EntityDataAccessor<Integer> INT20 =
             SynchedEntityData.defineId(Leon.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> INT21 =
             SynchedEntityData.defineId(Leon.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> INT22 =
             SynchedEntityData.defineId(Leon.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Byte> CONTROL_STATE =
+            SynchedEntityData.defineId(Leon.class, EntityDataSerializers.BYTE);
+    private static final EntityDataAccessor<Boolean> FLYING =
+            SynchedEntityData.defineId(Leon.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> HOVERING =
+            SynchedEntityData.defineId(Leon.class, EntityDataSerializers.BOOLEAN);
+    private final ChaosMountFlight mountFlight = new ChaosMountFlight(this);
     private int boatPosRotationIncrements;
     private double boatX;
     private double boatY;
@@ -377,6 +388,7 @@ public class Leon extends TamableAnimal {
     @Override
     protected void positionRider(Entity passenger, Entity.MoveFunction moveFunction) {
         if (this.hasPassenger(passenger)) {
+            this.copyRiderRotation(passenger);
             float f = 0.65f;
             double x = this.getX() - (double) f * Math.sin(Math.toRadians(this.getYRot()));
             double y = this.getY() + this.getPassengersRidingOffset() + passenger.getMyRidingOffset();
@@ -395,14 +407,8 @@ public class Leon extends TamableAnimal {
         return true;
     }
 
-    /**
-     * Same pipeline as {@link ThePrinceTeen} / {@link Cephadrome}: vanilla calls {@code travel} with rider
-     * input synced from the client via {@code ServerboundPlayerInputPacket}. Flight must run here, not only in
-     * {@code aiStep}, or {@code zza} stays zero on the server and the mount cannot fly.
-     */
     @Override
     public void travel(Vec3 travelVector) {
-        // Sitting: always normal gravity travel — never chaos-flight skip
         if (this.isSittingNow() && this.getPassengers().isEmpty()) {
             this.setNoGravity(false);
             this.noPhysics = false;
@@ -410,7 +416,9 @@ public class Leon extends TamableAnimal {
             super.travel(travelVector);
             return;
         }
-        // Grounded activity: fall, do not float
+        if (this.mountFlight.handleTravel(travelVector, super::travel)) {
+            return;
+        }
         if (this.getActivity() == 0 && this.getPassengers().isEmpty()) {
             this.setNoGravity(false);
             this.noPhysics = false;
@@ -418,209 +426,9 @@ public class Leon extends TamableAnimal {
             super.travel(travelVector);
             return;
         }
-        // Rider control must win over chaos-flight skip (same as Cephadrome) or mount is stuck
-        if (this.isVehicle() && this.getControllingPassenger() instanceof Player pp) {
-            if (!this.level().isClientSide && this.getActivity() == 0) {
-                this.setActivity(1);
-            }
-            MyUtils.clearChaosFlight(this);
-            if (pp.isDeadOrDying()) {
-                this.ejectPassengers();
-                this.setNoGravity(false);
-                super.travel(travelVector);
-                return;
-            }
-            this.setNoGravity(true);
-            Vec3 dm = this.getDeltaMovement();
-            double mx = dm.x;
-            double my = dm.y;
-            double mz = dm.z;
-            double obstruction_factor;
-            double relative_g;
-            double max_speed = 1.15;
-            double gh;
-            double deltav;
-
-            if (mx < -2.0) {
-                mx = -2.0;
-            }
-            if (mx > 2.0) {
-                mx = 2.0;
-            }
-            if (mz < -2.0) {
-                mz = -2.0;
-            }
-            if (mz > 2.0) {
-                mz = 2.0;
-            }
-            double velocity = Math.sqrt(mx * mx + mz * mz);
-
-            gh = 1.55;
-            BlockState ground =
-                    this.level()
-                            .getBlockState(
-                                    BlockPos.containing(
-                                            this.getX(), (float) this.getY() - (float) gh, this.getZ()));
-            // IAF lands by clearing flight near ground — do NOT setPos(+0.1) every tick (walk/fly lag)
-            if (!ground.isAir()) {
-                my += 0.02;
-            } else {
-                my -= 0.018;
-            }
-
-            obstruction_factor = 0.0;
-            int distLimit = 3 + (int) (velocity * 4.0);
-            if (distLimit < 3) {
-                distLimit = 3;
-            }
-            if (distLimit > 8) {
-                distLimit = 8;
-            }
-            int iMax = Math.min(distLimit, 8);
-            for (int k = 1; k < distLimit; k++) {
-                for (int i = 1; i < iMax; i++) {
-                    double dx = i * Math.cos(Math.toRadians(this.getYRot() + 90.0f));
-                    double dz = i * Math.sin(Math.toRadians(this.getYRot() + 90.0f));
-                    BlockState scan =
-                            this.level()
-                                    .getBlockState(
-                                            BlockPos.containing(
-                                                    this.getX() + dx, this.getY() - k, this.getZ() + dz));
-                    if (!scan.isAir()) {
-                        obstruction_factor += 0.05;
-                    }
-                }
-            }
-
-            my += obstruction_factor * 0.05;
-            if (my > 2.0) {
-                my = 2.0;
-            }
-
-            double d4 = pp.getYRot();
-            d4 %= 360.0;
-            while (d4 < 0.0) {
-                d4 += 360.0;
-            }
-            double d5 = this.getYRot();
-            d5 %= 360.0;
-            while (d5 < 0.0) {
-                d5 += 360.0;
-            }
-            relative_g = (d4 - d5) % 180.0;
-            while (relative_g < 0.0) {
-                relative_g += 180.0;
-            }
-            if (relative_g > 90.0) {
-                relative_g -= 180.0;
-            }
-
-            if (velocity > 0.01) {
-                d4 = 1.85 - velocity;
-                d4 = Math.abs(d4);
-                if (d4 < 0.01) {
-                    d4 = 0.01;
-                }
-                if (d4 > 0.9) {
-                    d4 = 0.9;
-                }
-                this.setYRot(pp.getYRot() + (float) (relative_g * d4));
-            } else {
-                this.setYRot(pp.getYRot());
-            }
-            relative_g = Math.abs(relative_g) * velocity;
-            if (relative_g > 50.0) {
-                relative_g = 0.0;
-            }
-
-            this.setXRot(2.0f * (float) velocity);
-            this.setRot(this.getYRot(), this.getXRot());
-            this.setYHeadRot(this.getYRot());
-
-            double newvelocity = Math.sqrt(mx * mx + mz * mz);
-            // Prefer live client input when available (server zza is often 0 without sync)
-            double im = pp.zza;
-            if (pp instanceof LocalPlayer lp) {
-                im = lp.input.forwardImpulse;
-            }
-
-            boolean riderJumping =
-                    pp instanceof LocalPlayer lp && lp.input.jumping || ChaosPersists.flyup_keystate != 0;
-            if (riderJumping) {
-                my += 0.035;
-                my += velocity * 0.038;
-            }
-
-            if (Math.abs(im) > 0.001) {
-                if (im > 0.0) {
-                    deltav = 0.028;
-                    if (max_speed > 1.0) {
-                        deltav += 0.06;
-                    }
-                    if (this.deltasmooth < 0.0f) {
-                        this.deltasmooth = 0.0f;
-                    }
-                    this.deltasmooth = (float) (this.deltasmooth + deltav / 10.0);
-                    if (this.deltasmooth > deltav) {
-                        this.deltasmooth = (float) deltav;
-                    }
-                } else {
-                    max_speed = 0.35;
-                    deltav = -0.02;
-                    if (this.deltasmooth > 0.0f) {
-                        this.deltasmooth = 0.0f;
-                    }
-                    this.deltasmooth = (float) (this.deltasmooth + deltav / 10.0);
-                    if (this.deltasmooth < deltav) {
-                        this.deltasmooth = (float) deltav;
-                    }
-                }
-
-                newvelocity += this.deltasmooth;
-                if (newvelocity >= 0.0) {
-                    if (newvelocity > max_speed) {
-                        newvelocity = max_speed;
-                    }
-                    mx = Math.cos(Math.toRadians(this.getYRot() + 90.0f)) * newvelocity;
-                    mz = Math.sin(Math.toRadians(this.getYRot() + 90.0f)) * newvelocity;
-                } else {
-                    if (newvelocity < -max_speed) {
-                        newvelocity = -max_speed;
-                    }
-                    newvelocity = -newvelocity;
-                    mx = Math.cos(Math.toRadians(this.getYRot() + 270.0f)) * newvelocity;
-                    mz = Math.sin(Math.toRadians(this.getYRot() + 270.0f)) * newvelocity;
-                }
-            } else if (newvelocity >= 0.0) {
-                mx = Math.cos(Math.toRadians(this.getYRot() + 90.0f)) * newvelocity;
-                mz = Math.sin(Math.toRadians(this.getYRot() + 90.0f)) * newvelocity;
-            } else {
-                mx = Math.cos(Math.toRadians(this.getYRot() + 270.0f)) * (newvelocity * -1.0);
-                mz = Math.sin(Math.toRadians(this.getYRot() + 270.0f)) * (newvelocity * -1.0);
-            }
-
-            this.setDeltaMovement(mx, my, mz);
-            this.move(net.minecraft.world.entity.MoverType.SELF, this.getDeltaMovement());
-            dm = this.getDeltaMovement();
-            this.setDeltaMovement(dm.x * 0.985, dm.y * 0.94, dm.z * 0.985);
-
-            if (!this.level().isClientSide) {
-                List<Entity> list =
-                        this.level()
-                                .getEntities(
-                                        this,
-                                        this.getBoundingBox().inflate(2.25, 2.0, 2.25),
-                                        ent -> ent != pp && ent.isPushable() && ent.isAlive());
-                for (Entity listEntity : list) {
-                    listEntity.push(this);
-                }
-            }
-            return;
-        }
         if (MyUtils.usesChaosFlight(this)) {
             return;
         }
-        // Grounded / not flying: always fall with gravity (no midair float)
         if (this.getActivity() == 0 || this.isSittingNow()) {
             this.setNoGravity(false);
             this.noPhysics = false;
@@ -633,6 +441,9 @@ public class Leon extends TamableAnimal {
     @Override
     protected void removePassenger(Entity passenger) {
         super.removePassenger(passenger);
+        if (this.getPassengers().isEmpty()) {
+            this.mountFlight.onDismount();
+        }
         if (!this.level().isClientSide && this.getPassengers().isEmpty()) {
             this.finishDismountLanding();
         }
@@ -668,6 +479,9 @@ public class Leon extends TamableAnimal {
         this.entityData.define(INT20, 0);
         this.entityData.define(INT21, 0);
         this.entityData.define(INT22, 0);
+        this.entityData.define(CONTROL_STATE, (byte) 0);
+        this.entityData.define(FLYING, false);
+        this.entityData.define(HOVERING, false);
         this.setActivity(0);
         this.setAttacking(0);
         this.setBeingRidden(0);
@@ -687,6 +501,51 @@ public class Leon extends TamableAnimal {
 
     public int mygetMaxHealth() {
         return 250;
+    }
+
+    @Override
+    public byte getControlState() {
+        return this.entityData.get(CONTROL_STATE);
+    }
+
+    @Override
+    public void setControlState(byte state) {
+        this.entityData.set(CONTROL_STATE, state);
+    }
+
+    @Override
+    public boolean isFlying() {
+        return this.entityData.get(FLYING);
+    }
+
+    @Override
+    public void setFlying(boolean flying) {
+        this.entityData.set(FLYING, flying);
+    }
+
+    @Override
+    public boolean isHovering() {
+        return this.entityData.get(HOVERING);
+    }
+
+    @Override
+    public void setHovering(boolean hovering) {
+        this.entityData.set(HOVERING, hovering);
+    }
+
+    @Override
+    public void syncRiderFlightActivity(boolean airborne) {
+        if (this.level().isClientSide) {
+            this.entityData.set(INT21, airborne ? 1 : 0);
+            return;
+        }
+        this.setActivity(airborne ? 1 : 0);
+    }
+
+    @Override
+    public void move(net.minecraft.world.entity.MoverType type, Vec3 pos) {
+        super.move(type, this.mountFlight.prepareRiddenMove(pos));
+        this.mountFlight.finishRiddenMove();
     }
 
     public int getLeonHealth() {
@@ -752,7 +611,10 @@ public class Leon extends TamableAnimal {
 
     @Override
     public boolean isPushable() {
-        return false;
+        // 1.7.10 canBePushed was false, but collideWithNearbyEntities still shoved the mount.
+        // 1.20 skips !isPushable in EntitySelector.pushableBy, so they become immovable walls.
+        // Ice and Fire dragons keep vanilla push; block it only while ridden.
+        return !this.isVehicle() && super.isPushable();
     }
 
     @Override
@@ -779,6 +641,9 @@ public class Leon extends TamableAnimal {
 
     @Override
     protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+        if (DatapackLoot.useEntityTable(this)) {
+            return;
+        }
         int i = 4 + this.getRandom().nextInt(6);
         int var4;
         for (var4 = 0; var4 < i; ++var4) {
@@ -1184,7 +1049,6 @@ public class Leon extends TamableAnimal {
     @Override
     public void lerpTo(
             double par1, double par3, double par5, float par7, float par8, int par9, boolean interpolate) {
-        // Landing / sit: snap client to server (avoid midair ghost)
         if (this.isOrderedToSit() || this.landingTicks > 0) {
             this.boatPosRotationIncrements = 0;
             this.setPos(par1, par3, par5);
@@ -1194,19 +1058,10 @@ public class Leon extends TamableAnimal {
             this.xRotO = par8;
             return;
         }
-        // Ground walking: vanilla smooth lerp — boat/instant paths made walking insanely hitchy
-        if (this.getActivity() == 0) {
-            this.boatPosRotationIncrements = 0;
-            super.lerpTo(par1, par3, par5, par7, par8, par9, interpolate);
+        if (this.isControlledByLocalInstance()) {
             return;
         }
-        this.boatPosRotationIncrements = par9;
-        this.boatX = par1;
-        this.boatY = par3;
-        this.boatZ = par5;
-        this.boatYaw = par7;
-        this.boatPitch = par8;
-        this.boatYawHead = par7;
+        super.lerpTo(par1, par3, par5, par7, par8, par9, interpolate);
     }
 
     @OnlyIn(Dist.CLIENT)
@@ -1230,6 +1085,7 @@ public class Leon extends TamableAnimal {
             --this.dismountCooldown;
         }
         this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue((double) this.moveSpeed);
+        this.mountFlight.tick();
         this.noPhysics = false;
         // Sit lock: stay on the ground, no flight AI
         if (this.isOrderedToSit()) {
@@ -1498,35 +1354,40 @@ public class Leon extends TamableAnimal {
                 obstruction_factor += 0.05;
             }
         }
-        my += obstruction_factor * 0.05;
-        // Velocity only — setPos Y nudges caused rubber-band lag near terrain
         speed_factor = 0.5;
-        var1 = (double)this.currentFlightTarget.getX() + 0.5 - this.getX();
-        var3 = (double)this.currentFlightTarget.getY() + 0.1 - this.getY();
-        var5 = (double)this.currentFlightTarget.getZ() + 0.5 - this.getZ();
+        var1 = (double) this.currentFlightTarget.getX() + 0.5 - this.getX();
+        var3 = (double) this.currentFlightTarget.getY() + 0.1 - this.getY();
+        var5 = (double) this.currentFlightTarget.getZ() + 0.5 - this.getZ();
         if (this.owner_flying != 0) {
             speed_factor = 1.75;
             if (this.isTame() && this.getOwner() != null && this.distanceToSqr((e = this.getOwner())) > 49.0) {
                 speed_factor = 3.5;
             }
         }
-        // Unridden flight was reading as insanely fast on 1.20 — cap to OreSpawn-ish cruise
         if (this.getPassengers().isEmpty()) {
             speed_factor = Math.min(speed_factor, 0.55);
         }
         mx += (Math.signum(var1) - mx) * 0.15 * speed_factor;
         my += (Math.signum(var3) - my) * 0.21 * speed_factor;
         mz += (Math.signum(var5) - mz) * 0.15 * speed_factor;
-        float var7 = (float)(Math.atan2(mz, mx) * 180.0 / 3.141592653589793) - 90.0f;
-        float var8 = Mth.wrapDegrees((float)(var7 - this.getYRot()));
-        // Face travel direction — slow yaw made follow look like flying backwards
+        float var7 = (float) (Math.atan2(mz, mx) * 180.0 / 3.141592653589793) - 90.0f;
+        float var8 = Mth.wrapDegrees((float) (var7 - this.getYRot()));
         this.zza = (float) (0.75 * speed_factor);
-        if (toofar || this.owner_flying != 0) {
-            this.setYRot(this.getYRot() + var8 * 0.5f);
-        } else {
-            this.setYRot(this.getYRot() + var8 / 4.0f);
+        this.setYRot(this.getYRot() + Mth.clamp(var8, -25.0f, 25.0f));
+        this.yBodyRot = this.getYRot();
+        this.setYHeadRot(this.getYRot());
+        float yawRad = this.getYRot() * ((float) Math.PI / 180.0f);
+        double forwardX = -Mth.sin(yawRad);
+        double forwardZ = Mth.cos(yawRad);
+        double along = mx * forwardX + mz * forwardZ;
+        if (along < 0.0) {
+            along = 0.0;
         }
-        this.setDeltaMovement(mx, my, mz);
+        this.setDeltaMovement(forwardX * along, my, forwardZ * along);
+        if (obstruction_factor > 0.0) {
+            Vec3 steered = this.getDeltaMovement();
+            this.setDeltaMovement(steered.x, steered.y + obstruction_factor * 0.05, steered.z);
+        }
         MyUtils.applyChaosFlightMovement(this);
     }
 
@@ -1537,44 +1398,13 @@ public class Leon extends TamableAnimal {
             return;
         }
         super.aiStep();
-        if (this.level().isClientSide) {
-            if (this.getActivity() != 0 && !this.getPassengers().isEmpty()) {
-                Entity rider = this.getPassengers().get(0);
-                if (rider instanceof LocalPlayer pp) {
-                    pp.connection.send(
-                            new ServerboundMovePlayerPacket.Rot(pp.getYRot(), pp.getXRot(), pp.onGround()));
-                    pp.connection.send(
-                            new ServerboundPlayerInputPacket(
-                                    pp.xxa, pp.zza, pp.input.jumping, pp.input.shiftKeyDown));
-                }
-            }
-            if (this.boatPosRotationIncrements > 0 && this.getActivity() != 0) {
-                double d4 = this.getX() + (this.boatX - this.getX()) / (double) this.boatPosRotationIncrements;
-                double d5 = this.getY() + (this.boatY - this.getY()) / (double) this.boatPosRotationIncrements;
-                double d11 = this.getZ() + (this.boatZ - this.getZ()) / (double) this.boatPosRotationIncrements;
-                this.setPos(d4, d5, d11);
-                this.setXRot(
-                        (float)
-                                ((double) this.getXRot()
-                                        + (this.boatPitch - (double) this.getXRot())
-                                                / (double) this.boatPosRotationIncrements));
-                double d10 = Mth.wrapDegrees(this.boatYaw - (double) this.getYRot());
-                if (!this.getPassengers().isEmpty()) {
-                    d10 =
-                            Mth.wrapDegrees(
-                                    (double) this.getPassengers().get(0).getYRot() - (double) this.getYRot());
-                }
-                this.setYRot((float) ((double) this.getYRot() + d10 / (double) this.boatPosRotationIncrements));
-                this.setRot(this.getYRot(), this.getXRot());
-                --this.boatPosRotationIncrements;
-            }
-        } else {
+        if (!this.level().isClientSide) {
             if (this.getControllingPassenger() != null) {
                 this.setBeingRidden(1);
             } else {
                 this.setBeingRidden(0);
             }
-            if (this.getActivity() != 0 && !this.getPassengers().isEmpty()) {
+            if (this.getRidingPlayer() != null) {
                 this.fly_with_rider();
             }
             this.always_do();
@@ -1636,33 +1466,33 @@ public class Leon extends TamableAnimal {
             if (var2.isEmpty() && this.canOwnerReach(par1EntityPlayer)) {
                 if (this.isOrderedToSit()) {
                     if (!this.level().isClientSide) {
-                        this.setOrderedToSit(false);
+                        PetOrderInteract.setSit(par1EntityPlayer, this, false);
                         this.forceLandFromFlight();
                     }
                     return InteractionResult.SUCCESS;
                 }
                 if (par1EntityPlayer.isShiftKeyDown()) {
                     if (!this.level().isClientSide) {
-                        this.setOrderedToSit(true);
+                        PetOrderInteract.setSit(par1EntityPlayer, this, true);
                     }
                     return InteractionResult.SUCCESS;
                 }
                 if (!this.level().isClientSide) {
                     par1EntityPlayer.startRiding(this);
-                    this.setActivity(1);
                     this.setOrderedToSit(false);
                     MyUtils.clearChaosFlight(this);
                 }
                 return InteractionResult.SUCCESS;
             }
             if (!var2.isEmpty() && var2.is(Items.BEEF) && this.canOwnerReach(par1EntityPlayer)) {
+                if ((float) this.mygetMaxHealth() <= this.getHealth()) {
+                    return InteractionResult.SUCCESS;
+                }
                 if (this.level().isClientSide) {
                     spawnTamingParticles(true);
                     this.level().broadcastEntityEvent(this, (byte) 7);
                 }
-                if ((float) this.mygetMaxHealth() > this.getHealth()) {
-                    this.heal((float) this.mygetMaxHealth() - this.getHealth());
-                }
+                this.heal((float) this.mygetMaxHealth() - this.getHealth());
                 if (!par1EntityPlayer.getAbilities().instabuild) {
                     var2.shrink(1);
                     if (var2.isEmpty()) {
@@ -1708,7 +1538,7 @@ public class Leon extends TamableAnimal {
                     && this.getPassengers().isEmpty()) {
                 if (!this.level().isClientSide) {
                     boolean sit = !this.isOrderedToSit();
-                    this.setOrderedToSit(sit);
+                    PetOrderInteract.setSit(par1EntityPlayer, this, sit);
                     if (!sit) {
                         this.forceLandFromFlight();
                     }

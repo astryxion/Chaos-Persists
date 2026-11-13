@@ -90,6 +90,14 @@ public final class ChaosPackConfig {
         "white_house"
     };
 
+    /** Structures that generate naturally in The End ({@code #minecraft:is_end}). */
+    public static final String[] END_STRUCTURE_IDS = {
+        "ender_castle",
+        "ender_dragon_hospital",
+        "ender_knight_dungeon",
+        "ender_reaper_graveyard"
+    };
+
     private static final Map<String, Boolean> STRUCTURE_ENABLE = new LinkedHashMap<>();
 
     private ChaosPackConfig() {}
@@ -176,9 +184,17 @@ public final class ChaosPackConfig {
                                         "Any other Chaos mob that breaks blocks. 0 follow / 1 always / 2 never.")
                                 .getInt());
 
+        ChaosPersists.DisableEndStructures =
+                config.get(
+                                CAT_OVERWORLD,
+                                "DisableEndStructures",
+                                0,
+                                "1 = no Chaos Persists structures in The End (Ender Castle, Dragon Hospital, Reaper Graveyard, Ender Knight dungeon). Individual Structure toggles still apply when this is 0.")
+                        .getInt();
+
         config.setCategoryComment(
                 CAT_STRUCTURES,
-                "1 = structure may generate, 0 = never. Overworld structures are also skipped when DisableOverworldFeatures=1.");
+                "1 = structure may generate, 0 = never. Overworld structures are also skipped when DisableOverworldFeatures=1. End structures are also skipped when DisableEndStructures=1.");
         STRUCTURE_ENABLE.clear();
         for (String id : STRUCTURE_IDS) {
             int value = config.get(CAT_STRUCTURES, id, 1).getInt();
@@ -197,8 +213,14 @@ public final class ChaosPackConfig {
                 .set(ChaosPersists.DisableOverworldDriedEggs);
         config.get(CAT_OVERWORLD, "DisableOverworldAntNests", 0)
                 .set(ChaosPersists.DisableOverworldAntNests);
+        config.get(CAT_OVERWORLD, "DisableEndStructures", 0)
+                .set(ChaosPersists.DisableEndStructures);
         config.get(CAT_TWEAKS, "DisableOverworldDungeons", 0)
                 .set(ChaosPersists.DisableOverworldDungeons);
+        config.get(CAT_TWEAKS, "AllowChaosPersistsPetDimensionTravel", 1)
+                .set(ChaosPersists.AllowChaosPersistsPetDimensionTravel);
+        config.get(CAT_TWEAKS, "AllowOtherModPetDimensionTravel", 1)
+                .set(ChaosPersists.AllowOtherModPetDimensionTravel);
         config.get(CAT_TWEAKS, "AllMobsDisable", 0).set(ChaosPersists.AllMobsDisable);
         config.get(CAT_TWEAKS, "IgnorePercentHealthDamage", 1)
                 .set(ChaosPersists.IgnorePercentHealthDamage);
@@ -327,9 +349,28 @@ public final class ChaosPackConfig {
         return !biome.is(BiomeTags.IS_NETHER) && !biome.is(BiomeTags.IS_END);
     }
 
+    public static boolean isEndStructure(String id) {
+        if (id == null || id.isEmpty()) {
+            return false;
+        }
+        for (String endId : END_STRUCTURE_IDS) {
+            if (endId.equals(id)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean allowEndStructures() {
+        return ChaosPersists.DisableEndStructures == 0;
+    }
+
     public static boolean isStructureEnabled(String id) {
         if (id == null || id.isEmpty()) {
             return true;
+        }
+        if (!allowEndStructures() && isEndStructure(id)) {
+            return false;
         }
         Boolean enabled = STRUCTURE_ENABLE.get(id);
         return enabled == null || enabled;

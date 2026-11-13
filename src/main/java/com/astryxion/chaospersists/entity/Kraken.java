@@ -1128,23 +1128,12 @@ private void dropFewItems() {
                 this.setAttacking(0);
             }
         }
-        double var1 = (double) this.currentFlightTarget.getX() + 0.3 - this.getX();
-        double var3 = (double) this.currentFlightTarget.getY() + 0.1 - this.getY();
-        double var5 = (double) this.currentFlightTarget.getZ() + 0.3 - this.getZ();
-        Vec3 motion = this.getDeltaMovement();
-        double mx = motion.x + (Math.signum(var1) * 0.45 - motion.x) * 0.15;
-        double my = motion.y + (Math.signum(var3) * 0.70999 - motion.y) * 0.202;
-        double mz = motion.z + (Math.signum(var5) * 0.45 - motion.z) * 0.15;
-        this.setDeltaMovement(mx, my, mz);
-        float var7 =
-                (float) (Math.atan2(this.getDeltaMovement().z, this.getDeltaMovement().x) * 180.0 / Math.PI)
-                        - 90.0f;
-        float var8 = Mth.wrapDegrees(var7 - this.getYRot());
-        this.zza = 0.4f;
-        if (Math.abs(this.getDeltaMovement().x) + Math.abs(this.getDeltaMovement().z) < 0.15) {
-            var8 = 0.0f;
-        }
-        this.setYRot(this.getYRot() + var8 / 5.0f);
+        MyUtils.steerChaosFlightForward(
+                this,
+                (double) this.currentFlightTarget.getX() + 0.3,
+                (double) this.currentFlightTarget.getY() + 0.1,
+                (double) this.currentFlightTarget.getZ() + 0.3,
+                1.0);
         double obstruction_factor = 0.0;
         double dx = 0.0;
         double dz = 0.0;
@@ -1173,7 +1162,7 @@ private void dropFewItems() {
                 obstruction_factor += 0.1;
             }
         }
-        motion = this.getDeltaMovement();
+        Vec3 motion = this.getDeltaMovement();
         this.setDeltaMovement(motion.x, motion.y + obstruction_factor * 0.08, motion.z);
         this.setPos(this.getX(), this.getY() + obstruction_factor * 0.08, this.getZ());
         if (this.getY() > 256.0 && !this.isPersistenceRequired()) {

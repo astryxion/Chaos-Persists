@@ -98,6 +98,7 @@ import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.WorldGenRegion;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -106,6 +107,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import java.util.UUID;
+import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import javax.annotation.Nullable;
@@ -119,6 +121,57 @@ public class MyUtils {
             Collections.newSetFromMap(new WeakHashMap<>());
 
     public MyUtils() {
+    }
+
+    /**
+     * Royal-family heal food. OreSpawn 1.7.10 used {@code instanceof ItemFood} (any edible), but
+     * temptation / preferred item was beef. Modern FoodProperties covers notch apples and mod
+     * crops; restrict to meat so behavior matches a carnivore (and wolf-style {@code isMeat()}).
+     */
+    @Nullable
+    public static FoodProperties getMeatFood(ItemStack stack, @Nullable LivingEntity eater) {
+        if (stack == null || stack.isEmpty()) {
+            return null;
+        }
+        FoodProperties food = stack.getFoodProperties(eater);
+        if (food != null && food.isMeat()) {
+            return food;
+        }
+        return null;
+    }
+
+    /**
+     * Classic ghast-fireball / wither-skull bug: {@code setPos} into an unloaded (or non-entity-ticking)
+     * chunk leaves the entity frozen forever. {@link Level#hasChunkAt} alone is not enough — chunks can
+     * be loaded outside the simulation distance and still never tick entities.
+     *
+     * @return true if the entity was discarded
+     */
+    public static boolean discardIfUnloadedChunk(Entity entity, double x, double y, double z) {
+        if (entity.level().isClientSide || entity.isRemoved()) {
+            return false;
+        }
+        BlockPos pos = BlockPos.containing(x, y, z);
+        Level level = entity.level();
+        if (level instanceof ServerLevel serverLevel) {
+            if (serverLevel.isLoaded(pos) && serverLevel.isPositionEntityTicking(pos)) {
+                return false;
+            }
+            entity.discard();
+            return true;
+        }
+        if (level.hasChunkAt(pos)) {
+            return false;
+        }
+        entity.discard();
+        return true;
+    }
+
+    /** Discard if the next delta-movement step would enter an unloaded chunk. */
+    public static boolean discardIfNextMoveUnloaded(Entity entity) {
+        Vec3 motion = entity.getDeltaMovement();
+        return discardIfUnloadedChunk(
+                entity, entity.getX() + motion.x, entity.getY() + motion.y, entity.getZ() + motion.z);
     }
 
     /** 1.12 {@code World.isDaytime()} for {@link LevelAccessor} spawn checks. */

@@ -87,6 +87,11 @@ public abstract class ChaosDirectionalTorchBlock extends Block {
 
     protected boolean canAttachTo(LevelReader level, BlockPos torchPos, Direction attachmentDirection) {
         BlockPos supportPos = torchPos.relative(attachmentDirection.getOpposite());
+        // Standing: match vanilla TorchBlock (canSupportCenter) so fences/walls work.
+        // Walls: match WallTorchBlock (full-face sturdy).
+        if (attachmentDirection == Direction.UP) {
+            return Block.canSupportCenter(level, supportPos, Direction.UP);
+        }
         return level.getBlockState(supportPos).isFaceSturdy(level, supportPos, attachmentDirection);
     }
 

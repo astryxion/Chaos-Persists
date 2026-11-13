@@ -866,19 +866,12 @@ public class TheKing extends Monster {
                 pwr.setPurpleType(10);
             }
         }
-        var1 = (double) this.currentFlightTarget.getX() + 0.5 - this.getX();
-        var3 = (double) this.currentFlightTarget.getY() + 0.1 - this.getY();
-        var5 = (double) this.currentFlightTarget.getZ() + 0.5 - this.getZ();
-        Vec3 motion = this.getDeltaMovement();
-        this.setDeltaMovement(
-                motion.add(
-                        (Math.signum(var1) * 0.7 - motion.x) * 0.35,
-                        (Math.signum(var3) * 0.69999 - motion.y) * 0.3,
-                        (Math.signum(var5) * 0.7 - motion.z) * 0.35));
-        motion = this.getDeltaMovement();
-        var7 = (float) (Math.atan2(motion.z, motion.x) * 180.0 / Math.PI) - 90.0f;
-        var8 = Mth.wrapDegrees(var7 - this.getYRot());
-        this.setYRot(this.getYRot() + var8 / 8.0f);
+        MyUtils.steerChaosFlightForward(
+                this,
+                (double) this.currentFlightTarget.getX() + 0.5,
+                (double) this.currentFlightTarget.getY() + 0.1,
+                (double) this.currentFlightTarget.getZ() + 0.5,
+                1.0);
         if (this.getRandom().nextInt(30) == 1 && this.getHealth() < (float) this.mygetMaxHealth()) {
             this.heal(5.0f);
             if (this.large_unknown_detected != 0) {

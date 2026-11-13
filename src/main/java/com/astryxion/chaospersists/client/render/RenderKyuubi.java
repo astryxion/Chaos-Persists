@@ -33,10 +33,15 @@ public class RenderKyuubi extends MobRenderer<Kyuubi, ModelKyuubi> {
      */
     @Override
     protected RenderType getRenderType(Kyuubi entity, boolean bodyVisible, boolean translucent, boolean glowing) {
-        if (glowing) {
-            return RenderType.outline(this.getTextureLocation(entity));
+        ResourceLocation tex = this.getTextureLocation(entity);
+        if (translucent) {
+            return RenderType.itemEntityTranslucentCull(tex);
+        } else if (bodyVisible) {
+            return RenderType.entityTranslucent(tex);
+        } else if (glowing) {
+            return RenderType.outline(tex);
         }
-        return RenderType.entityTranslucent(this.getTextureLocation(entity));
+        return null;
     }
 
     @Override

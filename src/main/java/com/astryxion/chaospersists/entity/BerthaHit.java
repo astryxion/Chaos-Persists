@@ -2,6 +2,7 @@ package com.astryxion.chaospersists.entity;
 
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.util.FriendlyWeaponHits;
+import com.astryxion.chaospersists.util.MyUtils;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -146,7 +147,13 @@ public class BerthaHit extends ThrowableProjectile {
             return;
         }
 
-        this.setPos(this.getX() + motion.x, this.getY() + motion.y, this.getZ() + motion.z);
+        double nextX = this.getX() + motion.x;
+        double nextY = this.getY() + motion.y;
+        double nextZ = this.getZ() + motion.z;
+        if (MyUtils.discardIfUnloadedChunk(this, nextX, nextY, nextZ)) {
+            return;
+        }
+        this.setPos(nextX, nextY, nextZ);
     }
 
     @Override

@@ -2,6 +2,7 @@ package com.astryxion.chaospersists.item;
 
 import com.astryxion.chaospersists.compat.illageandspillage.IllageAndSpillageExecuteCompat;
 import com.astryxion.chaospersists.compat.mutantmonsters.MutantMonstersExecuteCompat;
+import com.astryxion.chaospersists.util.MyUtils;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.Entity;
@@ -107,6 +108,9 @@ public class ThunderBolt extends ThrowableProjectile {
 
     @Override
     public void tick() {
+        if (MyUtils.discardIfNextMoveUnloaded(this)) {
+            return;
+        }
         super.tick();
         int mx = 4;
         for (int i = 0; i < mx; ++i) {

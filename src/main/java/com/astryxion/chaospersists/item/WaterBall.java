@@ -2,6 +2,7 @@ package com.astryxion.chaospersists.item;
 
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.entity.AttackSquid;
+import com.astryxion.chaospersists.util.MyUtils;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
@@ -55,6 +56,9 @@ public class WaterBall extends ThrowableProjectile {
 
     @Override
     public void tick() {
+        if (MyUtils.discardIfNextMoveUnloaded(this)) {
+            return;
+        }
         super.tick();
         this.my_rotation += 30.0f;
         while (this.my_rotation > 360.0f) {

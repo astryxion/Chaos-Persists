@@ -923,26 +923,18 @@ public class Spyro extends TamableAnimal {
             }
         }
         double speed_factor = 0.5;
-        double var1 = (double) this.currentFlightTarget.getX() + 0.5 - this.getX();
-        double var3 = (double) this.currentFlightTarget.getY() + 0.1 - this.getY();
-        double var5 = (double) this.currentFlightTarget.getZ() + 0.5 - this.getZ();
         if (this.owner_flying != 0) {
             speed_factor = 1.75;
             if (this.isTame() && this.getOwner() != null && this.distanceToSqr(this.getOwner()) > 49.0) {
                 speed_factor = 3.5;
             }
         }
-        Vec3 motion = this.getDeltaMovement();
-        this.setDeltaMovement(
-                motion.add(
-                        (Math.signum(var1) * 0.5 - motion.x) * 0.15 * speed_factor,
-                        (Math.signum(var3) * 0.7 - motion.y) * 0.21 * speed_factor,
-                        (Math.signum(var5) * 0.5 - motion.z) * 0.15 * speed_factor));
-        motion = this.getDeltaMovement();
-        float var7 = (float) (Mth.atan2(motion.z, motion.x) * 180.0 / Math.PI) - 90.0f;
-        float var8 = Mth.wrapDegrees(var7 - this.getYRot());
-        this.setZza((float) (0.75 * speed_factor));
-        this.setYRot(this.getYRot() + var8 / 3.0f);
+        MyUtils.steerChaosFlightForward(
+                this,
+                (double) this.currentFlightTarget.getX() + 0.5,
+                (double) this.currentFlightTarget.getY() + 0.1,
+                (double) this.currentFlightTarget.getZ() + 0.5,
+                speed_factor);
         MyUtils.applyChaosFlightMovement(this);
 }
 

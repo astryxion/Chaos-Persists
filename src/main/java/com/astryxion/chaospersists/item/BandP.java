@@ -50,6 +50,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.ServerLevelAccessor;
@@ -206,14 +207,25 @@ public class BandP extends Monster {
             }
         }
         for (i = 0; i < this.MymainInventory.length; ++i) {
-            if (this.MymainInventory[i] == null || this.MymainInventory[i].isEmpty()) {
+            ItemStack stolen = this.MymainInventory[i];
+            if (stolen == null || stolen.isEmpty()) {
                 continue;
             }
-            ItemStack dropped =
-                    this.dropItemRand(this.MymainInventory[i].getItem(), this.MymainInventory[i].getCount());
-            if (this.MymainInventory[i].getCount() == 1 && dropped != null) {
-                dropped.setDamageValue(this.MymainInventory[i].getDamageValue());
+            // Curse of Vanishing: vanish like player death loot (do not return to world).
+            if (EnchantmentHelper.hasVanishingCurse(stolen)) {
+                continue;
             }
+            ItemStack dropped = stolen.copy();
+            ItemEntity drop =
+                    new ItemEntity(
+                            this.level(),
+                            this.getX() + (double) ChaosPersists.ChaosRand.nextInt(2)
+                                    - (double) ChaosPersists.ChaosRand.nextInt(2),
+                            this.getY() + 1.0,
+                            this.getZ() + (double) ChaosPersists.ChaosRand.nextInt(2)
+                                    - (double) ChaosPersists.ChaosRand.nextInt(2),
+                            dropped);
+            this.level().addFreshEntity(drop);
         }
     }
 

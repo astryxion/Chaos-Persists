@@ -28,10 +28,16 @@ public class RenderDragon extends MobRenderer<Dragon, ModelDragon> {
 
     @Override
     protected RenderType getRenderType(Dragon entity, boolean bodyVisible, boolean translucent, boolean glowing) {
-        if (glowing) {
-            return RenderType.outline(this.getTextureLocation(entity));
+        ResourceLocation tex = this.getTextureLocation(entity);
+        // Vanilla order: body first. Returning outline while bodyVisible makes glowing mobs invisible.
+        if (translucent) {
+            return RenderType.itemEntityTranslucentCull(tex);
+        } else if (bodyVisible) {
+            return RenderType.entityCutoutNoCull(tex);
+        } else if (glowing) {
+            return RenderType.outline(tex);
         }
-        return RenderType.entityCutoutNoCull(this.getTextureLocation(entity));
+        return null;
     }
 
     @Override

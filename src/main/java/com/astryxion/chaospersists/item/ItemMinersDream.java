@@ -223,30 +223,29 @@ public class ItemMinersDream extends Item {
                     }
                 }
             }
-            for (k = 0; k < length; ++k) {
-                for (int j = -width; j <= width; ++j) {
-                    clearIfRemovable(
-                            world,
-                            new BlockPos(x + k * deltax + j * deltaz, y - 1, z + k * deltaz + j * deltax));
-                }
-            }
+            // OreSpawn 1.7.10 never cleared y-1: Extreme/Crystal torches need that floor to attach.
             for (k = 0; k < length; k += torches) {
                 BlockPos floorPos = new BlockPos(x + k * deltax, y - 1, z + k * deltaz);
                 BlockPos torchPos = new BlockPos(x + k * deltax, y, z + k * deltaz);
                 BlockState floorState = world.getBlockState(floorPos);
-                if (isMinersDreamTorchFloorBlock(floorState) && world.getBlockState(torchPos).isAir()) {
-                    world.setBlock(
-                            torchPos,
-                            modBlock(ChaosPersists.ExtremeTorch).defaultBlockState(),
-                            2);
-                }
-                if (floorState.getBlock() != modBlock(ChaosPersists.CrystalStone) || !world.getBlockState(torchPos).isAir()) {
+                if (!world.getBlockState(torchPos).isAir()) {
                     continue;
                 }
-                world.setBlock(
-                        torchPos,
-                        modBlock(ChaosPersists.CrystalTorch).defaultBlockState(),
-                        2);
+                if (isMinersDreamTorchFloorBlock(floorState)) {
+                    BlockState torch =
+                            modBlock(ChaosPersists.ExtremeTorch).defaultBlockState();
+                    if (torch.canSurvive(world, torchPos)) {
+                        world.setBlock(torchPos, torch, 2);
+                    }
+                    continue;
+                }
+                if (floorState.getBlock() == modBlock(ChaosPersists.CrystalStone)) {
+                    BlockState torch =
+                            modBlock(ChaosPersists.CrystalTorch).defaultBlockState();
+                    if (torch.canSurvive(world, torchPos)) {
+                        world.setBlock(torchPos, torch, 2);
+                    }
+                }
             }
             if (!player.getAbilities().instabuild) {
                 par1ItemStack.shrink(1);

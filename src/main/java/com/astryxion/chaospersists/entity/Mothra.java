@@ -297,19 +297,12 @@ public class Mothra extends EntityButterfly {
                 }
             }
         }
-        double var1 = (double) this.mothraFlightTarget.getX() + 0.5 - this.getX();
-        double var3 = (double) this.mothraFlightTarget.getY() + 0.1 - this.getY();
-        double var5 = (double) this.mothraFlightTarget.getZ() + 0.5 - this.getZ();
-        Vec3 motion = this.getDeltaMovement();
-        this.setDeltaMovement(
-                motion.add(
-                        (Math.signum(var1) * 0.5 - motion.x) * 0.30001,
-                        (Math.signum(var3) * 0.7 - motion.y) * 0.20001,
-                        (Math.signum(var5) * 0.5 - motion.z) * 0.30001));
-        motion = this.getDeltaMovement();
-        float var7 = (float) (Mth.atan2(motion.z, motion.x) * 180.0 / Math.PI) - 90.0f;
-        float var8 = Mth.wrapDegrees(var7 - this.getYRot());
-        this.setYRot(this.getYRot() + var8 / 4.0f);
+        MyUtils.steerChaosFlightForward(
+                this,
+                (double) this.mothraFlightTarget.getX() + 0.5,
+                (double) this.mothraFlightTarget.getY() + 0.1,
+                (double) this.mothraFlightTarget.getZ() + 0.5,
+                1.0);
         MyUtils.applyChaosFlightMovement(this);
     }
 

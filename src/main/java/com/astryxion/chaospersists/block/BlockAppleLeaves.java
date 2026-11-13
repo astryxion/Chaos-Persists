@@ -100,7 +100,10 @@ public class BlockAppleLeaves extends LeavesBlock implements IForgeShearable {
                         continue;
                     }
                     cursor.set(pos.getX() + dx, pos.getY() + dy, pos.getZ() + dz);
-                    if (!level.getBlockState(cursor).is(BlockTags.LOGS)) {
+                    BlockState nearby = level.getBlockState(cursor);
+                    // OreSpawn used canSustainLeaves (DuplicatorLog returned true). Forge 1.20.1
+                    // removed that hook — treat #minecraft:logs and MyDT as sustaining wood.
+                    if (!nearby.is(BlockTags.LOGS) && !nearby.is(ChaosPersists.MyDT)) {
                         continue;
                     }
                     if (level.getBlockState(pos.below()).isAir() && rand.nextInt(chance) == 3) {

@@ -2,6 +2,7 @@ package com.astryxion.chaospersists.item;
 
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.util.FriendlyWeaponHits;
+import com.astryxion.chaospersists.util.MyUtils;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.protocol.game.ClientboundGameEventPacket;
 import net.minecraft.server.level.ServerPlayer;
@@ -53,8 +54,23 @@ public class UltimateArrow extends AbstractArrow {
         return new ItemStack(Items.ARROW);
     }
 
+    /**
+     * Always allow colliding with healable friendlies so Flame / owner-vehicle edge cases cannot
+     * make Ultimate Bow arrows pass through pets without applying the heal path (1.7.10 parity).
+     */
+    @Override
+    protected boolean canHitEntity(Entity target) {
+        if (ChaosPersists.ultimate_sword_pvp == 0 && FriendlyWeaponHits.isFriendlyWhenPvpOff(target)) {
+            return target.canBeHitByProjectile();
+        }
+        return super.canHitEntity(target);
+    }
+
     @Override
     public void tick() {
+        if (!this.inGround && MyUtils.discardIfNextMoveUnloaded(this)) {
+            return;
+        }
         super.tick();
 
         if (!this.inGround && this.isCritArrow()) {
@@ -87,18 +103,17 @@ public class UltimateArrow extends AbstractArrow {
         Entity hitEntity = result.getEntity();
         float pitch = 1.2F / (this.random.nextFloat() * 0.2F + 0.9F);
 
-        if (FriendlyWeaponHits.isListedIgnore(hitEntity)) {
+        // OreSpawn 1.7.10: when UltimateSwordPvp is off, players / GF / BF / tamed pets are healed
+        // (not damaged). Ignore-tag hits still heal when they resolve to a friendly living target.
+        if (ChaosPersists.ultimate_sword_pvp == 0 && FriendlyWeaponHits.isFriendlyWhenPvpOff(hitEntity)) {
             this.playSound(SoundEvents.ARROW_HIT, 1.0F, pitch);
+            applyPetHeal(hitEntity);
             this.discard();
             return;
         }
 
-        if (ChaosPersists.ultimate_sword_pvp == 0 && FriendlyWeaponHits.isFriendlyWhenPvpOff(hitEntity)) {
+        if (FriendlyWeaponHits.isListedIgnore(hitEntity)) {
             this.playSound(SoundEvents.ARROW_HIT, 1.0F, pitch);
-            LivingEntity heal = FriendlyWeaponHits.healTarget(hitEntity);
-            if (heal != null) {
-                heal.heal((float) ChaosPersists.UltimateBowPetHeal);
-            }
             this.discard();
             return;
         }
@@ -145,6 +160,16 @@ public class UltimateArrow extends AbstractArrow {
             this.setYRot(this.getYRot() + 180.0F);
             this.yRotO += 180.0F;
         }
+    }
+
+    private void applyPetHeal(Entity hitEntity) {
+        LivingEntity heal = FriendlyWeaponHits.healTarget(hitEntity);
+        if (heal == null || this.level().isClientSide) {
+            return;
+        }
+        // Bow always carries Flame; clear fire so a burning arrow cannot undo the heal.
+        heal.clearFire();
+        heal.heal((float) ChaosPersists.UltimateBowPetHeal);
     }
 
     private void applyKnockback(Entity target) {

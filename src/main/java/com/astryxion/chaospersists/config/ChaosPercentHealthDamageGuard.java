@@ -11,7 +11,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraftforge.entity.PartEntity;
-import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -20,6 +19,10 @@ import net.minecraftforge.fml.common.Mod;
 /**
  * Cataclysm-style hits are {@code flat + maxHealth * percent}. Huge OreSpawn HP then becomes a
  * weakness. When the tweak is on, those slices are treated as if the mob had {@link #BASELINE} HP.
+ *
+ * <p>Normal physical mob/player attacks (including high flat damage from other mods) are left
+ * alone — OreSpawn {@code getArmorValue()} / legacy armor parity already handles those. Only
+ * magic, armor-bypass, and custom damage types are scanned for percent-of-max-health payloads.
  */
 @Mod.EventBusSubscriber(modid = ChaosPersists.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public final class ChaosPercentHealthDamageGuard {
@@ -27,23 +30,19 @@ public final class ChaosPercentHealthDamageGuard {
     private static final float BASELINE = 100.0f;
     /** Largest flat weapon/skill number mixed into a percent hit (Ignis ~21, Guardian ~22). */
     private static final float FLAT_CAP = 64.0f;
+    /**
+     * Pure percent matches must exceed this absolute slice. Stops flat 70 on a 350 HP boss from
+     * being treated as "exactly 20% max HP" (70 → 20 → armor → ~2 after a second pass).
+     */
+    private static final float PURE_PERCENT_MIN_SLICE = 100.0f;
+    /** Hybrid flat+percent needs a real weapon remainder, not rounding noise. */
+    private static final float MIN_FLAT_REMAINDER = 8.0f;
     private static final float SLICE_EPS = 0.85f;
 
     private ChaosPercentHealthDamageGuard() {}
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onHurt(LivingHurtEvent event) {
-        if (event == null || event.isCanceled()) {
-            return;
-        }
-        float next = rescale(event.getEntity(), event.getSource(), event.getAmount());
-        if (next != event.getAmount()) {
-            event.setAmount(next);
-        }
-    }
-
-    @SubscribeEvent(priority = EventPriority.LOWEST)
-    public static void onDamage(LivingDamageEvent event) {
         if (event == null || event.isCanceled()) {
             return;
         }
@@ -74,12 +73,22 @@ public final class ChaosPercentHealthDamageGuard {
             return Math.min(amount, BASELINE);
         }
         for (int hundredths = 50; hundredths >= 1; hundredths--) {
-            float slice = maxHp * (hundredths / 100.0f);
+            float pct = hundredths / 100.0f;
+            float slice = maxHp * pct;
             float remainder = amount - slice;
             if (remainder < -SLICE_EPS || remainder > FLAT_CAP) {
                 continue;
             }
-            float converted = Math.max(0.0f, remainder) + BASELINE * (hundredths / 100.0f);
+            if (remainder <= SLICE_EPS) {
+                // Pure percent: only when the absolute slice is clearly an HP nuke, not a flat hit
+                // that happens to equal N% of this boss's health.
+                if (slice < PURE_PERCENT_MIN_SLICE) {
+                    continue;
+                }
+            } else if (remainder < MIN_FLAT_REMAINDER) {
+                continue;
+            }
+            float converted = Math.max(0.0f, remainder) + BASELINE * pct;
             if (converted < amount) {
                 return converted;
             }
@@ -97,12 +106,30 @@ public final class ChaosPercentHealthDamageGuard {
         if (ChaosPackConfig.isChaosEntity(causing) || ChaosPackConfig.isChaosEntity(direct)) {
             return false;
         }
-        if (isForeignMod(causing) || isForeignMod(direct) || isForeignDamageType(source)) {
+        // Flat physical combat uses OreSpawn defense via armor. Do not rescale those — a Graveyard
+        // Corrupted Champion chomp at 70 must stay 70 pre-armor (→ ~14 after defense 20), same curve
+        // as an Ultimate Sword crit, not get mistaken for percent-of-max-health.
+        if (isNormalCombatDamage(source)) {
+            return false;
+        }
+        if (isForeignDamageType(source)
+                || source.is(DamageTypeTags.BYPASSES_ARMOR)
+                || source.is(DamageTypes.MAGIC)
+                || source.is(DamageTypes.INDIRECT_MAGIC)) {
             return true;
         }
-        return source.is(DamageTypeTags.BYPASSES_ARMOR)
-                || source.is(DamageTypes.MAGIC)
-                || source.is(DamageTypes.INDIRECT_MAGIC);
+        // Foreign entity with a non-combat vanilla damage type (e.g. magic helpers).
+        return isForeignMod(causing) || isForeignMod(direct);
+    }
+
+    private static boolean isNormalCombatDamage(DamageSource source) {
+        return source.is(DamageTypes.MOB_ATTACK)
+                || source.is(DamageTypes.MOB_ATTACK_NO_AGGRO)
+                || source.is(DamageTypes.PLAYER_ATTACK)
+                || source.is(DamageTypes.ARROW)
+                || source.is(DamageTypes.TRIDENT)
+                || source.is(DamageTypes.THROWN)
+                || source.is(DamageTypes.MOB_PROJECTILE);
     }
 
     private static boolean isForeignMod(@Nullable Entity entity) {

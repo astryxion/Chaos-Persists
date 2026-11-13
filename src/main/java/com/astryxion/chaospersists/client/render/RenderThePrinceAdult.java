@@ -37,9 +37,14 @@ public class RenderThePrinceAdult extends MobRenderer<ThePrinceAdult, ModelThePr
     @Override
     protected RenderType getRenderType(
             ThePrinceAdult entity, boolean bodyVisible, boolean translucent, boolean glowing) {
-        if (glowing) {
-            return RenderType.outline(this.getTextureLocation(entity));
+        ResourceLocation tex = this.getTextureLocation(entity);
+        if (translucent) {
+            return RenderType.itemEntityTranslucentCull(tex);
+        } else if (bodyVisible) {
+            return RenderType.entityCutoutNoCull(tex);
+        } else if (glowing) {
+            return RenderType.outline(tex);
         }
-        return RenderType.entityCutoutNoCull(this.getTextureLocation(entity));
+        return null;
     }
 }

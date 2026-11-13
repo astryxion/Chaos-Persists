@@ -3,6 +3,7 @@ package com.astryxion.chaospersists.item;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.entity.Boyfriend;
 import com.astryxion.chaospersists.entity.Girlfriend;
+import com.astryxion.chaospersists.util.MyUtils;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.protocol.game.ClientboundGameEventPacket;
 import net.minecraft.server.level.ServerPlayer;
@@ -56,6 +57,9 @@ public class IrukandjiArrow extends AbstractArrow {
 
     @Override
     public void tick() {
+        if (!this.inGround && MyUtils.discardIfNextMoveUnloaded(this)) {
+            return;
+        }
         super.tick();
 
         if (!this.inGround) {

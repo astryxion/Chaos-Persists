@@ -2,6 +2,7 @@ package com.astryxion.chaospersists.entity;
 
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.core.ChaosSounds;
+import com.astryxion.chaospersists.util.MyUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -249,6 +250,9 @@ public class EntityThrownRock extends ThrowableProjectile {
 
     @Override
     public void tick() {
+        if (MyUtils.discardIfNextMoveUnloaded(this)) {
+            return;
+        }
         int x = (int) this.getX();
         int y = (int) this.getY();
         int z = (int) this.getZ();

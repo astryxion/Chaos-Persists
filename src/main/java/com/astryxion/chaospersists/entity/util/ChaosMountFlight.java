@@ -270,7 +270,10 @@ public final class ChaosMountFlight {
                 this.flying.setFlying(false);
                 this.flying.setHovering(true);
             }
-            if (!this.overAir && this.flying.isGoingDown() && !this.mount.isInWater()) {
+            if (this.flying.landsWhenDescendingOntoGround()
+                    && !this.overAir
+                    && this.flying.isGoingDown()
+                    && !this.mount.isInWater()) {
                 this.flying.setFlying(false);
                 this.flying.setHovering(false);
             }

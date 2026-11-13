@@ -39,9 +39,18 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.entity.SpawnerBlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import com.astryxion.chaospersists.legacy.forge.common.util.EnumHelper;
 
 public class Trees {
+    /**
+     * Spaces the duplicator may overwrite when placing a copy: air, short grass, flowers, snow,
+     * and other {@link BlockState#canBeReplaced()} plants. Solid blocks stay blocked.
+     */
+    private static boolean isDuplicatorReplaceable(BlockState state) {
+        return state == null || state.isAir() || state.canBeReplaced();
+    }
+
     public static final WeightedRandomChestContent[] CrystalChestContentsList = new WeightedRandomChestContent[]{new WeightedRandomChestContent(EnumHelper.getItemFromBlock(ChaosPersists.CrystalTermiteBlock), 0, 1, 5, 10), new WeightedRandomChestContent(EnumHelper.getItemFromBlock(ChaosPersists.CrystalFlowerRedBlock), 0, 1, 10, 10), new WeightedRandomChestContent(EnumHelper.getItemFromBlock(ChaosPersists.CrystalFlowerBlueBlock), 0, 1, 10, 10), new WeightedRandomChestContent(EnumHelper.getItemFromBlock(ChaosPersists.CrystalFlowerGreenBlock), 0, 1, 10, 10), new WeightedRandomChestContent(EnumHelper.getItemFromBlock(ChaosPersists.CrystalFlowerYellowBlock), 0, 1, 10, 10), new WeightedRandomChestContent(EnumHelper.getItemFromBlock(ChaosPersists.CrystalPlanksBlock), 0, 1, 10, 10), new WeightedRandomChestContent(EnumHelper.getItemFromBlock(ChaosPersists.CrystalWorkbenchBlock), 0, 1, 1, 10), new WeightedRandomChestContent(EnumHelper.getItemFromBlock(ChaosPersists.CrystalFurnaceBlock), 0, 1, 1, 10), new WeightedRandomChestContent(EnumHelper.getItemFromBlock(ChaosPersists.MyTigersEyeBlock), 0, 1, 10, 5), new WeightedRandomChestContent(EnumHelper.getItemFromBlock(ChaosPersists.CrystalStone), 0, 1, 10, 10), new WeightedRandomChestContent(EnumHelper.getItemFromBlock(ChaosPersists.CrystalRat), 0, 1, 10, 10), new WeightedRandomChestContent(EnumHelper.getItemFromBlock(ChaosPersists.CrystalFairy), 0, 1, 10, 10), new WeightedRandomChestContent(EnumHelper.getItemFromBlock(ChaosPersists.CrystalCoal), 0, 1, 10, 10), new WeightedRandomChestContent(EnumHelper.getItemFromBlock(ChaosPersists.CrystalGrass), 0, 1, 10, 10), new WeightedRandomChestContent(EnumHelper.getItemFromBlock(ChaosPersists.CrystalCrystal), 0, 1, 10, 10), new WeightedRandomChestContent(EnumHelper.getItemFromBlock(ChaosPersists.CrystalTorch), 0, 1, 10, 10), new WeightedRandomChestContent(EnumHelper.getItemFromBlock(ChaosPersists.MyCrystalLeaves), 0, 1, 10, 10), new WeightedRandomChestContent(EnumHelper.getItemFromBlock(ChaosPersists.MyCrystalLeaves2), 0, 1, 10, 10), new WeightedRandomChestContent(EnumHelper.getItemFromBlock(ChaosPersists.MyCrystalLeaves3), 0, 1, 10, 10), new WeightedRandomChestContent(EnumHelper.getItemFromBlock(ChaosPersists.MyCrystalTreeLog), 0, 1, 10, 10), new WeightedRandomChestContent(EnumHelper.getItemFromBlock(ChaosPersists.TigersEye), 0, 1, 10, 5), new WeightedRandomChestContent(ChaosPersists.MyCrystalWoodSword, 0, 1, 1, 10), new WeightedRandomChestContent(ChaosPersists.MyCrystalWoodAxe, 0, 1, 1, 10), new WeightedRandomChestContent(ChaosPersists.MyCrystalWoodShovel, 0, 1, 1, 10), new WeightedRandomChestContent(ChaosPersists.MyCrystalWoodPickaxe, 0, 1, 1, 10), new WeightedRandomChestContent(ChaosPersists.MyCrystalWoodHoe, 0, 1, 1, 10), new WeightedRandomChestContent(ChaosPersists.MyCrystalPinkSword, 0, 1, 1, 10), new WeightedRandomChestContent(ChaosPersists.MyCrystalPinkAxe, 0, 1, 1, 10), new WeightedRandomChestContent(ChaosPersists.MyCrystalPinkShovel, 0, 1, 1, 10), new WeightedRandomChestContent(ChaosPersists.MyCrystalPinkPickaxe, 0, 1, 1, 10), new WeightedRandomChestContent(ChaosPersists.MyCrystalPinkHoe, 0, 1, 1, 10), new WeightedRandomChestContent(ChaosPersists.MyTigersEyeSword, 0, 1, 1, 5), new WeightedRandomChestContent(ChaosPersists.MyTigersEyeAxe, 0, 1, 1, 5), new WeightedRandomChestContent(ChaosPersists.MyTigersEyeShovel, 0, 1, 1, 5), new WeightedRandomChestContent(ChaosPersists.MyTigersEyePickaxe, 0, 1, 1, 5), new WeightedRandomChestContent(ChaosPersists.MyTigersEyeHoe, 0, 1, 1, 5), new WeightedRandomChestContent(ChaosPersists.MyCrystalStoneSword, 0, 1, 1, 10), new WeightedRandomChestContent(ChaosPersists.MyCrystalStoneAxe, 0, 1, 1, 10), new WeightedRandomChestContent(ChaosPersists.MyCrystalStoneShovel, 0, 1, 1, 10), new WeightedRandomChestContent(ChaosPersists.MyCrystalStonePickaxe, 0, 1, 1, 10), new WeightedRandomChestContent(ChaosPersists.MyCrystalStoneHoe, 0, 1, 1, 10), new WeightedRandomChestContent(ChaosPersists.MyTigersEyeIngot, 0, 1, 5, 5), new WeightedRandomChestContent(ChaosPersists.MyCrystalPinkIngot, 0, 1, 5, 10), new WeightedRandomChestContent(ChaosPersists.MyCrystalApple, 0, 1, 5, 10), new WeightedRandomChestContent(ChaosPersists.MyPeacockFeather, 0, 1, 5, 10), new WeightedRandomChestContent(ChaosPersists.MyPeacock, 0, 1, 10, 20), new WeightedRandomChestContent(ChaosPersists.MyRawPeacock, 0, 1, 10, 20), new WeightedRandomChestContent(ChaosPersists.MyRice, 0, 1, 10, 20), new WeightedRandomChestContent(ChaosPersists.MyQuinoa, 0, 1, 10, 20), new WeightedRandomChestContent((Item)ChaosPersists.CrystalPinkHelmet, 0, 1, 1, 10), new WeightedRandomChestContent((Item)ChaosPersists.CrystalPinkBody, 0, 1, 1, 10), new WeightedRandomChestContent((Item)ChaosPersists.CrystalPinkLegs, 0, 1, 1, 10), new WeightedRandomChestContent((Item)ChaosPersists.CrystalPinkBoots, 0, 1, 1, 10), new WeightedRandomChestContent((Item)ChaosPersists.TigersEyeHelmet, 0, 1, 1, 5), new WeightedRandomChestContent((Item)ChaosPersists.TigersEyeBody, 0, 1, 1, 5), new WeightedRandomChestContent((Item)ChaosPersists.TigersEyeLegs, 0, 1, 1, 5), new WeightedRandomChestContent((Item)ChaosPersists.TigersEyeBoots, 0, 1, 1, 5), new WeightedRandomChestContent((Item)ChaosPersists.PeacockFeatherHelmet, 0, 1, 1, 10), new WeightedRandomChestContent((Item)ChaosPersists.PeacockFeatherBody, 0, 1, 1, 10), new WeightedRandomChestContent((Item)ChaosPersists.PeacockFeatherLegs, 0, 1, 1, 10), new WeightedRandomChestContent((Item)ChaosPersists.PeacockFeatherBoots, 0, 1, 1, 10), new WeightedRandomChestContent(ChaosPersists.RotatorEgg, 0, 1, 5, 10), new WeightedRandomChestContent(ChaosPersists.VortexEgg, 0, 1, 5, 10), new WeightedRandomChestContent(ChaosPersists.PeacockEgg, 0, 1, 5, 10), new WeightedRandomChestContent(ChaosPersists.DungeonBeastEgg, 0, 1, 5, 10), new WeightedRandomChestContent(ChaosPersists.FairyEgg, 0, 1, 5, 10), new WeightedRandomChestContent(ChaosPersists.RatEgg, 0, 1, 5, 10), new WeightedRandomChestContent(ChaosPersists.FlounderEgg, 0, 1, 5, 10), new WeightedRandomChestContent(ChaosPersists.WhaleEgg, 0, 1, 5, 10), new WeightedRandomChestContent(ChaosPersists.IrukandjiEgg, 0, 1, 5, 10), new WeightedRandomChestContent(ChaosPersists.SkateEgg, 0, 1, 5, 10), new WeightedRandomChestContent(ChaosPersists.UrchinEgg, 0, 1, 5, 10), new WeightedRandomChestContent(ChaosPersists.GhostEgg, 0, 1, 5, 10), new WeightedRandomChestContent(ChaosPersists.GhostSkellyEgg, 0, 1, 5, 10), new WeightedRandomChestContent(ChaosPersists.MySkateBow, 0, 1, 1, 2), new WeightedRandomChestContent(ChaosPersists.MyIrukandjiArrow, 0, 5, 10, 2), new WeightedRandomChestContent(ChaosPersists.MyIrukandji, 0, 2, 8, 5), new WeightedRandomChestContent(ChaosPersists.MyUltimateBow, 0, 1, 1, 2), new WeightedRandomChestContent(ChaosPersists.MyUltimateSword, 0, 1, 1, 2), new WeightedRandomChestContent(Items.IRON_INGOT, 0, 1, 4, 10), new WeightedRandomChestContent(EnumHelper.getItemFromBlock(Blocks.OAK_LOG), 0, 1, 4, 10), new WeightedRandomChestContent(Items.GOLDEN_APPLE, 0, 1, 5, 2)};
     private void WindTreeBranch(net.minecraft.world.level.Level level, int x, int y, int z, int length, int dirx, int dirz) {
         for (int i = 1; i <= length; ++i) {
@@ -189,21 +198,25 @@ public class Trees {
                 return;
             }
         }
-        Block bidm = Blocks.AIR;
-        for (int tries = 0; tries < 20 && (bidm == Blocks.AIR || bidm == ChaosPersists.MyDT); ++tries) {
+        for (int tries = 0; tries < 20; ++tries) {
             i = level.getRandom().nextInt(5) - 2;
             j = level.getRandom().nextInt(5) - 2;
-            bidm = level.getBlockState(new net.minecraft.core.BlockPos(x + i, realy + 1, z + j)).getBlock();
-            net.minecraft.world.level.block.state.BlockState metaState = level.getBlockState(new net.minecraft.core.BlockPos(x + i, realy + 1, z + j));
-            if (bidm == Blocks.AIR || bidm == ChaosPersists.MyDT) continue;
+            BlockState candidate = level.getBlockState(new BlockPos(x + i, realy + 1, z + j));
+            // Skip empty / plant fill and the duplicator log itself — copy solid neighbor blocks.
+            if (isDuplicatorReplaceable(candidate) || candidate.is(ChaosPersists.MyDT)) {
+                continue;
+            }
             for (int k = 0; k < 20; ++k) {
                 i = level.getRandom().nextInt(5) - 2;
                 j = level.getRandom().nextInt(5) - 2;
-                bid = level.getBlockState(new net.minecraft.core.BlockPos(x + i, realy + 1, z + j)).getBlock();
-                if (bid != Blocks.AIR) continue;
-                level.setBlock(new net.minecraft.core.BlockPos(x + i, realy + 1, z + j), metaState, 2);
+                BlockPos destPos = new BlockPos(x + i, realy + 1, z + j);
+                if (!isDuplicatorReplaceable(level.getBlockState(destPos))) {
+                    continue;
+                }
+                level.setBlock(destPos, candidate, 2);
                 return;
             }
+            return;
         }
     }
 

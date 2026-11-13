@@ -69,10 +69,15 @@ public class RenderRockBase extends MobRenderer<RockBase, ModelRockBase> {
             RockBase entity, boolean bodyVisible, boolean translucent, boolean glowing) {
         int rt = entity.rock_type > 0 ? entity.rock_type : entity.getRockType();
         if (rt >= 9 && rt <= 12) {
-            if (glowing) {
-                return RenderType.outline(this.getTextureLocation(entity));
+            ResourceLocation tex = this.getTextureLocation(entity);
+            if (translucent) {
+                return RenderType.itemEntityTranslucentCull(tex);
+            } else if (bodyVisible) {
+                return RenderType.entityTranslucent(tex);
+            } else if (glowing) {
+                return RenderType.outline(tex);
             }
-            return RenderType.entityTranslucent(this.getTextureLocation(entity));
+            return null;
         }
         return super.getRenderType(entity, bodyVisible, translucent, glowing);
     }

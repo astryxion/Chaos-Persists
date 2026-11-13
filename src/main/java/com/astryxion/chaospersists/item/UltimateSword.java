@@ -32,6 +32,8 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import net.minecraftforge.common.ForgeMod;
+import net.minecraftforge.common.ToolAction;
+import net.minecraftforge.common.ToolActions;
 
 public class UltimateSword extends SwordItem {
     private static final UUID ENTITY_REACH_UUID = UUID.fromString("B4D9F2C5-7E3A-4B80-9C8D-6F1A0E5B3D29");
@@ -72,6 +74,21 @@ public class UltimateSword extends SwordItem {
             return CHAINSAW_REACH - SURVIVAL_ENTITY_REACH_BASE;
         }
         return 0.0;
+    }
+
+    /** Battle Axe / Queen Battle Axe: sword combat item that also chops wood like an axe. */
+    private boolean isBattleAxeWeapon() {
+        return this == ChaosPersists.MyBattleAxe || this == ChaosPersists.MyQueenBattleAxe;
+    }
+
+    private float battleAxeWoodSpeed() {
+        if (this == ChaosPersists.MyQueenBattleAxe && ChaosPersists.queenbattleaxe_stats != null) {
+            return ChaosPersists.queenbattleaxe_stats.efficiency;
+        }
+        if (ChaosPersists.battleaxe_stats != null) {
+            return ChaosPersists.battleaxe_stats.efficiency;
+        }
+        return this.getTier().getSpeed();
     }
 
     @Override
@@ -289,7 +306,18 @@ public class UltimateSword extends SwordItem {
         if (this == ChaosPersists.MyChainsaw) {
             return this.canCrush(state.getBlock());
         }
+        if (this.isBattleAxeWeapon() && state.is(BlockTags.MINEABLE_WITH_AXE)) {
+            return true;
+        }
         return super.isCorrectToolForDrops(stack, state);
+    }
+
+    @Override
+    public boolean canPerformAction(ItemStack stack, ToolAction toolAction) {
+        if (this.isBattleAxeWeapon() && ToolActions.DEFAULT_AXE_ACTIONS.contains(toolAction)) {
+            return true;
+        }
+        return super.canPerformAction(stack, toolAction);
     }
 
     private boolean canCrush(Block blockID) {
@@ -484,6 +512,13 @@ public class UltimateSword extends SwordItem {
             if (this.canCrush(block)) {
                 return ChaosPersists.chainsaw_stats.efficiency;
             }
+        }
+        if (this.isBattleAxeWeapon()
+                && (state.is(BlockTags.MINEABLE_WITH_AXE)
+                        || state.is(BlockTags.LOGS)
+                        || state.is(BlockTags.PLANKS)
+                        || state.is(BlockTags.LEAVES))) {
+            return this.battleAxeWoodSpeed();
         }
         return super.getDestroySpeed(stack, state);
     }

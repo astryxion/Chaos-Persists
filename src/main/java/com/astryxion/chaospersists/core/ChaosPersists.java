@@ -120,6 +120,7 @@ import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.EntityTravelToDimensionEvent;
+import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.living.MobSpawnEvent;
@@ -2870,6 +2871,17 @@ private static void registerAllCritterCages() {
   public static int DisableOverworldDriedOre = 0;
   public static int DisableOverworldDriedEggs = 0;
   public static int DisableOverworldAntNests = 0;
+  /** 1 = no Chaos End structures (castle, hospital, reaper graveyard, knight dungeon). */
+  public static int DisableEndStructures = 0;
+  /**
+   * 1 = Chaos Persists tamed pets follow the owner across dimensions (Crystal always blocked).
+   */
+  public static int AllowChaosPersistsPetDimensionTravel = 1;
+  /**
+   * 1 = vanilla / other-mod TamableAnimals follow the owner across dimensions (Crystal always
+   * blocked).
+   */
+  public static int AllowOtherModPetDimensionTravel = 1;
   /** 0 follow mobGriefing, 1 always, 2 never. */
   public static int RobotsGriefing = 0;
   public static int BossesGriefing = 0;
@@ -2993,7 +3005,7 @@ private static void registerAllCritterCages() {
   public static int TriffidEnable = 1;
   public static int UltimateSwordMagic = 10;
   public static int UltimateBowDamage = 10;
-  public static int UltimateBowPetHeal = 1;
+  public static int UltimateBowPetHeal = 5;
   public static int PitchBlackEnable = 1;
   public static int NightmareSize = 0;
   public static int LurkingTerrorEnable = 1;
@@ -4142,6 +4154,20 @@ private static void registerAllCritterCages() {
     PlayNicely = config.get(tweaks, "PlayNicely", 0).getInt();
     MinersDreamExpensive = config.get(tweaks, "MinersDreamExpensive", 0).getInt();
     DisableOverworldDungeons = config.get(tweaks, "DisableOverworldDungeons", 0).getInt();
+    AllowChaosPersistsPetDimensionTravel =
+        config.get(
+                tweaks,
+                "AllowChaosPersistsPetDimensionTravel",
+                1,
+                "1 (default) = Chaos Persists tamed pets in following mode (not sitting) follow you through portals / dimension changes. 0 = they stay behind. Crystal is always blocked.")
+            .getInt();
+    AllowOtherModPetDimensionTravel =
+        config.get(
+                tweaks,
+                "AllowOtherModPetDimensionTravel",
+                1,
+                "1 (default) = vanilla/other-mod tamed pets follow you through portals only while in following mode (not sit/wander). 0 = they stay behind. Crystal is always blocked.")
+            .getInt();
     com.astryxion.chaospersists.config.ChaosPackConfig.load(config);
     FullPowerKingEnable = config.get(tweaks, "FullPowerKingEnable", 0).getInt();
     PrinceAutoGrow =
@@ -4190,8 +4216,8 @@ private static void registerAllCritterCages() {
         config.get(
                 weapons,
                 "UltimateBowPetHeal",
-                1,
-                "Health restored when an Ultimate Bow arrow hits a tamed pet (or Girlfriend / Boyfriend). 1 is the original amount. Range 1-5.")
+                5,
+                "Health restored when an Ultimate Bow arrow hits a tamed pet (or Girlfriend / Boyfriend). Chaos Persists default is 5 (OreSpawn 1.7.10 was 1). Range 1-5.")
             .getInt();
 
     if (UltimateSwordMagic < 1) UltimateSwordMagic = 1;
@@ -7664,16 +7690,46 @@ private static void registerAllCritterCages() {
     RoyalPetFollowHelper.bringFollowingPetsToPlayer(player);
   }
 
-  /** Crystal is a naked start; tamed followers (princess, girlfriend, wolves, etc.) stay behind. */
+  /** Snapshot following pets while their chunks are still loaded (before /kill unload). */
+  @SubscribeEvent
+  public void onPlayerDeathRememberPets(LivingDeathEvent event) {
+    if (!(event.getEntity() instanceof ServerPlayer player)) {
+      return;
+    }
+    RoyalPetFollowHelper.rememberFollowingPets(player);
+  }
+
+  /**
+   * Same-dimension /kill (or bed) respawn: force-load remembered pet chunks then warp followers.
+   * Deferred one tick so the respawn position is finalized.
+   */
+  @SubscribeEvent
+  public void onPlayerRespawnBringPets(PlayerEvent.PlayerRespawnEvent event) {
+    if (!(event.getEntity() instanceof ServerPlayer player)) {
+      return;
+    }
+    player.server.execute(() -> RoyalPetFollowHelper.bringPetsAfterRespawn(player));
+  }
+
+  /**
+   * Crystal is always a naked start for tames. Other dimensions honor
+   * AllowChaosPersistsPetDimensionTravel / AllowOtherModPetDimensionTravel, and only when the pet
+   * is in following mode (not sit / wander).
+   */
   @SubscribeEvent
   public void onEntityTravelToDimensionBlockCrystalPets(EntityTravelToDimensionEvent event) {
     if (event == null || event.getEntity() == null) {
       return;
     }
-    if (!getCrystalDimensionKey().equals(event.getDimension())) {
+    if (!(event.getEntity() instanceof TamableAnimal tame) || !tame.isTame()) {
       return;
     }
-    if (event.getEntity() instanceof TamableAnimal tame && tame.isTame()) {
+    if (getCrystalDimensionKey().equals(event.getDimension())) {
+      event.setCanceled(true);
+      return;
+    }
+    if (!RoyalPetFollowHelper.mayCrossDimensions(tame)
+        || !RoyalPetFollowHelper.isInFollowCommandMode(tame)) {
       event.setCanceled(true);
     }
   }

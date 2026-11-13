@@ -314,7 +314,7 @@ public class ThePrincess extends TamableAnimal {
                 && !var2.isEmpty()
                 && this.isOwnedBy(par1EntityPlayer)
                 && par1EntityPlayer.distanceToSqr(this) < 16.0) {
-            FoodProperties var3 = var2.getFoodProperties(this);
+            FoodProperties var3 = MyUtils.getMeatFood(var2, this);
             if (var3 != null) {
                 if (!this.level().isClientSide) {
                     if ((float) this.mygetMaxHealth() > this.getHealth()) {
@@ -560,6 +560,18 @@ public class ThePrincess extends TamableAnimal {
     @Override
     protected void checkFallDamage(double y, boolean onGround, BlockState state, BlockPos pos) {
         this.fallDistance = 0.0f;
+    }
+
+    /**
+     * 1.7.10 flight used {@code noClip}, which never applied cobweb slowdown. In 1.20
+     * {@code checkInsideBlocks} still calls cobweb {@code makeStuckInBlock} even with
+     * {@code noPhysics}, so ignore cobwebs entirely for Princess.
+     */
+    @Override
+    public void makeStuckInBlock(BlockState state, Vec3 motionMultiplier) {
+        if (!state.is(Blocks.COBWEB)) {
+            super.makeStuckInBlock(state, motionMultiplier);
+        }
     }
 
     @Override
@@ -1157,26 +1169,18 @@ public class ThePrincess extends TamableAnimal {
             }
         }
         double speed_factor = 1.0;
-        double var1 = (double) this.currentFlightTarget.getX() + 0.5 - this.getX();
-        double var3 = (double) this.currentFlightTarget.getY() + 0.1 - this.getY();
-        double var5 = (double) this.currentFlightTarget.getZ() + 0.5 - this.getZ();
         if (this.owner_flying != 0) {
             speed_factor = 1.75;
             if (this.isTame() && this.getOwner() != null && this.distanceToSqr(this.getOwner()) > 49.0) {
                 speed_factor = 3.5;
             }
         }
-        Vec3 motion = this.getDeltaMovement();
-        this.setDeltaMovement(
-                motion.add(
-                        (Math.signum(var1) * 0.5 - motion.x) * 0.15 * speed_factor,
-                        (Math.signum(var3) * 0.7 - motion.y) * 0.21 * speed_factor,
-                        (Math.signum(var5) * 0.5 - motion.z) * 0.15 * speed_factor));
-        motion = this.getDeltaMovement();
-        float var7 = (float) (Mth.atan2(motion.z, motion.x) * 180.0 / Math.PI) - 90.0f;
-        float var8 = Mth.wrapDegrees(var7 - this.getYRot());
-        this.setZza((float) (0.75 * speed_factor));
-        this.setYRot(this.getYRot() + var8 / 3.0f);
+        MyUtils.steerChaosFlightForward(
+                this,
+                (double) this.currentFlightTarget.getX() + 0.5,
+                (double) this.currentFlightTarget.getY() + 0.1,
+                (double) this.currentFlightTarget.getZ() + 0.5,
+                speed_factor);
         MyUtils.applyChaosFlightMovement(this);
 }
 

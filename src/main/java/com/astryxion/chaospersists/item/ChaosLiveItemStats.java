@@ -3,6 +3,7 @@ package com.astryxion.chaospersists.item;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.util.ArmorStats;
 import com.astryxion.chaospersists.util.WeaponStats;
+import java.util.Collection;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -17,11 +18,13 @@ import net.minecraftforge.fml.common.Mod;
 /**
  * Config weapon damage and armor points apply as soon as Done is pressed. SwordItem/ArmorItem bake
  * modifiers at construct time, so live values are swapped on the attribute event.
+ *
+ * <p>Important: ItemStack tooltips compare attack-damage modifier UUIDs with {@code ==} (not
+ * equals). Replacing the sword modifier with a freshly parsed UUID skips the player base +1 and
+ * Sharpness bonus in the tooltip — reuse the vanilla modifier's UUID instance instead.
  */
 @Mod.EventBusSubscriber(modid = ChaosPersists.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public final class ChaosLiveItemStats {
-    private static final UUID ATTACK_DAMAGE_UUID =
-            UUID.fromString("CB3F55D3-645C-4F38-A497-9C13A33DB5CF");
     private static final UUID BOOTS_UUID = UUID.fromString("845DB27C-C624-495F-8C9F-6020A9A58B6B");
     private static final UUID LEGS_UUID = UUID.fromString("D8499B04-0E66-4726-AB29-64469D734E0D");
     private static final UUID CHEST_UUID = UUID.fromString("9F3D146D-049D-412F-B78-BFC0FD80BA5B");
@@ -38,12 +41,15 @@ public final class ChaosLiveItemStats {
             if (stats == null) {
                 return;
             }
+            // OreSpawn ItemSword: material + 4. Item attribute is that total minus player base 1,
+            // so tooltip/combat become material + 4 once base is applied.
             double amount = stats.damage + ChaosWeaponDamage.TIER_SWORD_MODIFIER;
+            UUID damageUuid = attackDamageModifierUuid(event);
             event.removeAttribute(Attributes.ATTACK_DAMAGE);
             event.addModifier(
                     Attributes.ATTACK_DAMAGE,
                     new AttributeModifier(
-                            ATTACK_DAMAGE_UUID,
+                            damageUuid,
                             "Weapon modifier",
                             amount,
                             AttributeModifier.Operation.ADDITION));
@@ -71,6 +77,28 @@ public final class ChaosLiveItemStats {
                     new AttributeModifier(
                             uuid, "Armor modifier", defense, AttributeModifier.Operation.ADDITION));
         }
+    }
+
+    /**
+     * Prefer the UUID instance already on the sword (same object as {@code Item.BASE_ATTACK_DAMAGE_UUID}).
+     * ItemStack tooltips use reference equality for the base/+Sharpness adjustment.
+     */
+    private static UUID attackDamageModifierUuid(ItemAttributeModifierEvent event) {
+        Collection<AttributeModifier> existing = event.getModifiers().get(Attributes.ATTACK_DAMAGE);
+        if (existing != null) {
+            for (AttributeModifier modifier : existing) {
+                return modifier.getId();
+            }
+        }
+        Collection<AttributeModifier> original =
+                event.getOriginalModifiers().get(Attributes.ATTACK_DAMAGE);
+        if (original != null) {
+            for (AttributeModifier modifier : original) {
+                return modifier.getId();
+            }
+        }
+        // Should be unreachable for SwordItem; keep a value-equal fallback for safety.
+        return UUID.fromString("CB3F55D3-645C-4F38-A497-9C13A33DB5CF");
     }
 
     @Nullable

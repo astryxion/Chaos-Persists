@@ -1,6 +1,7 @@
 package com.astryxion.chaospersists.item;
 
 import com.astryxion.chaospersists.core.ChaosPersists;
+import com.astryxion.chaospersists.util.MyUtils;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -201,6 +202,9 @@ public class LaserBall extends ThrowableProjectile {
         ++this.ticksalive;
         if (this.ticksalive > 200) {
             this.discard();
+            return;
+        }
+        if (MyUtils.discardIfNextMoveUnloaded(this)) {
             return;
         }
         super.tick();

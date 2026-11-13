@@ -9,21 +9,27 @@ import com.astryxion.chaospersists.entity.ThePrince;
 import com.astryxion.chaospersists.entity.ThePrinceAdult;
 import com.astryxion.chaospersists.entity.ThePrinceTeen;
 import com.astryxion.chaospersists.entity.ThePrincess;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.TicketType;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -33,7 +39,81 @@ import net.minecraft.world.level.pathfinder.WalkNodeEvaluator;
 /** Prince/princess follow helpers modeled on Mythic Mounts {@code MountFollowOwnerGoal}. */
 public final class RoyalPetFollowHelper {
 
+    /**
+     * Following pets snapshotted at owner death so respawn can force-load their chunks after
+     * {@code /kill} (or any long-range same-dimension respawn) unloads them.
+     */
+    private static final Map<UUID, List<RememberedPet>> REMEMBERED_PETS = new ConcurrentHashMap<>();
+
+    private record RememberedPet(UUID petId, ResourceKey<Level> dimension, BlockPos pos) {}
+
     private RoyalPetFollowHelper() {}
+
+    /**
+     * Call while the owner is dying and pets are still in loaded chunks. Respawn later force-loads
+     * these positions and warps following pets to the player.
+     */
+    public static void rememberFollowingPets(ServerPlayer player) {
+        if (player == null || player.level().isClientSide || isCrystalDimension(player.level())) {
+            return;
+        }
+        UUID ownerId = player.getUUID();
+        List<RememberedPet> remembered = new ArrayList<>();
+        for (ServerLevel level : player.server.getAllLevels()) {
+            for (Entity entity : level.getAllEntities()) {
+                if (!(entity instanceof TamableAnimal pet)) {
+                    continue;
+                }
+                if (!isFollowingOwner(pet, ownerId)) {
+                    continue;
+                }
+                remembered.add(
+                        new RememberedPet(
+                                pet.getUUID(), level.dimension(), pet.blockPosition()));
+            }
+        }
+        if (remembered.isEmpty()) {
+            REMEMBERED_PETS.remove(ownerId);
+        } else {
+            REMEMBERED_PETS.put(ownerId, remembered);
+        }
+    }
+
+    /**
+     * After respawn: force-load remembered pet chunks, then bring every loaded following tame.
+     * Safe to call when no pets were remembered (still scans loaded entities).
+     */
+    public static void bringPetsAfterRespawn(ServerPlayer player) {
+        if (player == null || player.level().isClientSide || isCrystalDimension(player.level())) {
+            if (player != null) {
+                REMEMBERED_PETS.remove(player.getUUID());
+            }
+            return;
+        }
+        UUID ownerId = player.getUUID();
+        List<RememberedPet> remembered = REMEMBERED_PETS.remove(ownerId);
+        if (remembered != null) {
+            for (RememberedPet entry : remembered) {
+                ServerLevel level = player.server.getLevel(entry.dimension());
+                if (level == null) {
+                    continue;
+                }
+                ChunkPos chunk = new ChunkPos(entry.pos());
+                level.getChunkSource()
+                        .addRegionTicket(
+                                TicketType.POST_TELEPORT, chunk, 2, entry.petId().hashCode());
+                level.getChunk(chunk.x, chunk.z);
+                Entity found = level.getEntity(entry.petId());
+                if (found instanceof TamableAnimal pet && isFollowingOwner(pet, ownerId)) {
+                    if (pet.level() != player.level() && !mayCrossDimensions(pet)) {
+                        continue;
+                    }
+                    teleportFollowingPetToPlayer(pet, player);
+                }
+            }
+        }
+        bringFollowingPetsToPlayer(player);
+    }
 
     /** Crystal is a naked-start dimension; tamed followers must not be pulled in. */
     public static boolean isCrystalDimension(Level level) {
@@ -46,17 +126,96 @@ public final class RoyalPetFollowHelper {
         return key != null && ChaosPersists.MODID.equals(key.getNamespace());
     }
 
+    /**
+     * Whether this tame may be pulled across dimensions. Crystal is always denied separately.
+     * Chaos pets use {@link ChaosPersists#AllowChaosPersistsPetDimensionTravel}; everything else
+     * (vanilla + other mods) uses {@link ChaosPersists#AllowOtherModPetDimensionTravel}.
+     */
+    public static boolean mayCrossDimensions(TamableAnimal pet) {
+        if (pet == null) {
+            return false;
+        }
+        if (isChaosPersistsPet(pet)) {
+            return ChaosPersists.AllowChaosPersistsPetDimensionTravel != 0;
+        }
+        return ChaosPersists.AllowOtherModPetDimensionTravel != 0;
+    }
+
     public static boolean isStayingPut(TamableAnimal pet) {
         return pet.isOrderedToSit() || pet.isInSittingPose();
     }
 
-    /** Sitting / ridden pets stay behind; following owned tames come along. */
+    /**
+     * Cached probes for other mods' follow/wander/sit command APIs (e.g. Alex's Mobs
+     * {@code IFollower#shouldFollow} / {@code getCommand}: 0 wander, 1 follow, 2 stay).
+     */
+    private static final ClassValue<FollowModeProbe> FOLLOW_MODE_PROBES =
+            new ClassValue<>() {
+                @Override
+                protected FollowModeProbe computeValue(Class<?> type) {
+                    Method shouldFollow = findNoArgMethod(type, "shouldFollow", boolean.class, Boolean.class);
+                    Method getCommand = findNoArgMethod(type, "getCommand", int.class, Integer.class);
+                    return new FollowModeProbe(shouldFollow, getCommand);
+                }
+            };
+
+    private static Method findNoArgMethod(Class<?> type, String name, Class<?>... returnTypes) {
+        try {
+            Method method = type.getMethod(name);
+            Class<?> ret = method.getReturnType();
+            for (Class<?> allowed : returnTypes) {
+                if (ret == allowed) {
+                    method.setAccessible(true);
+                    return method;
+                }
+            }
+        } catch (ReflectiveOperationException ignored) {
+        }
+        return null;
+    }
+
+    private record FollowModeProbe(Method shouldFollow, Method getCommand) {}
+
+    /**
+     * True only when the pet is in an explicit following mode. Sitting and wandering (Alex's Mobs
+     * command 0, etc.) must stay in the original dimension. Chaos / vanilla pets without extra
+     * modes treat "not sitting" as following.
+     */
+    public static boolean isInFollowCommandMode(TamableAnimal pet) {
+        if (pet == null || isStayingPut(pet)) {
+            return false;
+        }
+        FollowModeProbe probe = FOLLOW_MODE_PROBES.get(pet.getClass());
+        if (probe.shouldFollow != null) {
+            try {
+                Object result = probe.shouldFollow.invoke(pet);
+                return result instanceof Boolean following && following;
+            } catch (ReflectiveOperationException ignored) {
+                return false;
+            }
+        }
+        if (probe.getCommand != null) {
+            ResourceLocation key = EntityType.getKey(pet.getType());
+            // Alex's Mobs: 0 wandering, 1 following, 2 staying (+ optional extras).
+            if (key != null && "alexsmobs".equals(key.getNamespace())) {
+                try {
+                    Object result = probe.getCommand.invoke(pet);
+                    return result instanceof Integer command && command == 1;
+                } catch (ReflectiveOperationException ignored) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /** Sitting / wandering / ridden pets stay behind; following owned tames come along. */
     public static boolean isFollowingOwner(TamableAnimal pet, UUID ownerId) {
         return pet.isAlive()
                 && !pet.isRemoved()
                 && pet.isTame()
                 && ownerId.equals(pet.getOwnerUUID())
-                && !isStayingPut(pet)
+                && isInFollowCommandMode(pet)
                 && pet.getVehicle() == null
                 && pet.getPassengers().isEmpty();
     }
@@ -114,6 +273,9 @@ public final class RoyalPetFollowHelper {
                 if (!isFollowingOwner(pet, ownerId)) {
                     continue;
                 }
+                if (pet.level() != player.level() && !mayCrossDimensions(pet)) {
+                    continue;
+                }
                 if (pet.level() == player.level() && pet.distanceToSqr(player) < 16.0) {
                     continue;
                 }
@@ -150,7 +312,9 @@ public final class RoyalPetFollowHelper {
                 }
                 boolean otherDimension = pet.level() != player.level();
                 if (otherDimension) {
-                    pets.add(pet);
+                    if (mayCrossDimensions(pet)) {
+                        pets.add(pet);
+                    }
                     continue;
                 }
                 // Same-world 48-block warp stays Chaos ground pets only so vanilla/modded
@@ -196,6 +360,9 @@ public final class RoyalPetFollowHelper {
         }
         LivingEntity owner = pet.getOwner();
         if (owner == null || pet.level() == owner.level() || isCrystalDimension(owner.level())) {
+            return;
+        }
+        if (!mayCrossDimensions(pet)) {
             return;
         }
         teleportNearOwner(pet, owner);

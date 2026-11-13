@@ -20,6 +20,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
+import net.minecraft.world.Difficulty;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.entity.Entity;
@@ -152,8 +153,9 @@ public class PitchBlack extends Monster {
     }
 
     public void setSpawnedFromSpawner() {
+        // Flag is only for scale capping near nightmare spawners (OreSpawn getCanSpawnHere).
+        // Do NOT setPersistenceRequired — 1.7.10 canDespawn() still allowed daytime despawn.
         this.spawnedFromSpawner = true;
-        this.setPersistenceRequired();
     }
 
     public int getAttacking() {
@@ -274,8 +276,20 @@ public class PitchBlack extends Monster {
     }
 
     @Override
+    public boolean isPersistenceRequired() {
+        // Older builds called setPersistenceRequired() for spawner Nightmares; clear that so
+        // they can despawn again (OreSpawn 1.7.10). Keep persistence for eggs / named mobs.
+        if (this.spawnedFromSpawner && !this.spawnedFromEgg && !this.hasCustomName()) {
+            return false;
+        }
+        return super.isPersistenceRequired();
+    }
+
+    @Override
     public boolean removeWhenFarAway(double distanceToClosestPlayer) {
-        if (this.spawnedFromEgg || this.spawnedFromSpawner) {
+        // OreSpawn 1.7.10 PitchBlack.canDespawn: persist only if no-despawn required; else
+        // despawn in daytime. Spawner-spawned Nightmares are NOT permanent.
+        if (this.spawnedFromEgg) {
             return false;
         }
         if (this.tickCount < 40) {
@@ -407,10 +421,13 @@ public class PitchBlack extends Monster {
 
     @Override
     public void remove(Entity.RemovalReason reason) {
+        // Egg-spawned Nightmares should not be distance-despawned while alive, but OreSpawn
+        // EntityMob always setDead() on Peaceful — Peaceful discard must not be blocked.
         if (!this.level().isClientSide
-                && (this.spawnedFromEgg || this.spawnedFromSpawner)
+                && this.spawnedFromEgg
                 && this.getHealth() > 0.0f
-                && reason == Entity.RemovalReason.DISCARDED) {
+                && reason == Entity.RemovalReason.DISCARDED
+                && this.level().getDifficulty() != Difficulty.PEACEFUL) {
             return;
         }
         super.remove(reason);
@@ -519,20 +536,13 @@ public class PitchBlack extends Monster {
                 this.setAttacking(0);
             }
         }
-        double var1 = (double) this.currentFlightTarget.getX() + 0.4 - this.getX();
-        double var3 = (double) this.currentFlightTarget.getY() + 0.1 - this.getY();
-        double var5 = (double) this.currentFlightTarget.getZ() + 0.4 - this.getZ();
         double myspeed = 0.5 + (double) (this.getPitchBlackScale() / 10.0f);
-        Vec3 motion = this.getDeltaMovement();
-        this.setDeltaMovement(
-                motion.add(
-                        (Math.signum(var1) * myspeed - motion.x) * 0.33,
-                        (Math.signum(var3) * 0.699999988079071 - motion.y) * 0.20000000149011612,
-                        (Math.signum(var5) * myspeed - motion.z) * 0.33));
-        motion = this.getDeltaMovement();
-        float var7 = (float) (Mth.atan2(motion.z, motion.x) * 180.0 / Math.PI) - 90.0f;
-        float var8 = Mth.wrapDegrees(var7 - this.getYRot());
-        this.setYRot(this.getYRot() + var8 / 5.0f);
+        MyUtils.steerChaosFlightForward(
+                this,
+                (double) this.currentFlightTarget.getX() + 0.4,
+                (double) this.currentFlightTarget.getY() + 0.1,
+                (double) this.currentFlightTarget.getZ() + 0.4,
+                myspeed);
         MyUtils.applyChaosFlightMovement(this);
 }
 

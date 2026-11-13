@@ -118,7 +118,7 @@ public class Dragon extends TamableAnimal implements ChaosFlyingMount {
     private int lastZ = 0;
     private int unstick_timer = 0;
     private int fireballticker = 0;
-    private float moveSpeed = 0.32f;
+    private float moveSpeed = 0.4f;
     private float deltasmooth = 0.0f;
     private int dragontype = 0;
     private int closest = 99999;
@@ -131,7 +131,7 @@ public class Dragon extends TamableAnimal implements ChaosFlyingMount {
         super(type, level);
         this.xpReward = 100;
         this.fireImmune();
-        this.moveSpeed = 0.32f;
+        this.moveSpeed = 0.4f;
         this.setOrderedToSit(false);
         this.targetSorter = new GenericTargetSorter(this);
         this.renderdata = new RenderInfo();
@@ -161,7 +161,7 @@ public class Dragon extends TamableAnimal implements ChaosFlyingMount {
     public static AttributeSupplier.Builder createAttributes() {
         return TamableAnimal.createMobAttributes()
                 .add(Attributes.MAX_HEALTH, 200.0)
-                .add(Attributes.MOVEMENT_SPEED, 0.32)
+                .add(Attributes.MOVEMENT_SPEED, 0.4)
                 .add(Attributes.ATTACK_DAMAGE, 35.0)
                 .add(Attributes.ARMOR, 14.0);
     }
@@ -602,6 +602,16 @@ public class Dragon extends TamableAnimal implements ChaosFlyingMount {
             return;
         }
         this.setActivity(airborne ? 1 : 0);
+    }
+
+    @Override
+    public float getMaximumSpeed() {
+        return 0.55f;
+    }
+
+    @Override
+    public float getRiddenAirSpeedMultiplier() {
+        return 8.0f;
     }
 
     @Override
@@ -1513,33 +1523,20 @@ public class Dragon extends TamableAnimal implements ChaosFlyingMount {
                 obstruction_factor += 0.05;
             }
         }
-        speed_factor = 0.5;
-        var1 = (double) this.currentFlightTarget.getX() + 0.5 - this.getX();
-        var3 = (double) this.currentFlightTarget.getY() + 0.1 - this.getY();
-        var5 = (double) this.currentFlightTarget.getZ() + 0.5 - this.getZ();
+        // IAF-style steer uses 0.5*speedFactor cruise; OreSpawn felt ~1.75 baseline here.
+        speed_factor = 1.75;
         if (this.owner_flying != 0) {
-            speed_factor = 1.75;
+            speed_factor = 2.5;
             if (this.isTame() && this.getOwner() != null && this.distanceToSqr((e = this.getOwner())) > 49.0) {
-                speed_factor = 3.5;
+                speed_factor = 4.0;
             }
         }
-        mx += (Math.signum(var1) - mx) * 0.15 * speed_factor;
-        my += (Math.signum(var3) - my) * 0.21 * speed_factor;
-        mz += (Math.signum(var5) - mz) * 0.15 * speed_factor;
-        float var7 = (float) (Math.atan2(mz, mx) * 180.0 / 3.141592653589793) - 90.0f;
-        float var8 = Mth.wrapDegrees((float) (var7 - this.getYRot()));
-        this.zza = (float) (0.75 * speed_factor);
-        this.setYRot(this.getYRot() + Mth.clamp(var8, -25.0f, 25.0f));
-        this.yBodyRot = this.getYRot();
-        this.setYHeadRot(this.getYRot());
-        float yawRad = this.getYRot() * ((float) Math.PI / 180.0f);
-        double forwardX = -Mth.sin(yawRad);
-        double forwardZ = Mth.cos(yawRad);
-        double along = mx * forwardX + mz * forwardZ;
-        if (along < 0.0) {
-            along = 0.0;
-        }
-        this.setDeltaMovement(forwardX * along, my, forwardZ * along);
+        MyUtils.steerChaosFlightForward(
+                this,
+                (double) this.currentFlightTarget.getX() + 0.5,
+                (double) this.currentFlightTarget.getY() + 0.1,
+                (double) this.currentFlightTarget.getZ() + 0.5,
+                speed_factor);
         if (obstruction_factor > 0.0) {
             Vec3 steered = this.getDeltaMovement();
             this.setDeltaMovement(steered.x, steered.y + obstruction_factor * 0.05, steered.z);

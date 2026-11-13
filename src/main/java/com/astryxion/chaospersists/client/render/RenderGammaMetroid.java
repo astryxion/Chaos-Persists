@@ -32,9 +32,14 @@ public class RenderGammaMetroid extends MobRenderer<GammaMetroid, ModelGammaMetr
     /** 1.12 rendered the full model with GL_BLEND enabled in {@link ModelGammaMetroid}. */
     @Override
     protected RenderType getRenderType(GammaMetroid entity, boolean bodyVisible, boolean translucent, boolean glowing) {
-        if (glowing) {
-            return RenderType.outline(this.getTextureLocation(entity));
+        ResourceLocation tex = this.getTextureLocation(entity);
+        if (translucent) {
+            return RenderType.itemEntityTranslucentCull(tex);
+        } else if (bodyVisible) {
+            return RenderType.entityTranslucent(tex);
+        } else if (glowing) {
+            return RenderType.outline(tex);
         }
-        return RenderType.entityTranslucent(this.getTextureLocation(entity));
+        return null;
     }
 }

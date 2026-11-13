@@ -480,6 +480,18 @@ public class ThePrinceTeen extends TamableAnimal implements ChaosFlyingMount {
         this.fallDistance = 0.0f;
     }
 
+    /**
+     * 1.7.10 flight used {@code noClip}, which never applied cobweb slowdown. In 1.20
+     * {@code checkInsideBlocks} still calls cobweb {@code makeStuckInBlock} even with
+     * {@code noPhysics}, so ignore cobwebs entirely for Prince Teen.
+     */
+    @Override
+    public void makeStuckInBlock(BlockState state, Vec3 motionMultiplier) {
+        if (!state.is(Blocks.COBWEB)) {
+            super.makeStuckInBlock(state, motionMultiplier);
+        }
+    }
+
     protected boolean canTriggerWalking() {
         return true;
     }
@@ -1376,9 +1388,6 @@ public class ThePrinceTeen extends TamableAnimal implements ChaosFlyingMount {
         my += obstruction_factor * 0.05;
         this.setPos(this.getX(), this.getY() + obstruction_factor * 0.05, this.getZ());
         speed_factor = 0.5;
-        var1 = (double)this.currentFlightTarget.getX() + 0.5 - this.getX();
-        var3 = (double)this.currentFlightTarget.getY() + 0.1 - this.getY();
-        var5 = (double)this.currentFlightTarget.getZ() + 0.5 - this.getZ();
         if (this.owner_flying != 0) {
             speed_factor = 1.75;
             if (this.isTame() && this.getOwner() != null && this.distanceToSqr((e = this.getOwner())) > 49.0) {
@@ -1387,22 +1396,13 @@ public class ThePrinceTeen extends TamableAnimal implements ChaosFlyingMount {
         } else if (has_owner && e != null && this.distanceToSqr(e) < 64.0) {
             speed_factor = 0.35;
         }
-        mx += (Math.signum(var1) - mx) * 0.15 * speed_factor;
-        my += (Math.signum(var3) - my) * 0.21 * speed_factor;
-        mz += (Math.signum(var5) - mz) * 0.15 * speed_factor;
-        float var7 = (float)(Math.atan2(mz, mx) * 180.0 / 3.141592653589793) - 90.0f;
-        float var8 = Mth.wrapDegrees((float)(var7 - this.getYRot()));
-        this.zza = (float) (0.75 * speed_factor);
-        this.setYRot(this.getYRot() + var8 / 4.0f);
-        float horizSpeed = (float) Math.sqrt(mx * mx + mz * mz);
-        this.zza = Mth.clamp(horizSpeed * 1.5f, 0.15f, 1.0f);
-        if (mx * mx + my * my + mz * mz < 0.0025) {
-            mx = (this.getRandom().nextDouble() - 0.5) * 0.35;
-            my = -0.12;
-            mz = (this.getRandom().nextDouble() - 0.5) * 0.35;
-        }
-        this.setDeltaMovement(mx, my, mz);
-        this.move(net.minecraft.world.entity.MoverType.SELF, this.getDeltaMovement());
+        MyUtils.steerChaosFlightForward(
+                this,
+                (double) this.currentFlightTarget.getX() + 0.5,
+                (double) this.currentFlightTarget.getY() + 0.1,
+                (double) this.currentFlightTarget.getZ() + 0.5,
+                speed_factor);
+        MyUtils.applyChaosFlightMovement(this);
     }
 
     @Override
@@ -1458,6 +1458,15 @@ public class ThePrinceTeen extends TamableAnimal implements ChaosFlyingMount {
             par1EntityPlayer.setItemInHand(hand, ItemStack.EMPTY);
             var2 = ItemStack.EMPTY;
         }
+        // Oversized AABB contains the rider's eyes, so vanilla still picks this mount on
+        // every right-click. Pass through so food/items are used by the player. Sneak is
+        // flight-descend here — only stick orders sit while mounted.
+        if (par1EntityPlayer.getVehicle() == this) {
+            if (!var2.isEmpty() && var2.is(Items.STICK) && this.isOwnedBy(par1EntityPlayer)) {
+                return this.toggleSitStay(par1EntityPlayer);
+            }
+            return InteractionResult.PASS;
+        }
         if (!var2.isEmpty()
                 && var2.is(Blocks.DIAMOND_BLOCK.asItem())
                 && par1EntityPlayer.distanceToSqr(this) < 25.0) {
@@ -1509,7 +1518,7 @@ public class ThePrinceTeen extends TamableAnimal implements ChaosFlyingMount {
                 return InteractionResult.SUCCESS;
             }
             if (!var2.isEmpty() && par1EntityPlayer.distanceToSqr(this) < 25.0) {
-                FoodProperties var3 = var2.getFoodProperties(this);
+                FoodProperties var3 = MyUtils.getMeatFood(var2, this);
                 if (var3 != null) {
                     if (!this.level().isClientSide) {
                         if ((float) this.mygetMaxHealth() > this.getHealth()) {

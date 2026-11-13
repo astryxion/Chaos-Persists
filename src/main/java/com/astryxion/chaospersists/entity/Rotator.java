@@ -253,19 +253,12 @@ public class Rotator extends Monster {
                 this.doHurtTarget(e);
             }
         }
-        double var1 = (double) this.currentFlightTarget.getX() + 0.5 - this.getX();
-        double var3 = (double) this.currentFlightTarget.getY() + 0.1 - this.getY();
-        double var5 = (double) this.currentFlightTarget.getZ() + 0.5 - this.getZ();
-        Vec3 motion = this.getDeltaMovement();
-        this.setDeltaMovement(
-                motion.add(
-                        (Math.signum(var1) * 0.4 - motion.x) * 0.2,
-                        (Math.signum(var3) * 0.699999988079071 - motion.y) * 0.20000000149011612,
-                        (Math.signum(var5) * 0.4 - motion.z) * 0.2));
-        motion = this.getDeltaMovement();
-        float var7 = (float) (Mth.atan2(motion.z, motion.x) * 180.0 / Math.PI) - 90.0f;
-        float var8 = Mth.wrapDegrees(var7 - this.getYRot());
-        this.setYRot(this.getYRot() + var8 / 4.0f);
+        MyUtils.steerChaosFlightForward(
+                this,
+                (double) this.currentFlightTarget.getX() + 0.5,
+                (double) this.currentFlightTarget.getY() + 0.1,
+                (double) this.currentFlightTarget.getZ() + 0.5,
+                1.0);
         MyUtils.applyChaosFlightMovement(this);
 }
 

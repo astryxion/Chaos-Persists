@@ -1,18 +1,15 @@
 package com.astryxion.chaospersists.compat.artifacts;
 
 import com.astryxion.chaospersists.core.ChaosPersists;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -22,10 +19,13 @@ import net.minecraftforge.registries.ForgeRegistries;
 
 /**
  * Artifacts Everlasting Beef / Eternal Steak return the same stack from {@code finishUsingItem}
- * and sit on a 15s cooldown. Chaos pets that eat any {@code isEdible} food {@code shrink(1)}
- * instead, which deletes the unique item.
+ * and sit on a 15s cooldown. Chaos pets that eat food {@code shrink(1)} instead, which deletes
+ * the unique item.
  *
- * <p>If a Chaos entity ate one, put the stack back and apply the same default cooldown.
+ * <p>{@link PlayerInteractEvent.EntityInteract} only fires before {@code mobInteract}, so a
+ * same-event "after" listener cannot see the shrink. Queue a server restore for after the
+ * interact task finishes; if the stack was consumed, put it back and apply the Artifacts
+ * cooldown.
  */
 @Mod.EventBusSubscriber(modid = ChaosPersists.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public final class ArtifactsEternalFoodCompat {
@@ -37,8 +37,6 @@ public final class ArtifactsEternalFoodCompat {
 
     /** Artifacts {@code durationSeconds(..., 15)} with factor 20. */
     private static final int DEFAULT_COOLDOWN_TICKS = 15 * 20;
-
-    private static final Map<UUID, ItemStack> PENDING = new HashMap<>();
 
     private static boolean checked;
     private static boolean present;
@@ -73,25 +71,15 @@ public final class ArtifactsEternalFoodCompat {
 
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void onEntityInteract(PlayerInteractEvent.EntityInteract event) {
-        beforePetEat(event, event.getTarget());
+        protectEverlastingFood(event, event.getTarget());
     }
 
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void onEntityInteractSpecific(PlayerInteractEvent.EntityInteractSpecific event) {
-        beforePetEat(event, event.getTarget());
+        protectEverlastingFood(event, event.getTarget());
     }
 
-    @SubscribeEvent(priority = EventPriority.LOWEST)
-    public static void afterEntityInteract(PlayerInteractEvent.EntityInteract event) {
-        afterPetEat(event.getLevel(), event.getEntity(), event.getHand());
-    }
-
-    @SubscribeEvent(priority = EventPriority.LOWEST)
-    public static void afterEntityInteractSpecific(PlayerInteractEvent.EntityInteractSpecific event) {
-        afterPetEat(event.getLevel(), event.getEntity(), event.getHand());
-    }
-
-    private static void beforePetEat(PlayerInteractEvent event, Entity target) {
+    private static void protectEverlastingFood(PlayerInteractEvent event, Entity target) {
         if (!isPresent() || event.getLevel().isClientSide) {
             return;
         }
@@ -105,19 +93,26 @@ public final class ArtifactsEternalFoodCompat {
             event.setCancellationResult(InteractionResult.SUCCESS);
             return;
         }
-        PENDING.put(player.getUUID(), stack.copy());
-    }
-
-    private static void afterPetEat(Level level, Player player, InteractionHand hand) {
-        if (player == null || level.isClientSide) {
+        if (!(event.getLevel() instanceof ServerLevel serverLevel)) {
             return;
         }
-        ItemStack saved = PENDING.remove(player.getUUID());
-        if (saved == null || saved.isEmpty()) {
+        ItemStack saved = stack.copy();
+        InteractionHand hand = event.getHand();
+        // EntityInteract fires before mobInteract shrinks; restore after this packet finishes.
+        serverLevel.getServer().execute(() -> restoreIfConsumed(player, hand, saved));
+    }
+
+    private static void restoreIfConsumed(Player player, InteractionHand hand, ItemStack saved) {
+        if (player == null || player.level().isClientSide || saved == null || saved.isEmpty()) {
+            return;
+        }
+        if (!player.isAlive()) {
             return;
         }
         ItemStack current = player.getItemInHand(hand);
-        if (!current.isEmpty() && current.getItem() == saved.getItem() && current.getCount() >= saved.getCount()) {
+        if (!current.isEmpty()
+                && current.getItem() == saved.getItem()
+                && current.getCount() >= saved.getCount()) {
             return;
         }
         player.setItemInHand(hand, saved);

@@ -1,5 +1,6 @@
 package com.astryxion.chaospersists.entity;
 
+import com.astryxion.chaospersists.util.MyUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -101,6 +102,9 @@ public class SunspotUrchin extends ThrowableProjectile {
 
     @Override
     public void tick() {
+        if (MyUtils.discardIfNextMoveUnloaded(this)) {
+            return;
+        }
         super.tick();
         this.setSharedFlagOnFire(true);
         this.my_rotation += 30.0f;

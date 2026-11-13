@@ -227,6 +227,12 @@ public class Elevator extends Mob implements ChaosFlyingMount {
     }
 
     @Override
+    public boolean landsWhenDescendingOntoGround() {
+        // OreSpawn hoverboard never "lands"; it keeps hover physics near the ground.
+        return false;
+    }
+
+    @Override
     public boolean allowMousePitchControl() {
         return false;
     }

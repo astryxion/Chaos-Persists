@@ -91,6 +91,15 @@ public interface ChaosFlyingMount extends ICustomMoveController, IFlyingMount {
         return false;
     }
 
+    /**
+     * Ice and Fire dragons land when descend is held near the ground. Hoverboards must stay in
+     * air/hover travel — dropping into the ground branch applies {@code 1.8 * flightSpeedModifier}
+     * on a large MOVEMENT_SPEED and zaps around at extreme speed.
+     */
+    default boolean landsWhenDescendingOntoGround() {
+        return true;
+    }
+
     default float getMinimumSpeed() {
         return 0.2f;
     }

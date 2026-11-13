@@ -77,11 +77,16 @@ public class BetterFireball extends AbstractHurtingProjectile implements ItemSup
             this.discard();
             return;
         }
-        if (!this.level().isClientSide
-                && (this.shootingEntity != null && !this.shootingEntity.isAlive()
-                        || !this.level().hasChunkAt(BlockPos.containing(this.getX(), this.getY(), this.getZ())))) {
-            this.discard();
-            return;
+        // Vanilla AbstractHurtingProjectile leaves unloaded / non-ticking chunks; also drop if
+        // shooter is gone. hasChunkAt alone is not enough (simulation-distance freeze).
+        if (!this.level().isClientSide) {
+            if (this.shootingEntity != null && this.shootingEntity.isRemoved()) {
+                this.discard();
+                return;
+            }
+            if (MyUtils.discardIfUnloadedChunk(this, this.getX(), this.getY(), this.getZ())) {
+                return;
+            }
         }
         this.setSecondsOnFire(1);
         ++this.ticksInAir;
@@ -106,7 +111,13 @@ public class BetterFireball extends AbstractHurtingProjectile implements ItemSup
             return;
         }
         Vec3 motion = this.getDeltaMovement();
-        this.setPos(this.getX() + motion.x, this.getY() + motion.y, this.getZ() + motion.z);
+        double nextX = this.getX() + motion.x;
+        double nextY = this.getY() + motion.y;
+        double nextZ = this.getZ() + motion.z;
+        if (MyUtils.discardIfUnloadedChunk(this, nextX, nextY, nextZ)) {
+            return;
+        }
+        this.setPos(nextX, nextY, nextZ);
         float horizontal = (float) Math.sqrt(motion.x * motion.x + motion.z * motion.z);
         this.setYRot((float) (Math.atan2(motion.z, motion.x) * 180.0 / Math.PI) + 90.0f);
         this.setXRot((float) (Math.atan2(horizontal, motion.y) * 180.0 / Math.PI) - 90.0f);

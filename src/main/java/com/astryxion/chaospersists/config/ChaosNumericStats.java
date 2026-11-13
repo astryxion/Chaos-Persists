@@ -70,7 +70,7 @@ public final class ChaosNumericStats {
         weapon("QueenBattleAxe", () -> ChaosPersists.queenbattleaxe_stats, 3, 2200, 15, 662, 100);
         extra(Group.WEAPON, CAT_WEAPONS, "UltimateSwordEnchantmentLevel", 5, () -> ChaosPersists.UltimateSwordMagic, v -> ChaosPersists.UltimateSwordMagic = v, "UltimateSword", "enchant_level");
         extra(Group.WEAPON, CAT_WEAPONS, "UltimateBowDamage", 10, () -> ChaosPersists.UltimateBowDamage, v -> ChaosPersists.UltimateBowDamage = v, "UltimateBow", "damage");
-        extra(Group.WEAPON, CAT_WEAPONS, "UltimateBowPetHeal", 1, () -> ChaosPersists.UltimateBowPetHeal, v -> ChaosPersists.UltimateBowPetHeal = v, "UltimateBow", "pet_heal");
+        extra(Group.WEAPON, CAT_WEAPONS, "UltimateBowPetHeal", 5, () -> ChaosPersists.UltimateBowPetHeal, v -> ChaosPersists.UltimateBowPetHeal = v, "UltimateBow", "pet_heal");
 
         ore("Ruby", () -> ChaosPersists.Ruby_stats, 10, 1, 0, 50);
         ore("BlockRuby", () -> ChaosPersists.BlkRuby_stats, 1, 2, 0, 15);

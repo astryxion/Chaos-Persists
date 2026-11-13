@@ -281,6 +281,7 @@ public class ChaosConfigScreen extends Screen {
         options.add(disable("overworldEggs", () -> ChaosPersists.DisableOverworldDriedEggs, v -> ChaosPersists.DisableOverworldDriedEggs = v));
         options.add(disable("overworldAnts", () -> ChaosPersists.DisableOverworldAntNests, v -> ChaosPersists.DisableOverworldAntNests = v));
         options.add(disable("overworldDungeons", () -> ChaosPersists.DisableOverworldDungeons, v -> ChaosPersists.DisableOverworldDungeons = v));
+        options.add(disable("endStructures", () -> ChaosPersists.DisableEndStructures, v -> ChaosPersists.DisableEndStructures = v));
         options.add(header("griefing"));
         options.add(grief("robotsGrief", () -> ChaosPersists.RobotsGriefing, v -> ChaosPersists.RobotsGriefing = v));
         options.add(grief("bossesGrief", () -> ChaosPersists.BossesGriefing, v -> ChaosPersists.BossesGriefing = v));
@@ -300,6 +301,8 @@ public class ChaosConfigScreen extends Screen {
         options.add(bool("RatPetFriendly", () -> ChaosPersists.RatPetFriendly, v -> ChaosPersists.RatPetFriendly = v));
         options.add(bool("DuplicatorTreeEnable", () -> ChaosPersists.enableduplicatortree, v -> ChaosPersists.enableduplicatortree = v));
         options.add(bool("RoyalGlideEnable", () -> ChaosPersists.RoyalGlideEnable, v -> ChaosPersists.RoyalGlideEnable = v));
+        options.add(bool("AllowChaosPersistsPetDimensionTravel", () -> ChaosPersists.AllowChaosPersistsPetDimensionTravel, v -> ChaosPersists.AllowChaosPersistsPetDimensionTravel = v));
+        options.add(bool("AllowOtherModPetDimensionTravel", () -> ChaosPersists.AllowOtherModPetDimensionTravel, v -> ChaosPersists.AllowOtherModPetDimensionTravel = v));
         options.add(bool("DragonflyHorseFriendly", () -> ChaosPersists.DragonflyHorseFriendly, v -> ChaosPersists.DragonflyHorseFriendly = v));
         options.add(bool("MinersDreamExpensive", () -> ChaosPersists.MinersDreamExpensive, v -> ChaosPersists.MinersDreamExpensive = v));
         options.add(bool("FullPowerKingEnable", () -> ChaosPersists.FullPowerKingEnable, v -> ChaosPersists.FullPowerKingEnable = v));

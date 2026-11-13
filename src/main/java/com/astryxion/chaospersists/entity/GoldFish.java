@@ -169,21 +169,12 @@ public class GoldFish extends Animal {
                 --keep_trying;
             }
         }
-        double var1 = (double) this.currentFlightTarget.getX() + 0.4 - this.getX();
-        double var3 = (double) this.currentFlightTarget.getY() + 0.1 - this.getY();
-        double var5 = (double) this.currentFlightTarget.getZ() + 0.4 - this.getZ();
-        Vec3 motion = this.getDeltaMovement();
-        this.setDeltaMovement(
-                motion.add(
-                        (Math.signum(var1) * 0.4 - motion.x) * 0.3,
-                        (Math.signum(var3) * 0.7 - motion.y) * 0.2,
-                        (Math.signum(var5) * 0.4 - motion.z) * 0.3));
-        motion = this.getDeltaMovement();
-        float var7 = (float) (Mth.atan2(motion.z, motion.x) * 180.0 / Math.PI) - 90.0f;
-        float var8 = Mth.wrapDegrees(var7 - this.getYRot());
-        this.setYRot(this.getYRot() + var8 / 6.0f);
-        this.setYBodyRot(this.getYRot());
-        this.setYHeadRot(this.getYRot());
+        MyUtils.steerChaosFlightForward(
+                this,
+                (double) this.currentFlightTarget.getX() + 0.4,
+                (double) this.currentFlightTarget.getY() + 0.1,
+                (double) this.currentFlightTarget.getZ() + 0.4,
+                1.0);
         MyUtils.applyChaosFlightMovement(this);
 }
 

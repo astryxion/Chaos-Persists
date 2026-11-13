@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
-    "chaospersists:crystaltreelog"
+    "chaospersists:crystaltreelog",
+    "chaospersists:duplicatortreelog"
   ]
 }

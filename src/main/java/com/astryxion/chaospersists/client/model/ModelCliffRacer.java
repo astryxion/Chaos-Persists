@@ -63,14 +63,14 @@ public class ModelCliffRacer extends EntityModel<CliffRacer> {
     }
 
     @Override
-    public void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
-        this.Body.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Fins.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.LWing.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.RWing.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Tail.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.TailEnd.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Head.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Beak.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+    public void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, int color) {
+        this.Body.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Fins.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.LWing.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.RWing.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Tail.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.TailEnd.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Head.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Beak.render(poseStack, buffer, packedLight, packedOverlay, color);
     }
 }

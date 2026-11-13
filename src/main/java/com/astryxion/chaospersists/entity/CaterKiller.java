@@ -27,7 +27,6 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
@@ -55,7 +54,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.SpawnerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 public class CaterKiller extends Monster {
     private static final EntityDataAccessor<Byte> ATTACKING =
@@ -93,20 +92,16 @@ public class CaterKiller extends Monster {
                 .add(Attributes.ARMOR, (double) ChaosPersists.CaterKiller_stats.defense);
     }
 
+
     @Override
-    public MobType getMobType() {
-        return MobType.ARTHROPOD;
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(ATTACKING, (byte) 0);
+        builder.define(PLAY_NICELY, ChaosPersists.PlayNicely);
     }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(ATTACKING, (byte) 0);
-        this.entityData.define(PLAY_NICELY, ChaosPersists.PlayNicely);
-    }
-
-    @Override
-    public EntityDimensions getDimensions(Pose pose) {
+    public EntityDimensions getDefaultDimensions(Pose pose) {
         if (this.getPlayNicely() != 0) {
             return EntityDimensions.scalable(1.45f, 2.3f);
         }
@@ -198,7 +193,7 @@ public class CaterKiller extends Monster {
     }
 
     @Override
-    protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+    protected void dropCustomDeathLoot(net.minecraft.server.level.ServerLevel serverLevel, DamageSource source, boolean recentlyHit) {
         if (DatapackLoot.useEntityTable(this)) {
             return;
         }
@@ -233,25 +228,25 @@ public class CaterKiller extends Monster {
                     is = this.dropItemRand(ChaosPersists.MyRubySword, 1);
                     if (is != null) {
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.SHARPNESS, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.SHARPNESS), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.BANE_OF_ARTHROPODS, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.BANE_OF_ARTHROPODS), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.KNOCKBACK, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.KNOCKBACK), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.MOB_LOOTING, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.LOOTING), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(2) == 1) {
-                            is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.FIRE_ASPECT, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FIRE_ASPECT), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.SHARPNESS, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.SHARPNESS), 1 + this.getRandom().nextInt(5));
                         }
                     }
                     continue block17;
@@ -260,10 +255,10 @@ public class CaterKiller extends Monster {
                     is = this.dropItemRand(ChaosPersists.MyRubyShovel, 1);
                     if (is != null) {
                         if (this.getRandom().nextInt(2) == 1) {
-                            is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.BLOCK_EFFICIENCY, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.EFFICIENCY), 1 + this.getRandom().nextInt(5));
                         }
                     }
                     continue block17;
@@ -272,13 +267,13 @@ public class CaterKiller extends Monster {
                     is = this.dropItemRand(ChaosPersists.MyRubyPickaxe, 1);
                     if (is != null) {
                         if (this.getRandom().nextInt(2) == 1) {
-                            is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.BLOCK_EFFICIENCY, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.EFFICIENCY), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.BLOCK_FORTUNE, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FORTUNE), 1 + this.getRandom().nextInt(5));
                         }
                     }
                     continue block17;
@@ -287,10 +282,10 @@ public class CaterKiller extends Monster {
                     is = this.dropItemRand(ChaosPersists.MyRubyAxe, 1);
                     if (is != null) {
                         if (this.getRandom().nextInt(2) == 1) {
-                            is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.BLOCK_EFFICIENCY, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.EFFICIENCY), 1 + this.getRandom().nextInt(5));
                         }
                     }
                     continue block17;
@@ -299,10 +294,10 @@ public class CaterKiller extends Monster {
                     is = this.dropItemRand(ChaosPersists.MyRubyHoe, 1);
                     if (is != null) {
                         if (this.getRandom().nextInt(2) == 1) {
-                            is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.BLOCK_EFFICIENCY, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.EFFICIENCY), 1 + this.getRandom().nextInt(5));
                         }
                     }
                     continue block17;
@@ -311,25 +306,25 @@ public class CaterKiller extends Monster {
                     is = this.dropItemRand(ChaosPersists.RubyHelmet, 1);
                     if (is != null) {
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.ALL_DAMAGE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROTECTION), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.BLAST_PROTECTION, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.BLAST_PROTECTION), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.FIRE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FIRE_PROTECTION), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.PROJECTILE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROJECTILE_PROTECTION), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(2) == 1) {
-                            is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.RESPIRATION, 1 + this.getRandom().nextInt(2));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.RESPIRATION), 1 + this.getRandom().nextInt(2));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.AQUA_AFFINITY, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.AQUA_AFFINITY), 1 + this.getRandom().nextInt(5));
                         }
                     }
                     continue block17;
@@ -338,19 +333,19 @@ public class CaterKiller extends Monster {
                     is = this.dropItemRand(ChaosPersists.RubyBody, 1);
                     if (is != null) {
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.ALL_DAMAGE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROTECTION), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.BLAST_PROTECTION, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.BLAST_PROTECTION), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.FIRE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FIRE_PROTECTION), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.PROJECTILE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROJECTILE_PROTECTION), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(2) == 1) {
-                            is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                         }
                     }
                     continue block17;
@@ -359,19 +354,19 @@ public class CaterKiller extends Monster {
                     is = this.dropItemRand(ChaosPersists.RubyLegs, 1);
                     if (is != null) {
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.ALL_DAMAGE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROTECTION), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.BLAST_PROTECTION, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.BLAST_PROTECTION), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.FIRE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FIRE_PROTECTION), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.PROJECTILE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROJECTILE_PROTECTION), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(2) == 1) {
-                            is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                         }
                     }
                     continue block17;
@@ -380,10 +375,10 @@ public class CaterKiller extends Monster {
                     is = this.dropItemRand(ChaosPersists.RubyBoots, 1);
                     if (is != null) {
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.FALL_PROTECTION, 5 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FEATHER_FALLING), 5 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(2) == 1) {
-                            is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                         }
                     }
                     continue block17;
@@ -394,7 +389,7 @@ public class CaterKiller extends Monster {
                 }
             }
         }
-        if (this.level() instanceof ServerLevel serverLevel) {
+        {
             for (var4 = 0; var4 < 25; ++var4) {
                 spawnCreature(serverLevel, "Butterfly", this.getX(), this.getY() + 1.0, this.getZ());
             }
@@ -406,7 +401,7 @@ public class CaterKiller extends Monster {
             return null;
         }
         ResourceLocation key = resolveSpawnId(par1);
-        EntityType<?> type = ForgeRegistries.ENTITY_TYPES.getValue(key);
+        EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.get(key);
         if (type == null) {
             return null;
         }
@@ -423,13 +418,13 @@ public class CaterKiller extends Monster {
 
     private static ResourceLocation resolveSpawnId(String par1) {
         if (par1.contains(":")) {
-            return new ResourceLocation(par1);
+            return ResourceLocation.parse(par1);
         }
         return switch (par1) {
-            case "Butterfly" -> new ResourceLocation("chaospersists", "butterfly");
-            case "Brutalfly" -> new ResourceLocation("chaospersists", "brutalfly");
+            case "Butterfly" -> ResourceLocation.fromNamespaceAndPath("chaospersists", "butterfly");
+            case "Brutalfly" -> ResourceLocation.fromNamespaceAndPath("chaospersists", "brutalfly");
             default ->
-                    new ResourceLocation(
+                    ResourceLocation.fromNamespaceAndPath(
                             "chaospersists", par1.toLowerCase(Locale.ROOT).replace(' ', '_'));
         };
     }
@@ -569,7 +564,7 @@ public class CaterKiller extends Monster {
                     }
                 }
                 this.playSound(
-                        SoundEvents.GENERIC_EXPLODE,
+                        SoundEvents.GENERIC_EXPLODE.value(),
                         1.0f,
                         this.getRandom().nextFloat() * 0.2f + 0.9f);
                 this.discard();
@@ -909,7 +904,7 @@ public class CaterKiller extends Monster {
             BlockState state = this.level().getBlockState(pos);
             if (state.isAir()
                     || state.is(Blocks.COBWEB)
-                    || state.is(Blocks.GRASS)
+                    || state.is(Blocks.SHORT_GRASS)
                     || state.is(Blocks.TALL_GRASS)
                     || state.is(BlockTags.LEAVES)) {
                 continue;

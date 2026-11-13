@@ -90,14 +90,14 @@ public class PurplePower extends LivingEntity {
     }
 
     @Override
-    public EntityDimensions getDimensions(Pose pose) {
+    public EntityDimensions getDefaultDimensions(Pose pose) {
         return EntityDimensions.scalable(0.75f, 0.75f);
     }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(PURPLE_TYPE, 0);
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(PURPLE_TYPE, 0);
     }
 
     public void setPurpleType(int par1) {
@@ -407,7 +407,7 @@ public class PurplePower extends LivingEntity {
                 e.setHealth(intended);
                 var4 = e.hurt(this.damageSources().mobAttack(this), 5.0f);
                 if (this.getPurpleType() == 1) {
-                    e.setSecondsOnFire(10);
+                    e.igniteForSeconds(10);
                 }
                 if (this.getPurpleType() == 2) {
                     e.addEffect(new MobEffectInstance(MobEffects.POISON, 50, 0));

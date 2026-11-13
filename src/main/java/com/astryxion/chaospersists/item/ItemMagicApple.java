@@ -2,8 +2,8 @@
  * Decompiled with CFR 0_125.
  * 
  * Could not load the following classes:
- *  net.minecraftforge.fml.relauncher.Side
- *  net.minecraftforge.fml.relauncher.SideOnly
+ *  net.neoforged.fml.relauncher.Side
+ *  net.neoforged.fml.relauncher.SideOnly
  *  com.astryxion.chaospersists.ItemMagicApple
  *  com.astryxion.chaospersists.ChaosPersists
  *  com.astryxion.chaospersists.TheKing
@@ -153,23 +153,23 @@ public class ItemMagicApple extends Item {
 
     @Override
     public void onCraftedBy(ItemStack par1ItemStack, Level par2World, Player par3EntityPlayer) {
-        par1ItemStack.enchant(Enchantments.SILK_TOUCH, 2);
+        par1ItemStack.enchant(par2World.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.SILK_TOUCH), 2);
     }
 
     private Entity spawnCreature(Level par0World, int par1, double par2, double par4, double par6) {
         return ItemSpawnEgg.spawnCreature(par0World, par1, null, par2, par4, par6);
     }
 
-    public void onUsingTick(ItemStack stack, Player player, int count) {
-        int lvl = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.SILK_TOUCH, stack);
+    private void ensureSilkTouch(ItemStack stack, Level par2World) {
+        int lvl = com.astryxion.chaospersists.util.ChaosEnchantments.level(Enchantments.SILK_TOUCH, stack);
         if (lvl <= 0) {
-            stack.enchant(Enchantments.SILK_TOUCH, 2);
+            stack.enchant(par2World.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.SILK_TOUCH), 2);
         }
     }
 
     @Override
     public void inventoryTick(ItemStack stack, Level par2World, net.minecraft.world.entity.Entity par3Entity, int par4, boolean par5) {
-        this.onUsingTick(stack, null, 0);
+        ensureSilkTouch(stack, par2World);
     }
 
     private Boolean isBoringBlock(Level world, int x, int y, int z) {
@@ -949,7 +949,7 @@ public class ItemMagicApple extends Item {
         world.playSound(
                 par2EntityPlayer,
                 par2EntityPlayer.blockPosition(),
-                SoundEvents.GENERIC_EXPLODE,
+                SoundEvents.GENERIC_EXPLODE.value(),
                 SoundSource.PLAYERS,
                 2.8f,
                 1.5f);

@@ -63,7 +63,7 @@ public class ItemThunderStaff extends Item {
                 0.15,
                 Mth.sin((player.getYRot() - 90.0f) * Mth.DEG_TO_RAD) * 0.5);
 
-        stack.hurtAndBreak(1, player, e -> e.broadcastBreakEvent(hand));
+        stack.hurtAndBreak(1, player, net.minecraft.world.entity.LivingEntity.getSlotForHand(hand));
 
         return InteractionResultHolder.sidedSuccess(stack, level.isClientSide());
     }

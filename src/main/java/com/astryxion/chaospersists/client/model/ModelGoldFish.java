@@ -95,22 +95,22 @@ public class ModelGoldFish extends EntityModel<GoldFish> {
     }
 
     @Override
-    public void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
-        this.Body.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Head.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Dorsalfin.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Mouth.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Jaw.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Pectoralfin1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Pectoralfin2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Pectoralfin3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Pectoralfin4.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Bottomfin.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Tail1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Tail2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Caudalfin1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Caudalfin2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Bottomfin1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Bottomfin2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+    public void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, int color) {
+        this.Body.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Head.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Dorsalfin.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Mouth.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Jaw.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Pectoralfin1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Pectoralfin2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Pectoralfin3.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Pectoralfin4.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Bottomfin.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Tail1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Tail2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Caudalfin1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Caudalfin2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Bottomfin1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Bottomfin2.render(poseStack, buffer, packedLight, packedOverlay, color);
     }
 }

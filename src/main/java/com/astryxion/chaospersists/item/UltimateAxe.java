@@ -19,26 +19,22 @@ public class UltimateAxe extends AxeItem {
     private static final int WEAPON_DAMAGE = 39;
 
     public UltimateAxe(Tier tier) {
-        super(
-                tier,
-                ChaosWeaponDamage.modifierFor(tier, WEAPON_DAMAGE),
-                -3.0f,
-                new Properties().stacksTo(1).durability(3000));
+        super(tier, new Properties().stacksTo(1).durability(3000).attributes(AxeItem.createAttributes(tier, ChaosWeaponDamage.modifierFor(tier, WEAPON_DAMAGE), -3.0f)));
     }
 
     @Override
     public void onCraftedBy(ItemStack stack, Level level, Player player) {
-        ensureEnchantments(stack);
+        ensureEnchantments(stack, level);
     }
 
     @Override
     public void inventoryTick(ItemStack stack, Level level, Entity entity, int slot, boolean selected) {
-        ensureEnchantments(stack);
+        ensureEnchantments(stack, level);
     }
 
-    private void ensureEnchantments(ItemStack stack) {
-        if (EnchantmentHelper.getItemEnchantmentLevel(Enchantments.BLOCK_EFFICIENCY, stack) <= 0) {
-            stack.enchant(Enchantments.BLOCK_EFFICIENCY, 5);
+    private void ensureEnchantments(ItemStack stack, Level level) {
+        if (com.astryxion.chaospersists.util.ChaosEnchantments.level(Enchantments.EFFICIENCY, stack) <= 0) {
+            stack.enchant(level.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.EFFICIENCY), 5);
         }
     }
 
@@ -50,7 +46,7 @@ public class UltimateAxe extends AxeItem {
             } else {
                 target.hurt(target.damageSources().generic(), 1.0f);
             }
-            stack.hurtAndBreak(1, attacker, e -> e.broadcastBreakEvent(EquipmentSlot.MAINHAND));
+            stack.hurtAndBreak(1, attacker, EquipmentSlot.MAINHAND);
             return true;
         }
         return super.hurtEnemy(stack, target, attacker);

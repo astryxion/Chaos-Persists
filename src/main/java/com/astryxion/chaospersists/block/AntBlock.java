@@ -23,7 +23,7 @@ import net.minecraft.world.phys.AABB;
 public class AntBlock extends GrassBlock {
 
     public AntBlock(int par1) {
-        super(net.minecraft.world.level.block.Block.Properties.copy(Blocks.GRASS_BLOCK).randomTicks());
+        super(net.minecraft.world.level.block.Block.Properties.ofFullCopy(Blocks.GRASS_BLOCK).randomTicks());
     }
 
     /**
@@ -89,7 +89,7 @@ public class AntBlock extends GrassBlock {
     }
 
     @Override
-    public ItemStack getCloneItemStack(net.minecraft.world.level.BlockGetter level, BlockPos pos, BlockState state) {
+    public ItemStack getCloneItemStack(net.minecraft.world.level.LevelReader level, BlockPos pos, BlockState state) {
         return new ItemStack(this);
     }
 

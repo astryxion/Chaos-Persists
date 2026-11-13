@@ -104,7 +104,7 @@ public class BlockLettuce extends Block {
     }
 
     @Override
-    public ItemStack getCloneItemStack(net.minecraft.world.level.BlockGetter level, BlockPos pos, BlockState state) {
+    public ItemStack getCloneItemStack(net.minecraft.world.level.LevelReader level, BlockPos pos, BlockState state) {
         return new ItemStack(ChaosPersists.MyLettuce);
     }
 }

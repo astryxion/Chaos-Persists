@@ -9,7 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderSkate extends MobRenderer<Skate, ModelSkate> {
     private static final ResourceLocation TEXTURE =
-            new ResourceLocation("chaospersists", "textures/entity/skatetexture.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/skatetexture.png");
     private final float scale;
 
     public RenderSkate(EntityRendererProvider.Context context, ModelSkate model, float shadow, float scale) {

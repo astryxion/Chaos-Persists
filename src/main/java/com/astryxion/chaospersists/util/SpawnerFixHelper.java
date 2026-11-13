@@ -24,7 +24,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.ListTag;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 /**
  * Used by mixin-injected spawn validation: must live outside the mixin package
@@ -32,7 +32,7 @@ import net.minecraftforge.registries.ForgeRegistries;
  */
 public final class SpawnerFixHelper {
     private static final ResourceLocation FALLBACK =
-            new ResourceLocation("chaospersists", "ant");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "ant");
     private static final Map<String, String> LEGACY_PATH_ALIASES = new HashMap<String, String>();
 
     static {
@@ -106,7 +106,7 @@ public final class SpawnerFixHelper {
      * Returns a registered id whenever possible, otherwise a safe fallback.
      */
     public static ResourceLocation normalizeSpawnerEntityId(ResourceLocation input) {
-        if (input != null && ForgeRegistries.ENTITY_TYPES.containsKey(input)) {
+        if (input != null && BuiltInRegistries.ENTITY_TYPE.containsKey(input)) {
             return input;
         }
 
@@ -148,9 +148,9 @@ public final class SpawnerFixHelper {
             }
         }
 
-        return ForgeRegistries.ENTITY_TYPES.containsKey(FALLBACK)
+        return BuiltInRegistries.ENTITY_TYPE.containsKey(FALLBACK)
                 ? FALLBACK
-                : new ResourceLocation("minecraft", "pig");
+                : ResourceLocation.fromNamespaceAndPath("minecraft", "pig");
     }
 
     /**
@@ -159,14 +159,14 @@ public final class SpawnerFixHelper {
      */
     public static ResourceLocation normalizeEntityLookupId(ResourceLocation input) {
         ResourceLocation direct = normalizeSpawnerEntityId(input);
-        if (direct != null && ForgeRegistries.ENTITY_TYPES.containsKey(direct)) {
+        if (direct != null && BuiltInRegistries.ENTITY_TYPE.containsKey(direct)) {
             return direct;
         }
 
         // Fuzzy fallback: match registered ids by normalized path signature.
         String wanted = compactSignature(input == null ? "" : normalizePath(input.getPath()));
         if (!wanted.isEmpty()) {
-            Set<ResourceLocation> ids = ForgeRegistries.ENTITY_TYPES.getKeys();
+            Set<ResourceLocation> ids = BuiltInRegistries.ENTITY_TYPE.keySet();
             for (ResourceLocation id : ids) {
                 if ("chaospersists".equals(id.getNamespace())
                         && wanted.equals(compactSignature(normalizePath(id.getPath())))) {
@@ -179,17 +179,17 @@ public final class SpawnerFixHelper {
                 }
             }
         }
-        return ForgeRegistries.ENTITY_TYPES.containsKey(FALLBACK)
+        return BuiltInRegistries.ENTITY_TYPE.containsKey(FALLBACK)
                 ? FALLBACK
-                : new ResourceLocation("minecraft", "pig");
+                : ResourceLocation.fromNamespaceAndPath("minecraft", "pig");
     }
 
     private static ResourceLocation tryResolve(String namespace, String path) {
         if (path == null || path.isEmpty()) {
             return null;
         }
-        ResourceLocation id = new ResourceLocation(namespace, path);
-        return ForgeRegistries.ENTITY_TYPES.containsKey(id) ? id : null;
+        ResourceLocation id = ResourceLocation.fromNamespaceAndPath(namespace, path);
+        return BuiltInRegistries.ENTITY_TYPE.containsKey(id) ? id : null;
     }
 
     private static String normalizeToken(String token, boolean allowMinecraftDefault) {
@@ -299,7 +299,7 @@ public final class SpawnerFixHelper {
         if (potentials.isEmpty()) {
             return null;
         }
-        return potentials.getRandom(RandomSource.create()).map(WeightedEntry.Wrapper::getData).orElse(null);
+        return potentials.getRandom(RandomSource.create()).map(WeightedEntry.Wrapper::data).orElse(null);
     }
 
     public static ResourceLocation getMobSpawnerEntityIdFromBlockEntity(SpawnerBlockEntity spawner) {
@@ -318,7 +318,7 @@ public final class SpawnerFixHelper {
         if (logic == null || id == null) {
             return;
         }
-        EntityType<?> type = ForgeRegistries.ENTITY_TYPES.getValue(id);
+        EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.get(id);
         if (type == null) {
             return;
         }

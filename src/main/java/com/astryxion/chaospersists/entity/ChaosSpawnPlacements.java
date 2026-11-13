@@ -16,11 +16,14 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnPlacements;
+import net.minecraft.world.entity.SpawnPlacementTypes;
+import net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent;
+import net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent.Operation;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 /**
  * OreSpawn 1.7.10 relied on implicit spawn rules; 1.20.1 requires explicit spawn placement
@@ -59,21 +62,20 @@ public final class ChaosSpawnPlacements {
           "ghost_pumpkin_skelly",
           "fairy");
 
-  public static void registerAllAfterLegacySpawns() {
-    buildEntitySpawnRuleCache();
-    for (ResourceLocation id : ForgeRegistries.ENTITY_TYPES.getKeys()) {
+  public static void registerAll(RegisterSpawnPlacementsEvent event) {
+    for (ResourceLocation id : BuiltInRegistries.ENTITY_TYPE.keySet()) {
       if (!ChaosPersists.MODID.equals(id.getNamespace())) {
         continue;
       }
-      EntityType<?> type = ForgeRegistries.ENTITY_TYPES.getValue(id);
+      EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.get(id);
       if (type == null || type.getCategory() == MobCategory.MISC) {
         continue;
       }
-      registerEntity(type);
+      registerEntity(event, type);
     }
   }
 
-  private static void buildEntitySpawnRuleCache() {
+  public static void refreshLegacyRules() {
     ENTITY_SPAWN_RULES.clear();
     for (Map.Entry<Class<?>, ResourceLocation> entry : EntityRegistry.getEntityClassIds().entrySet()) {
       Class<?> entityClass = entry.getKey();
@@ -104,48 +106,48 @@ public final class ChaosSpawnPlacements {
   }
 
   @SuppressWarnings({"unchecked", "rawtypes"})
-  private static void registerEntity(EntityType<?> type) {
-    ResourceLocation id = ForgeRegistries.ENTITY_TYPES.getKey(type);
+  private static void registerEntity(RegisterSpawnPlacementsEvent event, EntityType<?> type) {
+    ResourceLocation id = BuiltInRegistries.ENTITY_TYPE.getKey(type);
     if (id == null) {
       return;
     }
     switch (id.getPath()) {
       case "large_worm" ->
-          SpawnPlacements.register(
+          event.register(
               (EntityType<WormLarge>) type,
-              SpawnPlacements.Type.ON_GROUND,
+              SpawnPlacementTypes.ON_GROUND,
               Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
-              ChaosSpawnPlacements::checkLargeWormSpawnRules);
+              ChaosSpawnPlacements::checkLargeWormSpawnRules, Operation.REPLACE);
       case "frog" ->
-          SpawnPlacements.register(
+          event.register(
               (EntityType<Frog>) type,
-              SpawnPlacements.Type.NO_RESTRICTIONS,
+              SpawnPlacementTypes.NO_RESTRICTIONS,
               Heightmap.Types.MOTION_BLOCKING,
-              Frog::checkFrogSpawnRules);
+              Frog::checkFrogSpawnRules, Operation.REPLACE);
       case "attack_squid" ->
-          SpawnPlacements.register(
+          event.register(
               (EntityType<AttackSquid>) type,
-              SpawnPlacements.Type.IN_WATER,
+              SpawnPlacementTypes.IN_WATER,
               Heightmap.Types.MOTION_BLOCKING,
-              AttackSquid::checkAttackSquidSpawnRules);
+              AttackSquid::checkAttackSquidSpawnRules, Operation.REPLACE);
       case "sea_viper" ->
-          SpawnPlacements.register(
+          event.register(
               (EntityType<SeaViper>) type,
-              SpawnPlacements.Type.IN_WATER,
+              SpawnPlacementTypes.IN_WATER,
               Heightmap.Types.MOTION_BLOCKING,
-              SeaViper::checkSeaViperSpawnRules);
+              SeaViper::checkSeaViperSpawnRules, Operation.REPLACE);
       case "whale", "sea_monster" ->
-          SpawnPlacements.register(
+          event.register(
               (EntityType<? extends Mob>) type,
-              SpawnPlacements.Type.IN_WATER,
+              SpawnPlacementTypes.IN_WATER,
               Heightmap.Types.MOTION_BLOCKING,
-              ChaosSpawnPlacements::checkSubmergedWaterSpawnRules);
+              ChaosSpawnPlacements::checkSubmergedWaterSpawnRules, Operation.REPLACE);
       default -> {
         EntitySpawnRuleInvoker invoker = ENTITY_SPAWN_RULES.get(id);
         if (invoker != null) {
-          registerWithLegacyCategory((EntityType<? extends Mob>) type, invoker);
+          registerWithLegacyCategory(event, (EntityType<? extends Mob>) type, invoker);
         } else {
-          registerByLegacyCategory(type);
+          registerByLegacyCategory(event, type);
         }
       }
     }
@@ -153,112 +155,112 @@ public final class ChaosSpawnPlacements {
 
   @SuppressWarnings({"unchecked", "rawtypes"})
   private static void registerWithLegacyCategory(
-      EntityType<? extends Mob> type, EntitySpawnRuleInvoker invoker) {
-    ResourceLocation id = ForgeRegistries.ENTITY_TYPES.getKey(type);
+      RegisterSpawnPlacementsEvent event, EntityType<? extends Mob> type, EntitySpawnRuleInvoker invoker) {
+    ResourceLocation id = BuiltInRegistries.ENTITY_TYPE.getKey(type);
     MobCategory category = EntityRegistry.getLegacyPlacementCategory(type);
     switch (category) {
       case MONSTER ->
-          SpawnPlacements.register(
+          event.register(
               type,
-              SpawnPlacements.Type.ON_GROUND,
+              SpawnPlacementTypes.ON_GROUND,
               Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
               (entityType, level, spawnType, pos, random) ->
                   !isSubmergedInWater(level, pos)
-                      && invoker.test(entityType, level, spawnType, pos, random));
+                      && invoker.test(entityType, level, spawnType, pos, random), Operation.REPLACE);
       case CREATURE ->
-          SpawnPlacements.register(
+          event.register(
               type,
-              SpawnPlacements.Type.ON_GROUND,
+              SpawnPlacementTypes.ON_GROUND,
               Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
               (entityType, level, spawnType, pos, random) ->
                   !isSubmergedInWater(level, pos)
-                      && invoker.test(entityType, level, spawnType, pos, random));
+                      && invoker.test(entityType, level, spawnType, pos, random), Operation.REPLACE);
       case AMBIENT -> {
         if (isAerialAmbientMob(id)) {
-          SpawnPlacements.register(
+          event.register(
               type,
-              SpawnPlacements.Type.NO_RESTRICTIONS,
+              SpawnPlacementTypes.NO_RESTRICTIONS,
               Heightmap.Types.MOTION_BLOCKING,
               (entityType, level, spawnType, pos, random) ->
                   !isSubmergedInWater(level, pos)
                       && pos.getY() >= 50
-                      && invoker.test(entityType, level, spawnType, pos, random));
+                      && invoker.test(entityType, level, spawnType, pos, random), Operation.REPLACE);
         } else {
-          SpawnPlacements.register(
+          event.register(
               type,
-              SpawnPlacements.Type.ON_GROUND,
+              SpawnPlacementTypes.ON_GROUND,
               Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
               (entityType, level, spawnType, pos, random) ->
                   !isSubmergedInWater(level, pos)
-                      && invoker.test(entityType, level, spawnType, pos, random));
+                      && invoker.test(entityType, level, spawnType, pos, random), Operation.REPLACE);
         }
       }
       case WATER_CREATURE, WATER_AMBIENT ->
-          SpawnPlacements.register(
+          event.register(
               type,
-              SpawnPlacements.Type.IN_WATER,
+              SpawnPlacementTypes.IN_WATER,
               Heightmap.Types.MOTION_BLOCKING,
               (entityType, level, spawnType, pos, random) ->
                   isLegacyWaterCreaturePosition(level, pos)
-                      && invoker.test(entityType, level, spawnType, pos, random));
+                      && invoker.test(entityType, level, spawnType, pos, random), Operation.REPLACE);
       default ->
-          SpawnPlacements.register(
+          event.register(
               type,
-              SpawnPlacements.Type.ON_GROUND,
+              SpawnPlacementTypes.ON_GROUND,
               Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
               (entityType, level, spawnType, pos, random) ->
                   !isSubmergedInWater(level, pos)
-                      && invoker.test(entityType, level, spawnType, pos, random));
+                      && invoker.test(entityType, level, spawnType, pos, random), Operation.REPLACE);
     }
   }
 
   @SuppressWarnings({"unchecked", "rawtypes"})
-  private static void registerByLegacyCategory(EntityType<?> type) {
-    ResourceLocation id = ForgeRegistries.ENTITY_TYPES.getKey(type);
+  private static void registerByLegacyCategory(RegisterSpawnPlacementsEvent event, EntityType<?> type) {
+    ResourceLocation id = BuiltInRegistries.ENTITY_TYPE.getKey(type);
     MobCategory category = EntityRegistry.getLegacyPlacementCategory(type);
     switch (category) {
       case MONSTER ->
-          SpawnPlacements.register(
+          event.register(
               (EntityType<? extends Monster>) type,
-              SpawnPlacements.Type.ON_GROUND,
+              SpawnPlacementTypes.ON_GROUND,
               Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
-              ChaosSpawnPlacements::checkLandMonsterSpawnRules);
+              ChaosSpawnPlacements::checkLandMonsterSpawnRules, Operation.REPLACE);
       case CREATURE ->
-          SpawnPlacements.register(
+          event.register(
               (EntityType<? extends Animal>) type,
-              SpawnPlacements.Type.ON_GROUND,
+              SpawnPlacementTypes.ON_GROUND,
               Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
-              ChaosSpawnPlacements::checkLandAnimalSpawnRules);
+              ChaosSpawnPlacements::checkLandAnimalSpawnRules, Operation.REPLACE);
       case AMBIENT -> {
         if (isAerialAmbientMob(id)) {
-          SpawnPlacements.register(
+          event.register(
               (EntityType<? extends Mob>) type,
-              SpawnPlacements.Type.NO_RESTRICTIONS,
+              SpawnPlacementTypes.NO_RESTRICTIONS,
               Heightmap.Types.MOTION_BLOCKING,
               (entityType, level, spawnType, pos, random) ->
                   !isSubmergedInWater(level, pos) && pos.getY() >= 50
                       && ChaosSpawnPlacements.checkLandAmbientSpawnRules(
-                          entityType, level, spawnType, pos, random));
+                          entityType, level, spawnType, pos, random), Operation.REPLACE);
         } else {
-          SpawnPlacements.register(
+          event.register(
               (EntityType<? extends Mob>) type,
-              SpawnPlacements.Type.ON_GROUND,
+              SpawnPlacementTypes.ON_GROUND,
               Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
-              ChaosSpawnPlacements::checkLandAmbientSpawnRules);
+              ChaosSpawnPlacements::checkLandAmbientSpawnRules, Operation.REPLACE);
         }
       }
       case WATER_CREATURE, WATER_AMBIENT ->
-          SpawnPlacements.register(
+          event.register(
               (EntityType<? extends Mob>) type,
-              SpawnPlacements.Type.IN_WATER,
+              SpawnPlacementTypes.IN_WATER,
               Heightmap.Types.MOTION_BLOCKING,
-              ChaosSpawnPlacements::checkLegacyWaterCreatureSpawnRules);
+              ChaosSpawnPlacements::checkLegacyWaterCreatureSpawnRules, Operation.REPLACE);
       default ->
-          SpawnPlacements.register(
+          event.register(
               (EntityType<? extends Mob>) type,
-              SpawnPlacements.Type.ON_GROUND,
+              SpawnPlacementTypes.ON_GROUND,
               Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
-              ChaosSpawnPlacements::checkLandMobSpawnRules);
+              ChaosSpawnPlacements::checkLandMobSpawnRules, Operation.REPLACE);
     }
   }
 

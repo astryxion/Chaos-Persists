@@ -22,7 +22,6 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -46,23 +45,23 @@ public class EntityButterfly extends AmbientCreature {
     private static final EntityDataAccessor<Integer> BUTTERFLY_TYPE =
             SynchedEntityData.defineId(EntityButterfly.class, EntityDataSerializers.INT);
     private static final ResourceLocation TEXTURE1 =
-            new ResourceLocation("chaospersists", "textures/entity/butterfly.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/butterfly.png");
     private static final ResourceLocation TEXTURE2 =
-            new ResourceLocation("chaospersists", "textures/entity/butterfly2.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/butterfly2.png");
     private static final ResourceLocation TEXTURE3 =
-            new ResourceLocation("chaospersists", "textures/entity/butterfly3.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/butterfly3.png");
     private static final ResourceLocation TEXTURE4 =
-            new ResourceLocation("chaospersists", "textures/entity/butterfly4.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/butterfly4.png");
     private static final ResourceLocation TEXTURE9 =
-            new ResourceLocation("chaospersists", "textures/entity/vbutterfly1.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/vbutterfly1.png");
     private static final ResourceLocation TEXTURE_EYEMOTH =
-            new ResourceLocation("chaospersists", "textures/entity/eyemoth.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/eyemoth.png");
     private static final ResourceLocation TEXTURE_LUNAMOTH =
-            new ResourceLocation("chaospersists", "textures/entity/lunamoth.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/lunamoth.png");
     private static final ResourceLocation TEXTURE_DARKMOTH =
-            new ResourceLocation("chaospersists", "textures/entity/darkmoth.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/darkmoth.png");
     private static final ResourceLocation TEXTURE_FIREMOTH =
-            new ResourceLocation("chaospersists", "textures/entity/firemoth.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/firemoth.png");
     public int butterfly_type = ChaosPersists.ChaosRand.nextInt(4);
     private final GenericTargetSorter targetSorter;
     private int force_sync = 25;
@@ -80,15 +79,11 @@ public class EntityButterfly extends AmbientCreature {
                 .add(Attributes.ATTACK_DAMAGE, 0.0);
     }
 
-    @Override
-    public MobType getMobType() {
-        return MobType.ARTHROPOD;
-    }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(BUTTERFLY_TYPE, this.butterfly_type);
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(BUTTERFLY_TYPE, this.butterfly_type);
     }
 
     public ResourceLocation getTexture(EntityButterfly a) {
@@ -324,7 +319,7 @@ public class EntityButterfly extends AmbientCreature {
         if (world == null) {
             return false;
         }
-        serverPlayer.changeDimension(world, new UtopiaTeleporter(serverPlayer.getX(), serverPlayer.getZ()));
+        serverPlayer.changeDimension((new UtopiaTeleporter(serverPlayer.getX(), serverPlayer.getZ())).transition(serverPlayer, world));
         return true;
     }
 

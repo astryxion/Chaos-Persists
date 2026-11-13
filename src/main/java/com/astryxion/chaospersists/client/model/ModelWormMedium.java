@@ -104,14 +104,14 @@ public class ModelWormMedium extends EntityModel<WormMedium> {
     }
 
     @Override
-    public void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
-        this.head.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.body.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.tail.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.tooth1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.tooth2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.tooth3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.tooth4.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.head2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+    public void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, int color) {
+        this.head.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.body.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.tail.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.tooth1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.tooth2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.tooth3.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.tooth4.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.head2.render(poseStack, buffer, packedLight, packedOverlay, color);
     }
 }

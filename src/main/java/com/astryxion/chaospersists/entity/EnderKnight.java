@@ -49,21 +49,20 @@ import java.util.UUID;
 public class EnderKnight extends Monster {
     private static final EntityDataAccessor<Byte> SCREAMING =
             SynchedEntityData.defineId(EnderKnight.class, EntityDataSerializers.BYTE);
-    private static final UUID ATTACKING_SPEED_BOOST_UUID =
-            UUID.fromString("020E0DFB-87AE-4653-9556-831010E291A0");
+    private static final net.minecraft.resources.ResourceLocation ATTACKING_SPEED_BOOST_UUID =
+            net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", "020e0dfb-87ae-4653-9556-831010e291a0");
     private static final AttributeModifier ATTACKING_SPEED_BOOST =
             new AttributeModifier(
                     ATTACKING_SPEED_BOOST_UUID,
-                    "Attacking speed boost",
                     0.15000000596046448,
-                    AttributeModifier.Operation.ADDITION);
+                    AttributeModifier.Operation.ADD_VALUE);
     private int teleportDelay;
     private int stareTimer;
     private LivingEntity lastEntityToAttack;
 
     public EnderKnight(EntityType<? extends EnderKnight> type, Level level) {
         super(type, level);
-        this.setMaxUpStep(1.0F);
+        getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.STEP_HEIGHT).setBaseValue(1.0F);
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -86,9 +85,9 @@ public class EnderKnight extends Monster {
     }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(SCREAMING, (byte) 0);
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(SCREAMING, (byte) 0);
     }
 
     @Override
@@ -372,7 +371,8 @@ public class EnderKnight extends Monster {
     }
 
     @Override
-    protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+    protected void dropCustomDeathLoot(net.minecraft.server.level.ServerLevel serverLevel, DamageSource source, boolean recentlyHit) {
+        int looting = com.astryxion.chaospersists.util.ChaosEnchantments.looting(source);
         if (DatapackLoot.useEntityTable(this)) {
             return;
         }
@@ -392,7 +392,7 @@ public class EnderKnight extends Monster {
             return false;
         }
         this.setScreaming(true);
-        if (par1DamageSource.isIndirect()) {
+        if (par1DamageSource.getEntity() != par1DamageSource.getDirectEntity()) {
             for (int i = 0; i < 16; ++i) {
                 if (this.teleportRandomly()) {
                     return true;
@@ -434,7 +434,7 @@ public class EnderKnight extends Monster {
                         continue;
                     }
                     ResourceLocation knightId =
-                            new ResourceLocation("chaospersists", "ender_knight");
+                            ResourceLocation.fromNamespaceAndPath("chaospersists", "ender_knight");
                     ResourceLocation norm = SpawnerFixHelper.normalizeSpawnerEntityId(id);
                     if (SpawnerFixHelper.entityIdsMatchForSpawner(norm, knightId)
                             || "Ender Knight".equals(id.getPath())) {
@@ -474,7 +474,7 @@ public class EnderKnight extends Monster {
                         continue;
                     }
                     ResourceLocation knightId =
-                            new ResourceLocation("chaospersists", "ender_knight");
+                            ResourceLocation.fromNamespaceAndPath("chaospersists", "ender_knight");
                     ResourceLocation norm = SpawnerFixHelper.normalizeSpawnerEntityId(id);
                     if (SpawnerFixHelper.entityIdsMatchForSpawner(norm, knightId)
                             || "Ender Knight".equals(id.getPath())) {

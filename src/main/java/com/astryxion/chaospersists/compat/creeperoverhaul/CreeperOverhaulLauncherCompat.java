@@ -8,8 +8,8 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.fml.ModList;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 /**
  * Creeper Overhaul registers biome variants as their own entity types ({@code jungle_creeper},
@@ -62,8 +62,8 @@ public final class CreeperOverhaulLauncherCompat {
             return overhaulTypes;
         }
         List<EntityType<?>> types = new ArrayList<>();
-        for (EntityType<?> type : ForgeRegistries.ENTITY_TYPES) {
-            ResourceLocation id = ForgeRegistries.ENTITY_TYPES.getKey(type);
+        for (EntityType<?> type : BuiltInRegistries.ENTITY_TYPE) {
+            ResourceLocation id = BuiltInRegistries.ENTITY_TYPE.getKey(type);
             if (id != null
                     && CREEPER_OVERHAUL_MODID.equals(id.getNamespace())
                     && id.getPath().contains("creeper")) {

@@ -81,17 +81,17 @@ public class ModelRobot5 extends EntityModel<Robot5> {
     }
 
     @Override
-    public void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
-        this.lwheel1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.lwheel2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.rwheel1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.rwheel2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.axle.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.drivebox.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.stand.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.swivel.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.barrel1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.barrel2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.ammobox.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+    public void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, int color) {
+        this.lwheel1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.lwheel2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.rwheel1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.rwheel2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.axle.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.drivebox.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.stand.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.swivel.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.barrel1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.barrel2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.ammobox.render(poseStack, buffer, packedLight, packedOverlay, color);
     }
 }

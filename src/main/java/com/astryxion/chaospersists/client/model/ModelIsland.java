@@ -52,9 +52,9 @@ public class ModelIsland<T extends net.minecraft.world.entity.Entity> extends En
     }
 
     @Override
-    public void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
-        this.shape1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.shape2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.shape3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+    public void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, int color) {
+        this.shape1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.shape2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.shape3.render(poseStack, buffer, packedLight, packedOverlay, color);
     }
 }

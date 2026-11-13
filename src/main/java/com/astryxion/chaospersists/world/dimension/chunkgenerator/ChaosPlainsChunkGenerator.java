@@ -3,6 +3,7 @@ package com.astryxion.chaospersists.world.dimension.chunkgenerator;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
@@ -47,8 +48,8 @@ import java.util.function.Predicate;
  */
 public class ChaosPlainsChunkGenerator extends ChaosChunkGeneratorWrapper {
 
-    public static final Codec<ChaosPlainsChunkGenerator> CODEC =
-            RecordCodecBuilder.create(instance ->
+    public static final MapCodec<ChaosPlainsChunkGenerator> CODEC =
+            RecordCodecBuilder.mapCodec(instance ->
                     instance.group(
                                     ChunkGenerator.CODEC.fieldOf("wrapped_generator").forGetter(generator -> generator.delegate),
                                     NoiseGeneratorSettings.CODEC
@@ -157,7 +158,7 @@ public class ChaosPlainsChunkGenerator extends ChaosChunkGeneratorWrapper {
     }
 
     @Override
-    protected Codec<? extends ChunkGenerator> codec() {
+    protected MapCodec<? extends ChunkGenerator> codec() {
         return CODEC;
     }
 
@@ -268,8 +269,7 @@ public class ChaosPlainsChunkGenerator extends ChaosChunkGeneratorWrapper {
     }
 
     @Override
-    public CompletableFuture<ChunkAccess> createBiomes(
-            Executor executor, RandomState random, Blender blender, StructureManager manager, ChunkAccess chunkAccess) {
+    public CompletableFuture<ChunkAccess> createBiomes(RandomState random, Blender blender, StructureManager manager, ChunkAccess chunkAccess) {
         return CompletableFuture.supplyAsync(
                 Util.wrapThreadWithTaskName(
                         "init_biomes",
@@ -281,10 +281,9 @@ public class ChaosPlainsChunkGenerator extends ChaosChunkGeneratorWrapper {
     }
 
     @Override
-    public CompletableFuture<ChunkAccess> fillFromNoise(
-            Executor executor, Blender blender, RandomState random, StructureManager structureManager, ChunkAccess chunkAccess) {
+    public CompletableFuture<ChunkAccess> fillFromNoise(Blender blender, RandomState random, StructureManager structureManager, ChunkAccess chunkAccess) {
         if (this.warper.isEmpty()) {
-            return super.fillFromNoise(executor, blender, random, structureManager, chunkAccess);
+            return super.fillFromNoise(blender, random, structureManager, chunkAccess);
         }
 
         NoiseSettings settings = this.noiseGeneratorSettings.value().noiseSettings();
@@ -317,7 +316,7 @@ public class ChaosPlainsChunkGenerator extends ChaosChunkGeneratorWrapper {
                                 section.release();
                             }
                         },
-                        executor);
+                        net.minecraft.Util.backgroundExecutor());
     }
 
     private ChunkAccess doFill(
@@ -440,7 +439,7 @@ public class ChaosPlainsChunkGenerator extends ChaosChunkGeneratorWrapper {
             RandomSource source =
                     random
                             .getOrCreateRandomFactory(
-                                    new ResourceLocation(
+                                    ResourceLocation.fromNamespaceAndPath(
                                             "chaospersists", "plains_micro_bump"))
                             .fromHashOf("init");
             this.microBumpNoise = new ImprovedNoise(source);

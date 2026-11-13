@@ -62,9 +62,9 @@ public class EntityUnstableAnt extends EntityAnt {
             return InteractionResult.FAIL;
         }
         if (toOverworld) {
-            serverPlayer.changeDimension(world, new UtopiaTeleporter(serverPlayer.getX(), serverPlayer.getZ()));
+            serverPlayer.changeDimension((new UtopiaTeleporter(serverPlayer.getX(), serverPlayer.getZ())).transition(serverPlayer, world));
         } else {
-            serverPlayer.changeDimension(world, new DangerTeleporter(serverPlayer.getX(), serverPlayer.getZ()));
+            serverPlayer.changeDimension((new DangerTeleporter(serverPlayer.getX(), serverPlayer.getZ())).transition(serverPlayer, world));
         }
         return InteractionResult.SUCCESS;
     }

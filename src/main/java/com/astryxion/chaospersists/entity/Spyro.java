@@ -63,9 +63,14 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 public class Spyro extends TamableAnimal {
+    @Override
+    public boolean isFood(net.minecraft.world.item.ItemStack stack) {
+        return stack.is(net.minecraft.world.item.Items.WHEAT);
+    }
+
     private static final EntityDataAccessor<Integer> SPYRO_FIRE =
             SynchedEntityData.defineId(Spyro.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> ACTIVITY =
@@ -84,6 +89,8 @@ public class Spyro extends TamableAnimal {
 
     public Spyro(EntityType<? extends Spyro> type, Level level) {
         super(type, level);
+        this.setOrderedToSit(false);
+        this.setTame(false, true);
         this.fireImmune();
         this.xpReward = 35;
         this.moveSpeed = 0.3f;
@@ -114,18 +121,17 @@ public class Spyro extends TamableAnimal {
     }
 
     @Override
-    public EntityDimensions getDimensions(Pose pose) {
+    public EntityDimensions getDefaultDimensions(Pose pose) {
         return EntityDimensions.scalable(0.5f, 0.5f);
     }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
         this.activity = 1;
-        this.entityData.define(ACTIVITY, this.activity);
-        this.entityData.define(SPYRO_FIRE, 1);
-        this.setOrderedToSit(false);
-        this.setTame(false);
+        builder.define(ACTIVITY, this.activity);
+        builder.define(SPYRO_FIRE, 1);
+
     }
 
     @Override
@@ -258,8 +264,8 @@ public class Spyro extends TamableAnimal {
     }
 
     @Override
-    public boolean canBreatheUnderwater() {
-        return true;
+    protected int decreaseAirSupply(int airSupply) {
+        return airSupply;
     }
 
     public int mygetMaxHealth() {
@@ -344,7 +350,7 @@ public class Spyro extends TamableAnimal {
             if (!this.isTame()) {
                 if (!this.level().isClientSide) {
                     if (this.getRandom().nextInt(2) == 1) {
-                        this.setTame(true);
+                        this.setTame(true, true);
                         this.setOwnerUUID(par1EntityPlayer.getUUID());
                         spawnTamingParticles(true);
                         this.level().broadcastEntityEvent(this, (byte) 7);
@@ -378,7 +384,7 @@ public class Spyro extends TamableAnimal {
                 && par1EntityPlayer.distanceToSqr(this) < 16.0
                 && this.isOwnedBy(par1EntityPlayer)) {
             if (!this.level().isClientSide) {
-                this.setTame(false);
+                this.setTame(false, true);
                 this.setHealth((float) this.mygetMaxHealth());
                 this.setOwnerUUID(null);
                 spawnTamingParticles(false);
@@ -531,11 +537,11 @@ public class Spyro extends TamableAnimal {
     }
 
     @Override
-    protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+    protected void dropCustomDeathLoot(net.minecraft.server.level.ServerLevel serverLevel, DamageSource source, boolean recentlyHit) {
         if (DatapackLoot.useEntityTable(this)) {
             return;
         }
-        super.dropCustomDeathLoot(source, looting, recentlyHit);
+        super.dropCustomDeathLoot(serverLevel, source, recentlyHit);
         if (this.isTame()) {
             int var3 = this.getRandom().nextInt(4);
             for (int var4 = 0; var4 < var3; ++var4) {
@@ -846,12 +852,7 @@ public class Spyro extends TamableAnimal {
                             && (this.getSpyroFire() == 1 && this.getRandom().nextInt(10) == 0
                                     || this.getRandom().nextInt(15) == 1)) {
                         SmallFireball var2 =
-                                new SmallFireball(
-                                        this.level(),
-                                        this,
-                                        e.getX() - this.getX(),
-                                        e.getY() + 0.25 - (this.getY() + 1.25),
-                                        e.getZ() - this.getZ());
+                                new SmallFireball(this.level(), this, new net.minecraft.world.phys.Vec3(e.getX() - this.getX(), e.getY() + 0.25 - (this.getY() + 1.25), e.getZ() - this.getZ()));
                         var2.moveTo(
                                 this.getX(),
                                 this.getY() + 1.25,
@@ -998,7 +999,7 @@ public class Spyro extends TamableAnimal {
             return;
         }
         if (ent instanceof TamableAnimal tame) {
-            tame.setTame(true);
+            tame.setTame(true, true);
             if (ownerUuid != null) {
                 tame.setOwnerUUID(ownerUuid);
             }
@@ -1018,9 +1019,9 @@ public class Spyro extends TamableAnimal {
     public static Entity spawnCreature(Level level, String par1, double x, double y, double z) {
         ResourceLocation res =
                 par1.contains(":")
-                        ? new ResourceLocation(par1)
-                        : new ResourceLocation("chaospersists", par1);
-        EntityType<?> type = ForgeRegistries.ENTITY_TYPES.getValue(res);
+                        ? ResourceLocation.parse(par1)
+                        : ResourceLocation.fromNamespaceAndPath("chaospersists", par1);
+        EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.get(res);
         if (type == null || !(level instanceof ServerLevel serverLevel)) {
             return null;
         }

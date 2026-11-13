@@ -8,7 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderCryolophosaurus extends MobRenderer<Cryolophosaurus, ModelCryolophosaurus> {
     private static final ResourceLocation TEXTURE =
-            new ResourceLocation("chaospersists", "textures/entity/cryolophosaurus.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/cryolophosaurus.png");
     private final float scale;
 
     public RenderCryolophosaurus(

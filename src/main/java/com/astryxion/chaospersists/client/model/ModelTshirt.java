@@ -53,14 +53,11 @@ public class ModelTshirt extends EntityModel<Tshirt> {
             VertexConsumer buffer,
             int packedLight,
             int packedOverlay,
-            float red,
-            float green,
-            float blue,
-            float alpha) {
+            int color) {
         float newangle = Mth.cos(this.animAgeInTicks * 0.05f * this.wingspeed) * (float) Math.PI;
         this.shape1.yRot = newangle;
         this.shape2.yRot = newangle;
-        this.shape1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.shape2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.shape1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.shape2.render(poseStack, buffer, packedLight, packedOverlay, color);
     }
 }

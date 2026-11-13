@@ -1,5 +1,6 @@
 package com.astryxion.chaospersists.compat.eeeabsmobs;
 
+import net.neoforged.fml.common.EventBusSubscriber;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.util.MyUtils;
 import com.astryxion.chaospersists.util.PetCombatHelper;
@@ -22,12 +23,12 @@ import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.phys.AABB;
-import net.minecraftforge.entity.PartEntity;
-import net.minecraftforge.event.entity.living.LivingHurtEvent;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.neoforge.entity.PartEntity;
+import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
+import net.neoforged.bus.api.EventPriority;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModList;
+import net.neoforged.fml.common.Mod;
 
 /**
  * EEEAB's Mobs bosses (Immortal, Nameless Guardian, Relicron, etc.) often hit through lasers /
@@ -35,7 +36,7 @@ import net.minecraftforge.fml.common.Mod;
  * unteamed targets, owner-assist looks at {@code lastHurtByMob} (often the beam, not the boss), and
  * Girlfriend/Boyfriend {@code nearbyOnly} pathing fails on a 2.8-wide Immortal.
  */
-@Mod.EventBusSubscriber(modid = ChaosPersists.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(modid = ChaosPersists.MODID, bus = EventBusSubscriber.Bus.GAME)
 public final class EeeabsMobsCompat {
 
     public static final String EEEABSMOBS_MODID = "eeeabsmobs";
@@ -170,7 +171,7 @@ public final class EeeabsMobsCompat {
     }
 
     @SubscribeEvent(priority = EventPriority.LOW)
-    public static void onLivingHurt(LivingHurtEvent event) {
+    public static void onLivingHurt(LivingIncomingDamageEvent event) {
         if (!isPresent() || event.isCanceled() || event.getAmount() <= 0.0f) {
             return;
         }

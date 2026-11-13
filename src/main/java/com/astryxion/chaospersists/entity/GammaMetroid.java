@@ -106,7 +106,7 @@ public class GammaMetroid extends TamableAnimal {
             if (!this.isTame()) {
                 if (!this.level().isClientSide) {
                     if (this.getRandom().nextInt(3) == 0) {
-                        this.setTame(true);
+                        this.setTame(true, true);
                         this.setOwnerUUID(player.getUUID());
                         spawnTamingParticles(true);
                         this.level().broadcastEntityEvent(this, (byte) 7);
@@ -140,7 +140,7 @@ public class GammaMetroid extends TamableAnimal {
                 && player.distanceToSqr(this) < 25.0
                 && this.isOwnedBy(player)) {
             if (!this.level().isClientSide) {
-                this.setTame(false);
+                this.setTame(false, true);
                 this.setOwnerUUID(null);
                 spawnTamingParticles(false);
                 this.level().broadcastEntityEvent(this, (byte) 6);
@@ -259,7 +259,7 @@ public class GammaMetroid extends TamableAnimal {
     }
 
     @Override
-    protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+    protected void dropCustomDeathLoot(net.minecraft.server.level.ServerLevel serverLevel, DamageSource source, boolean recentlyHit) {
         if (DatapackLoot.useEntityTable(this)) {
             return;
         }
@@ -571,7 +571,7 @@ public class GammaMetroid extends TamableAnimal {
         GammaMetroid w = (GammaMetroid) this.getType().create(level);
         if (this.isTame()) {
             this.setOwnerUUID(this.getOwnerUUID());
-            w.setTame(true);
+            w.setTame(true, true);
         }
         return w;
     }

@@ -11,11 +11,11 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderChipmunk extends MobRenderer<Chipmunk, ModelChipmunk> {
     private static final ResourceLocation TEXTURE =
-            new ResourceLocation("chaospersists", "textures/entity/chipmunktexture.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/chipmunktexture.png");
     private static final ResourceLocation TEXTURE2 =
-            new ResourceLocation("chaospersists", "textures/entity/chipmunktexture2.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/chipmunktexture2.png");
     private static final ResourceLocation TEXTURE3 =
-            new ResourceLocation("chaospersists", "textures/entity/chipmunktexture3.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/chipmunktexture3.png");
     private final float scale;
 
     public RenderChipmunk(EntityRendererProvider.Context context, ModelChipmunk model, float shadow, float scale) {

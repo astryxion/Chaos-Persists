@@ -8,7 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderTerribleTerror extends MobRenderer<TerribleTerror, ModelTerribleTerror> {
     private static final ResourceLocation TEXTURE =
-            new ResourceLocation("chaospersists", "textures/entity/terribleterror.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/terribleterror.png");
     private final float scale;
 
     public RenderTerribleTerror(EntityRendererProvider.Context context, ModelTerribleTerror model, float shadow, float scale) {

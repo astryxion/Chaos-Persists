@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import net.minecraft.resources.ResourceLocation;
 import com.astryxion.chaospersists.legacy.minecraft.world.biome.Biome;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 /** Legacy 1.12 biome constants for spawn registration and chunk population. */
 public final class Biomes {
@@ -73,13 +73,6 @@ public final class Biomes {
   private static Biome wrap(String legacyConstant) {
     String path = legacyConstant.toLowerCase();
     String resolved = PATH_ALIASES.getOrDefault(path, path);
-    net.minecraft.world.level.biome.Biome biome =
-        ForgeRegistries.BIOMES.getValue(new ResourceLocation(resolved));
-    if (biome == null) {
-      biome =
-          ForgeRegistries.BIOMES.getValue(
-              net.minecraft.world.level.biome.Biomes.PLAINS.location());
-    }
-    return Biome.wrap(biome, path);
+    return Biome.wrap(ResourceLocation.parse(resolved), path);
   }
 }

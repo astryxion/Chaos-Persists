@@ -17,8 +17,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.LootParams;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 public class OreCrystalCrystal extends Block {
 
@@ -67,7 +67,7 @@ public class OreCrystalCrystal extends Block {
     }
 
     @Override
-    public void playerWillDestroy(Level world, BlockPos pos, BlockState state, Player player) {
+    public BlockState playerWillDestroy(Level world, BlockPos pos, BlockState state, Player player) {
         if (this == ChaosPersists.CrystalCrystal && !world.isClientSide && world.getRandom().nextInt(10) == 1) {
             world.explode(
                     (Entity) null,
@@ -77,7 +77,7 @@ public class OreCrystalCrystal extends Block {
                     1.0f,
                     Level.ExplosionInteraction.BLOCK);
         }
-        super.playerWillDestroy(world, pos, state, player);
+        return super.playerWillDestroy(world, pos, state, player);
     }
 
     @Override

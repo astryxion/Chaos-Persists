@@ -104,15 +104,15 @@ public class ModelIrukandji extends EntityModel<Irukandji> {
     }
 
     @Override
-    public void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
-        this.body.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.t11.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.t12.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.t21.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.t22.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.t31.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.t32.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.t41.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.t42.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+    public void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, int color) {
+        this.body.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.t11.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.t12.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.t21.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.t22.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.t31.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.t32.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.t41.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.t42.render(poseStack, buffer, packedLight, packedOverlay, color);
     }
 }

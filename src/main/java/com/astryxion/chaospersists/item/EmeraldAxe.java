@@ -7,11 +7,7 @@ public class EmeraldAxe extends AxeItem {
     private static final float WEAPON_DAMAGE = 9.0f;
 
     public EmeraldAxe(Tier tier) {
-        super(
-                tier,
-                ChaosWeaponDamage.modifierFor(tier, WEAPON_DAMAGE),
-                -3.0f,
-                new Properties().stacksTo(1).durability(1300));
+        super(tier, new Properties().stacksTo(1).durability(1300).attributes(AxeItem.createAttributes(tier, ChaosWeaponDamage.modifierFor(tier, WEAPON_DAMAGE), -3.0f)));
     }
 
     public String getMaterialName() {

@@ -7,7 +7,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.Tier;
-import net.minecraftforge.client.extensions.common.IClientItemExtensions;
+import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 
 /**
  * Big hammer launches enemies upward on hit (1.12.2 {@code BigHammer#hitEntity}).
@@ -15,7 +15,7 @@ import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 public class BigHammer extends SwordItem {
 
     public BigHammer(Tier tier) {
-        super(tier, 3, -2.4f, new Properties().stacksTo(1).durability(9000));
+        super(tier, new Properties().stacksTo(1).durability(9000).attributes(SwordItem.createAttributes(tier, 3, -2.4f)));
     }
 
     @Override
@@ -38,12 +38,12 @@ public class BigHammer extends SwordItem {
             target.hurtMarked = true;
         }
 
-        stack.hurtAndBreak(1, attacker, e -> e.broadcastBreakEvent(EquipmentSlot.MAINHAND));
+        stack.hurtAndBreak(1, attacker, EquipmentSlot.MAINHAND);
         return true;
     }
 
     @Override
-    public int getUseDuration(ItemStack stack) {
+    public int getUseDuration(ItemStack stack, net.minecraft.world.entity.LivingEntity user) {
         return 3000;
     }
 

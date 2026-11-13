@@ -37,9 +37,9 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.common.util.FakePlayerFactory;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.neoforge.common.util.FakePlayerFactory;
 
 /**
  * Ultimate fishing bobber: 1.12.2 EntityFishHook logic ported to Forge 1.20.x / official mappings.
@@ -263,7 +263,7 @@ public class UltimateFishHook extends FishingHook {
     /** Ported from 1.12 client {@code setPositionAndRotation2} (velocity snapshot for interpolation). */
     @OnlyIn(Dist.CLIENT)
     @Override
-    public void lerpTo(double par1, double par3, double par5, float par7, float par8, int par9, boolean interpolateTurns) {
+    public void lerpTo(double par1, double par3, double par5, float par7, float par8, int par9) {
         this.field_146056_aC = par1;
         this.field_146057_aD = par3;
         this.field_146058_aE = par5;
@@ -558,8 +558,7 @@ public class UltimateFishHook extends FishingHook {
                     this.fish_wait_time = this.random.nextInt(251) + 50;
                     Player lurePlayer = this.getAngler();
                     this.fish_wait_time -=
-                            EnchantmentHelper.getItemEnchantmentLevel(
-                                            Enchantments.FISHING_SPEED, getUltimateRodStack(lurePlayer))
+                            com.astryxion.chaospersists.util.ChaosEnchantments.level(Enchantments.LURE, getUltimateRodStack(lurePlayer))
                                     * 20
                                     * 5;
                 }
@@ -605,7 +604,7 @@ public class UltimateFishHook extends FishingHook {
         this.field_146048_h = tag.getShort("yTile");
         this.field_146050_i = tag.getShort("zTile");
         if (tag.contains("inTile", 8)) {
-            ResourceLocation loc = new ResourceLocation(tag.getString("inTile"));
+            ResourceLocation loc = ResourceLocation.parse(tag.getString("inTile"));
             this.field_146046_j = BuiltInRegistries.BLOCK.getOptional(loc).orElse(Blocks.AIR);
         } else if (tag.contains("inTile", 1)) {
             // Legacy numeric block id (1.12-era); not portable — default to air.
@@ -683,10 +682,9 @@ public class UltimateFishHook extends FishingHook {
         float f = this.level().random.nextFloat();
         Player angler = this.getAngler();
         int i =
-                EnchantmentHelper.getItemEnchantmentLevel(
-                        Enchantments.FISHING_LUCK, getUltimateRodStack(angler));
+                com.astryxion.chaospersists.util.ChaosEnchantments.level(Enchantments.LUCK_OF_THE_SEA, getUltimateRodStack(angler));
         int j =
-                EnchantmentHelper.getItemEnchantmentLevel(Enchantments.FISHING_SPEED, getUltimateRodStack(angler));
+                com.astryxion.chaospersists.util.ChaosEnchantments.level(Enchantments.LURE, getUltimateRodStack(angler));
         float f1 = 0.1f - (float) i * 0.025f - (float) j * 0.01f;
         float f2 = 0.05f + (float) i * 0.01f - (float) j * 0.01f;
         f1 = Mth.clamp(f1, 0.0f, 1.0f);

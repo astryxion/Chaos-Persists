@@ -40,11 +40,11 @@ public class OreRuby extends Block {
             return datapackDrops;
         }
         ItemStack tool = builder.getOptionalParameter(LootContextParams.TOOL);
-        if (tool != null && EnchantmentHelper.getItemEnchantmentLevel(Enchantments.SILK_TOUCH, tool) > 0) {
+        if (tool != null && com.astryxion.chaospersists.util.ChaosEnchantments.level(Enchantments.SILK_TOUCH, tool) > 0) {
             return Collections.singletonList(new ItemStack(this));
         }
         RandomSource random = builder.getLevel().getRandom();
-        int fortune = tool != null ? EnchantmentHelper.getItemEnchantmentLevel(Enchantments.BLOCK_FORTUNE, tool) : 0;
+        int fortune = tool != null ? com.astryxion.chaospersists.util.ChaosEnchantments.level(Enchantments.FORTUNE, tool) : 0;
         int count = 1 + random.nextInt(2);
         if (fortune > 0) {
             count += random.nextInt(fortune + 1);

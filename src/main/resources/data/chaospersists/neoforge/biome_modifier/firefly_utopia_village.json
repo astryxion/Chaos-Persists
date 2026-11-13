@@ -1,0 +1,13 @@
+{
+  "type": "neoforge:add_spawns",
+  "spawners": {
+    "type": "chaospersists:firefly",
+    "weight": 15,
+    "minCount": 3,
+    "maxCount": 6
+  },
+  "biomes": [
+    "chaospersists:utopia",
+    "chaospersists:village_dimension"
+  ]
+}

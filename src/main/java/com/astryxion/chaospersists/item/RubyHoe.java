@@ -7,11 +7,7 @@ public class RubyHoe extends HoeItem {
     private static final int WEAPON_DAMAGE = 1;
 
     public RubyHoe(Tier tier) {
-        super(
-                tier,
-                ChaosWeaponDamage.modifierFor(tier, WEAPON_DAMAGE),
-                -0.0f,
-                new Properties().stacksTo(1).durability(1500));
+        super(tier, new Properties().stacksTo(1).durability(1500).attributes(HoeItem.createAttributes(tier, ChaosWeaponDamage.modifierFor(tier, WEAPON_DAMAGE), -0.0f)));
     }
 
     public String getMaterialName() {

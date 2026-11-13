@@ -80,8 +80,8 @@ public class Hydrolisc extends TamableAnimal {
     }
 
     @Override
-    public void setTame(boolean tamed) {
-        super.setTame(tamed);
+    public void setTame(boolean tamed, boolean applySideEffects) {
+        super.setTame(tamed, applySideEffects);
         this.applyTamedMaxHealth();
     }
 
@@ -270,8 +270,8 @@ public class Hydrolisc extends TamableAnimal {
     }
 
     @Override
-    public boolean canBreatheUnderwater() {
-        return true;
+    protected int decreaseAirSupply(int airSupply) {
+        return airSupply;
     }
 
     @Override
@@ -285,7 +285,7 @@ public class Hydrolisc extends TamableAnimal {
             if (!this.isTame()) {
                 if (!this.level().isClientSide) {
                     if (this.getRandom().nextInt(2) == 0) {
-                        this.setTame(true);
+                        this.setTame(true, true);
                         this.setOwnerUUID(par1EntityPlayer.getUUID());
                         spawnTamingParticles(true);
                         this.level().broadcastEntityEvent(this, (byte) 7);
@@ -319,7 +319,7 @@ public class Hydrolisc extends TamableAnimal {
                 && par1EntityPlayer.distanceToSqr(this) < 16.0
                 && this.isOwnedBy(par1EntityPlayer)) {
             if (!this.level().isClientSide) {
-                this.setTame(false);
+                this.setTame(false, true);
                 this.setOwnerUUID(null);
                 spawnTamingParticles(false);
                 this.level().broadcastEntityEvent(this, (byte) 6);
@@ -402,7 +402,7 @@ public class Hydrolisc extends TamableAnimal {
     }
 
     @Override
-    protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+    protected void dropCustomDeathLoot(net.minecraft.server.level.ServerLevel serverLevel, DamageSource source, boolean recentlyHit) {
         if (DatapackLoot.useEntityTable(this)) {
             return;
         }

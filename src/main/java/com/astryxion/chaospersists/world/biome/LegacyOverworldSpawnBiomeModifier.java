@@ -2,12 +2,12 @@ package com.astryxion.chaospersists.world.biome;
 
 import com.astryxion.chaospersists.legacy.forge.fml.common.registry.EntityRegistry;
 import com.astryxion.chaospersists.core.ChaosPersists;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.biome.Biome;
-import net.minecraftforge.common.world.BiomeModifier;
-import net.minecraftforge.common.world.ModifiableBiomeInfo;
+import net.neoforged.neoforge.common.world.BiomeModifier;
+import net.neoforged.neoforge.common.world.ModifiableBiomeInfo;
 
 /**
  * Alex's Mobs {@code am_mob_spawns} pattern: one global Forge biome modifier, Java-side biome
@@ -17,8 +17,8 @@ import net.minecraftforge.common.world.ModifiableBiomeInfo;
 public record LegacyOverworldSpawnBiomeModifier() implements BiomeModifier {
   public static final LegacyOverworldSpawnBiomeModifier INSTANCE = new LegacyOverworldSpawnBiomeModifier();
 
-  public static Codec<LegacyOverworldSpawnBiomeModifier> makeCodec() {
-    return Codec.unit(INSTANCE);
+  public static MapCodec<LegacyOverworldSpawnBiomeModifier> makeCodec() {
+    return MapCodec.unit(INSTANCE);
   }
 
   @Override
@@ -36,7 +36,7 @@ public record LegacyOverworldSpawnBiomeModifier() implements BiomeModifier {
   }
 
   @Override
-  public Codec<? extends BiomeModifier> codec() {
+  public MapCodec<? extends BiomeModifier> codec() {
     return ChaosPersists.LEGACY_OVERWORLD_SPAWNS.get();
   }
 }

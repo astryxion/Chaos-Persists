@@ -29,7 +29,7 @@ public final class PetOrderInteract {
         if (isExplicitOrderClick(stack, player)) {
             return false;
         }
-        return hasPlayerUse(stack);
+        return hasPlayerUse(stack, player);
     }
 
     public static boolean isExplicitOrderClick(ItemStack stack, @Nullable Player player) {
@@ -40,10 +40,14 @@ public final class PetOrderInteract {
     }
 
     public static boolean hasPlayerUse(ItemStack stack) {
+        return hasPlayerUse(stack, null);
+    }
+
+    private static boolean hasPlayerUse(ItemStack stack, @Nullable Player player) {
         if (stack.isEmpty()) {
             return false;
         }
-        if (stack.getUseDuration() > 0 || stack.getUseAnimation() != UseAnim.NONE) {
+        if ((player != null && stack.getUseDuration(player) > 0) || stack.getUseAnimation() != UseAnim.NONE) {
             return true;
         }
         Item item = stack.getItem();

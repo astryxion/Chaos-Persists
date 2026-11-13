@@ -30,13 +30,13 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.client.extensions.common.IClientItemExtensions;
-import net.minecraftforge.common.ForgeMod;
-import net.minecraftforge.common.ToolAction;
-import net.minecraftforge.common.ToolActions;
+import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
+import net.neoforged.neoforge.common.ItemAbilities;
+import net.neoforged.neoforge.common.ItemAbility;
+import net.neoforged.neoforge.common.NeoForgeMod;
 
 public class UltimateSword extends SwordItem {
-    private static final UUID ENTITY_REACH_UUID = UUID.fromString("B4D9F2C5-7E3A-4B80-9C8D-6F1A0E5B3D29");
+    private static final net.minecraft.resources.ResourceLocation ENTITY_REACH_UUID = net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", "b4d9f2c5-7e3a-4b80-9c8d-6f1a0e5b3d29");
     private static final double SURVIVAL_ENTITY_REACH_BASE = 3.0;
     private static final double QUEEN_BATTLE_AXE_REACH = 6.0;
     private static final double CHAINSAW_REACH = 6.0;
@@ -45,25 +45,22 @@ public class UltimateSword extends SwordItem {
     private boolean leaf = false;
 
     public UltimateSword(Tier tier) {
-        super(tier, ChaosWeaponDamage.TIER_SWORD_MODIFIER, -2.4f, new Properties().stacksTo(1).durability(3000));
+        super(tier, new Properties().stacksTo(1).durability(3000).attributes(SwordItem.createAttributes(tier, ChaosWeaponDamage.TIER_SWORD_MODIFIER, -2.4f)));
     }
 
     @Override
-    public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(EquipmentSlot slot) {
+    public net.minecraft.world.item.component.ItemAttributeModifiers getDefaultAttributeModifiers(ItemStack stack) {
+        // NeoForge may query defaults with a null stack during tab/tooltip paths; Item.super
+        // does stack.getOrDefault(...) and NPEs.
+        ItemStack safe = (stack == null || stack.isEmpty()) ? new ItemStack(this) : stack;
+        var modifiers = super.getDefaultAttributeModifiers(safe);
         double extra = extraEntityReach();
-        if (slot != EquipmentSlot.MAINHAND || extra <= 0.0) {
-            return super.getDefaultAttributeModifiers(slot);
-        }
-        ImmutableMultimap.Builder<Attribute, AttributeModifier> builder = ImmutableMultimap.builder();
-        builder.putAll(super.getDefaultAttributeModifiers(slot));
-        builder.put(
-                ForgeMod.ENTITY_REACH.get(),
-                new AttributeModifier(
-                        ENTITY_REACH_UUID,
-                        "Weapon modifier",
-                        extra,
-                        AttributeModifier.Operation.ADDITION));
-        return builder.build();
+        if (extra <= 0.0) return modifiers;
+        return modifiers.withModifierAdded(
+                net.minecraft.world.entity.ai.attributes.Attributes.ENTITY_INTERACTION_RANGE,
+                new AttributeModifier(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(
+                        "chaospersists", "weapon_reach"), extra, AttributeModifier.Operation.ADD_VALUE),
+                net.minecraft.world.entity.EquipmentSlotGroup.MAINHAND);
     }
 
     private double extraEntityReach() {
@@ -93,7 +90,7 @@ public class UltimateSword extends SwordItem {
 
     @Override
     public void onCraftedBy(ItemStack stack, Level level, Player player) {
-        ensureEnchantments(stack);
+        ensureEnchantments(stack, level);
     }
 
     @Override
@@ -139,27 +136,27 @@ public class UltimateSword extends SwordItem {
             }
             return;
         }
-        ensureEnchantments(stack);
+        ensureEnchantments(stack, level);
     }
 
-    private void ensureEnchantments(ItemStack stack) {
+    private void ensureEnchantments(ItemStack stack, Level level) {
         if (this == ChaosPersists.MyChainsaw) {
             return;
         }
-        int lvl = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.MOB_LOOTING, stack);
+        int lvl = com.astryxion.chaospersists.util.ChaosEnchantments.level(Enchantments.LOOTING, stack);
         if (lvl <= 0) {
             int m = ChaosPersists.UltimateSwordMagic;
             if (this != ChaosPersists.MyBattleAxe) {
-                stack.enchant(Enchantments.SHARPNESS, m);
-                stack.enchant(Enchantments.SMITE, m);
-                stack.enchant(Enchantments.BANE_OF_ARTHROPODS, m);
-                stack.enchant(Enchantments.KNOCKBACK, 1 + m / 2);
-                stack.enchant(Enchantments.MOB_LOOTING, 1 + m / 2);
-                stack.enchant(Enchantments.UNBREAKING, 1 + m / 2);
-                stack.enchant(Enchantments.FIRE_ASPECT, 1 + m / 3);
+                stack.enchant(level.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.SHARPNESS), m);
+                stack.enchant(level.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.SMITE), m);
+                stack.enchant(level.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.BANE_OF_ARTHROPODS), m);
+                stack.enchant(level.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.KNOCKBACK), 1 + m / 2);
+                stack.enchant(level.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.LOOTING), 1 + m / 2);
+                stack.enchant(level.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 1 + m / 2);
+                stack.enchant(level.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FIRE_ASPECT), 1 + m / 3);
             } else {
-                stack.enchant(Enchantments.MOB_LOOTING, 1 + m / 2);
-                stack.enchant(Enchantments.UNBREAKING, 1 + m / 2);
+                stack.enchant(level.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.LOOTING), 1 + m / 2);
+                stack.enchant(level.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 1 + m / 2);
             }
         }
     }
@@ -182,7 +179,7 @@ public class UltimateSword extends SwordItem {
 
     @Override
     public boolean hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
-        stack.hurtAndBreak(1, attacker, e -> e.broadcastBreakEvent(EquipmentSlot.MAINHAND));
+        stack.hurtAndBreak(1, attacker, EquipmentSlot.MAINHAND);
         return true;
     }
 
@@ -201,7 +198,7 @@ public class UltimateSword extends SwordItem {
     }
 
     @Override
-    public int getUseDuration(ItemStack stack) {
+    public int getUseDuration(ItemStack stack, net.minecraft.world.entity.LivingEntity user) {
         return 9000;
     }
 
@@ -313,8 +310,8 @@ public class UltimateSword extends SwordItem {
     }
 
     @Override
-    public boolean canPerformAction(ItemStack stack, ToolAction toolAction) {
-        if (this.isBattleAxeWeapon() && ToolActions.DEFAULT_AXE_ACTIONS.contains(toolAction)) {
+    public boolean canPerformAction(ItemStack stack, ItemAbility toolAction) {
+        if (this.isBattleAxeWeapon() && ItemAbilities.DEFAULT_AXE_ACTIONS.contains(toolAction)) {
             return true;
         }
         return super.canPerformAction(stack, toolAction);
@@ -347,7 +344,7 @@ public class UltimateSword extends SwordItem {
                     || blockID == Blocks.FLOWERING_AZALEA_LEAVES
                     || blockID == Blocks.OAK_PLANKS
                     || blockID == Blocks.OAK_SAPLING
-                    || blockID == net.minecraft.world.level.block.Blocks.GRASS
+                    || blockID == net.minecraft.world.level.block.Blocks.SHORT_GRASS
                     || blockID == Blocks.TALL_GRASS
                     || blockID == Blocks.CACTUS) {
                 return true;
@@ -408,7 +405,7 @@ public class UltimateSword extends SwordItem {
                 || blockID == Blocks.AZALEA_LEAVES
                 || blockID == Blocks.FLOWERING_AZALEA_LEAVES
                 || blockID == Blocks.OAK_SAPLING
-                || blockID == net.minecraft.world.level.block.Blocks.GRASS
+                || blockID == net.minecraft.world.level.block.Blocks.SHORT_GRASS
                 || blockID == Blocks.TALL_GRASS) {
             return true;
         }

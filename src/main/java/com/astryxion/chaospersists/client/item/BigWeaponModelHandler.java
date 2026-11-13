@@ -12,7 +12,7 @@ import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
-import net.minecraftforge.client.event.ModelEvent;
+import net.neoforged.neoforge.client.event.ModelEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -107,11 +107,11 @@ public final class BigWeaponModelHandler {
     }
 
     private static Item item(String path) {
-        return BuiltInRegistries.ITEM.get(new ResourceLocation(ChaosPersists.MODID, path));
+        return BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(ChaosPersists.MODID, path));
     }
 
     private static ResourceLocation texture(String file) {
-        return new ResourceLocation(ChaosPersists.MODID, "textures/entity/" + file);
+        return ResourceLocation.fromNamespaceAndPath(ChaosPersists.MODID, "textures/entity/" + file);
     }
 
     private static void wrapTeisrHandItem(
@@ -127,7 +127,7 @@ public final class BigWeaponModelHandler {
             return;
         }
         ModelResourceLocation mrl = new ModelResourceLocation(itemId, "inventory");
-        java.util.Map<ResourceLocation, BakedModel> models = event.getModels();
+        java.util.Map<ModelResourceLocation, BakedModel> models = event.getModels();
         BakedModel baked = models.get(mrl);
         BakedModel original =
                 baked instanceof TeisrHandBakedModelWrapper

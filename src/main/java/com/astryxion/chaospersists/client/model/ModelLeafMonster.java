@@ -73,11 +73,11 @@ public class ModelLeafMonster extends EntityModel<LeafMonster> {
     }
 
     @Override
-    public void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
-        this.body.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.larm.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.rarm.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.lleg.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.rleg.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+    public void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, int color) {
+        this.body.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.larm.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.rarm.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.lleg.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.rleg.render(poseStack, buffer, packedLight, packedOverlay, color);
     }
 }

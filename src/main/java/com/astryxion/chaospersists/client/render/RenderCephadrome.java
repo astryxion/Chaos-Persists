@@ -10,7 +10,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderCephadrome extends MobRenderer<Cephadrome, ModelCephadrome> {
     private static final ResourceLocation TEXTURE =
-            new ResourceLocation("chaospersists", "textures/entity/cephadrome.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/cephadrome.png");
     private final float scale;
 
     public RenderCephadrome(

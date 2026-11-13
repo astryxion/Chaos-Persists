@@ -14,7 +14,6 @@ public final class ItemMonsterPlacer {
   public static void applyEntityIdToItemStack(ItemStack stack, ResourceLocation entityId) {
     CompoundTag entityTag = new CompoundTag();
     entityTag.putString("id", entityId.toString());
-    CompoundTag stackTag = stack.getOrCreateTag();
-    stackTag.put("EntityTag", entityTag);
+    stack.set(net.minecraft.core.component.DataComponents.ENTITY_DATA, net.minecraft.world.item.component.CustomData.of(entityTag));
   }
 }

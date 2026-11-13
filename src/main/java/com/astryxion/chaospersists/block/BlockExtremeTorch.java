@@ -25,7 +25,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LightBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 public class BlockExtremeTorch extends ChaosDirectionalTorchBlock {
 
@@ -156,7 +156,7 @@ public class BlockExtremeTorch extends ChaosDirectionalTorchBlock {
         boolean found = false;
 
         Block eyeBlock =
-                ForgeRegistries.BLOCKS.getValue(new net.minecraft.resources.ResourceLocation("chaospersists", "eyeofender"));
+                BuiltInRegistries.BLOCK.get(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", "eyeofender"));
         if (eyeBlock != null && world.getBlockState(new BlockPos(x, y - 1, z)).is(eyeBlock)) {
             block0:
             for (int tries = 0; tries < 100 && !found; ++tries) {
@@ -180,7 +180,7 @@ public class BlockExtremeTorch extends ChaosDirectionalTorchBlock {
             }
             if (found) {
                 if (!world.isClientSide) {
-                    spawnCreature(world, new net.minecraft.resources.ResourceLocation("chaospersists", "cephadrome"), (double) x + 0.5D, (double) y + 0.01D, (double) z + 0.5D);
+                    spawnCreature(world, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", "cephadrome"), (double) x + 0.5D, (double) y + 0.01D, (double) z + 0.5D);
                 } else {
                     for (int var3 = 0; var3 < 16; ++var3) {
                         world.addParticle(
@@ -210,9 +210,9 @@ public class BlockExtremeTorch extends ChaosDirectionalTorchBlock {
                     }
                 }
                 if (placer != null) {
-                    world.playSound(null, placer.getX(), placer.getY(), placer.getZ(), SoundEvents.GENERIC_EXPLODE, SoundSource.BLOCKS, 1.0f, world.getRandom().nextFloat() * 0.2f + 0.9f);
+                    world.playSound(null, placer.getX(), placer.getY(), placer.getZ(), SoundEvents.GENERIC_EXPLODE.value(), SoundSource.BLOCKS, 1.0f, world.getRandom().nextFloat() * 0.2f + 0.9f);
                 } else {
-                    world.playSound(null, par2, par3, par4, SoundEvents.GENERIC_EXPLODE, SoundSource.BLOCKS, 1.0f, world.getRandom().nextFloat() * 0.2f + 0.9f);
+                    world.playSound(null, par2, par3, par4, SoundEvents.GENERIC_EXPLODE.value(), SoundSource.BLOCKS, 1.0f, world.getRandom().nextFloat() * 0.2f + 0.9f);
                 }
                 world.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
             }
@@ -221,7 +221,7 @@ public class BlockExtremeTorch extends ChaosDirectionalTorchBlock {
     }
 
     private static Entity spawnCreature(Level world, net.minecraft.resources.ResourceLocation entityId, double px, double py, double pz) {
-        EntityType<?> type = ForgeRegistries.ENTITY_TYPES.getValue(entityId);
+        EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.get(entityId);
         if (type == null || !(world instanceof ServerLevel serverLevel)) {
             return null;
         }

@@ -11,11 +11,7 @@ import net.minecraft.world.level.block.state.BlockState;
 public class CrystalShovel extends ShovelItem {
 
     public CrystalShovel(Tier tier, float attackDamage) {
-        super(
-                tier,
-                ChaosWeaponDamage.modifierFor(tier, attackDamage),
-                -3.0f,
-                new Properties().stacksTo(1));
+        super(tier, new Properties().stacksTo(1).attributes(ShovelItem.createAttributes(tier, ChaosWeaponDamage.modifierFor(tier, attackDamage), -3.0f)));
     }
 
     @Override

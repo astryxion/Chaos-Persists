@@ -65,9 +65,9 @@ public class LeafMonster extends Monster {
     }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(ATTACKING, (byte) 0);
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(ATTACKING, (byte) 0);
     }
 
     @Override
@@ -164,7 +164,7 @@ public class LeafMonster extends Monster {
     }
 
     @Override
-    protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+    protected void dropCustomDeathLoot(net.minecraft.server.level.ServerLevel serverLevel, DamageSource source, boolean recentlyHit) {
         if (DatapackLoot.useEntityTable(this)) {
             return;
         }
@@ -335,7 +335,7 @@ public class LeafMonster extends Monster {
                         continue;
                     }
                     ResourceLocation leafId =
-                            new ResourceLocation("chaospersists", "leaf_monster");
+                            ResourceLocation.fromNamespaceAndPath("chaospersists", "leaf_monster");
                     ResourceLocation norm = SpawnerFixHelper.normalizeSpawnerEntityId(id);
                     if (SpawnerFixHelper.entityIdsMatchForSpawner(norm, leafId)
                             || "Leaf Monster".equals(id.getPath())) {
@@ -381,7 +381,7 @@ public class LeafMonster extends Monster {
                         continue;
                     }
                     ResourceLocation leafId =
-                            new ResourceLocation("chaospersists", "leaf_monster");
+                            ResourceLocation.fromNamespaceAndPath("chaospersists", "leaf_monster");
                     ResourceLocation norm = SpawnerFixHelper.normalizeSpawnerEntityId(id);
                     if (SpawnerFixHelper.entityIdsMatchForSpawner(norm, leafId)
                             || "Leaf Monster".equals(id.getPath())) {

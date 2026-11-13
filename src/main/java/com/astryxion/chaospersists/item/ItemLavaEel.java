@@ -16,9 +16,9 @@ public class ItemLavaEel extends Item {
     }
 
     private static Properties createProperties(int nutrition, float saturation, boolean alwaysEdible) {
-        FoodProperties.Builder builder = new FoodProperties.Builder().nutrition(nutrition).saturationMod(saturation);
+        FoodProperties.Builder builder = new FoodProperties.Builder().nutrition(nutrition).saturationModifier(saturation);
         if (alwaysEdible) {
-            builder.alwaysEat();
+            builder.alwaysEdible();
         }
         return new Properties().food(builder.build());
     }

@@ -21,7 +21,7 @@ import net.minecraft.world.level.levelgen.structure.placement.RandomSpreadType;
  */
 public class LocateMarkerStructure extends Structure {
 
-    public static final Codec<LocateMarkerStructure> CODEC = simpleCodec(LocateMarkerStructure::new);
+    public static final com.mojang.serialization.MapCodec<LocateMarkerStructure> CODEC = simpleCodec(LocateMarkerStructure::new);
 
     public LocateMarkerStructure(Structure.StructureSettings settings) {
         super(settings);

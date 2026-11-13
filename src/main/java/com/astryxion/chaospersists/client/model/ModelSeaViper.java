@@ -159,7 +159,7 @@ public class ModelSeaViper extends EntityModel<SeaViper> {
     }
 
     @Override
-    public void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
+    public void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, int color) {
         SeaViper entity = this.animEntity;
         float ageInTicks = this.animAgeInTicks;
         float limbSwingAmount = this.animLimbSwingAmount;
@@ -228,39 +228,39 @@ float newangle = 0.0f;
         this.MiddleTounge.yRot = newangle;
         this.ForkLeft.yRot = newangle - 0.436f;
         this.ForkRight.yRot = newangle + 0.436f;
-        this.TailTip.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Neck.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.tBase.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.t2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.t3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.t4.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.t5.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.t6.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.t7.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.t8.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.t9.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.t10.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.t12.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.t11.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.t13.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.t14.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.t15.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.t16.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.t17.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.t18.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.t19.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.t20.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.t21.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.MouthBottom.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.ToungBase.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.MiddleTounge.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.EyeRight.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.EyeLeft.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.MouthTop.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Head.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.FangRight.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.FangLeft.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.ForkRight.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.ForkLeft.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.TailTip.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Neck.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.tBase.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.t2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.t3.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.t4.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.t5.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.t6.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.t7.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.t8.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.t9.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.t10.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.t12.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.t11.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.t13.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.t14.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.t15.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.t16.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.t17.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.t18.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.t19.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.t20.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.t21.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.MouthBottom.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.ToungBase.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.MiddleTounge.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.EyeRight.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.EyeLeft.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.MouthTop.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Head.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.FangRight.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.FangLeft.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.ForkRight.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.ForkLeft.render(poseStack, buffer, packedLight, packedOverlay, color);
     }
 }

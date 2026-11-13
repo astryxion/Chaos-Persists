@@ -107,6 +107,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import java.util.UUID;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -121,23 +122,6 @@ public class MyUtils {
             Collections.newSetFromMap(new WeakHashMap<>());
 
     public MyUtils() {
-    }
-
-    /**
-     * Royal-family heal food. OreSpawn 1.7.10 used {@code instanceof ItemFood} (any edible), but
-     * temptation / preferred item was beef. Modern FoodProperties covers notch apples and mod
-     * crops; restrict to meat so behavior matches a carnivore (and wolf-style {@code isMeat()}).
-     */
-    @Nullable
-    public static FoodProperties getMeatFood(ItemStack stack, @Nullable LivingEntity eater) {
-        if (stack == null || stack.isEmpty()) {
-            return null;
-        }
-        FoodProperties food = stack.getFoodProperties(eater);
-        if (food != null && food.isMeat()) {
-            return food;
-        }
-        return null;
     }
 
     /**
@@ -187,7 +171,20 @@ public class MyUtils {
 
     /** False for empty stacks and armor with Curse of Binding. */
     public static boolean canMobStripItem(@Nullable ItemStack stack) {
-        return stack != null && !stack.isEmpty() && !EnchantmentHelper.hasBindingCurse(stack);
+        return stack != null && !stack.isEmpty() && !EnchantmentHelper.has(stack, net.minecraft.world.item.enchantment.EnchantmentEffectComponents.PREVENT_ARMOR_CHANGE);
+    }
+
+    /**
+     * Royal-family heal food. OreSpawn 1.7.10 used {@code instanceof ItemFood} (any edible), but
+     * temptation / preferred item was beef. Modern FoodProperties covers notch apples and mod
+     * crops; restrict to meat so behavior matches a carnivore (wolf-style {@link ItemTags#MEAT}).
+     */
+    @Nullable
+    public static FoodProperties getMeatFood(ItemStack stack, @Nullable LivingEntity eater) {
+        if (stack == null || stack.isEmpty() || !stack.is(ItemTags.MEAT)) {
+            return null;
+        }
+        return stack.getFoodProperties(eater);
     }
 
     /** 1.12 {@code EntityLivingBase.playAmbientSound()} equivalent. */

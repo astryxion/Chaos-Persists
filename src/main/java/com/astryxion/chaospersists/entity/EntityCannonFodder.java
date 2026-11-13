@@ -33,7 +33,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 public class EntityCannonFodder extends TamableAnimal {
     private static final EntityDataAccessor<Integer> IS_ACTIVATED =
@@ -57,10 +57,10 @@ public class EntityCannonFodder extends TamableAnimal {
     }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(IS_ACTIVATED, 0);
-        this.entityData.define(HAT_COLOR, 0);
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(IS_ACTIVATED, 0);
+        builder.define(HAT_COLOR, 0);
     }
 
     @Override
@@ -125,7 +125,7 @@ public class EntityCannonFodder extends TamableAnimal {
             if (this.is_activated == 0) {
                 this.is_activated = 1;
             }
-            this.setTame(true);
+            this.setTame(true, true);
             this.setOwnerUUID(
                     this.name_one != null && !this.name_one.isEmpty() ? UUID.fromString(this.name_one) : null);
             spawnTamingParticles(true);
@@ -147,7 +147,7 @@ public class EntityCannonFodder extends TamableAnimal {
             if (this.is_activated == 0) {
                 this.is_activated = 1;
             }
-            this.setTame(true);
+            this.setTame(true, true);
             this.setOwnerUUID(
                     this.name_one != null && !this.name_one.isEmpty() ? UUID.fromString(this.name_one) : null);
             spawnTamingParticles(true);
@@ -173,7 +173,7 @@ public class EntityCannonFodder extends TamableAnimal {
             if (this.is_activated == 0) {
                 this.is_activated = 1;
             }
-            this.setTame(true);
+            this.setTame(true, true);
             this.setOwnerUUID(
                     this.name_one != null && !this.name_one.isEmpty() ? UUID.fromString(this.name_one) : null);
             spawnTamingParticles(true);
@@ -213,12 +213,12 @@ public class EntityCannonFodder extends TamableAnimal {
                                 this.getZ() + (double) this.getRandom().nextFloat());
                 if (newent instanceof EntityCannonFodder cf) {
                     cf.setOwnerUUID(this.getOwnerUUID());
-                    cf.setTame(true);
+                    cf.setTame(true, true);
                     cf.setStuff(this.hat_color, this.is_activated, this.name_one, this.name_two);
                 }
             }
             spawnTamingParticles(true);
-            par1EntityPlayer.playSound(SoundEvents.GENERIC_EXPLODE, 0.75f, 2.0f);
+            par1EntityPlayer.playSound(SoundEvents.GENERIC_EXPLODE.value(), 0.75f, 2.0f);
             if (!par1EntityPlayer.getAbilities().instabuild) {
                 var2.shrink(1);
                 if (var2.isEmpty()) {
@@ -249,19 +249,19 @@ public class EntityCannonFodder extends TamableAnimal {
     public static Entity spawnCreature(Level par0World, String par1, double par2, double par4, double par6) {
         ResourceLocation key;
         if (par1.indexOf(':') >= 0) {
-            key = new ResourceLocation(par1);
+            key = ResourceLocation.parse(par1);
         } else {
             key =
                     switch (par1) {
-                        case "Chipmunk" -> new ResourceLocation("chaospersists", "chipmunk");
-                        case "Ostrich" -> new ResourceLocation("chaospersists", "ostrich");
-                        case "Lizard" -> new ResourceLocation("chaospersists", "lizard");
+                        case "Chipmunk" -> ResourceLocation.fromNamespaceAndPath("chaospersists", "chipmunk");
+                        case "Ostrich" -> ResourceLocation.fromNamespaceAndPath("chaospersists", "ostrich");
+                        case "Lizard" -> ResourceLocation.fromNamespaceAndPath("chaospersists", "lizard");
                         case "Velocity Raptor" ->
-                                new ResourceLocation("chaospersists", "velocity_raptor");
-                        default -> new ResourceLocation("chaospersists", par1);
+                                ResourceLocation.fromNamespaceAndPath("chaospersists", "velocity_raptor");
+                        default -> ResourceLocation.fromNamespaceAndPath("chaospersists", par1);
                     };
         }
-        EntityType<?> type = ForgeRegistries.ENTITY_TYPES.getValue(key);
+        EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.get(key);
         if (type == null) {
             return null;
         }
@@ -329,7 +329,7 @@ public class EntityCannonFodder extends TamableAnimal {
         this.py = par1NBTTagCompound.getInt("PatrolY");
         this.pz = par1NBTTagCompound.getInt("PatrolZ");
         if (this.name_one != null) {
-            this.setTame(true);
+            this.setTame(true, true);
             this.setOwnerUUID(
                     !this.name_one.isEmpty() ? UUID.fromString(this.name_one) : null);
         }

@@ -79,9 +79,9 @@ public class Urchin extends Monster {
     }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(ATTACKING, (byte) 0);
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(ATTACKING, (byte) 0);
     }
 
     @Override
@@ -235,7 +235,7 @@ public class Urchin extends Monster {
     }
 
     @Override
-    protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+    protected void dropCustomDeathLoot(net.minecraft.server.level.ServerLevel serverLevel, DamageSource source, boolean recentlyHit) {
         if (DatapackLoot.useEntityTable(this)) {
             return;
         }
@@ -253,7 +253,7 @@ public class Urchin extends Monster {
     @Override
     public boolean doHurtTarget(Entity target) {
         if (target instanceof LivingEntity living) {
-            living.setSecondsOnFire(5);
+            living.igniteForSeconds(5);
         }
         return super.doHurtTarget(target);
     }

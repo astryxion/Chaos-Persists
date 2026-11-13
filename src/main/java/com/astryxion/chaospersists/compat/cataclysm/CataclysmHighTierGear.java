@@ -6,7 +6,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 /**
  * Queen Scale, Royal Guardian, Mobzilla Scale, and Ultimate are the high-tier sets
@@ -50,7 +50,7 @@ final class CataclysmHighTierGear {
         if (material == 10 || material == 11 || material == 13) {
             return true;
         }
-        ResourceLocation id = ForgeRegistries.ITEMS.getKey(stack.getItem());
+        ResourceLocation id = BuiltInRegistries.ITEM.getKey(stack.getItem());
         return id != null
                 && ChaosPersists.MODID.equals(id.getNamespace())
                 && id.getPath().startsWith("ultimate_");

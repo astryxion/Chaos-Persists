@@ -41,7 +41,7 @@ public class ItemDuctTape extends Item {
             return InteractionResult.FAIL;
         }
         BlockState state = this.placeBlock.defaultBlockState();
-        if (!this.placeBlock.canSurvive(state, level, placePos) || !level.getBlockState(placePos).canBeReplaced()) {
+        if (!state.canSurvive(level, placePos) || !level.getBlockState(placePos).canBeReplaced()) {
             return InteractionResult.FAIL;
         }
         if (!level.setBlock(placePos, state, 3)) {

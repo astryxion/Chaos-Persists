@@ -24,6 +24,11 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.phys.AABB;
 
 public class Tshirt extends Animal {
+    @Override
+    public boolean isFood(net.minecraft.world.item.ItemStack stack) {
+        return stack.is(net.minecraft.world.item.Items.WHEAT);
+    }
+
     private final float moveSpeed = 0.0f;
 
     public Tshirt(EntityType<? extends Tshirt> type, Level level) {
@@ -78,7 +83,8 @@ public class Tshirt extends Animal {
     }
 
     @Override
-    protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+    protected void dropCustomDeathLoot(net.minecraft.server.level.ServerLevel serverLevel, DamageSource source, boolean recentlyHit) {
+        int looting = com.astryxion.chaospersists.util.ChaosEnchantments.looting(source);
         if (DatapackLoot.useEntityTable(this)) {
             return;
         }
@@ -96,7 +102,7 @@ public class Tshirt extends Animal {
     }
 
     @Override
-    public EntityDimensions getDimensions(Pose pose) {
+    public EntityDimensions getDefaultDimensions(Pose pose) {
         return EntityDimensions.scalable(4.0f, 4.0f);
     }
 

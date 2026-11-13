@@ -9,7 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderKraken extends MobRenderer<Kraken, ModelKraken> {
     private static final ResourceLocation TEXTURE =
-            new ResourceLocation("chaospersists", "textures/entity/kraken.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/kraken.png");
     private final float scale;
 
     public RenderKraken(EntityRendererProvider.Context context, ModelKraken model, float shadow, float scale) {

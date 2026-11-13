@@ -45,23 +45,23 @@ public class Fairy extends AmbientCreature {
     private static final EntityDataAccessor<Integer> FAIRY_TYPE =
             SynchedEntityData.defineId(Fairy.class, EntityDataSerializers.INT);
     private static final ResourceLocation TEXTURE0 =
-            new ResourceLocation("chaospersists", "textures/entity/fairytexture.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/fairytexture.png");
     private static final ResourceLocation TEXTURE1 =
-            new ResourceLocation("chaospersists", "textures/entity/fairytexture2.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/fairytexture2.png");
     private static final ResourceLocation TEXTURE2 =
-            new ResourceLocation("chaospersists", "textures/entity/fairytexture3.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/fairytexture3.png");
     private static final ResourceLocation TEXTURE3 =
-            new ResourceLocation("chaospersists", "textures/entity/fairytexture4.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/fairytexture4.png");
     private static final ResourceLocation TEXTURE4 =
-            new ResourceLocation("chaospersists", "textures/entity/fairytexture5.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/fairytexture5.png");
     private static final ResourceLocation TEXTURE5 =
-            new ResourceLocation("chaospersists", "textures/entity/fairytexture6.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/fairytexture6.png");
     private static final ResourceLocation TEXTURE6 =
-            new ResourceLocation("chaospersists", "textures/entity/fairytexture7.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/fairytexture7.png");
     private static final ResourceLocation TEXTURE7 =
-            new ResourceLocation("chaospersists", "textures/entity/fairytexture8.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/fairytexture8.png");
     private static final ResourceLocation TEXTURE8 =
-            new ResourceLocation("chaospersists", "textures/entity/fairytexture9.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/fairytexture9.png");
 
     int my_blink = 0;
     int blinker = 0;
@@ -87,13 +87,13 @@ public class Fairy extends AmbientCreature {
     }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
         // 1.12 entityInit() ran after constructor set fairy_type; 1.20 defineSynchedData runs during super().
         if (!this.level().isClientSide()) {
             this.fairy_type = this.getRandom().nextInt(9);
         }
-        this.entityData.define(FAIRY_TYPE, this.fairy_type);
+        builder.define(FAIRY_TYPE, this.fairy_type);
     }
 
     public ResourceLocation getTexture(Fairy a) {
@@ -201,7 +201,7 @@ public class Fairy extends AmbientCreature {
     }
 
     @Override
-    protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+    protected void dropCustomDeathLoot(net.minecraft.server.level.ServerLevel serverLevel, DamageSource source, boolean recentlyHit) {
         if (DatapackLoot.useEntityTable(this)) {
             return;
         }

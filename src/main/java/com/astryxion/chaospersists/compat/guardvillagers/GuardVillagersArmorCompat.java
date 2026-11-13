@@ -1,5 +1,7 @@
 package com.astryxion.chaospersists.compat.guardvillagers;
 
+import net.neoforged.neoforge.event.tick.EntityTickEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.item.ItemChaosArmor;
 import java.util.UUID;
@@ -15,13 +17,13 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.event.entity.living.LivingAttackEvent;
-import net.minecraftforge.event.entity.living.LivingEvent;
-import net.minecraftforge.event.entity.living.LivingHurtEvent;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
+import net.neoforged.neoforge.event.entity.living.LivingEvent;
+import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
+import net.neoforged.bus.api.EventPriority;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModList;
+import net.neoforged.fml.common.Mod;
 
 /**
  * Same rules Girlfriend / Boyfriend use when they wear Chaos armor:
@@ -32,7 +34,7 @@ import net.minecraftforge.fml.common.Mod;
  * <p>Do not run the player OreSpawn invert here. Full Royal/Ultimate is defense
  * 34+, which would zero every hit and look like immunity.
  */
-@Mod.EventBusSubscriber(modid = ChaosPersists.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(modid = ChaosPersists.MODID, bus = EventBusSubscriber.Bus.GAME)
 public final class GuardVillagersArmorCompat {
 
     public static final String GUARDVILLAGERS_MODID = "guardvillagers";
@@ -40,10 +42,10 @@ public final class GuardVillagersArmorCompat {
     /** Same cap as {@code Girlfriend#hurt} / {@code Boyfriend#hurt}. */
     private static final float COMPANION_HIT_CAP = 10.0f;
 
-    private static final UUID ARMOR_MODIFIER_ID =
-            UUID.fromString("6e2c8d41-9b70-4f3a-a1d8-0c5e7b94a216");
-    private static final UUID TOUGHNESS_MODIFIER_ID =
-            UUID.fromString("b8a14e03-2d57-4c9f-8e61-1f0a3c7d5b90");
+    private static final net.minecraft.resources.ResourceLocation ARMOR_MODIFIER_ID =
+            net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", "6e2c8d41-9b70-4f3a-a1d8-0c5e7b94a216");
+    private static final net.minecraft.resources.ResourceLocation TOUGHNESS_MODIFIER_ID =
+            net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", "b8a14e03-2d57-4c9f-8e61-1f0a3c7d5b90");
 
     private static boolean checked;
     private static boolean present;
@@ -73,7 +75,7 @@ public final class GuardVillagersArmorCompat {
     }
 
     @SubscribeEvent(priority = EventPriority.HIGH)
-    public static void onLivingAttack(LivingAttackEvent event) {
+    public static void onLivingAttack(LivingIncomingDamageEvent event) {
         if (event == null || event.getEntity() == null || event.getEntity().level().isClientSide()) {
             return;
         }
@@ -86,11 +88,11 @@ public final class GuardVillagersArmorCompat {
     }
 
     @SubscribeEvent(priority = EventPriority.HIGH)
-    public static void onLivingHurt(LivingHurtEvent event) {
+    public static void onLivingHurt(LivingIncomingDamageEvent event) {
         if (event == null || event.getEntity() == null || event.getEntity().level().isClientSide()) {
             return;
         }
-        LivingEntity living = event.getEntity();
+        LivingEntity living = (LivingEntity) event.getEntity();
         if (!isGuard(living)) {
             return;
         }
@@ -109,14 +111,15 @@ public final class GuardVillagersArmorCompat {
             toughness = (float) toughAttr.getValue();
         }
         float companionMax =
-                CombatRules.getDamageAfterAbsorb(
+                com.astryxion.chaospersists.util.ChaosArmorMath.vanillaDamageAfterArmor(
                         COMPANION_HIT_CAP, (float) living.getArmorValue(), toughness);
         event.setAmount(Math.min(incoming, companionMax));
     }
 
     @SubscribeEvent
-    public static void onLivingTick(LivingEvent.LivingTickEvent event) {
-        LivingEntity living = event.getEntity();
+    public static void onLivingTick(EntityTickEvent.Post event) {
+        if (!(event.getEntity() instanceof net.minecraft.world.entity.LivingEntity)) return;
+        LivingEntity living = (LivingEntity) event.getEntity();
         if (living == null || living.level().isClientSide() || living.tickCount % 20 != 0) {
             return;
         }
@@ -171,8 +174,8 @@ public final class GuardVillagersArmorCompat {
 
     private static void replaceTransient(
             LivingEntity living,
-            net.minecraft.world.entity.ai.attributes.Attribute attribute,
-            UUID id,
+            net.minecraft.core.Holder<net.minecraft.world.entity.ai.attributes.Attribute> attribute,
+            net.minecraft.resources.ResourceLocation id,
             double desiredTotal) {
         AttributeInstance instance = living.getAttribute(attribute);
         if (instance == null) {
@@ -184,11 +187,11 @@ public final class GuardVillagersArmorCompat {
         if (missing > 0.01) {
             instance.addTransientModifier(
                     new AttributeModifier(
-                            id, "chaospersists_guard_armor", missing, AttributeModifier.Operation.ADDITION));
+                            id, missing, AttributeModifier.Operation.ADD_VALUE));
         }
     }
 
-    private static void removeTransient(@Nullable AttributeInstance instance, UUID id) {
+    private static void removeTransient(@Nullable AttributeInstance instance, net.minecraft.resources.ResourceLocation id) {
         if (instance != null && instance.getModifier(id) != null) {
             instance.removeModifier(id);
         }

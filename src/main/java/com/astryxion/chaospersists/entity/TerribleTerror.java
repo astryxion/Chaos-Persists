@@ -52,6 +52,8 @@ public class TerribleTerror extends TamableAnimal {
 
     public TerribleTerror(EntityType<? extends TerribleTerror> type, Level level) {
         super(type, level);
+        this.setOrderedToSit(false);
+        this.setTame(false, true);
         this.xpReward = 10;
         this.setOrderedToSit(false);
         this.targetSorter = new GenericTargetSorter(this);
@@ -90,18 +92,16 @@ public class TerribleTerror extends TamableAnimal {
             ServerLevelAccessor level,
             DifficultyInstance difficulty,
             MobSpawnType reason,
-            SpawnGroupData spawnData,
-            CompoundTag dataTag) {
-        SpawnGroupData data = super.finalizeSpawn(level, difficulty, reason, spawnData, dataTag);
+            SpawnGroupData spawnData) {
+        SpawnGroupData data = super.finalizeSpawn(level, difficulty, reason, spawnData);
         this.setAge(0);
         return data;
     }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.setOrderedToSit(false);
-        this.setTame(false);
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+
     }
 
     @Override
@@ -141,7 +141,7 @@ public class TerribleTerror extends TamableAnimal {
             if (!this.isTame()) {
                 if (!this.level().isClientSide) {
                     if (this.getRandom().nextInt(2) == 0) {
-                        this.setTame(true);
+                        this.setTame(true, true);
                         this.setOwnerUUID(player.getUUID());
                         this.setPersistenceRequired();
                         this.setOrderedToSit(false);
@@ -178,7 +178,7 @@ public class TerribleTerror extends TamableAnimal {
                 && this.isOwnedBy(player)) {
             if (!this.level().isClientSide) {
                 this.setOrderedToSit(false);
-                this.setTame(false);
+                this.setTame(false, true);
                 this.setOwnerUUID(null);
                 this.setHealth((float) this.mygetMaxHealth());
                 spawnTamingParticles(false);
@@ -249,8 +249,8 @@ public class TerribleTerror extends TamableAnimal {
     }
 
     @Override
-    public void setTame(boolean tamed) {
-        super.setTame(tamed);
+    public void setTame(boolean tamed, boolean applySideEffects) {
+        super.setTame(tamed, applySideEffects);
         this.applyTamedMaxHealth();
     }
 
@@ -437,7 +437,7 @@ public class TerribleTerror extends TamableAnimal {
     }
 
     @Override
-    protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+    protected void dropCustomDeathLoot(net.minecraft.server.level.ServerLevel serverLevel, DamageSource source, boolean recentlyHit) {
         if (DatapackLoot.useEntityTable(this)) {
             return;
         }
@@ -586,7 +586,7 @@ public class TerribleTerror extends TamableAnimal {
                         continue;
                     }
                     ResourceLocation terrorId =
-                            new ResourceLocation("chaospersists", "terrible_terror");
+                            ResourceLocation.fromNamespaceAndPath("chaospersists", "terrible_terror");
                     ResourceLocation norm = SpawnerFixHelper.normalizeSpawnerEntityId(id);
                     if (SpawnerFixHelper.entityIdsMatchForSpawner(norm, terrorId)
                             || "Terrible Terror".equals(id.getPath())) {
@@ -626,7 +626,7 @@ public class TerribleTerror extends TamableAnimal {
                         continue;
                     }
                     ResourceLocation terrorId =
-                            new ResourceLocation("chaospersists", "terrible_terror");
+                            ResourceLocation.fromNamespaceAndPath("chaospersists", "terrible_terror");
                     ResourceLocation norm = SpawnerFixHelper.normalizeSpawnerEntityId(id);
                     if (SpawnerFixHelper.entityIdsMatchForSpawner(norm, terrorId)
                             || "Terrible Terror".equals(id.getPath())) {

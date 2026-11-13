@@ -14,7 +14,6 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -28,16 +27,21 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.phys.AABB;
 
 public class EntityAnt extends Animal {
+    @Override
+    public boolean isFood(net.minecraft.world.item.ItemStack stack) {
+        return stack.is(net.minecraft.world.item.Items.WHEAT);
+    }
+
     private static final ResourceLocation TEXTURE1 =
-            new ResourceLocation("chaospersists", "textures/entity/ant.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/ant.png");
     private static final ResourceLocation TEXTURE2 =
-            new ResourceLocation("chaospersists", "textures/entity/red_ant.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/red_ant.png");
     private static final ResourceLocation TEXTURE3 =
-            new ResourceLocation("chaospersists", "textures/entity/rainbow_ant.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/rainbow_ant.png");
     private static final ResourceLocation TEXTURE4 =
-            new ResourceLocation("chaospersists", "textures/entity/unstableant.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/unstableant.png");
     private static final ResourceLocation TEXTURE5 =
-            new ResourceLocation("chaospersists", "textures/entity/termite.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/termite.png");
 
     public double moveSpeed = 0.15000000596046448;
 
@@ -55,10 +59,6 @@ public class EntityAnt extends Animal {
                 .add(Attributes.ATTACK_DAMAGE, 0.0);
     }
 
-    @Override
-    public MobType getMobType() {
-        return MobType.ARTHROPOD;
-    }
 
     public ResourceLocation getTexture(EntityAnt a) {
         String n = a.getClass().getSimpleName();
@@ -123,7 +123,7 @@ public class EntityAnt extends Animal {
         if (world == null) {
             return false;
         }
-        serverPlayer.changeDimension(world, new UtopiaTeleporter(serverPlayer.getX(), serverPlayer.getZ()));
+        serverPlayer.changeDimension((new UtopiaTeleporter(serverPlayer.getX(), serverPlayer.getZ())).transition(serverPlayer, world));
         return true;
     }
 

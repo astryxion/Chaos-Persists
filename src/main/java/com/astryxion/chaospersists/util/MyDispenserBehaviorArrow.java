@@ -1,7 +1,7 @@
 package com.astryxion.chaospersists.util;
 
 import com.astryxion.chaospersists.item.IrukandjiArrow;
-import net.minecraft.core.BlockSource;
+import net.minecraft.core.dispenser.BlockSource;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Position;
 import net.minecraft.core.dispenser.DefaultDispenseItemBehavior;
@@ -17,9 +17,9 @@ public final class MyDispenserBehaviorArrow extends DefaultDispenseItemBehavior 
 
     @Override
     protected ItemStack execute(BlockSource source, ItemStack stack) {
-        Level level = source.getLevel();
+        Level level = source.level();
         Position position = DispenserBlock.getDispensePosition(source);
-        Direction facing = source.getBlockState().getValue(DispenserBlock.FACING);
+        Direction facing = source.state().getValue(DispenserBlock.FACING);
 
         IrukandjiArrow arrow = new IrukandjiArrow(level, position.x(), position.y(), position.z());
         arrow.pickup = AbstractArrow.Pickup.ALLOWED;

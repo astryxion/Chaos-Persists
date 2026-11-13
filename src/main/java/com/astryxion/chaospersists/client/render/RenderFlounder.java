@@ -9,7 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderFlounder extends MobRenderer<Flounder, ModelFlounder> {
     private static final ResourceLocation TEXTURE =
-            new ResourceLocation("chaospersists", "textures/entity/floundertexture.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/floundertexture.png");
     private final float scale;
 
     public RenderFlounder(EntityRendererProvider.Context context, ModelFlounder model, float shadow, float scale) {

@@ -17,13 +17,13 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderEnchantedCow extends MobRenderer<RedCow, CowModel<RedCow>> {
     private static final ResourceLocation TEXTURE_RED =
-            new ResourceLocation("chaospersists", "textures/entity/red_cow.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/red_cow.png");
     private static final ResourceLocation TEXTURE_GOLD =
-            new ResourceLocation("chaospersists", "textures/entity/gold_cow.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/gold_cow.png");
     private static final ResourceLocation TEXTURE_CRYSTAL =
-            new ResourceLocation("chaospersists", "textures/entity/crystal_cow.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/crystal_cow.png");
     private static final ResourceLocation ENCHANTED_GLINT =
-            new ResourceLocation("textures/misc/enchanted_glint_entity.png");
+            ResourceLocation.parse("textures/misc/enchanted_glint_entity.png");
 
     public RenderEnchantedCow(EntityRendererProvider.Context context, CowModel<RedCow> model, float shadow) {
         super(context, model, shadow);
@@ -77,10 +77,7 @@ public class RenderEnchantedCow extends MobRenderer<RedCow, CowModel<RedCow>> {
                             vertexConsumer,
                             packedLight,
                             OverlayTexture.NO_OVERLAY,
-                            0.38f,
-                            0.19f,
-                            0.608f,
-                            1.0f);
+                            net.minecraft.util.FastColor.ARGB32.colorFromFloat(1.0f, 0.38f, 0.19f, 0.608f));
         }
     }
 }

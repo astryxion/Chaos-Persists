@@ -108,7 +108,7 @@ public class ModelSeaMonster extends EntityModel<SeaMonster> {
     }
 
     @Override
-    public void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
+    public void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, int color) {
         SeaMonster entity = this.animEntity;
         float ageInTicks = this.animAgeInTicks;
         float limbSwingAmount = this.animLimbSwingAmount;
@@ -177,28 +177,28 @@ float newangle = 0.0f;
             newangle = Mth.cos((float)(ageInTicks * 0.2f * this.wingspeed)) * 3.1415927f * 0.05f;
             this.BottomJaw.xRot = 0.17f + newangle;
         }
-        this.TailTip.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.TailBase.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Tail2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Tail3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.BodyBack.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Neck6.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.BodyFront.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.NeckBase.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Neck2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Neck3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Neck4.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Neck5.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.BottomJaw.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.FinBackRight.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.FinBackLeft.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.FinFrontLeft.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.FinFrontRight.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Tail4.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Tail5.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Tail6.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.TopJaw.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.RightEye.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.LeftEye.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.TailTip.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.TailBase.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Tail2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Tail3.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.BodyBack.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Neck6.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.BodyFront.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.NeckBase.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Neck2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Neck3.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Neck4.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Neck5.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.BottomJaw.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.FinBackRight.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.FinBackLeft.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.FinFrontLeft.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.FinFrontRight.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Tail4.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Tail5.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Tail6.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.TopJaw.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.RightEye.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.LeftEye.render(poseStack, buffer, packedLight, packedOverlay, color);
     }
 }

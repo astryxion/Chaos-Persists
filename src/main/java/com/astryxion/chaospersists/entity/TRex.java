@@ -55,7 +55,7 @@ public class TRex extends Monster {
     public TRex(EntityType<? extends TRex> type, Level level) {
         super(type, level);
         this.moveControl = new ChaosChaseMoveControl(this);
-        this.setMaxUpStep(1.0F);
+        getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.STEP_HEIGHT).setBaseValue(1.0F);
         this.xpReward = 150;
         this.targetSorter = new GenericTargetSorter(this);
         this.goalSelector.addGoal(0, new FloatGoal(this));
@@ -75,9 +75,9 @@ public class TRex extends Monster {
     }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(ATTACKING, (byte) 0);
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(ATTACKING, (byte) 0);
     }
 
     @Override
@@ -150,7 +150,7 @@ public class TRex extends Monster {
     }
 
     @Override
-    protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+    protected void dropCustomDeathLoot(net.minecraft.server.level.ServerLevel serverLevel, DamageSource source, boolean recentlyHit) {
         if (DatapackLoot.useEntityTable(this)) {
             return;
         }
@@ -306,7 +306,7 @@ public class TRex extends Monster {
             MobSpawnType spawnType,
             BlockPos pos,
             net.minecraft.util.RandomSource random) {
-        ResourceLocation trexId = new ResourceLocation("chaospersists", "trex");
+        ResourceLocation trexId = ResourceLocation.fromNamespaceAndPath("chaospersists", "trex");
         BlockPos.MutableBlockPos checkPos = new BlockPos.MutableBlockPos();
         for (int dz = -8; dz <= 8; ++dz) {
             for (int dx = -8; dx <= 8; ++dx) {
@@ -355,7 +355,7 @@ public class TRex extends Monster {
     @Override
     public boolean checkSpawnRules(LevelAccessor level, MobSpawnType spawnReason) {
         BlockPos pos = this.blockPosition();
-        ResourceLocation trexId = new ResourceLocation("chaospersists", "trex");
+        ResourceLocation trexId = ResourceLocation.fromNamespaceAndPath("chaospersists", "trex");
         BlockPos.MutableBlockPos checkPos = new BlockPos.MutableBlockPos();
         for (int dz = -8; dz <= 8; ++dz) {
             for (int dx = -8; dx <= 8; ++dx) {

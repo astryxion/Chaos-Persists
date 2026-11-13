@@ -26,7 +26,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.util.Mth;
-import net.minecraftforge.common.ForgeHooks;
+import net.neoforged.neoforge.common.CommonHooks;
 
 public class TileEntityCrystalFurnace extends BlockEntity implements WorldlyContainer, MenuProvider {
     private static final int[] SLOTS_TOP = new int[] {0};
@@ -150,22 +150,22 @@ public class TileEntityCrystalFurnace extends BlockEntity implements WorldlyCont
     }
 
     @Override
-    protected void saveAdditional(CompoundTag compound) {
-        super.saveAdditional(compound);
+    protected void saveAdditional(CompoundTag compound, net.minecraft.core.HolderLookup.Provider registries) {
+        super.saveAdditional(compound, registries);
         compound.putInt("BurnTime", this.furnaceBurnTime);
         compound.putInt("CookTime", this.cookTime);
         compound.putInt("CookTimeTotal", this.totalCookTime);
-        ContainerHelper.saveAllItems(compound, this.furnaceItemStacks);
+        ContainerHelper.saveAllItems(compound, this.furnaceItemStacks, registries);
         if (this.hasCustomName()) {
             compound.putString("CustomName", this.furnaceCustomName);
         }
     }
 
     @Override
-    public void load(CompoundTag compound) {
-        super.load(compound);
+    public void loadAdditional(CompoundTag compound, net.minecraft.core.HolderLookup.Provider registries) {
+        super.loadAdditional(compound, registries);
         this.furnaceItemStacks = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
-        ContainerHelper.loadAllItems(compound, this.furnaceItemStacks);
+        ContainerHelper.loadAllItems(compound, this.furnaceItemStacks, registries);
         this.furnaceBurnTime = compound.getInt("BurnTime");
         this.cookTime = compound.getInt("CookTime");
         this.totalCookTime = compound.getInt("CookTimeTotal");
@@ -296,8 +296,8 @@ public class TileEntityCrystalFurnace extends BlockEntity implements WorldlyCont
 
     private static ItemStack getSmeltingResult(Level level, ItemStack input) {
         return level.getRecipeManager()
-                .getRecipeFor(RecipeType.SMELTING, new SimpleContainer(input), level)
-                .map(recipe -> recipe.getResultItem(level.registryAccess()))
+                .getRecipeFor(RecipeType.SMELTING, new net.minecraft.world.item.crafting.SingleRecipeInput(input), level)
+                .map(recipe -> recipe.value().getResultItem(level.registryAccess()))
                 .orElse(ItemStack.EMPTY);
     }
 
@@ -305,7 +305,7 @@ public class TileEntityCrystalFurnace extends BlockEntity implements WorldlyCont
         if (stack.isEmpty()) {
             return 0;
         }
-        return ForgeHooks.getBurnTime(stack, RecipeType.SMELTING);
+        return stack.getBurnTime(RecipeType.SMELTING);
     }
 
     public static boolean isItemFuel(ItemStack stack) {

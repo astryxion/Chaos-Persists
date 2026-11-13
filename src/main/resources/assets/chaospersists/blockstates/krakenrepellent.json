@@ -17,6 +17,10 @@
     "facing=west": {
       "y": 180,
       "model": "chaospersists:block/krakenrepellent_wall"
+    },
+    "facing=down": {
+      "model": "chaospersists:block/krakenrepellent",
+      "x": 180
     }
   }
 }

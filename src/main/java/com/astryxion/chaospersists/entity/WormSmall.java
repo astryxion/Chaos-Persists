@@ -30,7 +30,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 public class WormSmall extends Monster {
     public int upcount = 50;
@@ -40,7 +40,7 @@ public class WormSmall extends Monster {
         super(type, level);
         this.xpReward = 0;
         this.noPhysics = true;
-        this.setMaxUpStep(0.0f);
+        getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.STEP_HEIGHT).setBaseValue(0.0f);
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -220,7 +220,7 @@ public class WormSmall extends Monster {
                     target.setItemSlot(EquipmentSlot.FEET, ItemStack.EMPTY);
                     bid = boots.getMaxDamage() - boots.getDamageValue();
                     bid = bid > 20 ? (bid /= 20) : 1;
-                    boots.hurtAndBreak(bid, this, e -> e.broadcastBreakEvent(EquipmentSlot.FEET));
+                    boots.hurtAndBreak(bid, this, EquipmentSlot.FEET);
                     ItemEntity dropped = new ItemEntity(
                             this.level(),
                             this.getX()
@@ -278,9 +278,9 @@ public class WormSmall extends Monster {
 
     public static Entity spawnCreature(Level level, String par1, double x, double y, double z) {
         ResourceLocation res = par1.contains(":")
-                ? new ResourceLocation(par1)
-                : new ResourceLocation("chaospersists", par1.toLowerCase().replace(" ", "_"));
-        EntityType<?> type = ForgeRegistries.ENTITY_TYPES.getValue(res);
+                ? ResourceLocation.parse(par1)
+                : ResourceLocation.fromNamespaceAndPath("chaospersists", par1.toLowerCase().replace(" ", "_"));
+        EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.get(res);
         if (type == null || !(level instanceof ServerLevel serverLevel)) {
             return null;
         }

@@ -55,9 +55,9 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 public class TheKing extends Monster {
     private static final EntityDataAccessor<Byte> BYTE20 =
@@ -110,16 +110,16 @@ public class TheKing extends Monster {
     }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(BYTE20, (byte) 0);
-        this.entityData.define(PLAY_NICELY, ChaosPersists.PlayNicely);
-        this.entityData.define(IS_END, this.isEnd);
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(BYTE20, (byte) 0);
+        builder.define(PLAY_NICELY, ChaosPersists.PlayNicely);
+        builder.define(IS_END, this.isEnd);
     }
 
     @Override
-    public void onAddedToWorld() {
-        super.onAddedToWorld();
+    public void onAddedToLevel() {
+        super.onAddedToLevel();
         this.refreshDimensions();
         MyUtils.ensureBossMaxHealth(this, this.mygetMaxHealth());
         if (!this.level().isClientSide && this.tickCount <= 1) {
@@ -128,7 +128,7 @@ public class TheKing extends Monster {
     }
 
     @Override
-    public EntityDimensions getDimensions(Pose pose) {
+    public EntityDimensions getDefaultDimensions(Pose pose) {
         if (ChaosPersists.PlayNicely == 0) {
             return EntityDimensions.scalable(22.0f, 24.0f);
         }
@@ -205,8 +205,8 @@ public class TheKing extends Monster {
 
     private void dropRegistryItem(String path, int par1) {
         Item item =
-                ForgeRegistries.ITEMS.getValue(
-                        new ResourceLocation("chaospersists", path));
+                BuiltInRegistries.ITEM.get(
+                        ResourceLocation.fromNamespaceAndPath("chaospersists", path));
         if (item != null) {
             this.dropItemRand(item, par1);
         }
@@ -231,7 +231,7 @@ public class TheKing extends Monster {
     }
 
     @Override
-    protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+    protected void dropCustomDeathLoot(net.minecraft.server.level.ServerLevel serverLevel, DamageSource source, boolean recentlyHit) {
         if (DatapackLoot.useEntityTable(this)) {
             return;
         }
@@ -244,7 +244,7 @@ public class TheKing extends Monster {
         this.dropRegistryItem("royal_boots", 1);
         this.dropRegistryItem("royalsmall", 1);
         List<Item> itemList = new ArrayList<>();
-        for (Item itemObj : ForgeRegistries.ITEMS.getValues()) {
+        for (Item itemObj : BuiltInRegistries.ITEM) {
             if (itemObj != null) {
                 itemList.add(itemObj);
             }
@@ -260,7 +260,7 @@ public class TheKing extends Monster {
             this.dropItemRand(it, 1);
         }
         List<Block> blockList = new ArrayList<>();
-        for (Block blk : ForgeRegistries.BLOCKS.getValues()) {
+        for (Block blk : BuiltInRegistries.BLOCK) {
             if (blk != null) {
                 blockList.add(blk);
             }
@@ -361,7 +361,11 @@ public class TheKing extends Monster {
 
     @Override
     public void remove(Entity.RemovalReason reason) {
-        this.discardAttachedHeads();
+        // Only destroy heads on death/discard. Nested discard during chunk unload corrupts
+        // PersistentEntitySectionManager.chunksToUnload (FastUtil removeIf AIOOBE).
+        if (reason.shouldDestroy()) {
+            this.discardAttachedHeads();
+        }
         super.remove(reason);
     }
 
@@ -1329,7 +1333,7 @@ public class TheKing extends Monster {
 
     public static Entity spawnCreature(Level level, String par1, double par2, double par4, double par6) {
         ResourceLocation res = resolveSpawnId(par1);
-        EntityType<?> type = ForgeRegistries.ENTITY_TYPES.getValue(res);
+        EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.get(res);
         if (type == null || !(level instanceof ServerLevel serverLevel)) {
             return null;
         }
@@ -1344,14 +1348,14 @@ public class TheKing extends Monster {
 
     private static ResourceLocation resolveSpawnId(String par1) {
         if (par1.contains(":")) {
-            return new ResourceLocation(par1);
+            return ResourceLocation.parse(par1);
         }
         return switch (par1) {
-            case "KingHead" -> new ResourceLocation("chaospersists", "king_head");
-            case "PurplePower" -> new ResourceLocation("chaospersists", "purple_power");
-            case "The Prince" -> new ResourceLocation("chaospersists", "the_prince");
+            case "KingHead" -> ResourceLocation.fromNamespaceAndPath("chaospersists", "king_head");
+            case "PurplePower" -> ResourceLocation.fromNamespaceAndPath("chaospersists", "purple_power");
+            case "The Prince" -> ResourceLocation.fromNamespaceAndPath("chaospersists", "the_prince");
             default ->
-                    new ResourceLocation(
+                    ResourceLocation.fromNamespaceAndPath(
                             "chaospersists", par1.toLowerCase(Locale.ROOT).replace(' ', '_'));
         };
     }
@@ -1394,7 +1398,7 @@ public class TheKing extends Monster {
                             var4.getX(),
                             var4.getY(),
                             var4.getZ(),
-                            SoundEvents.GENERIC_EXPLODE,
+                            SoundEvents.GENERIC_EXPLODE.value(),
                             this.getSoundSource(),
                             0.65f,
                             1.0f + (this.getRandom().nextFloat() - this.getRandom().nextFloat()) * 0.5f);

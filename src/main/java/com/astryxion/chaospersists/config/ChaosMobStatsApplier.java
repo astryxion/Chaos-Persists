@@ -1,5 +1,6 @@
 package com.astryxion.chaospersists.config;
 
+import net.neoforged.fml.common.EventBusSubscriber;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.entity.Alien;
 import com.astryxion.chaospersists.entity.Alosaurus;
@@ -68,15 +69,15 @@ import java.util.function.Supplier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraftforge.event.entity.EntityJoinLevelEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
 
 /**
  * 1.7 applied {@code *_stats} in {@code applyEntityAttributes()} on each spawn. 1.20 bakes
  * attributes once at register time, so live GUI/cfg values are applied when the mob joins.
  */
-@Mod.EventBusSubscriber(modid = ChaosPersists.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(modid = ChaosPersists.MODID, bus = EventBusSubscriber.Bus.GAME)
 public final class ChaosMobStatsApplier {
     private static final Map<Class<?>, Supplier<MobStats>> BY_CLASS = new HashMap<>();
 

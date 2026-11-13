@@ -56,7 +56,7 @@ public class Nastysaurus extends Monster {
     public Nastysaurus(EntityType<? extends Nastysaurus> type, Level level) {
         super(type, level);
         this.moveControl = new ChaosChaseMoveControl(this);
-        this.setMaxUpStep(1.0F);
+        getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.STEP_HEIGHT).setBaseValue(1.0F);
         this.xpReward = 40;
         this.targetSorter = new GenericTargetSorter(this);
         this.renderdata = new RenderInfo();
@@ -85,9 +85,9 @@ public class Nastysaurus extends Monster {
     }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(ATTACKING, (byte) 0);
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(ATTACKING, (byte) 0);
     }
 
     public RenderInfo getRenderInfo() {
@@ -152,7 +152,7 @@ public class Nastysaurus extends Monster {
     }
 
     @Override
-    protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+    protected void dropCustomDeathLoot(net.minecraft.server.level.ServerLevel serverLevel, DamageSource source, boolean recentlyHit) {
         if (DatapackLoot.useEntityTable(this)) {
             return;
         }

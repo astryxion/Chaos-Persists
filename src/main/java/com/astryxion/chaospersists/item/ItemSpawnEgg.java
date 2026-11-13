@@ -29,13 +29,13 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.SpawnerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
-import net.minecraftforge.common.ForgeSpawnEggItem;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.common.DeferredSpawnEggItem;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
-public class ItemSpawnEgg extends ForgeSpawnEggItem {
+public class ItemSpawnEgg extends DeferredSpawnEggItem {
     public int my_id = 0;
     public final int backgroundColor;
     public final int highlightColor;
@@ -66,7 +66,7 @@ public class ItemSpawnEgg extends ForgeSpawnEggItem {
         } else if (entity instanceof QueenHead) {
             type = ChaosPersists.ENTITY_TYPE_THE_QUEEN.get();
         }
-        SpawnEggItem egg = ForgeSpawnEggItem.fromEntityType(type);
+        SpawnEggItem egg = SpawnEggItem.byId(type);
         return egg == null ? ItemStack.EMPTY : new ItemStack(egg);
     }
 
@@ -135,7 +135,7 @@ public class ItemSpawnEgg extends ForgeSpawnEggItem {
         if (ent instanceof Godzilla) {
             ChaosPersists.godzilla_has_spawned = 1;
         }
-        if (ent instanceof LivingEntity living && stack.hasCustomHoverName()) {
+        if (ent instanceof LivingEntity living && stack.has(net.minecraft.core.component.DataComponents.CUSTOM_NAME)) {
             living.setCustomName(stack.getHoverName());
         }
         if (!player.getAbilities().instabuild) {
@@ -288,7 +288,7 @@ public class ItemSpawnEgg extends ForgeSpawnEggItem {
         if (name != null) {
             ResourceLocation loc = legacySpawnNameToRegistry(name);
             if (loc != null) {
-                return ForgeRegistries.ENTITY_TYPES.getValue(loc);
+                return BuiltInRegistries.ENTITY_TYPE.get(loc);
             }
             return null;
         }
@@ -315,9 +315,7 @@ public class ItemSpawnEgg extends ForgeSpawnEggItem {
                 mob.finalizeSpawn(
                         serverLevel,
                         serverLevel.getCurrentDifficultyAt(spawnPos),
-                        MobSpawnType.SPAWN_EGG,
-                        null,
-                        null);
+                        MobSpawnType.SPAWN_EGG, null);
             }
         }
         return entity;
@@ -346,9 +344,7 @@ public class ItemSpawnEgg extends ForgeSpawnEggItem {
             mob.finalizeSpawn(
                     serverLevel,
                     serverLevel.getCurrentDifficultyAt(spawnPos),
-                    MobSpawnType.SPAWN_EGG,
-                    null,
-                    null);
+                    MobSpawnType.SPAWN_EGG, null);
             mob.setPersistenceRequired();
             MyUtils.playAmbientSound(mob);
         }
@@ -402,15 +398,15 @@ public class ItemSpawnEgg extends ForgeSpawnEggItem {
         }
         switch (legacyName) {
             case "Rat":
-                return new ResourceLocation("chaospersists", "rat");
+                return ResourceLocation.fromNamespaceAndPath("chaospersists", "rat");
             case "Fairy":
-                return new ResourceLocation("chaospersists", "fairy");
+                return ResourceLocation.fromNamespaceAndPath("chaospersists", "fairy");
             case "Red Ant":
-                return new ResourceLocation("chaospersists", "red_ant");
+                return ResourceLocation.fromNamespaceAndPath("chaospersists", "red_ant");
             case "Termite":
-                return new ResourceLocation("chaospersists", "termite");
+                return ResourceLocation.fromNamespaceAndPath("chaospersists", "termite");
             default:
-                return new ResourceLocation(
+                return ResourceLocation.fromNamespaceAndPath(
                         "chaospersists", legacyName.toLowerCase(java.util.Locale.ROOT).replace(' ', '_'));
         }
     }

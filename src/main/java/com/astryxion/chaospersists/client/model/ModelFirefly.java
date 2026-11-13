@@ -115,23 +115,20 @@ public class ModelFirefly extends EntityModel<Firefly> {
             VertexConsumer buffer,
             int packedLight,
             int packedOverlay,
-            float red,
-            float green,
-            float blue,
-            float alpha) {
-        this.body.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.wingLeft.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.wingRight.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.head.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.mouth.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.eyeLeft.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.eyeRight.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.frontLegLeft.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.frontLegRight.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.backLegLeft.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.backLegRight.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+            int color) {
+        this.body.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.wingLeft.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.wingRight.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.head.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.mouth.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.eyeLeft.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.eyeRight.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.frontLegLeft.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.frontLegRight.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.backLegLeft.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.backLegRight.render(poseStack, buffer, packedLight, packedOverlay, color);
         int tailLight =
                 this.animEntity != null && this.animEntity.getBlink() > 0.0f ? 15728880 : packedLight;
-        this.tailLight.render(poseStack, buffer, tailLight, packedOverlay, red, green, blue, alpha);
+        this.tailLight.render(poseStack, buffer, tailLight, packedOverlay, color);
     }
 }

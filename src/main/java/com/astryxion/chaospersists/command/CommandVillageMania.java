@@ -45,7 +45,7 @@ public final class CommandVillageMania {
             return 0;
         }
         VillageTeleporter teleporter = new VillageTeleporter(player.getX(), player.getZ());
-        player.changeDimension(world, teleporter);
+        player.changeDimension(teleporter.transition(player, world));
         player.displayClientMessage(
                 Component.literal("Teleported to Village Mania.").withStyle(ChatFormatting.GREEN), true);
         return 1;

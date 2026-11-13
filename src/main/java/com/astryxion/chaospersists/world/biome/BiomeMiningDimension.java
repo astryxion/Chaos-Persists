@@ -1,8 +1,9 @@
 package com.astryxion.chaospersists.world.biome;
 
+import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.mojang.datafixers.util.Either;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,10 +17,10 @@ import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.biome.MobSpawnSettings;
-import net.minecraftforge.common.world.BiomeModifier;
-import net.minecraftforge.common.world.ModifiableBiomeInfo;
-import net.minecraftforge.event.level.LevelEvent;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.common.world.BiomeModifier;
+import net.neoforged.neoforge.common.world.ModifiableBiomeInfo;
+import net.neoforged.neoforge.event.level.LevelEvent;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 /**
  * Mining dimension uses vanilla {@code minecraft:windswept_hills}. Mod spawns are defined in datapack JSON
@@ -163,7 +164,7 @@ public final class BiomeMiningDimension {
     public static List<MobSpawnSettings.SpawnerData> collectDatapackMiningSpawns(
             RegistryAccess registryAccess, MobCategory category) {
         Registry<BiomeModifier> registry =
-                registryAccess.registryOrThrow(ForgeRegistries.Keys.BIOME_MODIFIERS);
+                registryAccess.registryOrThrow(NeoForgeRegistries.Keys.BIOME_MODIFIERS);
         List<MobSpawnSettings.SpawnerData> result = new ArrayList<>();
         for (BiomeModifier modifier : registry) {
             if (modifier instanceof MiningDimensionAddSpawnsBiomeModifier miningModifier) {
@@ -177,9 +178,9 @@ public final class BiomeMiningDimension {
         return result;
     }
 
-    public static Codec<MiningDimensionAddSpawnsBiomeModifier> makeCodec() {
-        return RecordCodecBuilder.create(
-                builder -> builder.group(new ExtraCodecs.EitherCodec<>(
+    public static MapCodec<MiningDimensionAddSpawnsBiomeModifier> makeCodec() {
+        return RecordCodecBuilder.mapCodec(
+                builder -> builder.group(com.mojang.serialization.Codec.either(
                                         MobSpawnSettings.SpawnerData.CODEC.listOf(),
                                         MobSpawnSettings.SpawnerData.CODEC)
                                 .xmap(
@@ -199,7 +200,7 @@ public final class BiomeMiningDimension {
         public void modify(Holder<Biome> biome, Phase phase, ModifiableBiomeInfo.BiomeInfo.Builder builder) {}
 
         @Override
-        public Codec<? extends BiomeModifier> codec() {
+        public MapCodec<? extends BiomeModifier> codec() {
             return ChaosPersists.ADD_MINING_DIMENSION_SPAWNS.get();
         }
     }

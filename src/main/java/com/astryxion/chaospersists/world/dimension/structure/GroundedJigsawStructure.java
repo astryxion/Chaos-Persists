@@ -29,8 +29,8 @@ import net.minecraft.world.level.levelgen.structure.pieces.StructurePiecesBuilde
  */
 public class GroundedJigsawStructure extends Structure {
 
-    public static final Codec<GroundedJigsawStructure> CODEC =
-            RecordCodecBuilder.create(
+    public static final com.mojang.serialization.MapCodec<GroundedJigsawStructure> CODEC =
+            RecordCodecBuilder.mapCodec(
                     instance ->
                             instance.group(
                                             settingsCodec(instance),
@@ -107,7 +107,10 @@ public class GroundedJigsawStructure extends Structure {
                         startPos,
                         this.useExpansionHack,
                         this.projectStartToHeightmap,
-                        this.maxDistanceFromCenter);
+                        this.maxDistanceFromCenter,
+                        net.minecraft.world.level.levelgen.structure.pools.alias.PoolAliasLookup.EMPTY,
+                        net.minecraft.world.level.levelgen.structure.pools.DimensionPadding.ZERO,
+                        net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSettings.APPLY_WATERLOGGING);
         return stub.map(
                 original ->
                         new Structure.GenerationStub(

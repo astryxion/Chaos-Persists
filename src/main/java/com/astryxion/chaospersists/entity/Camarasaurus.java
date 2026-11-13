@@ -261,7 +261,7 @@ public class Camarasaurus extends TamableAnimal {
             if (!this.isTame()) {
                 if (!this.level().isClientSide) {
                     if (this.getRandom().nextInt(2) == 0) {
-                        this.setTame(true);
+                        this.setTame(true, true);
                         this.setOwnerUUID(par1EntityPlayer.getUUID());
                         spawnTamingParticles(true);
                         this.level().broadcastEntityEvent(this, (byte) 7);
@@ -331,7 +331,7 @@ public class Camarasaurus extends TamableAnimal {
     }
 
     @Override
-    protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+    protected void dropCustomDeathLoot(net.minecraft.server.level.ServerLevel serverLevel, DamageSource source, boolean recentlyHit) {
         if (DatapackLoot.useEntityTable(this)) {
             return;
         }

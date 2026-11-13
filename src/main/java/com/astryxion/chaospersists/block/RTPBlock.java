@@ -47,7 +47,7 @@ public class RTPBlock extends Block {
 
     @Override
     public ItemStack getCloneItemStack(
-            net.minecraft.world.level.BlockGetter level, BlockPos pos, BlockState state) {
+            net.minecraft.world.level.LevelReader level, BlockPos pos, BlockState state) {
         return new ItemStack(this);
     }
 
@@ -91,7 +91,7 @@ public class RTPBlock extends Block {
                     level.addParticle(ParticleTypes.EXPLOSION, (double) ((float) x + 0.5f), (double) ((float) y + 2.25f), (double) ((float) z + 0.5f), 0.0, 0.0, 0.0);
                     level.addParticle(RED_DUST, (double) ((float) x + 0.5f), (double) ((float) y + 2.25f), (double) ((float) z + 0.5f), 0.0, 0.0, 0.0);
                 }
-                level.playSound(null, p.getX(), p.getY(), p.getZ(), SoundEvents.GENERIC_EXPLODE, SoundSource.PLAYERS, 1.0f, 1.5f);
+                level.playSound(null, p.getX(), p.getY(), p.getZ(), SoundEvents.GENERIC_EXPLODE.value(), SoundSource.PLAYERS, 1.0f, 1.5f);
             }
         }
         super.stepOn(level, pos, state, entity);

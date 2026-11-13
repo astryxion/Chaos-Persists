@@ -1,5 +1,7 @@
 package com.astryxion.chaospersists.util;
 
+import net.neoforged.neoforge.event.tick.EntityTickEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import java.util.WeakHashMap;
 import javax.annotation.Nullable;
@@ -10,17 +12,17 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraftforge.entity.PartEntity;
-import net.minecraftforge.event.entity.living.LivingEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.neoforge.entity.PartEntity;
+import net.neoforged.neoforge.event.entity.living.LivingEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
 
 /**
  * True-damage that skips {@code TheKing.hurt} ({@code setHealth}, Vzling {@code forceHurt}) never
  * hits the 750 / 120 caps or the 20-tick hurt timer. Clamp those HP dumps to the same 1.7.10
  * curve Cataclysm / EEEAB already use.
  */
-@Mod.EventBusSubscriber(modid = ChaosPersists.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(modid = ChaosPersists.MODID, bus = EventBusSubscriber.Bus.GAME)
 public final class ChaosBossTrueDamage {
 
     public static final float WEAPON_CAP = 40.0f;
@@ -76,8 +78,9 @@ public final class ChaosBossTrueDamage {
     }
 
     @SubscribeEvent
-    public static void onLivingTick(LivingEvent.LivingTickEvent event) {
-        LivingEntity victim = event.getEntity();
+    public static void onLivingTick(EntityTickEvent.Post event) {
+        if (!(event.getEntity() instanceof net.minecraft.world.entity.LivingEntity)) return;
+        LivingEntity victim = (LivingEntity) event.getEntity();
         if (victim == null || victim.level().isClientSide() || !ChaosBosses.isBoss(victim)) {
             return;
         }

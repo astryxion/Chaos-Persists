@@ -9,7 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderPeacock extends MobRenderer<Peacock, ModelPeacock> {
     private static final ResourceLocation TEXTURE =
-            new ResourceLocation("chaospersists", "textures/entity/peacocktexture.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/peacocktexture.png");
     private final float scale;
 
     public RenderPeacock(EntityRendererProvider.Context context, ModelPeacock model, float shadow, float scale) {

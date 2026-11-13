@@ -23,26 +23,22 @@ public class UltimateHoe extends HoeItem {
     private static final int WEAPON_DAMAGE = 1;
 
     public UltimateHoe(Tier tier) {
-        super(
-                tier,
-                ChaosWeaponDamage.modifierFor(tier, WEAPON_DAMAGE),
-                -0.0f,
-                new Properties().stacksTo(1).durability(3000));
+        super(tier, new Properties().stacksTo(1).durability(3000).attributes(HoeItem.createAttributes(tier, ChaosWeaponDamage.modifierFor(tier, WEAPON_DAMAGE), -0.0f)));
     }
 
     @Override
     public void onCraftedBy(ItemStack stack, Level level, Player player) {
-        ensureEnchantments(stack);
+        ensureEnchantments(stack, level);
     }
 
     @Override
     public void inventoryTick(ItemStack stack, Level level, Entity entity, int slot, boolean selected) {
-        ensureEnchantments(stack);
+        ensureEnchantments(stack, level);
     }
 
-    private void ensureEnchantments(ItemStack stack) {
-        if (EnchantmentHelper.getItemEnchantmentLevel(Enchantments.BLOCK_EFFICIENCY, stack) <= 0) {
-            stack.enchant(Enchantments.BLOCK_EFFICIENCY, 2);
+    private void ensureEnchantments(ItemStack stack, Level level) {
+        if (com.astryxion.chaospersists.util.ChaosEnchantments.level(Enchantments.EFFICIENCY, stack) <= 0) {
+            stack.enchant(level.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.EFFICIENCY), 2);
         }
     }
 
@@ -93,7 +89,7 @@ public class UltimateHoe extends HoeItem {
                 }
             }
             context.getItemInHand()
-                    .hurtAndBreak(1, player, e -> e.broadcastBreakEvent(EquipmentSlot.MAINHAND));
+                    .hurtAndBreak(1, player, EquipmentSlot.MAINHAND);
             return InteractionResult.SUCCESS;
         }
         return InteractionResult.PASS;

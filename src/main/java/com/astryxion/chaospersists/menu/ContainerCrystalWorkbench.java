@@ -63,9 +63,10 @@ public class ContainerCrystalWorkbench extends AbstractContainerMenu {
 
         ItemStack result = ItemStack.EMPTY;
         if (!this.level.isClientSide) {
-            for (CraftingRecipe recipe : this.level.getRecipeManager().getAllRecipesFor(RecipeType.CRAFTING)) {
-                if (recipe.matches(this.craftSlots, this.level)) {
-                    result = recipe.assemble(this.craftSlots, this.level.registryAccess());
+            for (var holder : this.level.getRecipeManager().getAllRecipesFor(RecipeType.CRAFTING)) {
+                CraftingRecipe recipe = holder.value();
+                if (recipe.matches(this.craftSlots.asCraftInput(), this.level)) {
+                    result = recipe.assemble(this.craftSlots.asCraftInput(), this.level.registryAccess());
                     break;
                 }
             }

@@ -74,12 +74,17 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.client.player.LocalPlayer;
 
 public class ThePrinceTeen extends TamableAnimal implements ChaosFlyingMount {
+    @Override
+    public boolean isFood(net.minecraft.world.item.ItemStack stack) {
+        return stack.is(net.minecraft.world.item.Items.WHEAT);
+    }
+
     private static final EntityDataAccessor<Integer> ATTACKING =
             SynchedEntityData.defineId(ThePrinceTeen.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> ACTIVITY =
@@ -132,6 +137,10 @@ public class ThePrinceTeen extends TamableAnimal implements ChaosFlyingMount {
 
     public ThePrinceTeen(EntityType<? extends ThePrinceTeen> type, Level level) {
         super(type, level);
+        this.setActivity(0);
+        this.setAttacking(0);
+        this.setThePrinceTeenFire(1);
+        this.setTame(false, true);
         this.fireImmune();
         this.xpReward = 300;
         this.moveSpeed = 0.32f;
@@ -173,13 +182,13 @@ public class ThePrinceTeen extends TamableAnimal implements ChaosFlyingMount {
     }
 
     @Override
-    public EntityDimensions getDimensions(Pose pose) {
+    public EntityDimensions getDefaultDimensions(Pose pose) {
         return EntityDimensions.scalable(3.25f, 4.25f);
     }
 
     @Override
-    public void onAddedToWorld() {
-        super.onAddedToWorld();
+    public void onAddedToLevel() {
+        super.onAddedToLevel();
         this.refreshDimensions();
     }
 
@@ -227,6 +236,12 @@ public class ThePrinceTeen extends TamableAnimal implements ChaosFlyingMount {
     }
 
     @Override
+    protected net.minecraft.world.phys.Vec3 getPassengerAttachmentPoint(Entity passenger,
+            net.minecraft.world.entity.EntityDimensions dimensions, float scale) {
+        var attachment = super.getPassengerAttachmentPoint(passenger, dimensions, scale);
+        return new net.minecraft.world.phys.Vec3(attachment.x, getPassengersRidingOffset(), attachment.z);
+    }
+
     public double getPassengersRidingOffset() {
         return 2.55;
     }
@@ -241,7 +256,7 @@ public class ThePrinceTeen extends TamableAnimal implements ChaosFlyingMount {
             this.copyRiderRotation(passenger);
             float f = 0.65f;
             double x = this.getX() - (double) f * Math.sin(Math.toRadians(this.getYRot()));
-            double y = this.getY() + this.getPassengersRidingOffset() + passenger.getMyRidingOffset();
+            double y = this.getY() + this.getPassengersRidingOffset() + -passenger.getVehicleAttachmentPoint(this).y;
             double z = this.getZ() + (double) f * Math.cos(Math.toRadians(this.getYRot()));
             moveFunction.accept(passenger, x, y, z);
         } else {
@@ -480,11 +495,6 @@ public class ThePrinceTeen extends TamableAnimal implements ChaosFlyingMount {
         this.fallDistance = 0.0f;
     }
 
-    /**
-     * 1.7.10 flight used {@code noClip}, which never applied cobweb slowdown. In 1.20
-     * {@code checkInsideBlocks} still calls cobweb {@code makeStuckInBlock} even with
-     * {@code noPhysics}, so ignore cobwebs entirely for Prince Teen.
-     */
     @Override
     public void makeStuckInBlock(BlockState state, Vec3 motionMultiplier) {
         if (!state.is(Blocks.COBWEB)) {
@@ -497,21 +507,17 @@ public class ThePrinceTeen extends TamableAnimal implements ChaosFlyingMount {
     }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(ATTACKING, 0);
-        this.entityData.define(ACTIVITY, 0);
-        this.entityData.define(THE_PRINCE_TEEN_FIRE, 1);
-        this.entityData.define(HEAD1_EXT, 0);
-        this.entityData.define(HEAD2_EXT, 0);
-        this.entityData.define(HEAD3_EXT, 0);
-        this.entityData.define(CONTROL_STATE, (byte) 0);
-        this.entityData.define(FLYING, false);
-        this.entityData.define(HOVERING, false);
-        this.setActivity(0);
-        this.setAttacking(0);
-        this.setThePrinceTeenFire(1);
-        this.setTame(false);
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(ATTACKING, 0);
+        builder.define(ACTIVITY, 0);
+        builder.define(THE_PRINCE_TEEN_FIRE, 1);
+        builder.define(HEAD1_EXT, 0);
+        builder.define(HEAD2_EXT, 0);
+        builder.define(HEAD3_EXT, 0);
+        builder.define(CONTROL_STATE, (byte) 0);
+        builder.define(FLYING, false);
+        builder.define(HOVERING, false);
         this.noPhysics = false;
         if (this.renderdata == null) {
             this.renderdata = new RenderInfo();
@@ -639,14 +645,14 @@ public class ThePrinceTeen extends TamableAnimal implements ChaosFlyingMount {
     }
 
     @Override
-    protected void jumpFromGround() {
+    public void jumpFromGround() {
         this.setDeltaMovement(this.getDeltaMovement().add(0.0, 0.25, 0.0));
         super.jumpFromGround();
     }
 
     @Override
-    public boolean canBreatheUnderwater() {
-        return true;
+    protected int decreaseAirSupply(int airSupply) {
+        return airSupply;
     }
 
     @Override
@@ -716,11 +722,11 @@ public class ThePrinceTeen extends TamableAnimal implements ChaosFlyingMount {
     }
 
     @Override
-    protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+    protected void dropCustomDeathLoot(net.minecraft.server.level.ServerLevel serverLevel, DamageSource source, boolean recentlyHit) {
         if (DatapackLoot.useEntityTable(this)) {
             return;
         }
-        super.dropCustomDeathLoot(source, looting, recentlyHit);
+        super.dropCustomDeathLoot(serverLevel, source, recentlyHit);
         if (ChaosPersists.ThePrinceEgg != null) {
             this.dropItemRand(ChaosPersists.ThePrinceEgg, 1);
         }
@@ -1041,11 +1047,11 @@ public class ThePrinceTeen extends TamableAnimal implements ChaosFlyingMount {
     @OnlyIn(Dist.CLIENT)
     @Override
     public void lerpTo(
-            double par1, double par3, double par5, float par7, float par8, int par9, boolean interpolate) {
+            double par1, double par3, double par5, float par7, float par8, int par9) {
         if (this.isControlledByLocalInstance()) {
             return;
         }
-        super.lerpTo(par1, par3, par5, par7, par8, par9, interpolate);
+        super.lerpTo(par1, par3, par5, par7, par8, par9);
     }
 
     @OnlyIn(Dist.CLIENT)
@@ -1458,9 +1464,6 @@ public class ThePrinceTeen extends TamableAnimal implements ChaosFlyingMount {
             par1EntityPlayer.setItemInHand(hand, ItemStack.EMPTY);
             var2 = ItemStack.EMPTY;
         }
-        // Oversized AABB contains the rider's eyes, so vanilla still picks this mount on
-        // every right-click. Pass through so food/items are used by the player. Sneak is
-        // flight-descend here — only stick orders sit while mounted.
         if (par1EntityPlayer.getVehicle() == this) {
             if (!var2.isEmpty() && var2.is(Items.STICK) && this.isOwnedBy(par1EntityPlayer)) {
                 return this.toggleSitStay(par1EntityPlayer);
@@ -1471,7 +1474,7 @@ public class ThePrinceTeen extends TamableAnimal implements ChaosFlyingMount {
                 && var2.is(Blocks.DIAMOND_BLOCK.asItem())
                 && par1EntityPlayer.distanceToSqr(this) < 25.0) {
             if (!this.level().isClientSide) {
-                this.setTame(true);
+                this.setTame(true, true);
                 this.setOwnerUUID(par1EntityPlayer.getUUID());
                 spawnTamingParticles(true);
                 this.level().broadcastEntityEvent(this, (byte) 7);
@@ -1522,7 +1525,7 @@ public class ThePrinceTeen extends TamableAnimal implements ChaosFlyingMount {
                 if (var3 != null) {
                     if (!this.level().isClientSide) {
                         if ((float) this.mygetMaxHealth() > this.getHealth()) {
-                            this.heal((float) (var3.getNutrition() * 10));
+                            this.heal((float) (var3.nutrition() * 10));
                         }
                         spawnTamingParticles(true);
                         this.level().broadcastEntityEvent(this, (byte) 7);
@@ -1700,10 +1703,10 @@ public class ThePrinceTeen extends TamableAnimal implements ChaosFlyingMount {
     public static Entity spawnCreature(Level level, String par1, double par2, double par4, double par6) {
         ResourceLocation res =
                 par1.contains(":")
-                        ? new ResourceLocation(par1)
-                        : new ResourceLocation(
+                        ? ResourceLocation.parse(par1)
+                        : ResourceLocation.fromNamespaceAndPath(
                                 "chaospersists", par1.toLowerCase(Locale.ROOT).replace(' ', '_'));
-        EntityType<?> type = ForgeRegistries.ENTITY_TYPES.getValue(res);
+        EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.get(res);
         if (type == null || !(level instanceof ServerLevel serverLevel)) {
             return null;
         }
@@ -1721,7 +1724,7 @@ public class ThePrinceTeen extends TamableAnimal implements ChaosFlyingMount {
     private void transferTameToPrince(Entity ent, UUID ownerUuid, boolean fromTeenTamed) {
         if (ent instanceof ThePrince prince) {
             if (fromTeenTamed) {
-                prince.setTame(true);
+                prince.setTame(true, true);
                 if (ownerUuid != null) {
                     prince.setOwnerUUID(ownerUuid);
                 }
@@ -1744,7 +1747,7 @@ public class ThePrinceTeen extends TamableAnimal implements ChaosFlyingMount {
 
     private void transferTameToAdult(Entity ent, UUID ownerUuid) {
         if (ent instanceof TamableAnimal tame) {
-            tame.setTame(true);
+            tame.setTame(true, true);
             if (ownerUuid != null) {
                 tame.setOwnerUUID(ownerUuid);
             }

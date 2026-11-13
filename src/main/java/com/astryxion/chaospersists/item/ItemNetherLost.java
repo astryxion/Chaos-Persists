@@ -26,7 +26,7 @@ public class ItemNetherLost extends Item {
     @Override
     public void onCraftedBy(ItemStack stack, Level level, Player player) {
         if (!level.isClientSide) {
-            stack.enchant(Enchantments.SHARPNESS, 2);
+            stack.enchant(level.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.SHARPNESS), 2);
         }
     }
 
@@ -34,8 +34,8 @@ public class ItemNetherLost extends Item {
         if (level.isClientSide) {
             return;
         }
-        if (EnchantmentHelper.getItemEnchantmentLevel(Enchantments.SHARPNESS, stack) <= 0) {
-            stack.enchant(Enchantments.SHARPNESS, 2);
+        if (com.astryxion.chaospersists.util.ChaosEnchantments.level(Enchantments.SHARPNESS, stack) <= 0) {
+            stack.enchant(level.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.SHARPNESS), 2);
         }
     }
 

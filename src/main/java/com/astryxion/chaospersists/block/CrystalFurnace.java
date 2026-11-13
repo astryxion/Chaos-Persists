@@ -31,13 +31,24 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.BlockHitResult;
 public class CrystalFurnace extends BaseEntityBlock {
+    public static final com.mojang.serialization.MapCodec<CrystalFurnace> CODEC =
+            simpleCodec(CrystalFurnace::new);
     private static boolean keepInventory;
+
+    @Override
+    protected com.mojang.serialization.MapCodec<? extends BaseEntityBlock> codec() {
+        return CODEC;
+    }
 
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final BooleanProperty LIT = BlockStateProperties.LIT;
 
     public CrystalFurnace(float hardness, float resistance) {
-        super(net.minecraft.world.level.block.Block.Properties.of().strength(hardness, resistance).lightLevel(state -> state.getValue(LIT) ? 13 : 0).noOcclusion().randomTicks());
+        this(Properties.of().strength(hardness, resistance).lightLevel(state -> state.getValue(LIT) ? 13 : 0).noOcclusion().randomTicks());
+    }
+
+    private CrystalFurnace(Properties properties) {
+        super(properties);
         registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(LIT, false));
     }
 
@@ -52,7 +63,7 @@ public class CrystalFurnace extends BaseEntityBlock {
     }
 
     @Override
-    public ItemStack getCloneItemStack(BlockGetter level, BlockPos pos, BlockState state) {
+    public ItemStack getCloneItemStack(net.minecraft.world.level.LevelReader level, BlockPos pos, BlockState state) {
         return new ItemStack(this);
     }
 
@@ -74,8 +85,8 @@ public class CrystalFurnace extends BaseEntityBlock {
     }
 
     @Override
-    public InteractionResult use(
-            BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+    public InteractionResult useWithoutItem(
+            BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (level.isClientSide) {
             return InteractionResult.SUCCESS;
         }

@@ -41,7 +41,7 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 public class Whale extends Animal {
     private float moveSpeed = 0.35f;
@@ -127,8 +127,8 @@ public class Whale extends Animal {
     }
 
     @Override
-    public boolean canBreatheUnderwater() {
-        return true;
+    protected int decreaseAirSupply(int airSupply) {
+        return airSupply;
     }
 
     @Override
@@ -161,7 +161,8 @@ public class Whale extends Animal {
    * (20–44 entities per whale). The 1.12 port matched that literally; it tanks TPS. Same practical reward, one stack.
    */
     @Override
-    protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+    protected void dropCustomDeathLoot(net.minecraft.server.level.ServerLevel serverLevel, DamageSource source, boolean recentlyHit) {
+        int looting = com.astryxion.chaospersists.util.ChaosEnchantments.looting(source);
         if (DatapackLoot.useEntityTable(this)) {
             return;
         }
@@ -420,8 +421,8 @@ public class Whale extends Animal {
 
     public boolean isBreedingItem(ItemStack par1ItemStack) {
         Item crystal =
-                ForgeRegistries.ITEMS.getValue(
-                        new ResourceLocation("chaospersists", "crystalapple"));
+                BuiltInRegistries.ITEM.get(
+                        ResourceLocation.fromNamespaceAndPath("chaospersists", "crystalapple"));
         if (crystal == null) {
             crystal = ChaosPersists.MyCrystalApple;
         }

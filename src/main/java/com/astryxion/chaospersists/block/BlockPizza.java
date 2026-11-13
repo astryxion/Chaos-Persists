@@ -54,7 +54,7 @@ public class BlockPizza extends Block {
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+    public InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         eatPizzaSlice(level, pos, player);
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
@@ -103,7 +103,7 @@ public class BlockPizza extends Block {
     }
 
     @Override
-    public ItemStack getCloneItemStack(BlockGetter level, BlockPos pos, BlockState state) {
+    public ItemStack getCloneItemStack(net.minecraft.world.level.LevelReader level, BlockPos pos, BlockState state) {
         return new ItemStack(ChaosPersists.MyPizzaItem);
     }
 }

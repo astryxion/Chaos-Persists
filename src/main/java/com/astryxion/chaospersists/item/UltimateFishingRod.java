@@ -27,13 +27,13 @@ public class UltimateFishingRod extends FishingRodItem {
 
     @Override
     public void onCraftedBy(ItemStack stack, Level level, Player player) {
-        stack.enchant(Enchantments.UNBREAKING, 2);
+        stack.enchant(level.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2);
     }
 
     @Override
     public void inventoryTick(ItemStack stack, Level level, Entity entity, int slot, boolean selected) {
-        if (EnchantmentHelper.getItemEnchantmentLevel(Enchantments.UNBREAKING, stack) <= 0) {
-            stack.enchant(Enchantments.UNBREAKING, 2);
+        if (com.astryxion.chaospersists.util.ChaosEnchantments.level(Enchantments.UNBREAKING, stack) <= 0) {
+            stack.enchant(level.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2);
         }
     }
 
@@ -44,7 +44,7 @@ public class UltimateFishingRod extends FishingRodItem {
         if (player.fishing != null) {
             if (!level.isClientSide) {
                 int dmg = player.fishing.retrieve(stack);
-                stack.hurtAndBreak(dmg, player, e -> e.broadcastBreakEvent(hand));
+                stack.hurtAndBreak(dmg, player, net.minecraft.world.entity.LivingEntity.getSlotForHand(hand));
             }
             level.playSound(
                     null,

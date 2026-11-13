@@ -17,6 +17,10 @@
     "facing=west": {
       "y": 180,
       "model": "chaospersists:block/creeperrepellent_wall"
+    },
+    "facing=down": {
+      "model": "chaospersists:block/creeperrepellent",
+      "x": 180
     }
   }
 }

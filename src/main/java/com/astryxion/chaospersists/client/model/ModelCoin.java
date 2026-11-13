@@ -47,11 +47,8 @@ public class ModelCoin extends EntityModel<Coin> {
             VertexConsumer buffer,
             int packedLight,
             int packedOverlay,
-            float red,
-            float green,
-            float blue,
-            float alpha) {
+            int color) {
         this.shape1.yRot = Mth.cos(this.animAgeInTicks * 0.05f * this.wingspeed) * (float) Math.PI;
-        this.shape1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.shape1.render(poseStack, buffer, packedLight, packedOverlay, color);
     }
 }

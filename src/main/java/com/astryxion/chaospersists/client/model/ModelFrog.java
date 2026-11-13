@@ -138,19 +138,16 @@ public class ModelFrog extends EntityModel<Frog> {
             VertexConsumer buffer,
             int packedLight,
             int packedOverlay,
-            float red,
-            float green,
-            float blue,
-            float alpha) {
-        this.body.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.jaw.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.lfleg.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.rfleg.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.lleg1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.rleg1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.lleg2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.rleg2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.leye.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.reye.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+            int color) {
+        this.body.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.jaw.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.lfleg.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.rfleg.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.lleg1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.rleg1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.lleg2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.rleg2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.leye.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.reye.render(poseStack, buffer, packedLight, packedOverlay, color);
     }
 }

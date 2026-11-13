@@ -13,7 +13,7 @@ import snownee.jade.api.WailaPlugin;
 public final class ChaosPersistsJadePlugin implements IWailaPlugin {
 
     public static final ResourceLocation PRINCE_GROW =
-            new ResourceLocation(ChaosPersists.MODID, "prince_grow");
+            ResourceLocation.fromNamespaceAndPath(ChaosPersists.MODID, "prince_grow");
 
     @Override
     public void register(IWailaCommonRegistration registration) {

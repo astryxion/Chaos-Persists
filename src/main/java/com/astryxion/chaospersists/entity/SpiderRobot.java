@@ -46,8 +46,8 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 public class SpiderRobot extends Mob implements ChaosGroundMount {
     private static final EntityDataAccessor<Byte> ATTACKING =
@@ -75,7 +75,7 @@ public class SpiderRobot extends Mob implements ChaosGroundMount {
 
     public SpiderRobot(Level level, double x, double y, double z) {
         this(ChaosPersists.ENTITY_TYPE_SPIDER_ROBOT.get(), level);
-        this.moveTo(x, y + this.getMyRidingOffset(), z, 0.0f, 0.0f);
+        this.moveTo(x, y, z, 0.0f, 0.0f);
         this.setDeltaMovement(Vec3.ZERO);
         this.xo = x;
         this.yo = y;
@@ -90,10 +90,10 @@ public class SpiderRobot extends Mob implements ChaosGroundMount {
     }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(ATTACKING, (byte) 0);
-        this.entityData.define(CONTROL_STATE, (byte) 0);
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(ATTACKING, (byte) 0);
+        builder.define(CONTROL_STATE, (byte) 0);
         this.initLegData();
     }
 
@@ -798,6 +798,12 @@ public class SpiderRobot extends Mob implements ChaosGroundMount {
     }
 
     @Override
+    protected net.minecraft.world.phys.Vec3 getPassengerAttachmentPoint(Entity passenger,
+            net.minecraft.world.entity.EntityDimensions dimensions, float scale) {
+        var attachment = super.getPassengerAttachmentPoint(passenger, dimensions, scale);
+        return new net.minecraft.world.phys.Vec3(attachment.x, getPassengersRidingOffset(), attachment.z);
+    }
+
     public double getPassengersRidingOffset() {
         // 1.7 was 2.625, which sits on the abdomen roof after the 1.20 model alignment.
         if (this.getControllingPassenger() instanceof SpiderDriver) {
@@ -837,8 +843,8 @@ public class SpiderRobot extends Mob implements ChaosGroundMount {
     }
 
     @Override
-    public void onAddedToWorld() {
-        super.onAddedToWorld();
+    public void onAddedToLevel() {
+        super.onAddedToLevel();
         this.initLegData();
     }
 
@@ -877,11 +883,11 @@ public class SpiderRobot extends Mob implements ChaosGroundMount {
 
     @OnlyIn(Dist.CLIENT)
     @Override
-    public void lerpTo(double x, double y, double z, float yaw, float pitch, int steps, boolean interpolate) {
+    public void lerpTo(double x, double y, double z, float yaw, float pitch, int steps) {
         if (this.isControlledByLocalInstance()) {
             return;
         }
-        super.lerpTo(x, y, z, yaw, pitch, steps, interpolate);
+        super.lerpTo(x, y, z, yaw, pitch, steps);
     }
 
     @OnlyIn(Dist.CLIENT)

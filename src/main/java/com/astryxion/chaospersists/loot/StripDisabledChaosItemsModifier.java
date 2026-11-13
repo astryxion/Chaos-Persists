@@ -2,23 +2,23 @@ package com.astryxion.chaospersists.loot;
 
 import com.astryxion.chaospersists.config.ChaosMobAccess;
 import com.google.common.base.Suppliers;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.function.Supplier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
-import net.minecraftforge.common.loot.IGlobalLootModifier;
-import net.minecraftforge.common.loot.LootModifier;
+import net.neoforged.neoforge.common.loot.IGlobalLootModifier;
+import net.neoforged.neoforge.common.loot.LootModifier;
 
 /** Drops spawn eggs / king-queen spawners for mobs turned off on the Mobs tab. */
 public class StripDisabledChaosItemsModifier extends LootModifier {
 
-    public static final Supplier<Codec<StripDisabledChaosItemsModifier>> CODEC =
+    public static final Supplier<MapCodec<StripDisabledChaosItemsModifier>> CODEC =
             Suppliers.memoize(
                     () ->
-                            RecordCodecBuilder.create(
+                            RecordCodecBuilder.mapCodec(
                                     inst ->
                                             codecStart(inst)
                                                     .apply(inst, StripDisabledChaosItemsModifier::new)));
@@ -35,7 +35,7 @@ public class StripDisabledChaosItemsModifier extends LootModifier {
     }
 
     @Override
-    public Codec<? extends IGlobalLootModifier> codec() {
+    public MapCodec<? extends IGlobalLootModifier> codec() {
         return CODEC.get();
     }
 }

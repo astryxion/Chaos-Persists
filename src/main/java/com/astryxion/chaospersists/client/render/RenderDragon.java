@@ -10,9 +10,9 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderDragon extends MobRenderer<Dragon, ModelDragon> {
     private static final ResourceLocation TEXTURE =
-            new ResourceLocation("chaospersists", "textures/entity/dragon.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/dragon.png");
     private static final ResourceLocation TEXTURE_WHITE =
-            new ResourceLocation("chaospersists", "textures/entity/whitedragon.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/whitedragon.png");
     private final float scale;
 
     public RenderDragon(EntityRendererProvider.Context context, ModelDragon model, float shadow, float scale) {
@@ -29,7 +29,6 @@ public class RenderDragon extends MobRenderer<Dragon, ModelDragon> {
     @Override
     protected RenderType getRenderType(Dragon entity, boolean bodyVisible, boolean translucent, boolean glowing) {
         ResourceLocation tex = this.getTextureLocation(entity);
-        // Vanilla order: body first. Returning outline while bodyVisible makes glowing mobs invisible.
         if (translucent) {
             return RenderType.itemEntityTranslucentCull(tex);
         } else if (bodyVisible) {

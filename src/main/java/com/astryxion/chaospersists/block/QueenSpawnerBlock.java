@@ -28,7 +28,7 @@ import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 public class QueenSpawnerBlock extends Block {
     private static final float HALF = 0.375f;
@@ -78,11 +78,11 @@ public class QueenSpawnerBlock extends Block {
     }
 
     @Override
-    public void playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
+    public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
         if (!level.isClientSide && level.getBlockState(pos.above()).is(this)) {
             level.setBlock(pos.above(), Blocks.AIR.defaultBlockState(), 2);
         }
-        super.playerWillDestroy(level, pos, state, player);
+        return super.playerWillDestroy(level, pos, state, player);
     }
 
     @Override
@@ -105,7 +105,7 @@ public class QueenSpawnerBlock extends Block {
 
     public static Entity spawnTheQueen(Level par0World, double par2, double par4, double par6) {
         EntityType<?> type =
-                ForgeRegistries.ENTITY_TYPES.getValue(new ResourceLocation("chaospersists", "the_queen"));
+                BuiltInRegistries.ENTITY_TYPE.get(ResourceLocation.fromNamespaceAndPath("chaospersists", "the_queen"));
         if (type == null) {
             return null;
         }

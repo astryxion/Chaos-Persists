@@ -288,7 +288,7 @@ public final class ChaosMountFlight {
             this.mount.getControllingPassenger().stopRiding();
         }
 
-        if (this.mount.getFeetBlockState().getFluidState().isSource()
+        if (this.mount.getBlockStateOn().getFluidState().isSource()
                 && this.mount.isInWater()
                 && !this.flying.isGoingUp()) {
             this.flying.setFlying(false);

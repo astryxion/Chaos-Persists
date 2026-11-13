@@ -3,15 +3,15 @@ package com.astryxion.chaospersists.client.event;
 import com.astryxion.chaospersists.client.input.KeyHandler;
 import com.astryxion.chaospersists.entity.util.ICustomMoveController;
 import com.astryxion.chaospersists.network.MessageMountControl;
-import com.astryxion.chaospersists.proxy.CommonProxyChaos;
+import net.neoforged.neoforge.network.PacketDistributor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.Input;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.Entity;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.bus.api.SubscribeEvent;
 
 /**
  * Ice and Fire rider bits, applied at client tick START. A/D strafe; R/G fire.
@@ -20,10 +20,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 public class MountFlightClientEvents {
 
     @SubscribeEvent
-    public void onClientTick(TickEvent.ClientTickEvent event) {
-        if (event.phase != TickEvent.Phase.START) {
-            return;
-        }
+    public void onClientTick(ClientTickEvent.Pre event) {
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer player = mc.player;
         if (player == null || player.level() == null || !player.level().isClientSide) {
@@ -37,7 +34,7 @@ public class MountFlightClientEvents {
         applyTo(moveController);
         byte controlState = moveController.getControlState();
         if (controlState != previousState) {
-            CommonProxyChaos.NETWORK.sendToServer(
+            PacketDistributor.sendToServer(
                     new MessageMountControl(
                             entity.getId(),
                             controlState,

@@ -7,11 +7,7 @@ public class AmethystHoe extends HoeItem {
     private static final int WEAPON_DAMAGE = 1;
 
     public AmethystHoe(Tier tier) {
-        super(
-                tier,
-                ChaosWeaponDamage.modifierFor(tier, WEAPON_DAMAGE),
-                -0.0f,
-                new Properties().stacksTo(1).durability(2000));
+        super(tier, new Properties().stacksTo(1).durability(2000).attributes(HoeItem.createAttributes(tier, ChaosWeaponDamage.modifierFor(tier, WEAPON_DAMAGE), -0.0f)));
     }
 
     public String getMaterialName() {

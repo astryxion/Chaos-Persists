@@ -73,6 +73,11 @@ import net.minecraft.world.level.block.entity.SpawnerBlockEntity;
 import net.minecraft.world.phys.Vec3;
 
 public class Girlfriend extends TamableAnimal implements RangedAttackMob {
+    @Override
+    public boolean isFood(net.minecraft.world.item.ItemStack stack) {
+        return stack.is(net.minecraft.world.item.Items.WHEAT);
+    }
+
     private static final EntityDataAccessor<Integer> WHICH_GIRL =
             SynchedEntityData.defineId(Girlfriend.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> VOICE =
@@ -114,132 +119,133 @@ public class Girlfriend extends TamableAnimal implements RangedAttackMob {
     public int feelingBetter = 0;
 
     private static final ResourceLocation DryTexture0 =
-            new ResourceLocation("chaospersists", "textures/entity/girlfriend0.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend0.png");
     private static final ResourceLocation DryTexture1 =
-            new ResourceLocation("chaospersists", "textures/entity/girlfriend1.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend1.png");
     private static final ResourceLocation DryTexture2 =
-            new ResourceLocation("chaospersists", "textures/entity/girlfriend2.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend2.png");
     private static final ResourceLocation DryTexture3 =
-            new ResourceLocation("chaospersists", "textures/entity/girlfriend3.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend3.png");
     private static final ResourceLocation DryTexture4 =
-            new ResourceLocation("chaospersists", "textures/entity/girlfriend4.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend4.png");
     private static final ResourceLocation DryTexture5 =
-            new ResourceLocation("chaospersists", "textures/entity/girlfriend5.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend5.png");
     private static final ResourceLocation DryTexture6 =
-            new ResourceLocation("chaospersists", "textures/entity/girlfriend6.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend6.png");
     private static final ResourceLocation DryTexture7 =
-            new ResourceLocation("chaospersists", "textures/entity/girlfriend7.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend7.png");
     private static final ResourceLocation DryTexture8 =
-            new ResourceLocation("chaospersists", "textures/entity/girlfriend8.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend8.png");
     private static final ResourceLocation DryTexture9 =
-            new ResourceLocation("chaospersists", "textures/entity/girlfriend9.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend9.png");
     private static final ResourceLocation DryTexture10 =
-            new ResourceLocation("chaospersists", "textures/entity/girlfriend10.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend10.png");
     private static final ResourceLocation DryTexture11 =
-            new ResourceLocation("chaospersists", "textures/entity/girlfriend11.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend11.png");
     private static final ResourceLocation DryTexture12 =
-            new ResourceLocation("chaospersists", "textures/entity/girlfriend12.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend12.png");
     private static final ResourceLocation DryTexture13 =
-            new ResourceLocation("chaospersists", "textures/entity/girlfriend13.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend13.png");
     private static final ResourceLocation DryTexture14 =
-            new ResourceLocation("chaospersists", "textures/entity/girlfriend14.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend14.png");
     private static final ResourceLocation DryTexture15 =
-            new ResourceLocation("chaospersists", "textures/entity/girlfriend15.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend15.png");
     private static final ResourceLocation DryTexture16 =
-            new ResourceLocation("chaospersists", "textures/entity/girlfriend16.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend16.png");
     private static final ResourceLocation DryTexture17 =
-            new ResourceLocation("chaospersists", "textures/entity/girlfriend17.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend17.png");
     private static final ResourceLocation DryTexture18 =
-            new ResourceLocation("chaospersists", "textures/entity/girlfriend18.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend18.png");
     private static final ResourceLocation DryTexture19 =
-            new ResourceLocation("chaospersists", "textures/entity/girlfriend19.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend19.png");
     private static final ResourceLocation DryTexture20 =
-            new ResourceLocation("chaospersists", "textures/entity/girlfriend20.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend20.png");
     private static final ResourceLocation DryTexture21 =
-            new ResourceLocation("chaospersists", "textures/entity/girlfriend21.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend21.png");
     private static final ResourceLocation DryTexture22 =
-            new ResourceLocation("chaospersists", "textures/entity/girlfriend22.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend22.png");
     private static final ResourceLocation DryTexture23 =
-            new ResourceLocation("chaospersists", "textures/entity/girlfriend23.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend23.png");
     private static final ResourceLocation DryTexture24 =
-            new ResourceLocation("chaospersists", "textures/entity/girlfriend24.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend24.png");
     private static final ResourceLocation DryTexture25 =
-            new ResourceLocation("chaospersists", "textures/entity/girlfriend25.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend25.png");
     private static final ResourceLocation DryTexture26 =
-            new ResourceLocation("chaospersists", "textures/entity/girlfriend26.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend26.png");
     private static final ResourceLocation DryTexture27 =
-            new ResourceLocation("chaospersists", "textures/entity/girlfriend27.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend27.png");
     private static final ResourceLocation DryTexture28 =
-            new ResourceLocation("chaospersists", "textures/entity/girlfriend28.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend28.png");
     private static final ResourceLocation DryTexture29 =
-            new ResourceLocation("chaospersists", "textures/entity/girlfriend29.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend29.png");
     private static final ResourceLocation DryTexture30 =
-            new ResourceLocation("chaospersists", "textures/entity/girlfriend30.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend30.png");
     private static final ResourceLocation DryTexture31 =
-            new ResourceLocation("chaospersists", "textures/entity/girlfriend31.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend31.png");
     private static final ResourceLocation DryTexture32 =
-            new ResourceLocation("chaospersists", "textures/entity/girlfriend32.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend32.png");
     private static final ResourceLocation DryTexture33 =
-            new ResourceLocation("chaospersists", "textures/entity/girlfriend33.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend33.png");
     private static final ResourceLocation DryTexture34 =
-            new ResourceLocation("chaospersists", "textures/entity/girlfriend34.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend34.png");
     private static final ResourceLocation DryTexture35 =
-            new ResourceLocation("chaospersists", "textures/entity/girlfriend35.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend35.png");
     private static final ResourceLocation DryTexture36 =
-            new ResourceLocation("chaospersists", "textures/entity/girlfriend36.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend36.png");
     private static final ResourceLocation DryTexture37 =
-            new ResourceLocation("chaospersists", "textures/entity/girlfriend37.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend37.png");
     private static final ResourceLocation DryTexture38 =
-            new ResourceLocation("chaospersists", "textures/entity/girlfriend38.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend38.png");
     private static final ResourceLocation DryTexture39 =
-            new ResourceLocation("chaospersists", "textures/entity/girlfriend39.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend39.png");
     private static final ResourceLocation DryTexture40 =
-            new ResourceLocation("chaospersists", "textures/entity/girlfriend40.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriend40.png");
     private static final ResourceLocation ValentineTexture =
-            new ResourceLocation("chaospersists", "textures/entity/girlfriendv.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriendv.png");
     private static final ResourceLocation WetTexture0 =
-            new ResourceLocation("chaospersists", "textures/entity/bikini0.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/bikini0.png");
     private static final ResourceLocation WetTexture1 =
-            new ResourceLocation("chaospersists", "textures/entity/bikini1.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/bikini1.png");
     private static final ResourceLocation WetTexture2 =
-            new ResourceLocation("chaospersists", "textures/entity/bikini2.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/bikini2.png");
     private static final ResourceLocation WetTexture3 =
-            new ResourceLocation("chaospersists", "textures/entity/bikini3.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/bikini3.png");
     private static final ResourceLocation WetTexture4 =
-            new ResourceLocation("chaospersists", "textures/entity/bikini4.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/bikini4.png");
     private static final ResourceLocation WetTexture5 =
-            new ResourceLocation("chaospersists", "textures/entity/bikini5.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/bikini5.png");
     private static final ResourceLocation WetTexture6 =
-            new ResourceLocation("chaospersists", "textures/entity/bikini6.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/bikini6.png");
     private static final ResourceLocation WetTexture7 =
-            new ResourceLocation("chaospersists", "textures/entity/bikini7.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/bikini7.png");
     private static final ResourceLocation WetTexture8 =
-            new ResourceLocation("chaospersists", "textures/entity/bikini8.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/bikini8.png");
     private static final ResourceLocation WetTexture9 =
-            new ResourceLocation("chaospersists", "textures/entity/bikini9.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/bikini9.png");
     private static final ResourceLocation WetTexture10 =
-            new ResourceLocation("chaospersists", "textures/entity/bikini10.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/bikini10.png");
     private static final ResourceLocation WetTexture11 =
-            new ResourceLocation("chaospersists", "textures/entity/bikini11.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/bikini11.png");
     private static final ResourceLocation WetTexture12 =
-            new ResourceLocation("chaospersists", "textures/entity/bikini12.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/bikini12.png");
     private static final ResourceLocation WetTexture13 =
-            new ResourceLocation("chaospersists", "textures/entity/bikini13.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/bikini13.png");
     private static final ResourceLocation WetTexture14 =
-            new ResourceLocation("chaospersists", "textures/entity/bikini14.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/bikini14.png");
     private static final ResourceLocation WetTexture15 =
-            new ResourceLocation("chaospersists", "textures/entity/bikini15.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/bikini15.png");
     private static final ResourceLocation WetTexture16 =
-            new ResourceLocation("chaospersists", "textures/entity/bikini16.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/bikini16.png");
     private static final ResourceLocation WetTexture17 =
-            new ResourceLocation("chaospersists", "textures/entity/bikini17.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/bikini17.png");
     private static final ResourceLocation PrincessTexture1 =
-            new ResourceLocation("chaospersists", "textures/entity/frogprincess.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/frogprincess.png");
     private static final ResourceLocation PrincessTexture2 =
-            new ResourceLocation("chaospersists", "textures/entity/frogprincess2.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/frogprincess2.png");
 
     public Girlfriend(EntityType<? extends Girlfriend> type, Level level) {
         super(type, level);
+        this.setOrderedToSit(false);
         this.setOrderedToSit(false);
         if (this.getNavigation() instanceof net.minecraft.world.entity.ai.navigation.GroundPathNavigation ground) {
             ground.setCanOpenDoors(true);
@@ -288,23 +294,23 @@ public class Girlfriend extends TamableAnimal implements RangedAttackMob {
     }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
         // Defaults only — randomize in finalizeSpawn so chunk reload does not re-roll skins.
-        this.entityData.define(WHICH_GIRL, 0);
+        builder.define(WHICH_GIRL, 0);
         this.wet_count = 0;
-        this.entityData.define(WHICH_WET_GIRL, 0);
-        this.entityData.define(VOICE, 0);
+        builder.define(WHICH_WET_GIRL, 0);
+        builder.define(VOICE, 0);
         // Literal 1: defineSynchedData runs inside super(), before voice_enable = 1.
-        this.entityData.define(VOICE_ENABLE, 1);
-        this.entityData.define(IS_PRINCESS, this.is_princess);
-        this.entityData.define(FEELING_BETTER, this.feelingBetter);
+        builder.define(VOICE_ENABLE, 1);
+        builder.define(IS_PRINCESS, this.is_princess);
+        builder.define(FEELING_BETTER, this.feelingBetter);
         this.auto_heal = 200;
         this.force_sync = 50;
         this.fight_sound_ticker = 0;
         this.taunt_sound_ticker = 0;
         this.had_target = 0;
-        this.setOrderedToSit(false);
+
     }
 
     @Override
@@ -354,11 +360,11 @@ public class Girlfriend extends TamableAnimal implements RangedAttackMob {
     }
 
     @Override
-    public EntityDimensions getDimensions(Pose pose) {
+    public EntityDimensions getDefaultDimensions(Pose pose) {
         if (ChaosPersists.valentines_day != 0 && this.feelingBetter == 0) {
             return EntityDimensions.scalable(2.5f, 8.0f);
         }
-        return super.getDimensions(pose);
+        return super.getDefaultDimensions(pose);
     }
 
     private void syncArmorFromEquipment() {
@@ -683,8 +689,8 @@ public class Girlfriend extends TamableAnimal implements RangedAttackMob {
     }
 
     @Override
-    public boolean canBreatheUnderwater() {
-        return true;
+    protected int decreaseAirSupply(int airSupply) {
+        return airSupply;
     }
 
     @Override
@@ -768,7 +774,7 @@ public class Girlfriend extends TamableAnimal implements RangedAttackMob {
                 && player.distanceToSqr(this) < 16.0
                 && this.isOwnedBy(player)) {
             if (!this.level().isClientSide) {
-                this.setTame(false);
+                this.setTame(false, true);
                 this.setOwnerUUID(null);
                 this.spawnTamingParticles(false);
                 this.level().broadcastEntityEvent(this, (byte) 6);
@@ -853,13 +859,13 @@ public class Girlfriend extends TamableAnimal implements RangedAttackMob {
             return true;
         }
         if (this.isTame() && !var2.isEmpty() && this.isOwnedBy(player) && player.distanceToSqr(this) < 16.0) {
-            if (var2.getItem().isEdible()) {
+            if (var2.has(net.minecraft.core.component.DataComponents.FOOD)) {
                 if ((float) this.mygetMaxHealth() <= this.getHealth()) {
                     return true;
                 }
                 if (!this.level().isClientSide) {
                     if (var2.getFoodProperties(this) != null) {
-                        this.heal((float) (var2.getFoodProperties(this).getNutrition() * 5));
+                        this.heal((float) (var2.getFoodProperties(this).nutrition() * 5));
                     }
                     this.spawnTamingParticles(true);
                     this.level().broadcastEntityEvent(this, (byte) 7);
@@ -1060,7 +1066,7 @@ public class Girlfriend extends TamableAnimal implements RangedAttackMob {
     }
 
     @Override
-    protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+    protected void dropCustomDeathLoot(net.minecraft.server.level.ServerLevel serverLevel, DamageSource source, boolean recentlyHit) {
         if (DatapackLoot.useEntityTable(this)) {
             return;
         }
@@ -1111,14 +1117,14 @@ public class Girlfriend extends TamableAnimal implements RangedAttackMob {
             if (this.level().getRandom().nextInt(4) == 1) {
                 var8.setCritArrow(true);
             }
-            int var10 = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.PUNCH_ARROWS, it);
+            int var10 = com.astryxion.chaospersists.util.ChaosEnchantments.level(Enchantments.PUNCH, it);
             if (var10 > 0) {
                 var8.setKnockbackStrength(var10);
             }
-            if (EnchantmentHelper.getItemEnchantmentLevel(Enchantments.FLAMING_ARROWS, it) > 0) {
-                var8.setSecondsOnFire(100);
+            if (com.astryxion.chaospersists.util.ChaosEnchantments.level(Enchantments.FLAME, it) > 0) {
+                var8.igniteForSeconds(100);
             }
-            it.hurtAndBreak(1, this, e -> e.broadcastBreakEvent(InteractionHand.MAIN_HAND));
+            it.hurtAndBreak(1, this, net.minecraft.world.entity.EquipmentSlot.MAINHAND);
             this.level()
                     .playSound(
                             null,
@@ -1156,8 +1162,10 @@ public class Girlfriend extends TamableAnimal implements RangedAttackMob {
             int var3 = 0;
             float var4 = (float) this.getAttributeValue(Attributes.ATTACK_DAMAGE);
             if (par1Entity instanceof LivingEntity living) {
-                var4 += EnchantmentHelper.getDamageBonus(stack, living.getMobType());
-                var3 += EnchantmentHelper.getItemEnchantmentLevel(Enchantments.KNOCKBACK, stack);
+                if (level() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
+                    var4 = EnchantmentHelper.modifyDamage(serverLevel, stack, living, damageSources().mobAttack(this), var4);
+                }
+                var3 += com.astryxion.chaospersists.util.ChaosEnchantments.level(Enchantments.KNOCKBACK, stack);
             }
             if (this.isSprinting()) {
                 ++var3;
@@ -1185,9 +1193,9 @@ public class Girlfriend extends TamableAnimal implements RangedAttackMob {
                 }
                 ItemStack var7 = this.getMainHandItem();
                 if (par1Entity instanceof LivingEntity living
-                        && (var3 = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.FIRE_ASPECT, var7)) > 0
+                        && (var3 = com.astryxion.chaospersists.util.ChaosEnchantments.level(Enchantments.FIRE_ASPECT, var7)) > 0
                         && var6) {
-                    living.setSecondsOnFire(var3 * 4);
+                    living.igniteForSeconds(var3 * 4);
                 }
             }
         }
@@ -1309,7 +1317,7 @@ public class Girlfriend extends TamableAnimal implements RangedAttackMob {
                         continue;
                     }
                     ResourceLocation girlfriendId =
-                            new ResourceLocation("chaospersists", "girlfriend");
+                            ResourceLocation.fromNamespaceAndPath("chaospersists", "girlfriend");
                     ResourceLocation norm = SpawnerFixHelper.normalizeSpawnerEntityId(id);
                     if (SpawnerFixHelper.entityIdsMatchForSpawner(norm, girlfriendId)
                             || "Girlfriend".equals(id.getPath())) {
@@ -1340,7 +1348,7 @@ public class Girlfriend extends TamableAnimal implements RangedAttackMob {
                         continue;
                     }
                     ResourceLocation girlfriendId =
-                            new ResourceLocation("chaospersists", "girlfriend");
+                            ResourceLocation.fromNamespaceAndPath("chaospersists", "girlfriend");
                     ResourceLocation norm = SpawnerFixHelper.normalizeSpawnerEntityId(id);
                     if (SpawnerFixHelper.entityIdsMatchForSpawner(norm, girlfriendId)
                             || "Girlfriend".equals(id.getPath())) {
@@ -1369,11 +1377,10 @@ public class Girlfriend extends TamableAnimal implements RangedAttackMob {
             ServerLevelAccessor level,
             DifficultyInstance difficulty,
             MobSpawnType reason,
-            SpawnGroupData spawnData,
-            CompoundTag dataTag) {
+            SpawnGroupData spawnData) {
         this.ensureSkinInitialized();
         this.getAttribute(Attributes.MAX_HEALTH).setBaseValue((double) this.mygetMaxHealth());
-        SpawnGroupData data = super.finalizeSpawn(level, difficulty, reason, spawnData, dataTag);
+        SpawnGroupData data = super.finalizeSpawn(level, difficulty, reason, spawnData);
         this.setAge(0);
         return data;
     }

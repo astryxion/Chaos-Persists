@@ -29,7 +29,6 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -55,7 +54,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.SpawnerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 public class EmperorScorpion extends Monster {
     private static final EntityDataAccessor<Byte> ATTACKING =
@@ -68,7 +67,7 @@ public class EmperorScorpion extends Monster {
     public EmperorScorpion(EntityType<? extends EmperorScorpion> type, Level level) {
         super(type, level);
         this.moveControl = new ChaosChaseMoveControl(this);
-        this.setMaxUpStep(1.0F);
+        getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.STEP_HEIGHT).setBaseValue(1.0F);
         this.xpReward = 200;
         this.targetSorter = new GenericTargetSorter(this);
         this.renderdata = new RenderInfo();
@@ -96,15 +95,11 @@ public class EmperorScorpion extends Monster {
                 .add(Attributes.ARMOR, (double) ChaosPersists.EmperorScorpion_stats.defense);
     }
 
-    @Override
-    public MobType getMobType() {
-        return MobType.ARTHROPOD;
-    }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(ATTACKING, (byte) 0);
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(ATTACKING, (byte) 0);
     }
 
     @Override
@@ -155,7 +150,7 @@ public class EmperorScorpion extends Monster {
     }
 
     @Override
-    protected void jumpFromGround() {
+    public void jumpFromGround() {
         super.jumpFromGround();
         this.setDeltaMovement(
                 this.getDeltaMovement().x,
@@ -206,7 +201,7 @@ public class EmperorScorpion extends Monster {
     }
 
     @Override
-    protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+    protected void dropCustomDeathLoot(net.minecraft.server.level.ServerLevel serverLevel, DamageSource source, boolean recentlyHit) {
         if (DatapackLoot.useEntityTable(this)) {
             return;
         }
@@ -242,25 +237,25 @@ public class EmperorScorpion extends Monster {
                     is = this.dropItemRand(Items.DIAMOND_SWORD, 1);
                     if (is != null) {
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.SHARPNESS, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.SHARPNESS), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.BANE_OF_ARTHROPODS, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.BANE_OF_ARTHROPODS), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.KNOCKBACK, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.KNOCKBACK), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.MOB_LOOTING, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.LOOTING), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(2) == 1) {
-                            is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.FIRE_ASPECT, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FIRE_ASPECT), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.SHARPNESS, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.SHARPNESS), 1 + this.getRandom().nextInt(5));
                         }
                     }
                     continue block17;
@@ -269,10 +264,10 @@ public class EmperorScorpion extends Monster {
                     is = this.dropItemRand(Items.DIAMOND_SHOVEL, 1);
                     if (is != null) {
                         if (this.getRandom().nextInt(2) == 1) {
-                            is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.BLOCK_EFFICIENCY, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.EFFICIENCY), 1 + this.getRandom().nextInt(5));
                         }
                     }
                     continue block17;
@@ -281,13 +276,13 @@ public class EmperorScorpion extends Monster {
                     is = this.dropItemRand(Items.DIAMOND_PICKAXE, 1);
                     if (is != null) {
                         if (this.getRandom().nextInt(2) == 1) {
-                            is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.BLOCK_EFFICIENCY, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.EFFICIENCY), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.BLOCK_FORTUNE, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FORTUNE), 1 + this.getRandom().nextInt(5));
                         }
                     }
                     continue block17;
@@ -296,10 +291,10 @@ public class EmperorScorpion extends Monster {
                     is = this.dropItemRand(Items.DIAMOND_AXE, 1);
                     if (is != null) {
                         if (this.getRandom().nextInt(2) == 1) {
-                            is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.BLOCK_EFFICIENCY, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.EFFICIENCY), 1 + this.getRandom().nextInt(5));
                         }
                     }
                     continue block17;
@@ -308,10 +303,10 @@ public class EmperorScorpion extends Monster {
                     is = this.dropItemRand(Items.DIAMOND_HOE, 1);
                     if (is != null) {
                         if (this.getRandom().nextInt(2) == 1) {
-                            is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.BLOCK_EFFICIENCY, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.EFFICIENCY), 1 + this.getRandom().nextInt(5));
                         }
                     }
                     continue block17;
@@ -320,25 +315,25 @@ public class EmperorScorpion extends Monster {
                     is = this.dropItemRand(Items.DIAMOND_HELMET, 1);
                     if (is != null) {
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.ALL_DAMAGE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROTECTION), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.BLAST_PROTECTION, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.BLAST_PROTECTION), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.FIRE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FIRE_PROTECTION), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.PROJECTILE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROJECTILE_PROTECTION), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(2) == 1) {
-                            is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.RESPIRATION, 1 + this.getRandom().nextInt(2));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.RESPIRATION), 1 + this.getRandom().nextInt(2));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.AQUA_AFFINITY, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.AQUA_AFFINITY), 1 + this.getRandom().nextInt(5));
                         }
                     }
                     continue block17;
@@ -347,21 +342,21 @@ public class EmperorScorpion extends Monster {
                     is = this.dropItemRand(Items.DIAMOND_CHESTPLATE, 1);
                     if (is != null) {
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.ALL_DAMAGE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROTECTION), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.BLAST_PROTECTION, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.BLAST_PROTECTION), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.FIRE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FIRE_PROTECTION), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.PROJECTILE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROJECTILE_PROTECTION), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(2) != 1) {
                             continue block17;
                         }
-                        is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                     }
                     continue block17;
                 }
@@ -369,21 +364,21 @@ public class EmperorScorpion extends Monster {
                     is = this.dropItemRand(Items.DIAMOND_LEGGINGS, 1);
                     if (is != null) {
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.ALL_DAMAGE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROTECTION), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.BLAST_PROTECTION, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.BLAST_PROTECTION), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.FIRE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FIRE_PROTECTION), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.PROJECTILE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROJECTILE_PROTECTION), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(2) != 1) {
                             continue block17;
                         }
-                        is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                     }
                     continue block17;
                 }
@@ -391,12 +386,12 @@ public class EmperorScorpion extends Monster {
                     is = this.dropItemRand(Items.DIAMOND_BOOTS, 1);
                     if (is != null) {
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.FALL_PROTECTION, 5 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FEATHER_FALLING), 5 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(2) != 1) {
                             continue block17;
                         }
-                        is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                     }
                     continue block17;
                 }
@@ -553,9 +548,9 @@ public class EmperorScorpion extends Monster {
     public static Entity spawnCreature(Level level, String par1, double x, double y, double z) {
         ResourceLocation res =
                 par1.contains(":")
-                        ? new ResourceLocation(par1)
-                        : new ResourceLocation("chaospersists", par1);
-        EntityType<?> type = ForgeRegistries.ENTITY_TYPES.getValue(res);
+                        ? ResourceLocation.parse(par1)
+                        : ResourceLocation.fromNamespaceAndPath("chaospersists", par1);
+        EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.get(res);
         if (type == null || !(level instanceof ServerLevel serverLevel)) {
             return null;
         }

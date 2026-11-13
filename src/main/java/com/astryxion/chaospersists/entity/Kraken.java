@@ -49,7 +49,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 public class Kraken extends Monster {
     private static final EntityDataAccessor<Byte> ATTACKING =
@@ -91,10 +91,10 @@ public class Kraken extends Monster {
     }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(ATTACKING, (byte) 0);
-        this.entityData.define(PLAY_NICELY, ChaosPersists.PlayNicely);
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(ATTACKING, (byte) 0);
+        builder.define(PLAY_NICELY, ChaosPersists.PlayNicely);
         if (this.renderdata == null) {
             this.renderdata = new RenderInfo();
         }
@@ -113,7 +113,7 @@ public class Kraken extends Monster {
     }
 
     @Override
-    public EntityDimensions getDimensions(Pose pose) {
+    public EntityDimensions getDefaultDimensions(Pose pose) {
         if (this.getPlayNicely() == 0) {
             return EntityDimensions.scalable(4.0f, 15.0f);
         }
@@ -150,10 +150,10 @@ public class Kraken extends Monster {
     public static Entity spawnCreature(Level level, String par1, double x, double y, double z) {
         ResourceLocation res =
                 par1.contains(":")
-                        ? new ResourceLocation(par1)
-                        : new ResourceLocation(
+                        ? ResourceLocation.parse(par1)
+                        : ResourceLocation.fromNamespaceAndPath(
                                 "chaospersists", par1.toLowerCase().replace(" ", "_"));
-        EntityType<?> type = ForgeRegistries.ENTITY_TYPES.getValue(res);
+        EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.get(res);
         if (type == null || !(level instanceof ServerLevel serverLevel)) {
             return null;
         }
@@ -264,8 +264,8 @@ public class Kraken extends Monster {
 
     private ItemStack dropItemRandMod(String path, int count) {
         Item item =
-                ForgeRegistries.ITEMS.getValue(
-                        new ResourceLocation("chaospersists", path));
+                BuiltInRegistries.ITEM.get(
+                        ResourceLocation.fromNamespaceAndPath("chaospersists", path));
         if (item == null) {
             return null;
         }
@@ -273,11 +273,11 @@ public class Kraken extends Monster {
     }
 
     @Override
-    protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+    protected void dropCustomDeathLoot(net.minecraft.server.level.ServerLevel serverLevel, DamageSource source, boolean recentlyHit) {
         if (DatapackLoot.useEntityTable(this)) {
             return;
         }
-        super.dropCustomDeathLoot(source, looting, recentlyHit);
+        super.dropCustomDeathLoot(serverLevel, source, recentlyHit);
         this.dropFewItems();
     }
 
@@ -309,133 +309,133 @@ private void dropFewItems() {
                 case 3: {
                     is = this.dropItemRand(Items.DIAMOND_SWORD, 1);
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.SHARPNESS, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.SHARPNESS), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.BANE_OF_ARTHROPODS, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.BANE_OF_ARTHROPODS), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.KNOCKBACK, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.KNOCKBACK), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.MOB_LOOTING, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.LOOTING), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(2) == 1) {
-                        is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.FIRE_ASPECT, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FIRE_ASPECT), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) != 1) continue block56;
-                    is.enchant(Enchantments.SHARPNESS, 1 + this.getRandom().nextInt(5));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.SHARPNESS), 1 + this.getRandom().nextInt(5));
                     continue block56;
                 }
                 case 4: {
                     is = this.dropItemRand(Items.DIAMOND_SHOVEL, 1);
                     if (this.getRandom().nextInt(2) == 1) {
-                        is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                     }
                     if (this.getRandom().nextInt(6) != 1) continue block56;
-                    is.enchant(Enchantments.BLOCK_EFFICIENCY, 1 + this.getRandom().nextInt(5));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.EFFICIENCY), 1 + this.getRandom().nextInt(5));
                     continue block56;
                 }
                 case 5: {
                     is = this.dropItemRand(Items.DIAMOND_PICKAXE, 1);
                     if (this.getRandom().nextInt(2) == 1) {
-                        is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.BLOCK_EFFICIENCY, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.EFFICIENCY), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) != 1) continue block56;
-                    is.enchant(Enchantments.BLOCK_FORTUNE, 1 + this.getRandom().nextInt(5));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FORTUNE), 1 + this.getRandom().nextInt(5));
                     continue block56;
                 }
                 case 6: {
                     is = this.dropItemRand(Items.DIAMOND_AXE, 1);
                     if (this.getRandom().nextInt(2) == 1) {
-                        is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                     }
                     if (this.getRandom().nextInt(6) != 1) continue block56;
-                    is.enchant(Enchantments.BLOCK_EFFICIENCY, 1 + this.getRandom().nextInt(5));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.EFFICIENCY), 1 + this.getRandom().nextInt(5));
                     continue block56;
                 }
                 case 7: {
                     is = this.dropItemRand(Items.DIAMOND_HOE, 1);
                     if (this.getRandom().nextInt(2) == 1) {
-                        is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                     }
                     if (this.getRandom().nextInt(6) != 1) continue block56;
-                    is.enchant(Enchantments.BLOCK_EFFICIENCY, 1 + this.getRandom().nextInt(5));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.EFFICIENCY), 1 + this.getRandom().nextInt(5));
                     continue block56;
                 }
                 case 8: {
                     is = this.dropItemRand(Items.DIAMOND_HELMET, 1);
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.ALL_DAMAGE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROTECTION), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.THORNS, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.THORNS), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.FIRE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FIRE_PROTECTION), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.PROJECTILE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROJECTILE_PROTECTION), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(2) == 1) {
-                        is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.RESPIRATION, 1 + this.getRandom().nextInt(2));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.RESPIRATION), 1 + this.getRandom().nextInt(2));
                     }
                     if (this.getRandom().nextInt(6) != 1) continue block56;
-                    is.enchant(Enchantments.AQUA_AFFINITY, 1 + this.getRandom().nextInt(5));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.AQUA_AFFINITY), 1 + this.getRandom().nextInt(5));
                     continue block56;
                 }
                 case 9: {
                     is = this.dropItemRand(Items.DIAMOND_CHESTPLATE, 1);
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.ALL_DAMAGE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROTECTION), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.THORNS, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.THORNS), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.FIRE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FIRE_PROTECTION), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.PROJECTILE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROJECTILE_PROTECTION), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(2) != 1) continue block56;
-                    is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                     continue block56;
                 }
                 case 10: {
                     is = this.dropItemRand(Items.DIAMOND_LEGGINGS, 1);
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.ALL_DAMAGE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROTECTION), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.THORNS, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.THORNS), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.FIRE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FIRE_PROTECTION), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.PROJECTILE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROJECTILE_PROTECTION), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(2) != 1) continue block56;
-                    is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                     continue block56;
                 }
                 case 11: {
                     is = this.dropItemRand(Items.DIAMOND_BOOTS, 1);
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.FALL_PROTECTION, 5 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FEATHER_FALLING), 5 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(2) != 1) continue block56;
-                    is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                     continue block56;
                 }
                 case 12: {
@@ -457,133 +457,133 @@ private void dropFewItems() {
                 case 16: {
                     is = this.dropItemRand(Items.IRON_SWORD, 1);
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.SHARPNESS, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.SHARPNESS), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.BANE_OF_ARTHROPODS, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.BANE_OF_ARTHROPODS), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.KNOCKBACK, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.KNOCKBACK), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.MOB_LOOTING, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.LOOTING), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(2) == 1) {
-                        is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.FIRE_ASPECT, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FIRE_ASPECT), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) != 1) continue block56;
-                    is.enchant(Enchantments.SHARPNESS, 1 + this.getRandom().nextInt(5));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.SHARPNESS), 1 + this.getRandom().nextInt(5));
                     continue block56;
                 }
                 case 17: {
                     is = this.dropItemRand(Items.IRON_SHOVEL, 1);
                     if (this.getRandom().nextInt(2) == 1) {
-                        is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                     }
                     if (this.getRandom().nextInt(6) != 1) continue block56;
-                    is.enchant(Enchantments.BLOCK_EFFICIENCY, 1 + this.getRandom().nextInt(5));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.EFFICIENCY), 1 + this.getRandom().nextInt(5));
                     continue block56;
                 }
                 case 18: {
                     is = this.dropItemRand(Items.IRON_PICKAXE, 1);
                     if (this.getRandom().nextInt(2) == 1) {
-                        is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.BLOCK_EFFICIENCY, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.EFFICIENCY), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) != 1) continue block56;
-                    is.enchant(Enchantments.BLOCK_FORTUNE, 1 + this.getRandom().nextInt(5));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FORTUNE), 1 + this.getRandom().nextInt(5));
                     continue block56;
                 }
                 case 19: {
                     is = this.dropItemRand(Items.IRON_AXE, 1);
                     if (this.getRandom().nextInt(2) == 1) {
-                        is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                     }
                     if (this.getRandom().nextInt(6) != 1) continue block56;
-                    is.enchant(Enchantments.BLOCK_EFFICIENCY, 1 + this.getRandom().nextInt(5));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.EFFICIENCY), 1 + this.getRandom().nextInt(5));
                     continue block56;
                 }
                 case 20: {
                     is = this.dropItemRand(Items.IRON_HOE, 1);
                     if (this.getRandom().nextInt(2) == 1) {
-                        is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                     }
                     if (this.getRandom().nextInt(6) != 1) continue block56;
-                    is.enchant(Enchantments.BLOCK_EFFICIENCY, 1 + this.getRandom().nextInt(5));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.EFFICIENCY), 1 + this.getRandom().nextInt(5));
                     continue block56;
                 }
                 case 21: {
                     is = this.dropItemRand(Items.IRON_HELMET, 1);
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.ALL_DAMAGE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROTECTION), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.THORNS, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.THORNS), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.FIRE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FIRE_PROTECTION), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.PROJECTILE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROJECTILE_PROTECTION), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(2) == 1) {
-                        is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.RESPIRATION, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.RESPIRATION), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) != 1) continue block56;
-                    is.enchant(Enchantments.AQUA_AFFINITY, 1 + this.getRandom().nextInt(5));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.AQUA_AFFINITY), 1 + this.getRandom().nextInt(5));
                     continue block56;
                 }
                 case 22: {
                     is = this.dropItemRand(Items.IRON_CHESTPLATE, 1);
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.ALL_DAMAGE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROTECTION), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.THORNS, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.THORNS), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.FIRE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FIRE_PROTECTION), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.PROJECTILE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROJECTILE_PROTECTION), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(2) != 1) continue block56;
-                    is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                     continue block56;
                 }
                 case 23: {
                     is = this.dropItemRand(Items.IRON_LEGGINGS, 1);
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.ALL_DAMAGE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROTECTION), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.THORNS, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.THORNS), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.FIRE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FIRE_PROTECTION), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.PROJECTILE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROJECTILE_PROTECTION), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(2) != 1) continue block56;
-                    is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                     continue block56;
                 }
                 case 24: {
                     is = this.dropItemRand(Items.IRON_BOOTS, 1);
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.FALL_PROTECTION, 5 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FEATHER_FALLING), 5 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(2) != 1) continue block56;
-                    is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                     continue block56;
                 }
                 case 25: {
@@ -609,133 +609,133 @@ private void dropFewItems() {
                 case 30: {
                     is = this.dropItemRand(Items.GOLDEN_SWORD, 1);
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.SHARPNESS, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.SHARPNESS), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.BANE_OF_ARTHROPODS, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.BANE_OF_ARTHROPODS), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.KNOCKBACK, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.KNOCKBACK), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.MOB_LOOTING, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.LOOTING), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(2) == 1) {
-                        is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.FIRE_ASPECT, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FIRE_ASPECT), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) != 1) continue block56;
-                    is.enchant(Enchantments.SHARPNESS, 1 + this.getRandom().nextInt(5));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.SHARPNESS), 1 + this.getRandom().nextInt(5));
                     continue block56;
                 }
                 case 31: {
                     is = this.dropItemRand(Items.GOLDEN_SHOVEL, 1);
                     if (this.getRandom().nextInt(2) == 1) {
-                        is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                     }
                     if (this.getRandom().nextInt(6) != 1) continue block56;
-                    is.enchant(Enchantments.BLOCK_EFFICIENCY, 1 + this.getRandom().nextInt(5));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.EFFICIENCY), 1 + this.getRandom().nextInt(5));
                     continue block56;
                 }
                 case 32: {
                     is = this.dropItemRand(Items.GOLDEN_PICKAXE, 1);
                     if (this.getRandom().nextInt(2) == 1) {
-                        is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.BLOCK_EFFICIENCY, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.EFFICIENCY), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) != 1) continue block56;
-                    is.enchant(Enchantments.BLOCK_FORTUNE, 1 + this.getRandom().nextInt(5));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FORTUNE), 1 + this.getRandom().nextInt(5));
                     continue block56;
                 }
                 case 33: {
                     is = this.dropItemRand(Items.GOLDEN_AXE, 1);
                     if (this.getRandom().nextInt(2) == 1) {
-                        is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                     }
                     if (this.getRandom().nextInt(6) != 1) continue block56;
-                    is.enchant(Enchantments.BLOCK_EFFICIENCY, 1 + this.getRandom().nextInt(5));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.EFFICIENCY), 1 + this.getRandom().nextInt(5));
                     continue block56;
                 }
                 case 34: {
                     is = this.dropItemRand(Items.GOLDEN_HOE, 1);
                     if (this.getRandom().nextInt(2) == 1) {
-                        is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                     }
                     if (this.getRandom().nextInt(6) != 1) continue block56;
-                    is.enchant(Enchantments.BLOCK_EFFICIENCY, 1 + this.getRandom().nextInt(5));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.EFFICIENCY), 1 + this.getRandom().nextInt(5));
                     continue block56;
                 }
                 case 35: {
                     is = this.dropItemRand(Items.GOLDEN_HELMET, 1);
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.ALL_DAMAGE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROTECTION), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.THORNS, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.THORNS), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.FIRE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FIRE_PROTECTION), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.PROJECTILE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROJECTILE_PROTECTION), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(2) == 1) {
-                        is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.RESPIRATION, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.RESPIRATION), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) != 1) continue block56;
-                    is.enchant(Enchantments.AQUA_AFFINITY, 1 + this.getRandom().nextInt(5));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.AQUA_AFFINITY), 1 + this.getRandom().nextInt(5));
                     continue block56;
                 }
                 case 36: {
                     is = this.dropItemRand(Items.GOLDEN_CHESTPLATE, 1);
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.ALL_DAMAGE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROTECTION), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.THORNS, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.THORNS), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.FIRE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FIRE_PROTECTION), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.PROJECTILE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROJECTILE_PROTECTION), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(2) != 1) continue block56;
-                    is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                     continue block56;
                 }
                 case 37: {
                     is = this.dropItemRand(Items.GOLDEN_LEGGINGS, 1);
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.ALL_DAMAGE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROTECTION), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.THORNS, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.THORNS), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.FIRE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FIRE_PROTECTION), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.PROJECTILE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROJECTILE_PROTECTION), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(2) != 1) continue block56;
-                    is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                     continue block56;
                 }
                 case 38: {
                     is = this.dropItemRand(Items.GOLDEN_BOOTS, 1);
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.FALL_PROTECTION, 5 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FEATHER_FALLING), 5 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(2) != 1) continue block56;
-                    is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                     continue block56;
                 }
                 case 39: {
@@ -753,157 +753,157 @@ private void dropFewItems() {
                 case 42: {
                     is = this.dropItemRandMod("experiencesword", 1);
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.SHARPNESS, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.SHARPNESS), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.BANE_OF_ARTHROPODS, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.BANE_OF_ARTHROPODS), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.KNOCKBACK, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.KNOCKBACK), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.MOB_LOOTING, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.LOOTING), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(2) == 1) {
-                        is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.FIRE_ASPECT, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FIRE_ASPECT), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) != 1) continue block56;
-                    is.enchant(Enchantments.SHARPNESS, 1 + this.getRandom().nextInt(5));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.SHARPNESS), 1 + this.getRandom().nextInt(5));
                     continue block56;
                 }
                 case 43: {
                     is = this.dropItemRandMod("experience_helmet", 1);
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.ALL_DAMAGE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROTECTION), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.THORNS, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.THORNS), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.FIRE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FIRE_PROTECTION), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.PROJECTILE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROJECTILE_PROTECTION), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(2) == 1) {
-                        is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.RESPIRATION, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.RESPIRATION), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) != 1) continue block56;
-                    is.enchant(Enchantments.AQUA_AFFINITY, 1 + this.getRandom().nextInt(5));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.AQUA_AFFINITY), 1 + this.getRandom().nextInt(5));
                     continue block56;
                 }
                 case 44: {
                     is = this.dropItemRandMod("experience_chest", 1);
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.ALL_DAMAGE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROTECTION), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.THORNS, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.THORNS), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.FIRE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FIRE_PROTECTION), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.PROJECTILE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROJECTILE_PROTECTION), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(2) != 1) continue block56;
-                    is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                     continue block56;
                 }
                 case 45: {
                     is = this.dropItemRandMod("experience_leggings", 1);
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.ALL_DAMAGE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROTECTION), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.THORNS, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.THORNS), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.FIRE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FIRE_PROTECTION), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.PROJECTILE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROJECTILE_PROTECTION), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(2) != 1) continue block56;
-                    is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                     continue block56;
                 }
                 case 46: {
                     is = this.dropItemRandMod("experience_boots", 1);
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.FALL_PROTECTION, 5 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FEATHER_FALLING), 5 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(2) != 1) continue block56;
-                    is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                     continue block56;
                 }
                 case 47: {
                     is = this.dropItemRandMod("amethystsword", 1);
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.SHARPNESS, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.SHARPNESS), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.BANE_OF_ARTHROPODS, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.BANE_OF_ARTHROPODS), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.KNOCKBACK, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.KNOCKBACK), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.MOB_LOOTING, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.LOOTING), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(2) == 1) {
-                        is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.FIRE_ASPECT, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FIRE_ASPECT), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) != 1) continue block56;
-                    is.enchant(Enchantments.SHARPNESS, 1 + this.getRandom().nextInt(5));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.SHARPNESS), 1 + this.getRandom().nextInt(5));
                     continue block56;
                 }
                 case 48: {
                     is = this.dropItemRandMod("amethystshovel", 1);
                     if (this.getRandom().nextInt(2) == 1) {
-                        is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                     }
                     if (this.getRandom().nextInt(6) != 1) continue block56;
-                    is.enchant(Enchantments.BLOCK_EFFICIENCY, 1 + this.getRandom().nextInt(5));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.EFFICIENCY), 1 + this.getRandom().nextInt(5));
                     continue block56;
                 }
                 case 49: {
                     is = this.dropItemRandMod("amethystpickaxe", 1);
                     if (this.getRandom().nextInt(2) == 1) {
-                        is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.BLOCK_EFFICIENCY, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.EFFICIENCY), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) != 1) continue block56;
-                    is.enchant(Enchantments.BLOCK_FORTUNE, 1 + this.getRandom().nextInt(5));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FORTUNE), 1 + this.getRandom().nextInt(5));
                     continue block56;
                 }
                 case 50: {
                     is = this.dropItemRandMod("amethystaxe", 1);
                     if (this.getRandom().nextInt(2) == 1) {
-                        is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                     }
                     if (this.getRandom().nextInt(6) != 1) continue block56;
-                    is.enchant(Enchantments.BLOCK_EFFICIENCY, 1 + this.getRandom().nextInt(5));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.EFFICIENCY), 1 + this.getRandom().nextInt(5));
                     continue block56;
                 }
                 case 51: {
                     is = this.dropItemRandMod("amethysthoe", 1);
                     if (this.getRandom().nextInt(2) == 1) {
-                        is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                     }
                     if (this.getRandom().nextInt(6) != 1) continue block56;
-                    is.enchant(Enchantments.BLOCK_EFFICIENCY, 1 + this.getRandom().nextInt(5));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.EFFICIENCY), 1 + this.getRandom().nextInt(5));
                     continue block56;
                 }
                 case 52: {

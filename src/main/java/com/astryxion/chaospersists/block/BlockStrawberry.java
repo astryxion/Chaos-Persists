@@ -20,7 +20,7 @@ public class BlockStrawberry extends CropBlock {
     }
 
     public BlockStrawberry(int par1) {
-        super(net.minecraft.world.level.block.Block.Properties.copy(Blocks.WHEAT).noOcclusion());
+        super(net.minecraft.world.level.block.Block.Properties.ofFullCopy(Blocks.WHEAT).noOcclusion());
     }
 
     @Override

@@ -16,7 +16,6 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -64,10 +63,6 @@ public class StinkBug extends Animal {
                 .add(Attributes.ATTACK_DAMAGE, 0.0);
     }
 
-    @Override
-    public MobType getMobType() {
-        return MobType.ARTHROPOD;
-    }
 
     @Override
     public void tick() {
@@ -112,10 +107,6 @@ public class StinkBug extends Animal {
         return ret;
     }
 
-    @Override
-    public boolean canBreatheUnderwater() {
-        return false;
-    }
 
     public int mygetMaxHealth() {
         return 5;
@@ -146,7 +137,7 @@ public class StinkBug extends Animal {
     }
 
     @Override
-    protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+    protected void dropCustomDeathLoot(net.minecraft.server.level.ServerLevel serverLevel, DamageSource source, boolean recentlyHit) {
         if (DatapackLoot.useEntityTable(this)) {
             return;
         }

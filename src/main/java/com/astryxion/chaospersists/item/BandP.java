@@ -1,6 +1,7 @@
 package com.astryxion.chaospersists.item;
 
 import com.astryxion.chaospersists.loot.DatapackLoot;
+import com.astryxion.chaospersists.util.ChaosEnchantments;
 import com.astryxion.chaospersists.util.MyUtils;
 import com.astryxion.chaospersists.util.ChaosChaseMoveControl;
 import com.astryxion.chaospersists.util.ChaosHurtByTargetGoal;
@@ -50,7 +51,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.ServerLevelAccessor;
@@ -105,9 +106,9 @@ public class BandP extends Monster {
     }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(ATTACKING, (byte) 0);
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(ATTACKING, (byte) 0);
     }
 
     @Override
@@ -190,7 +191,8 @@ public class BandP extends Monster {
     }
 
     @Override
-    protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+    protected void dropCustomDeathLoot(net.minecraft.server.level.ServerLevel serverLevel, DamageSource source, boolean recentlyHit) {
+        int looting = com.astryxion.chaospersists.util.ChaosEnchantments.looting(source);
         if (DatapackLoot.useEntityTable(this)) {
             return;
         }
@@ -211,8 +213,7 @@ public class BandP extends Monster {
             if (stolen == null || stolen.isEmpty()) {
                 continue;
             }
-            // Curse of Vanishing: vanish like player death loot (do not return to world).
-            if (EnchantmentHelper.hasVanishingCurse(stolen)) {
+            if (ChaosEnchantments.level(Enchantments.VANISHING_CURSE, stolen) > 0) {
                 continue;
             }
             ItemStack dropped = stolen.copy();
@@ -474,7 +475,7 @@ public class BandP extends Monster {
             }
             CompoundTag slotTag = new CompoundTag();
             slotTag.putByte("Slot", (byte) i);
-            this.MymainInventory[i].save(slotTag);
+            this.MymainInventory[i].save(registryAccess(), slotTag);
             list.add(slotTag);
         }
         return list;
@@ -485,7 +486,7 @@ public class BandP extends Monster {
         for (int i = 0; i < list.size(); ++i) {
             CompoundTag slotTag = list.getCompound(i);
             int j = slotTag.getByte("Slot") & 255;
-            ItemStack stack = ItemStack.of(slotTag);
+            ItemStack stack = ItemStack.parseOptional(registryAccess(), slotTag);
             if (!stack.isEmpty() && j >= 0 && j < this.MymainInventory.length) {
                 this.MymainInventory[j] = stack;
             }
@@ -493,7 +494,7 @@ public class BandP extends Monster {
     }
 
     @Override
-    public EntityDimensions getDimensions(Pose pose) {
+    public EntityDimensions getDefaultDimensions(Pose pose) {
         return EntityDimensions.scalable(0.75f, 1.75f);
     }
 }

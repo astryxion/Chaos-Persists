@@ -105,15 +105,15 @@ public class ModelAttackSquid extends EntityModel<AttackSquid> {
     }
 
     @Override
-    public void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
-        this.tent1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.tent2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.tent3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.tent4.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.tent5.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.tent6.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.tent7.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.body.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.tent8.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+    public void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, int color) {
+        this.tent1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.tent2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.tent3.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.tent4.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.tent5.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.tent6.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.tent7.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.body.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.tent8.render(poseStack, buffer, packedLight, packedOverlay, color);
     }
 }

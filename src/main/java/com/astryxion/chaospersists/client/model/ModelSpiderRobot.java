@@ -154,7 +154,7 @@ public class ModelSpiderRobot extends EntityModel<SpiderRobot> {
     }
 
     @Override
-    public void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
+    public void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, int color) {
         SpiderRobot e = this.animEntity;
         if (e == null) {
             return;
@@ -252,25 +252,25 @@ public class ModelSpiderRobot extends EntityModel<SpiderRobot> {
             this.LowerKnee.x = this.Leg1p3.x;
             this.LowerKnee.y = this.Leg1p3.y;
             this.LowerKnee.z = this.Leg1p3.z;
-            this.Leg1p1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-            this.Leg1p2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-            this.Leg1p3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-            this.Foot.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-            this.FootSpike1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-            this.FootSpike2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-            this.FootSpike3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-            this.FootSpike4.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-            this.AnkleSpike1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-            this.AnkleSpike2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-            this.AnkleSpike3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-            this.AnkleSpike4.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-            this.LowerKnee.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-            this.UpperKnee.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-            this.LegBump1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-            this.LegBump2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-            this.LowerKnee2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-            this.UpperKnee2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-            this.HipJoint.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+            this.Leg1p1.render(poseStack, buffer, packedLight, packedOverlay, color);
+            this.Leg1p2.render(poseStack, buffer, packedLight, packedOverlay, color);
+            this.Leg1p3.render(poseStack, buffer, packedLight, packedOverlay, color);
+            this.Foot.render(poseStack, buffer, packedLight, packedOverlay, color);
+            this.FootSpike1.render(poseStack, buffer, packedLight, packedOverlay, color);
+            this.FootSpike2.render(poseStack, buffer, packedLight, packedOverlay, color);
+            this.FootSpike3.render(poseStack, buffer, packedLight, packedOverlay, color);
+            this.FootSpike4.render(poseStack, buffer, packedLight, packedOverlay, color);
+            this.AnkleSpike1.render(poseStack, buffer, packedLight, packedOverlay, color);
+            this.AnkleSpike2.render(poseStack, buffer, packedLight, packedOverlay, color);
+            this.AnkleSpike3.render(poseStack, buffer, packedLight, packedOverlay, color);
+            this.AnkleSpike4.render(poseStack, buffer, packedLight, packedOverlay, color);
+            this.LowerKnee.render(poseStack, buffer, packedLight, packedOverlay, color);
+            this.UpperKnee.render(poseStack, buffer, packedLight, packedOverlay, color);
+            this.LegBump1.render(poseStack, buffer, packedLight, packedOverlay, color);
+            this.LegBump2.render(poseStack, buffer, packedLight, packedOverlay, color);
+            this.LowerKnee2.render(poseStack, buffer, packedLight, packedOverlay, color);
+            this.UpperKnee2.render(poseStack, buffer, packedLight, packedOverlay, color);
+            this.HipJoint.render(poseStack, buffer, packedLight, packedOverlay, color);
         }
         if (e.getAttacking() == 0) {
             this.Ljaw1.yRot = 0.0f;
@@ -288,25 +288,25 @@ public class ModelSpiderRobot extends EntityModel<SpiderRobot> {
             this.Rjaw2.yRot = 2.3f - newangle;
             this.Rjaw3.yRot = 1.41f - newangle;
         }
-        this.BodyCenter.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Abdomen.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Head.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Ljaw1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Rjaw1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Ljaw2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Rjaw2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Ljaw3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Rjaw3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Tail.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.HeadSpike1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.HeadSpike2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Hip1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Hip2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Hip3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Hip4.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Hip5.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Hip6.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Hip7.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Hip8.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.BodyCenter.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Abdomen.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Head.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Ljaw1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Rjaw1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Ljaw2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Rjaw2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Ljaw3.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Rjaw3.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Tail.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.HeadSpike1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.HeadSpike2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Hip1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Hip2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Hip3.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Hip4.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Hip5.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Hip6.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Hip7.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Hip8.render(poseStack, buffer, packedLight, packedOverlay, color);
     }
 }

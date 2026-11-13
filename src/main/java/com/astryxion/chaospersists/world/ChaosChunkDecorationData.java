@@ -26,7 +26,8 @@ public final class ChaosChunkDecorationData extends SavedData {
 
   public static ChaosChunkDecorationData get(ServerLevel level) {
     return level.getDataStorage()
-        .computeIfAbsent(ChaosChunkDecorationData::load, ChaosChunkDecorationData::new, DATA_NAME);
+        .computeIfAbsent(new SavedData.Factory<>(ChaosChunkDecorationData::new,
+            (tag, registries) -> ChaosChunkDecorationData.load(tag), null), DATA_NAME);
   }
 
   private static long pack(ResourceKey<Level> dimension, int chunkX, int chunkZ) {
@@ -55,7 +56,7 @@ public final class ChaosChunkDecorationData extends SavedData {
   }
 
   @Override
-  public CompoundTag save(CompoundTag tag) {
+  public CompoundTag save(CompoundTag tag, net.minecraft.core.HolderLookup.Provider registries) {
     ListTag chunks = new ListTag();
     for (Long packed : decoratedChunks) {
       chunks.add(net.minecraft.nbt.LongTag.valueOf(packed));

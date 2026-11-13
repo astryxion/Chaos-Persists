@@ -19,8 +19,8 @@ import net.minecraft.world.level.levelgen.structure.StructureSet;
 import net.minecraft.world.level.levelgen.structure.StructureType;
 import net.minecraft.world.level.levelgen.structure.placement.StructurePlacement;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.neoforge.registries.DeferredRegister;
+import net.neoforged.neoforge.registries.DeferredHolder;
 
 /**
  * Seed+chunk slots for OreSpawn Java structures so {@code /locate structure} can find them
@@ -35,11 +35,11 @@ public final class ChaosLocateStructures {
     public static final DeferredRegister<StructurePieceType> STRUCTURE_PIECES =
             DeferredRegister.create(Registries.STRUCTURE_PIECE, ChaosPersists.MODID);
 
-    public static final RegistryObject<StructureType<LocateMarkerStructure>> LOCATE_MARKER =
+    public static final DeferredHolder<StructureType<?>, StructureType<LocateMarkerStructure>> LOCATE_MARKER =
             STRUCTURE_TYPES.register("locate_marker", () -> () -> LocateMarkerStructure.CODEC);
-    public static final RegistryObject<StructureType<GroundedJigsawStructure>> GROUNDED_JIGSAW =
+    public static final DeferredHolder<StructureType<?>, StructureType<GroundedJigsawStructure>> GROUNDED_JIGSAW =
             STRUCTURE_TYPES.register("grounded_jigsaw", () -> () -> GroundedJigsawStructure.CODEC);
-    public static final RegistryObject<StructurePieceType> LOCATE_MARKER_PIECE =
+    public static final DeferredHolder<StructurePieceType, StructurePieceType> LOCATE_MARKER_PIECE =
             STRUCTURE_PIECES.register(
                     "locate_marker", () -> (StructurePieceType.ContextlessType) LocateMarkerPiece::new);
 
@@ -169,7 +169,7 @@ public final class ChaosLocateStructures {
 
     public static ResourceKey<Structure> key(String path) {
         return ResourceKey.create(
-                Registries.STRUCTURE, new ResourceLocation(ChaosPersists.MODID, path));
+                Registries.STRUCTURE, ResourceLocation.fromNamespaceAndPath(ChaosPersists.MODID, path));
     }
 
     /** True when this chunk is the seed slot for {@code key} in the current dimension. */
@@ -232,9 +232,9 @@ public final class ChaosLocateStructures {
         }
         ResourceLocation setId;
         if (level.dimension().equals(ChaosPersists.getMiningDimensionKey())) {
-            setId = new ResourceLocation(ChaosPersists.MODID, "mining_ender_knight");
+            setId = ResourceLocation.fromNamespaceAndPath(ChaosPersists.MODID, "mining_ender_knight");
         } else if (Level.END.equals(level.dimension())) {
-            setId = new ResourceLocation(ChaosPersists.MODID, "ender_knight_dungeon");
+            setId = ResourceLocation.fromNamespaceAndPath(ChaosPersists.MODID, "ender_knight_dungeon");
         } else {
             return found;
         }

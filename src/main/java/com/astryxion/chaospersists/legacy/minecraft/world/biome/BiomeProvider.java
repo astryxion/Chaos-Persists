@@ -23,14 +23,14 @@ public class BiomeProvider {
     }
     for (int i = 0; i < width; i++) {
       for (int j = 0; j < length; j++) {
-        reuse[i + j * width] = Biome.wrap(level.getBiome(new BlockPos(x + i, 64, z + j)).value());
+        reuse[i + j * width] = Biome.wrap(level.getBiome(new BlockPos(x + i, 64, z + j)));
       }
     }
     return reuse;
   }
 
   public boolean areBiomesViable(int x, int y, int z, List<Biome> biomes) {
-    Biome biome = Biome.wrap(level.getBiome(new BlockPos(x, y, z)).value());
+    Biome biome = Biome.wrap(level.getBiome(new BlockPos(x, y, z)));
     for (Biome candidate : biomes) {
       if (candidate == biome) {
         return true;

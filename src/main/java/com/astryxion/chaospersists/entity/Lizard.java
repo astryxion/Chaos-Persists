@@ -39,7 +39,7 @@ import net.minecraft.world.entity.animal.Chicken;
 import net.minecraft.world.entity.monster.CaveSpider;
 import net.minecraft.world.entity.monster.Spider;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.common.Tags;
+import net.neoforged.neoforge.common.Tags;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -52,7 +52,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.TamableAnimal;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 public class Lizard extends EntityCannonFodder {
     private static final EntityDataAccessor<Byte> STATE =
@@ -90,9 +90,9 @@ public class Lizard extends EntityCannonFodder {
     }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(STATE, (byte) 0);
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(STATE, (byte) 0);
     }
 
     @Override
@@ -451,7 +451,7 @@ public class Lizard extends EntityCannonFodder {
 
     public boolean isBreedingItem(ItemStack par1ItemStack) {
         Item crystal =
-                ForgeRegistries.ITEMS.getValue(new ResourceLocation("chaospersists", "crystalapple"));
+                BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath("chaospersists", "crystalapple"));
         if (crystal == null) {
             crystal = ChaosPersists.MyCrystalApple;
         }

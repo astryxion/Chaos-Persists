@@ -44,7 +44,7 @@ public final class CommandCrystal {
             return 0;
         }
         CrystalTeleporter teleporter = new CrystalTeleporter(player.getX(), player.getZ());
-        player.changeDimension(world, teleporter);
+        player.changeDimension(teleporter.transition(player, world));
         player.displayClientMessage(
                 Component.literal("Teleported to Crystal.").withStyle(ChatFormatting.GREEN), true);
         return 1;

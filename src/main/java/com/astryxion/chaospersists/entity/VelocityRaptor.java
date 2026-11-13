@@ -45,7 +45,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DoublePlantBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 public class VelocityRaptor extends EntityCannonFodder {
     private float moveSpeed = 0.55f;
@@ -108,7 +108,7 @@ public class VelocityRaptor extends EntityCannonFodder {
 
     private boolean isGrazableBlock(Block block) {
         return block == Blocks.TALL_GRASS
-                || block == Blocks.GRASS
+                || block == Blocks.SHORT_GRASS
                 || block == Blocks.DANDELION
                 || block == Blocks.POPPY
                 || block == Blocks.DEAD_BUSH
@@ -312,7 +312,7 @@ public class VelocityRaptor extends EntityCannonFodder {
             if (!this.isTame()) {
                 if (!this.level().isClientSide) {
                     if (this.getRandom().nextInt(2) == 0) {
-                        this.setTame(true);
+                        this.setTame(true, true);
                         this.setOwnerUUID(par1EntityPlayer.getUUID());
                         spawnTamingParticles(true);
                         this.level().broadcastEntityEvent(this, (byte) 7);
@@ -349,7 +349,7 @@ public class VelocityRaptor extends EntityCannonFodder {
                 && par1EntityPlayer.distanceToSqr(this) < 16.0
                 && this.isOwnedBy(par1EntityPlayer)) {
             if (!this.level().isClientSide) {
-                this.setTame(false);
+                this.setTame(false, true);
                 this.setHealth((float) this.mygetMaxHealth());
                 this.setOwnerUUID(null);
                 spawnTamingParticles(false);
@@ -412,7 +412,7 @@ public class VelocityRaptor extends EntityCannonFodder {
     }
 
     @Override
-    protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+    protected void dropCustomDeathLoot(net.minecraft.server.level.ServerLevel serverLevel, DamageSource source, boolean recentlyHit) {
         if (DatapackLoot.useEntityTable(this)) {
             return;
         }
@@ -467,8 +467,8 @@ public class VelocityRaptor extends EntityCannonFodder {
 
     public boolean isBreedingItem(ItemStack par1ItemStack) {
         Item crystal =
-                ForgeRegistries.ITEMS.getValue(
-                        new ResourceLocation("chaospersists", "crystalapple"));
+                BuiltInRegistries.ITEM.get(
+                        ResourceLocation.fromNamespaceAndPath("chaospersists", "crystalapple"));
         if (crystal == null) {
             crystal = ChaosPersists.MyCrystalApple;
         }

@@ -393,7 +393,7 @@ public class ItemSifter extends Item {
                     break;
             }
         }
-        stack.hurtAndBreak(1, player, p -> p.broadcastBreakEvent(EquipmentSlot.MAINHAND));
+        stack.hurtAndBreak(1, player, EquipmentSlot.MAINHAND);
     }
 
     public String getMaterialName() {

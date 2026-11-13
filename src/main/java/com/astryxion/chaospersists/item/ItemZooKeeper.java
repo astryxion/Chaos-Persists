@@ -93,7 +93,7 @@ public class ItemZooKeeper extends Item {
                 entity.getX(),
                 entity.getY(),
                 entity.getZ(),
-                SoundEvents.GENERIC_EXPLODE,
+                SoundEvents.GENERIC_EXPLODE.value(),
                 SoundSource.PLAYERS,
                 0.5f,
                 1.5f);

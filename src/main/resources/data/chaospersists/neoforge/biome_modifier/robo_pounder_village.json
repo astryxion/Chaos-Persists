@@ -1,0 +1,10 @@
+{
+  "type": "neoforge:add_spawns",
+  "spawners": {
+    "type": "chaospersists:robo_pounder",
+    "weight": 16,
+    "minCount": 2,
+    "maxCount": 8
+  },
+  "biomes": "chaospersists:village_dimension"
+}

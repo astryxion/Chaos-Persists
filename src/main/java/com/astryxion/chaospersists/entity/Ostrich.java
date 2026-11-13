@@ -58,9 +58,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.util.RandomSource;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 public class Ostrich extends EntityCannonFodder implements ChaosGroundMount {
     private static final EntityDataAccessor<Byte> CONTROL_STATE =
@@ -98,9 +98,9 @@ public class Ostrich extends EntityCannonFodder implements ChaosGroundMount {
     }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(CONTROL_STATE, (byte) 0);
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(CONTROL_STATE, (byte) 0);
         if (this.renderdata == null) {
             this.renderdata = new RenderInfo();
         }
@@ -118,9 +118,8 @@ public class Ostrich extends EntityCannonFodder implements ChaosGroundMount {
             ServerLevelAccessor level,
             DifficultyInstance difficulty,
             MobSpawnType spawnType,
-            @Nullable SpawnGroupData spawnData,
-            @Nullable CompoundTag data) {
-        SpawnGroupData result = super.finalizeSpawn(level, difficulty, spawnType, spawnData, data);
+            @Nullable SpawnGroupData spawnData) {
+        SpawnGroupData result = super.finalizeSpawn(level, difficulty, spawnType, spawnData);
         this.setOrderedToSit(false);
         this.noPhysics = false;
         this.setNoGravity(false);
@@ -235,11 +234,11 @@ public class Ostrich extends EntityCannonFodder implements ChaosGroundMount {
 
     @OnlyIn(Dist.CLIENT)
     @Override
-    public void lerpTo(double x, double y, double z, float yaw, float pitch, int steps, boolean interpolate) {
+    public void lerpTo(double x, double y, double z, float yaw, float pitch, int steps) {
         if (this.isControlledByLocalInstance()) {
             return;
         }
-        super.lerpTo(x, y, z, yaw, pitch, steps, interpolate);
+        super.lerpTo(x, y, z, yaw, pitch, steps);
     }
 
     @Override
@@ -317,7 +316,7 @@ public class Ostrich extends EntityCannonFodder implements ChaosGroundMount {
             if (!this.isTame()) {
                 if (!this.level().isClientSide) {
                     if (this.getRandom().nextInt(2) == 0) {
-                        this.setTame(true);
+                        this.setTame(true, true);
                         this.setOwnerUUID(par1EntityPlayer.getUUID());
                         spawnTamingParticles(true);
                         this.level().broadcastEntityEvent(this, (byte) 7);
@@ -351,7 +350,7 @@ public class Ostrich extends EntityCannonFodder implements ChaosGroundMount {
                 && par1EntityPlayer.distanceToSqr(this) < 16.0
                 && this.isOwnedBy(par1EntityPlayer)) {
             if (!this.level().isClientSide) {
-                this.setTame(false);
+                this.setTame(false, true);
                 this.setOwnerUUID(null);
                 spawnTamingParticles(false);
                 this.level().broadcastEntityEvent(this, (byte) 6);
@@ -409,10 +408,6 @@ public class Ostrich extends EntityCannonFodder implements ChaosGroundMount {
         return true;
     }
 
-    @Override
-    public boolean canBreatheUnderwater() {
-        return false;
-    }
 
     @Override
     protected SoundEvent getAmbientSound() {
@@ -435,7 +430,7 @@ public class Ostrich extends EntityCannonFodder implements ChaosGroundMount {
     }
 
     @Override
-    protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+    protected void dropCustomDeathLoot(net.minecraft.server.level.ServerLevel serverLevel, DamageSource source, boolean recentlyHit) {
         if (DatapackLoot.useEntityTable(this)) {
             return;
         }
@@ -446,7 +441,7 @@ public class Ostrich extends EntityCannonFodder implements ChaosGroundMount {
                 this.spawnAtLocation(Items.POPPY);
             }
         } else {
-            super.dropCustomDeathLoot(source, looting, recentlyHit);
+            super.dropCustomDeathLoot(serverLevel, source, recentlyHit);
         }
     }
 
@@ -458,6 +453,12 @@ public class Ostrich extends EntityCannonFodder implements ChaosGroundMount {
     }
 
     @Override
+    protected net.minecraft.world.phys.Vec3 getPassengerAttachmentPoint(Entity passenger,
+            net.minecraft.world.entity.EntityDimensions dimensions, float scale) {
+        var attachment = super.getPassengerAttachmentPoint(passenger, dimensions, scale);
+        return new net.minecraft.world.phys.Vec3(attachment.x, getPassengersRidingOffset(), attachment.z);
+    }
+
     public double getPassengersRidingOffset() {
         return 0.85;
     }
@@ -513,7 +514,7 @@ public class Ostrich extends EntityCannonFodder implements ChaosGroundMount {
 
     public boolean isBreedingItem(ItemStack par1ItemStack) {
         Item crystal =
-                ForgeRegistries.ITEMS.getValue(new ResourceLocation("chaospersists", "crystalapple"));
+                BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath("chaospersists", "crystalapple"));
         if (crystal == null) {
             crystal = ChaosPersists.MyCrystalApple;
         }

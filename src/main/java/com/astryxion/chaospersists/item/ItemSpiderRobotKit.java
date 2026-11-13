@@ -48,7 +48,7 @@ public class ItemSpiderRobotKit extends Item {
         if (ent != null) {
             if (ent instanceof LivingEntity living) {
                 living.setHealth((float) (stack.getMaxDamage() - stack.getDamageValue()));
-                if (stack.hasCustomHoverName()) {
+                if (stack.has(net.minecraft.core.component.DataComponents.CUSTOM_NAME)) {
                     living.setCustomName(stack.getHoverName());
                 }
             }
@@ -57,7 +57,7 @@ public class ItemSpiderRobotKit extends Item {
                     player.getX(),
                     player.getY(),
                     player.getZ(),
-                    SoundEvents.GENERIC_EXPLODE,
+                    SoundEvents.GENERIC_EXPLODE.value(),
                     SoundSource.PLAYERS,
                     1.0f,
                     level.getRandom().nextFloat() * 0.2f + 0.9f);

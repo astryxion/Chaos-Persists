@@ -2,8 +2,8 @@
  * Decompiled with CFR 0_125.
  * 
  * Could not load the following classes:
- *  net.minecraftforge.fml.relauncher.Side
- *  net.minecraftforge.fml.relauncher.SideOnly
+ *  net.neoforged.fml.relauncher.Side
+ *  net.neoforged.fml.relauncher.SideOnly
  *  com.astryxion.chaospersists.ItemMinersDream
  *  com.astryxion.chaospersists.ChaosPersists
  *  com.astryxion.chaospersists.legacy.minecraft.block.Block
@@ -169,7 +169,7 @@ public class ItemMinersDream extends Item {
             world.playSound(
                     player,
                     player.blockPosition(),
-                    SoundEvents.GENERIC_EXPLODE,
+                    SoundEvents.GENERIC_EXPLODE.value(),
                     SoundSource.PLAYERS,
                     1.0f,
                     1.5f);

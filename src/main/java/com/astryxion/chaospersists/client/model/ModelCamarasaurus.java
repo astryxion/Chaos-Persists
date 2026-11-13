@@ -134,27 +134,27 @@ public class ModelCamarasaurus extends EntityModel<Camarasaurus> {
     }
 
     @Override
-    public void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
-        this.Body1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Body2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Body3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Body4.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Tail0.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Neck1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Neck2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Neck3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Head1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Head2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Tail1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Tail2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Tail3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.BLegupleft.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.FLegupleft.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.BLegupright.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.FLegupright.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.BLegdownright.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.FLegdownleft.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.FLegdownright.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.BLegdownleft.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+    public void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, int color) {
+        this.Body1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Body2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Body3.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Body4.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Tail0.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Neck1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Neck2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Neck3.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Head1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Head2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Tail1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Tail2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Tail3.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.BLegupleft.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.FLegupleft.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.BLegupright.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.FLegupright.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.BLegdownright.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.FLegdownleft.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.FLegdownright.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.BLegdownleft.render(poseStack, buffer, packedLight, packedOverlay, color);
     }
 }

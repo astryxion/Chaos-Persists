@@ -16,7 +16,7 @@ import org.joml.Vector3f;
 public class RenderBattleAxe implements IItemRenderer {
     protected ModelBattleAxe modelBattleAxe = new ModelBattleAxe();
     private static final ResourceLocation texture =
-            new ResourceLocation("chaospersists", "textures/entity/battleaxetexture.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/battleaxetexture.png");
 
     @Override
     public boolean handleRenderType(ItemStack item, ItemRenderType type) {

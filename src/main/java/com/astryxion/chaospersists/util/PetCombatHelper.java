@@ -1,5 +1,6 @@
 package com.astryxion.chaospersists.util;
 
+import net.neoforged.fml.common.EventBusSubscriber;
 import java.util.Map;
 import java.util.UUID;
 import java.util.WeakHashMap;
@@ -15,11 +16,11 @@ import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
-import net.minecraftforge.event.entity.living.LivingAttackEvent;
-import net.minecraftforge.event.entity.living.LivingChangeTargetEvent;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
+import net.neoforged.neoforge.event.entity.living.LivingChangeTargetEvent;
+import net.neoforged.bus.api.EventPriority;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
 import com.astryxion.chaospersists.compat.eeeabsmobs.EeeabsMobsCompat;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.entity.Boyfriend;
@@ -44,7 +45,7 @@ import com.astryxion.chaospersists.entity.TerribleTerror;
  * while the pet was sat. Same-owner tames (Chaos, vanilla, and other mods) also do not damage or
  * retaliate against each other from stray hits.
  */
-@Mod.EventBusSubscriber(modid = ChaosPersists.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(modid = ChaosPersists.MODID, bus = EventBusSubscriber.Bus.GAME)
 public final class PetCombatHelper {
     private static final Map<UUID, int[]> SEEN_OWNER_COMBAT = new WeakHashMap<>();
 
@@ -175,7 +176,7 @@ public final class PetCombatHelper {
     }
 
     @SubscribeEvent(priority = EventPriority.HIGH)
-    public static void onAlliedCompanionAttack(LivingAttackEvent event) {
+    public static void onAlliedCompanionAttack(LivingIncomingDamageEvent event) {
         if (event == null || event.getEntity() == null) {
             return;
         }
@@ -195,10 +196,10 @@ public final class PetCombatHelper {
 
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void onAlliedCompanionTarget(LivingChangeTargetEvent event) {
-        if (event == null || event.getNewTarget() == null) {
+        if (event == null || event.getNewAboutToBeSetTarget() == null) {
             return;
         }
-        if (areAlliedOwnedCompanions(event.getEntity(), event.getNewTarget())) {
+        if (areAlliedOwnedCompanions(event.getEntity(), event.getNewAboutToBeSetTarget())) {
             event.setCanceled(true);
         }
     }

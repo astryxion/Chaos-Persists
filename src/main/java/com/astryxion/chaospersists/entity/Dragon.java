@@ -75,11 +75,16 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 public class Dragon extends TamableAnimal implements ChaosFlyingMount {
+    @Override
+    public boolean isFood(net.minecraft.world.item.ItemStack stack) {
+        return stack.is(net.minecraft.world.item.Items.WHEAT);
+    }
+
     private static final EntityDataAccessor<Byte> ATTACKING =
             SynchedEntityData.defineId(Dragon.class, EntityDataSerializers.BYTE);
     private static final EntityDataAccessor<Byte> STATE2 =
@@ -129,6 +134,9 @@ public class Dragon extends TamableAnimal implements ChaosFlyingMount {
 
     public Dragon(EntityType<? extends Dragon> type, Level level) {
         super(type, level);
+        this.setActivity(0);
+        this.setAttacking(0);
+        this.setTame(false, true);
         this.xpReward = 100;
         this.fireImmune();
         this.moveSpeed = 0.4f;
@@ -172,7 +180,7 @@ public class Dragon extends TamableAnimal implements ChaosFlyingMount {
     }
 
     @Override
-    public EntityDimensions getDimensions(Pose pose) {
+    public EntityDimensions getDefaultDimensions(Pose pose) {
         return EntityDimensions.fixed(1.5f, 1.25f);
     }
 
@@ -224,6 +232,12 @@ public class Dragon extends TamableAnimal implements ChaosFlyingMount {
     }
 
     @Override
+    protected net.minecraft.world.phys.Vec3 getPassengerAttachmentPoint(Entity passenger,
+            net.minecraft.world.entity.EntityDimensions dimensions, float scale) {
+        var attachment = super.getPassengerAttachmentPoint(passenger, dimensions, scale);
+        return new net.minecraft.world.phys.Vec3(attachment.x, getPassengersRidingOffset(), attachment.z);
+    }
+
     public double getPassengersRidingOffset() {
         return 0.75;
     }
@@ -540,18 +554,15 @@ public class Dragon extends TamableAnimal implements ChaosFlyingMount {
     }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(ATTACKING, (byte) 0);
-        this.entityData.define(STATE2, (byte) 0);
-        this.entityData.define(INT22, 0);
-        this.entityData.define(INT24, 1);
-        this.entityData.define(CONTROL_STATE, (byte) 0);
-        this.entityData.define(FLYING, false);
-        this.entityData.define(HOVERING, false);
-        this.setActivity(0);
-        this.setAttacking(0);
-        this.setTame(false);
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(ATTACKING, (byte) 0);
+        builder.define(STATE2, (byte) 0);
+        builder.define(INT22, 0);
+        builder.define(INT24, 1);
+        builder.define(CONTROL_STATE, (byte) 0);
+        builder.define(FLYING, false);
+        builder.define(HOVERING, false);
         if (this.renderdata == null) {
             this.renderdata = new RenderInfo();
         }
@@ -644,7 +655,7 @@ public class Dragon extends TamableAnimal implements ChaosFlyingMount {
     }
 
     @Override
-    protected void jumpFromGround() {
+    public void jumpFromGround() {
         this.setDeltaMovement(this.getDeltaMovement().add(0.0, 0.25, 0.0));
         super.jumpFromGround();
     }
@@ -724,8 +735,8 @@ public class Dragon extends TamableAnimal implements ChaosFlyingMount {
         return false;
     }
 
-    public boolean canBreatheUnderwater() {
-        return true;
+    protected int decreaseAirSupply(int airSupply) {
+        return airSupply;
     }
 
     @Override
@@ -790,7 +801,7 @@ public class Dragon extends TamableAnimal implements ChaosFlyingMount {
     }
 
     @Override
-    protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+    protected void dropCustomDeathLoot(net.minecraft.server.level.ServerLevel serverLevel, DamageSource source, boolean recentlyHit) {
         if (DatapackLoot.useEntityTable(this)) {
             return;
         }
@@ -1146,11 +1157,11 @@ public class Dragon extends TamableAnimal implements ChaosFlyingMount {
     @OnlyIn(Dist.CLIENT)
     @Override
     public void lerpTo(
-            double par1, double par3, double par5, float par7, float par8, int par9, boolean interpolate) {
+            double par1, double par3, double par5, float par7, float par8, int par9) {
         if (this.isControlledByLocalInstance()) {
             return;
         }
-        super.lerpTo(par1, par3, par5, par7, par8, par9, interpolate);
+        super.lerpTo(par1, par3, par5, par7, par8, par9);
     }
 
     @OnlyIn(Dist.CLIENT)
@@ -1352,13 +1363,8 @@ public class Dragon extends TamableAnimal implements ChaosFlyingMount {
                         if (this.dragontype == 0) {
                             if (this.getDragonFire() == 1) {
                                 sf =
-                                        new SmallFireball(
-                                                this.level(),
-                                                this,
-                                                e.getX() - cx,
-                                                e.getY() + (double) (e.getBbHeight() / 2.0f)
-                                                        - (this.getY() + yoff),
-                                                e.getZ() - cz);
+                                        new SmallFireball(this.level(), this, new net.minecraft.world.phys.Vec3(e.getX() - cx, e.getY() + (double) (e.getBbHeight() / 2.0f)
+                                                        - (this.getY() + yoff), e.getZ() - cz));
                                 sf.moveTo(cx, this.getY() + yoff, cz, this.getYRot(), 0.0f);
                                 this.level()
                                         .playSound(
@@ -1570,7 +1576,7 @@ public class Dragon extends TamableAnimal implements ChaosFlyingMount {
             if (!var2.isEmpty() && var2.is(Items.BEEF) && par1EntityPlayer.distanceToSqr(this) < 25.0) {
                 if (!this.level().isClientSide) {
                     if (this.getRandom().nextInt(5) == 1) {
-                        this.setTame(true);
+                        this.setTame(true, true);
                         this.setOwnerUUID(par1EntityPlayer.getUUID());
                         spawnTamingParticles(true);
                         this.level().broadcastEntityEvent(this, (byte) 7);
@@ -1621,7 +1627,7 @@ public class Dragon extends TamableAnimal implements ChaosFlyingMount {
                     && var2.is(Blocks.DEAD_BUSH.asItem())
                     && par1EntityPlayer.distanceToSqr(this) < 25.0) {
                 if (!this.level().isClientSide) {
-                    this.setTame(false);
+                    this.setTame(false, true);
                     this.setOwnerUUID(null);
                     spawnTamingParticles(false);
                     this.level().broadcastEntityEvent(this, (byte) 6);
@@ -1736,7 +1742,7 @@ public class Dragon extends TamableAnimal implements ChaosFlyingMount {
                                 this.getZ());
                 if (ent instanceof Spyro d) {
                     if (this.isTame()) {
-                        d.setTame(true);
+                        d.setTame(true, true);
                         d.setOwnerUUID(par1EntityPlayer.getUUID());
                     }
                     this.discard();
@@ -1823,10 +1829,10 @@ public class Dragon extends TamableAnimal implements ChaosFlyingMount {
     public static Entity spawnCreature(Level level, String par1, double x, double y, double z) {
         ResourceLocation res =
                 par1.contains(":")
-                        ? new ResourceLocation(par1)
-                        : new ResourceLocation(
+                        ? ResourceLocation.parse(par1)
+                        : ResourceLocation.fromNamespaceAndPath(
                                 "chaospersists", par1.toLowerCase().replace(" ", "_"));
-        EntityType<?> type = ForgeRegistries.ENTITY_TYPES.getValue(res);
+        EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.get(res);
         if (type == null || !(level instanceof ServerLevel serverLevel)) {
             return null;
         }

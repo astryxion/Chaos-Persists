@@ -33,7 +33,7 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraft.world.level.pathfinder.BlockPathTypes;
+import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.level.pathfinder.WalkNodeEvaluator;
 
 /** Prince/princess follow helpers modeled on Mythic Mounts {@code MountFollowOwnerGoal}. */
@@ -145,15 +145,12 @@ public final class RoyalPetFollowHelper {
         return pet.isOrderedToSit() || pet.isInSittingPose();
     }
 
-    /**
-     * Cached probes for other mods' follow/wander/sit command APIs (e.g. Alex's Mobs
-     * {@code IFollower#shouldFollow} / {@code getCommand}: 0 wander, 1 follow, 2 stay).
-     */
     private static final ClassValue<FollowModeProbe> FOLLOW_MODE_PROBES =
             new ClassValue<>() {
                 @Override
                 protected FollowModeProbe computeValue(Class<?> type) {
-                    Method shouldFollow = findNoArgMethod(type, "shouldFollow", boolean.class, Boolean.class);
+                    Method shouldFollow =
+                            findNoArgMethod(type, "shouldFollow", boolean.class, Boolean.class);
                     Method getCommand = findNoArgMethod(type, "getCommand", int.class, Integer.class);
                     return new FollowModeProbe(shouldFollow, getCommand);
                 }
@@ -176,11 +173,6 @@ public final class RoyalPetFollowHelper {
 
     private record FollowModeProbe(Method shouldFollow, Method getCommand) {}
 
-    /**
-     * True only when the pet is in an explicit following mode. Sitting and wandering (Alex's Mobs
-     * command 0, etc.) must stay in the original dimension. Chaos / vanilla pets without extra
-     * modes treat "not sitting" as following.
-     */
     public static boolean isInFollowCommandMode(TamableAnimal pet) {
         if (pet == null || isStayingPut(pet)) {
             return false;
@@ -196,7 +188,6 @@ public final class RoyalPetFollowHelper {
         }
         if (probe.getCommand != null) {
             ResourceLocation key = EntityType.getKey(pet.getType());
-            // Alex's Mobs: 0 wandering, 1 following, 2 staying (+ optional extras).
             if (key != null && "alexsmobs".equals(key.getNamespace())) {
                 try {
                     Object result = probe.getCommand.invoke(pet);
@@ -544,8 +535,8 @@ public final class RoyalPetFollowHelper {
                 || level.getBlockState(pos.above()).isCollisionShapeFullBlock(level, pos.above())) {
             return false;
         }
-        BlockPathTypes nodeType = WalkNodeEvaluator.getBlockPathTypeStatic(level, pos.mutable());
-        if (nodeType == BlockPathTypes.DAMAGE_FIRE || nodeType == BlockPathTypes.LAVA) {
+        PathType nodeType = WalkNodeEvaluator.getPathTypeStatic(new net.minecraft.world.level.pathfinder.PathfindingContext(level, pet), pos.mutable());
+        if (nodeType == PathType.DAMAGE_FIRE || nodeType == PathType.LAVA) {
             return false;
         }
         return level.noCollision(

@@ -13,6 +13,9 @@ import net.minecraft.world.level.ServerLevelAccessor;
 public class RubyBird extends Cockateil {
     public RubyBird(EntityType<? extends RubyBird> type, Level level) {
         super(type, level);
+        this.birdtype = 5;
+        this.setBirdType(this.birdtype);
+        this.setFlyUp();
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -20,11 +23,9 @@ public class RubyBird extends Cockateil {
     }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.birdtype = 5;
-        this.setBirdType(this.birdtype);
-        this.setFlyUp();
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+
     }
 
     @Override

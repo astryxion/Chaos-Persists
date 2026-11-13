@@ -8,7 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderEnderReaper extends MobRenderer<EnderReaper, ModelEnderReaper> {
     private static final ResourceLocation TEXTURE =
-            new ResourceLocation("chaospersists", "textures/entity/enderreapertexture.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/enderreapertexture.png");
     private final float scale;
 
     public RenderEnderReaper(EntityRendererProvider.Context context, ModelEnderReaper model, float shadow, float scale) {

@@ -1,5 +1,6 @@
 package com.astryxion.chaospersists.legacy.forge.fml.common.registry;
 
+import net.neoforged.fml.common.EventBusSubscriber;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -18,18 +19,18 @@ import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.item.crafting.SmeltingRecipe;
 import net.minecraft.world.item.crafting.SmokingRecipe;
 import net.minecraft.world.level.block.Block;
-import net.minecraftforge.event.AddReloadListenerEvent;
-import net.minecraftforge.event.OnDatapackSyncEvent;
-import net.minecraftforge.event.server.ServerStartingEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.neoforge.event.AddReloadListenerEvent;
+import net.neoforged.neoforge.event.OnDatapackSyncEvent;
+import net.neoforged.neoforge.event.server.ServerStartingEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
 import net.minecraft.core.registries.Registries;
-import net.minecraftforge.registries.RegisterEvent;
+import net.neoforged.neoforge.registries.RegisterEvent;
 
 /**
  * Legacy 1.12 {@code GameRegistry} — defers recipes/blocks until registry/reload (1:1 behavior).
  */
-@Mod.EventBusSubscriber(modid = "chaospersists", bus = Mod.EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = "chaospersists", bus = EventBusSubscriber.Bus.MOD)
 public final class GameRegistry {
 
   static final List<RecipeEntry> REGISTERED_RECIPES = new ArrayList<>();
@@ -160,7 +161,7 @@ public final class GameRegistry {
     try {
       smeltRecipeCounter = 0;
       smokeRecipeCounter = 0;
-      List<Recipe<?>> built =
+      List<net.minecraft.world.item.crafting.RecipeHolder<?>> built =
           LegacyRecipeInjector.drainPending(
               new ArrayList<>(REGISTERED_RECIPES),
               new ArrayList<>(REGISTERED_SMELTING),
@@ -172,9 +173,9 @@ public final class GameRegistry {
     }
   }
 
-  @Mod.EventBusSubscriber(modid = "chaospersists", bus = Mod.EventBusSubscriber.Bus.FORGE)
-  public static final class ForgeHooks {
-    private ForgeHooks() {}
+  @EventBusSubscriber(modid = "chaospersists", bus = EventBusSubscriber.Bus.GAME)
+  public static final class CommonHooks {
+    private CommonHooks() {}
 
     @SubscribeEvent
     public static void onAddReloadListeners(AddReloadListenerEvent event) {
@@ -228,7 +229,7 @@ public final class GameRegistry {
       this.shaped = shaped;
     }
 
-    Recipe<?> build() {
+    net.minecraft.world.item.crafting.RecipeHolder<?> build() {
       if (shaped) {
         return LegacyRecipeBuilder.buildShaped(name, group, output, data);
       }
@@ -248,42 +249,38 @@ public final class GameRegistry {
       this.experience = experience;
     }
 
-    Recipe<?> build() {
+    net.minecraft.world.item.crafting.RecipeHolder<?> build() {
       Ingredient ingredient = LegacyRecipeBuilder.ingredientFrom(input);
       ResourceLocation id =
-          new ResourceLocation(
+          ResourceLocation.fromNamespaceAndPath(
               "chaospersists",
               "smelt_"
                   + BuiltInRegistries.ITEM.getKey(output.getItem()).getPath()
                   + "_"
                   + (smeltRecipeCounter++));
-      return new SmeltingRecipe(
-          id,
-          "",
+      return new net.minecraft.world.item.crafting.RecipeHolder<>(id, new SmeltingRecipe("",
           CookingBookCategory.MISC,
           ingredient,
           output,
           experience,
-          200);
+          200));
     }
 
-    Recipe<?> buildSmoking() {
+    net.minecraft.world.item.crafting.RecipeHolder<?> buildSmoking() {
       Ingredient ingredient = LegacyRecipeBuilder.ingredientFrom(input);
       ResourceLocation id =
-          new ResourceLocation(
+          ResourceLocation.fromNamespaceAndPath(
               "chaospersists",
               "smoke_"
                   + BuiltInRegistries.ITEM.getKey(output.getItem()).getPath()
                   + "_"
                   + (smokeRecipeCounter++));
-      return new SmokingRecipe(
-          id,
-          "",
+      return new net.minecraft.world.item.crafting.RecipeHolder<>(id, new SmokingRecipe("",
           CookingBookCategory.FOOD,
           ingredient,
           output,
           experience,
-          100);
+          100));
     }
   }
 }

@@ -1,0 +1,12 @@
+{
+  "replace": false,
+  "values": [
+    "#c:seeds/tomato",
+    "#c:seeds/lettuce",
+    "#c:seeds/corn",
+    "#c:seeds/radish",
+    "#c:seeds/rice",
+    "#c:seeds/strawberry",
+    "#c:seeds/quinoa"
+  ]
+}

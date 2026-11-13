@@ -1,15 +1,17 @@
 package com.astryxion.chaospersists.core;
 
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.neoforge.event.entity.living.FinalizeSpawnEvent;
+import net.neoforged.neoforge.event.tick.EntityTickEvent;
+import net.neoforged.neoforge.registries.NeoForgeRegistries;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.DeferredRegister;
+import net.neoforged.neoforge.registries.DeferredHolder;
 import net.minecraft.world.entity.EntityType;
-import net.minecraftforge.common.world.BiomeModifier;
+import net.neoforged.neoforge.common.world.BiomeModifier;
 import com.astryxion.chaospersists.world.biome.BiomeMiningDimension;
-import com.mojang.serialization.Codec;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.common.Mod;
+import com.mojang.serialization.MapCodec;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.fml.common.Mod;
 
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.VarHandle;
@@ -98,50 +100,51 @@ import com.astryxion.chaospersists.legacy.forge.common.RegistryCompat;
 import com.astryxion.chaospersists.legacy.forge.fml.common.event.FMLInitializationEvent;
 import com.astryxion.chaospersists.legacy.forge.fml.common.event.FMLPostInitializationEvent;
 import com.astryxion.chaospersists.legacy.forge.fml.common.event.FMLServerStartingEvent;
-import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
+import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import com.astryxion.chaospersists.legacy.minecraft.block.BlockDispenser;
 import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.ArmorMaterial;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraftforge.common.extensions.IForgeMenuType;
+import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
 import com.astryxion.chaospersists.menu.ContainerCrystalWorkbench;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import net.minecraft.client.renderer.entity.ArrowRenderer;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
-import net.minecraftforge.client.event.EntityRenderersEvent;
-import net.minecraftforge.common.MinecraftForge;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.common.NeoForge;
 import com.astryxion.chaospersists.legacy.forge.common.config.Configuration;
 import com.astryxion.chaospersists.legacy.forge.fml.common.network.NetworkRegistry;
 import com.astryxion.chaospersists.legacy.forge.common.config.Property;
 import com.astryxion.chaospersists.legacy.forge.common.util.EnumHelper;
-import net.minecraftforge.event.AddReloadListenerEvent;
-import net.minecraftforge.event.RegisterCommandsEvent;
-import net.minecraftforge.event.entity.EntityJoinLevelEvent;
-import net.minecraftforge.event.entity.EntityTravelToDimensionEvent;
-import net.minecraftforge.event.entity.living.LivingDeathEvent;
-import net.minecraftforge.event.entity.living.LivingEvent;
-import net.minecraftforge.event.entity.living.LivingHurtEvent;
-import net.minecraftforge.event.entity.living.MobSpawnEvent;
-import net.minecraftforge.eventbus.api.Event;
+import net.neoforged.neoforge.event.AddReloadListenerEvent;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
+import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
+import net.neoforged.neoforge.event.entity.EntityTravelToDimensionEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
+import net.neoforged.neoforge.event.entity.living.LivingEvent;
+import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
+import net.neoforged.neoforge.event.entity.living.MobSpawnEvent;
+import net.neoforged.bus.api.Event;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.Mob;
-import net.minecraftforge.event.level.ChunkEvent;
-import net.minecraftforge.event.level.LevelEvent;
+import net.neoforged.neoforge.event.level.ChunkEvent;
+import net.neoforged.neoforge.event.level.LevelEvent;
 import com.astryxion.chaospersists.util.PetCombatHelper;
 import com.astryxion.chaospersists.util.RoyalPetFollowHelper;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.server.ServerLifecycleHooks;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.server.ServerLifecycleHooks;
 import com.astryxion.chaospersists.legacy.forge.fml.common.registry.EntityRegistry;
 import com.astryxion.chaospersists.legacy.forge.fml.common.registry.GameRegistry;
-import net.minecraftforge.fml.loading.FMLPaths;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegisterEvent;
-import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
-import net.minecraftforge.event.furnace.FurnaceFuelBurnTimeEvent;
+import net.neoforged.fml.loading.FMLPaths;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.neoforged.neoforge.registries.RegisterEvent;
+import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
+import net.neoforged.neoforge.event.furnace.FurnaceFuelBurnTimeEvent;
 import com.astryxion.chaospersists.client.model.*;
 import com.astryxion.chaospersists.client.render.RenderAlien;
 import com.astryxion.chaospersists.client.render.RenderBoyfriend;
@@ -585,45 +588,45 @@ public class ChaosPersists
   public static final String MODID = "chaospersists";
 
   private static ItemStack creativeTabIconItem(String itemPath, Item fallback) {
-    Item item = BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, itemPath));
+    Item item = BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, itemPath));
     return new ItemStack(item != null && item != Items.AIR ? item : fallback);
   }
 
   private static ItemStack creativeTabIconBlock(String blockPath, Item fallback) {
-    Block block = BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, blockPath));
+    Block block = BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, blockPath));
     return block != null ? new ItemStack(block) : new ItemStack(fallback);
   }
 
   /** Keys for {@link CreativeModeTab.Builder#withTabsBefore} — matches 1.12 tab page layout. */
   private static ResourceKey<CreativeModeTab> chaosTabKey(String path) {
-    return ResourceKey.create(Registries.CREATIVE_MODE_TAB, new ResourceLocation(MODID, path));
+    return ResourceKey.create(Registries.CREATIVE_MODE_TAB, ResourceLocation.fromNamespaceAndPath(MODID, path));
   }
 
   public static final DeferredRegister<Block> BLOCKS =
-      DeferredRegister.create(ForgeRegistries.BLOCKS, MODID);
+      DeferredRegister.create(BuiltInRegistries.BLOCK, MODID);
   public static final DeferredRegister<Item> ITEMS =
-      DeferredRegister.create(ForgeRegistries.ITEMS, MODID);
+      DeferredRegister.create(BuiltInRegistries.ITEM, MODID);
   public static final DeferredRegister<EntityType<?>> ENTITY_TYPES =
-      DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, MODID);
+      DeferredRegister.create(BuiltInRegistries.ENTITY_TYPE, MODID);
   public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITY_TYPES =
-      DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, MODID);
+      DeferredRegister.create(BuiltInRegistries.BLOCK_ENTITY_TYPE, MODID);
   public static final DeferredRegister<MenuType<?>> MENU_TYPES =
-      DeferredRegister.create(ForgeRegistries.MENU_TYPES, MODID);
+      DeferredRegister.create(BuiltInRegistries.MENU, MODID);
   public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS =
       DeferredRegister.create(Registries.CREATIVE_MODE_TAB, MODID);
-  public static final DeferredRegister<Codec<? extends BiomeModifier>> BIOME_MODIFIER_SERIALIZERS =
-      DeferredRegister.create(ForgeRegistries.Keys.BIOME_MODIFIER_SERIALIZERS, MODID);
-  public static final RegistryObject<Codec<BiomeMiningDimension.MiningDimensionAddSpawnsBiomeModifier>>
+  public static final DeferredRegister<MapCodec<? extends BiomeModifier>> BIOME_MODIFIER_SERIALIZERS =
+      DeferredRegister.create(NeoForgeRegistries.Keys.BIOME_MODIFIER_SERIALIZERS, MODID);
+  public static final DeferredHolder<MapCodec<? extends BiomeModifier>, MapCodec<BiomeMiningDimension.MiningDimensionAddSpawnsBiomeModifier>>
       ADD_MINING_DIMENSION_SPAWNS =
           BIOME_MODIFIER_SERIALIZERS.register(
                   "add_mining_dimension_spawns", BiomeMiningDimension::makeCodec);
-  public static final RegistryObject<Codec<com.astryxion.chaospersists.world.biome.LegacyOverworldSpawnBiomeModifier>>
+  public static final DeferredHolder<MapCodec<? extends BiomeModifier>, MapCodec<com.astryxion.chaospersists.world.biome.LegacyOverworldSpawnBiomeModifier>>
       LEGACY_OVERWORLD_SPAWNS =
           BIOME_MODIFIER_SERIALIZERS.register(
                   "legacy_overworld_spawns",
                   com.astryxion.chaospersists.world.biome.LegacyOverworldSpawnBiomeModifier::makeCodec);
 
-  public static final RegistryObject<CreativeModeTab> TAB_CHAOS_ITEMS =
+  public static final DeferredHolder<CreativeModeTab, CreativeModeTab> TAB_CHAOS_ITEMS =
       CREATIVE_MODE_TABS.register(
           "chaos_items",
           () ->
@@ -632,7 +635,7 @@ public class ChaosPersists
                   .icon(() -> creativeTabIconItem("minersdream", Items.AIR))
                   .withTabsBefore(CreativeModeTabs.SPAWN_EGGS)
                   .build());
-  public static final RegistryObject<CreativeModeTab> TAB_CHAOS_BLOCKS =
+  public static final DeferredHolder<CreativeModeTab, CreativeModeTab> TAB_CHAOS_BLOCKS =
       CREATIVE_MODE_TABS.register(
           "chaos_blocks",
           () ->
@@ -641,7 +644,7 @@ public class ChaosPersists
                   .icon(() -> creativeTabIconBlock("antblock", Items.STONE))
                   .withTabsBefore(chaosTabKey("chaos_items"))
                   .build());
-  public static final RegistryObject<CreativeModeTab> TAB_CHAOS_FOODS =
+  public static final DeferredHolder<CreativeModeTab, CreativeModeTab> TAB_CHAOS_FOODS =
       CREATIVE_MODE_TABS.register(
           "chaos_foods",
           () ->
@@ -650,7 +653,7 @@ public class ChaosPersists
                   .icon(() -> creativeTabIconItem("corn_seed", Items.BREAD))
                   .withTabsBefore(chaosTabKey("chaos_blocks"))
                   .build());
-  public static final RegistryObject<CreativeModeTab> TAB_CHAOS_TOOLS =
+  public static final DeferredHolder<CreativeModeTab, CreativeModeTab> TAB_CHAOS_TOOLS =
       CREATIVE_MODE_TABS.register(
           "chaos_tools",
           () ->
@@ -659,7 +662,7 @@ public class ChaosPersists
                   .icon(() -> creativeTabIconItem("ultimatepickaxe", Items.IRON_PICKAXE))
                   .withTabsBefore(chaosTabKey("chaos_foods"))
                   .build());
-  public static final RegistryObject<CreativeModeTab> TAB_CHAOS_WEAPONS =
+  public static final DeferredHolder<CreativeModeTab, CreativeModeTab> TAB_CHAOS_WEAPONS =
       CREATIVE_MODE_TABS.register(
           "chaos_weapons",
           () ->
@@ -668,7 +671,7 @@ public class ChaosPersists
                   .icon(() -> creativeTabIconItem("ultimatesword", Items.IRON_SWORD))
                   .withTabsBefore(chaosTabKey("chaos_tools"))
                   .build());
-  public static final RegistryObject<CreativeModeTab> TAB_CHAOS_MOBS =
+  public static final DeferredHolder<CreativeModeTab, CreativeModeTab> TAB_CHAOS_MOBS =
       CREATIVE_MODE_TABS.register(
           "chaos_mobs",
           () ->
@@ -677,7 +680,7 @@ public class ChaosPersists
                   .icon(() -> creativeTabIconItem("eggtheking", Items.EGG))
                   .withTabsBefore(chaosTabKey("chaos_weapons"))
                   .build());
-  public static final RegistryObject<CreativeModeTab> TAB_CHAOS_ARMOR =
+  public static final DeferredHolder<CreativeModeTab, CreativeModeTab> TAB_CHAOS_ARMOR =
       CREATIVE_MODE_TABS.register(
           "chaos_armor",
           () ->
@@ -687,35 +690,24 @@ public class ChaosPersists
                   .withTabsBefore(chaosTabKey("chaos_mobs"))
                   .build());
 
-  public static final RegistryObject<MenuType<ContainerCrystalWorkbench>> MENU_CRYSTAL_WORKBENCH =
+  public static final DeferredHolder<MenuType<?>, MenuType<ContainerCrystalWorkbench>> MENU_CRYSTAL_WORKBENCH =
       MENU_TYPES.register(
           "crystal_workbench",
-          () -> IForgeMenuType.create(ContainerCrystalWorkbench::new));
+          () -> IMenuTypeExtension.create(ContainerCrystalWorkbench::new));
 
-  public static final RegistryObject<BlockEntityType<TileEntityCrystalFurnace>> BLOCK_ENTITY_CRYSTAL_FURNACE =
+  public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<TileEntityCrystalFurnace>> BLOCK_ENTITY_CRYSTAL_FURNACE =
       BLOCK_ENTITY_TYPES.register(
           "crystalfurnace",
           () ->
               BlockEntityType.Builder.of(
                       TileEntityCrystalFurnace::new,
                       BuiltInRegistries.BLOCK
-                          .getOptional(new ResourceLocation(MODID, "crystalfurnace"))
+                          .getOptional(ResourceLocation.fromNamespaceAndPath(MODID, "crystalfurnace"))
                           .orElse(Blocks.FURNACE))
                   .build(null));
 
   static {
     raiseVanillaMaxHealthCap();
-    IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
-    BLOCKS.register(modBus);
-    ITEMS.register(modBus);
-    ENTITY_TYPES.register(modBus);
-    BLOCK_ENTITY_TYPES.register(modBus);
-    MENU_TYPES.register(modBus);
-    CREATIVE_MODE_TABS.register(modBus);
-    BIOME_MODIFIER_SERIALIZERS.register(modBus);
-    com.astryxion.chaospersists.loot.ChaosLootModifiers.register(modBus);
-    com.astryxion.chaospersists.world.dimension.structure.ChaosLocateStructures.STRUCTURE_TYPES.register(modBus);
-    com.astryxion.chaospersists.world.dimension.structure.ChaosLocateStructures.STRUCTURE_PIECES.register(modBus);
     registerAllCritterCages();
     registerAllWeaponsAndArmor();
     registerAllFoodItems();
@@ -725,281 +717,281 @@ public class ChaosPersists
     registerAllPreInitItems();
   }
 
-  public static final RegistryObject<EntityType<UltimateFishHook>> ENTITY_TYPE_ULTIMATE_FISH_HOOK = ENTITY_TYPES.register("ultimate_fish_hook",
+  public static final DeferredHolder<EntityType<?>, EntityType<UltimateFishHook>> ENTITY_TYPE_ULTIMATE_FISH_HOOK = ENTITY_TYPES.register("ultimate_fish_hook",
       () -> EntityType.Builder.<UltimateFishHook>of(UltimateFishHook::new, MobCategory.MISC).sized(0.25f, 0.25f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(true).build("ultimate_fish_hook"));
-  public static final RegistryObject<EntityType<SunspotUrchin>> ENTITY_TYPE_SUNSPOT_URCHIN = ENTITY_TYPES.register("sunspot_urchin",
+  public static final DeferredHolder<EntityType<?>, EntityType<SunspotUrchin>> ENTITY_TYPE_SUNSPOT_URCHIN = ENTITY_TYPES.register("sunspot_urchin",
       () -> EntityType.Builder.<SunspotUrchin>of(SunspotUrchin::new, MobCategory.MISC).sized(0.25f, 0.25f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(true).build("sunspot_urchin"));
-  public static final RegistryObject<EntityType<WaterBall>> ENTITY_TYPE_WATER_BALL = ENTITY_TYPES.register("water_ball",
+  public static final DeferredHolder<EntityType<?>, EntityType<WaterBall>> ENTITY_TYPE_WATER_BALL = ENTITY_TYPES.register("water_ball",
       () -> EntityType.Builder.<WaterBall>of(WaterBall::new, MobCategory.MISC).sized(0.25f, 0.25f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(true).build("water_ball"));
-  public static final RegistryObject<EntityType<InkSack>> ENTITY_TYPE_INK_SACK = ENTITY_TYPES.register("ink_sack",
+  public static final DeferredHolder<EntityType<?>, EntityType<InkSack>> ENTITY_TYPE_INK_SACK = ENTITY_TYPES.register("ink_sack",
       () -> EntityType.Builder.<InkSack>of(InkSack::new, MobCategory.MISC).sized(0.25f, 0.25f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(true).build("ink_sack"));
-  public static final RegistryObject<EntityType<LaserBall>> ENTITY_TYPE_LASER_BALL = ENTITY_TYPES.register("laser_ball",
+  public static final DeferredHolder<EntityType<?>, EntityType<LaserBall>> ENTITY_TYPE_LASER_BALL = ENTITY_TYPES.register("laser_ball",
       () -> EntityType.Builder.<LaserBall>of(LaserBall::new, MobCategory.MISC).sized(0.25f, 0.25f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(true).build("laser_ball"));
-  public static final RegistryObject<EntityType<IceBall>> ENTITY_TYPE_ICE_BALL = ENTITY_TYPES.register("ice_ball",
+  public static final DeferredHolder<EntityType<?>, EntityType<IceBall>> ENTITY_TYPE_ICE_BALL = ENTITY_TYPES.register("ice_ball",
       () -> EntityType.Builder.<IceBall>of(IceBall::new, MobCategory.MISC).sized(0.25f, 0.25f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(true).build("ice_ball"));
-  public static final RegistryObject<EntityType<Acid>> ENTITY_TYPE_ACID = ENTITY_TYPES.register("acid",
+  public static final DeferredHolder<EntityType<?>, EntityType<Acid>> ENTITY_TYPE_ACID = ENTITY_TYPES.register("acid",
       () -> EntityType.Builder.<Acid>of(Acid::new, MobCategory.MISC).sized(0.25f, 0.25f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(true).build("acid"));
-  public static final RegistryObject<EntityType<BetterFireball>> ENTITY_TYPE_BETTER_FIREBALL = ENTITY_TYPES.register("better_fireball",
+  public static final DeferredHolder<EntityType<?>, EntityType<BetterFireball>> ENTITY_TYPE_BETTER_FIREBALL = ENTITY_TYPES.register("better_fireball",
       () -> EntityType.Builder.<BetterFireball>of(BetterFireball::new, MobCategory.MISC).sized(1.0f, 1.0f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(true).build("better_fireball"));
-  public static final RegistryObject<EntityType<DeadIrukandji>> ENTITY_TYPE_DEAD_IRUKANDJI = ENTITY_TYPES.register("dead_irukandji",
+  public static final DeferredHolder<EntityType<?>, EntityType<DeadIrukandji>> ENTITY_TYPE_DEAD_IRUKANDJI = ENTITY_TYPES.register("dead_irukandji",
       () -> EntityType.Builder.<DeadIrukandji>of(DeadIrukandji::new, MobCategory.MISC).sized(0.25f, 0.25f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(true).build("dead_irukandji"));
-  public static final RegistryObject<EntityType<BerthaHit>> ENTITY_TYPE_BERTHA_HIT = ENTITY_TYPES.register("bertha_hit",
+  public static final DeferredHolder<EntityType<?>, EntityType<BerthaHit>> ENTITY_TYPE_BERTHA_HIT = ENTITY_TYPES.register("bertha_hit",
       () -> EntityType.Builder.<BerthaHit>of(BerthaHit::new, MobCategory.MISC).sized(0.33f, 0.33f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(true).build("bertha_hit"));
-  public static final RegistryObject<EntityType<PurplePower>> ENTITY_TYPE_PURPLE_POWER = ENTITY_TYPES.register("purple_power",
+  public static final DeferredHolder<EntityType<?>, EntityType<PurplePower>> ENTITY_TYPE_PURPLE_POWER = ENTITY_TYPES.register("purple_power",
       () -> EntityType.Builder.<PurplePower>of(PurplePower::new, MobCategory.MISC).sized(0.75f, 0.75f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(true).build("purple_power"));
-  public static final RegistryObject<EntityType<EntityThrownRock>> ENTITY_TYPE_THROWN_ROCK = ENTITY_TYPES.register("thrown_rock",
+  public static final DeferredHolder<EntityType<?>, EntityType<EntityThrownRock>> ENTITY_TYPE_THROWN_ROCK = ENTITY_TYPES.register("thrown_rock",
       () -> EntityType.Builder.<EntityThrownRock>of(EntityThrownRock::new, MobCategory.MISC).sized(0.25f, 0.25f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(true).build("thrown_rock"));
-  public static final RegistryObject<EntityType<ThunderBolt>> ENTITY_TYPE_THUNDER_BOLT = ENTITY_TYPES.register("thunder_bolt",
+  public static final DeferredHolder<EntityType<?>, EntityType<ThunderBolt>> ENTITY_TYPE_THUNDER_BOLT = ENTITY_TYPES.register("thunder_bolt",
       () -> EntityType.Builder.<ThunderBolt>of(ThunderBolt::new, MobCategory.MISC).sized(0.25f, 0.25f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(true).build("thunder_bolt"));
-  public static final RegistryObject<EntityType<Girlfriend>> ENTITY_TYPE_GIRLFRIEND = ENTITY_TYPES.register("girlfriend",
+  public static final DeferredHolder<EntityType<?>, EntityType<Girlfriend>> ENTITY_TYPE_GIRLFRIEND = ENTITY_TYPES.register("girlfriend",
       () -> EntityType.Builder.<Girlfriend>of(Girlfriend::new, MobCategory.CREATURE).sized(0.6f, 1.4f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("girlfriend"));
-  public static final RegistryObject<EntityType<RedCow>> ENTITY_TYPE_RED_COW = ENTITY_TYPES.register("apple_cow",
+  public static final DeferredHolder<EntityType<?>, EntityType<RedCow>> ENTITY_TYPE_RED_COW = ENTITY_TYPES.register("apple_cow",
       () -> EntityType.Builder.<RedCow>of(RedCow::new, MobCategory.CREATURE).sized(0.6f, 1.4f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("apple_cow"));
-  public static final RegistryObject<EntityType<GoldCow>> ENTITY_TYPE_GOLD_COW = ENTITY_TYPES.register("golden_apple_cow",
+  public static final DeferredHolder<EntityType<?>, EntityType<GoldCow>> ENTITY_TYPE_GOLD_COW = ENTITY_TYPES.register("golden_apple_cow",
       () -> EntityType.Builder.<GoldCow>of(GoldCow::new, MobCategory.CREATURE).sized(0.6f, 1.4f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("golden_apple_cow"));
-  public static final RegistryObject<EntityType<EnchantedCow>> ENTITY_TYPE_ENCHANTED_COW = ENTITY_TYPES.register("enchanted_golden_apple_cow",
+  public static final DeferredHolder<EntityType<?>, EntityType<EnchantedCow>> ENTITY_TYPE_ENCHANTED_COW = ENTITY_TYPES.register("enchanted_golden_apple_cow",
       () -> EntityType.Builder.<EnchantedCow>of(EnchantedCow::new, MobCategory.CREATURE).sized(0.6f, 1.4f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("enchanted_golden_apple_cow"));
-  public static final RegistryObject<EntityType<EntityButterfly>> ENTITY_TYPE_BUTTERFLY = ENTITY_TYPES.register("butterfly",
+  public static final DeferredHolder<EntityType<?>, EntityType<EntityButterfly>> ENTITY_TYPE_BUTTERFLY = ENTITY_TYPES.register("butterfly",
       () -> EntityType.Builder.<EntityButterfly>of(EntityButterfly::new, MobCategory.AMBIENT).sized(0.4f, 0.4f).clientTrackingRange(32).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("butterfly"));
-  public static final RegistryObject<EntityType<EntityLunaMoth>> ENTITY_TYPE_MOTH = ENTITY_TYPES.register("moth",
+  public static final DeferredHolder<EntityType<?>, EntityType<EntityLunaMoth>> ENTITY_TYPE_MOTH = ENTITY_TYPES.register("moth",
       () -> EntityType.Builder.<EntityLunaMoth>of(EntityLunaMoth::new, MobCategory.AMBIENT).sized(0.5f, 0.5f).clientTrackingRange(32).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("moth"));
-  public static final RegistryObject<EntityType<EntityMosquito>> ENTITY_TYPE_MOSQUITO = ENTITY_TYPES.register("mosquito",
+  public static final DeferredHolder<EntityType<?>, EntityType<EntityMosquito>> ENTITY_TYPE_MOSQUITO = ENTITY_TYPES.register("mosquito",
       () -> EntityType.Builder.<EntityMosquito>of(EntityMosquito::new, MobCategory.AMBIENT).sized(0.2f, 0.2f).clientTrackingRange(16).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("mosquito"));
-  public static final RegistryObject<EntityType<Firefly>> ENTITY_TYPE_FIREFLY = ENTITY_TYPES.register("firefly",
+  public static final DeferredHolder<EntityType<?>, EntityType<Firefly>> ENTITY_TYPE_FIREFLY = ENTITY_TYPES.register("firefly",
       () -> EntityType.Builder.<Firefly>of(Firefly::new, MobCategory.AMBIENT).sized(0.4f, 0.8f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("firefly"));
-  public static final RegistryObject<EntityType<Bee>> ENTITY_TYPE_BEE = ENTITY_TYPES.register("bee",
+  public static final DeferredHolder<EntityType<?>, EntityType<Bee>> ENTITY_TYPE_BEE = ENTITY_TYPES.register("bee",
       () -> EntityType.Builder.<Bee>of(Bee::new, MobCategory.MONSTER).sized(1.5f, 2.5f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("bee"));
-  public static final RegistryObject<EntityType<Mothra>> ENTITY_TYPE_MOTHRA = ENTITY_TYPES.register("mothra",
+  public static final DeferredHolder<EntityType<?>, EntityType<Mothra>> ENTITY_TYPE_MOTHRA = ENTITY_TYPES.register("mothra",
       () -> EntityType.Builder.<Mothra>of(Mothra::new, MobCategory.MONSTER).sized(5.0f, 2.0f).clientTrackingRange(128).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("mothra"));
-  public static final RegistryObject<EntityType<EntityAnt>> ENTITY_TYPE_ANT = ENTITY_TYPES.register("ant",
+  public static final DeferredHolder<EntityType<?>, EntityType<EntityAnt>> ENTITY_TYPE_ANT = ENTITY_TYPES.register("ant",
       () -> EntityType.Builder.<EntityAnt>of(EntityAnt::new, MobCategory.MONSTER).sized(0.1f, 0.1f).clientTrackingRange(16).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("ant"));
-  public static final RegistryObject<EntityType<EntityRedAnt>> ENTITY_TYPE_RED_ANT = ENTITY_TYPES.register("red_ant",
+  public static final DeferredHolder<EntityType<?>, EntityType<EntityRedAnt>> ENTITY_TYPE_RED_ANT = ENTITY_TYPES.register("red_ant",
       () -> EntityType.Builder.<EntityRedAnt>of(EntityRedAnt::new, MobCategory.MONSTER).sized(0.2f, 0.2f).clientTrackingRange(16).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("red_ant"));
-  public static final RegistryObject<EntityType<EntityRainbowAnt>> ENTITY_TYPE_RAINBOW_ANT = ENTITY_TYPES.register("rainbow_ant",
+  public static final DeferredHolder<EntityType<?>, EntityType<EntityRainbowAnt>> ENTITY_TYPE_RAINBOW_ANT = ENTITY_TYPES.register("rainbow_ant",
       () -> EntityType.Builder.<EntityRainbowAnt>of(EntityRainbowAnt::new, MobCategory.MONSTER).sized(0.1f, 0.1f).clientTrackingRange(16).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("rainbow_ant"));
-  public static final RegistryObject<EntityType<EntityUnstableAnt>> ENTITY_TYPE_UNSTABLE_ANT = ENTITY_TYPES.register("unstable_ant",
+  public static final DeferredHolder<EntityType<?>, EntityType<EntityUnstableAnt>> ENTITY_TYPE_UNSTABLE_ANT = ENTITY_TYPES.register("unstable_ant",
       () -> EntityType.Builder.<EntityUnstableAnt>of(EntityUnstableAnt::new, MobCategory.MONSTER).sized(0.1f, 0.1f).clientTrackingRange(16).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("unstable_ant"));
-  public static final RegistryObject<EntityType<Robot1>> ENTITY_TYPE_ROBOT1 = ENTITY_TYPES.register("bomb_omb",
+  public static final DeferredHolder<EntityType<?>, EntityType<Robot1>> ENTITY_TYPE_ROBOT1 = ENTITY_TYPES.register("bomb_omb",
       () -> EntityType.Builder.<Robot1>of(Robot1::new, MobCategory.MONSTER).sized(0.5f, 0.5f).clientTrackingRange(32).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("bomb_omb"));
-  public static final RegistryObject<EntityType<Robot2>> ENTITY_TYPE_ROBOT2 = ENTITY_TYPES.register("robo_pounder",
+  public static final DeferredHolder<EntityType<?>, EntityType<Robot2>> ENTITY_TYPE_ROBOT2 = ENTITY_TYPES.register("robo_pounder",
       () -> EntityType.Builder.<Robot2>of(Robot2::new, MobCategory.MONSTER).sized(3.0f, 6.2f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("robo_pounder"));
-  public static final RegistryObject<EntityType<Robot3>> ENTITY_TYPE_ROBOT3 = ENTITY_TYPES.register("robo_gunner",
+  public static final DeferredHolder<EntityType<?>, EntityType<Robot3>> ENTITY_TYPE_ROBOT3 = ENTITY_TYPES.register("robo_gunner",
       () -> EntityType.Builder.<Robot3>of(Robot3::new, MobCategory.MONSTER).sized(2.5f, 5.0f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("robo_gunner"));
-  public static final RegistryObject<EntityType<Robot4>> ENTITY_TYPE_ROBOT4 = ENTITY_TYPES.register("robo_warrior",
+  public static final DeferredHolder<EntityType<?>, EntityType<Robot4>> ENTITY_TYPE_ROBOT4 = ENTITY_TYPES.register("robo_warrior",
       () -> EntityType.Builder.<Robot4>of(Robot4::new, MobCategory.MONSTER).sized(2.5f, 4.0f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("robo_warrior"));
-  public static final RegistryObject<EntityType<Robot5>> ENTITY_TYPE_ROBOT5 = ENTITY_TYPES.register("robo_sniper",
+  public static final DeferredHolder<EntityType<?>, EntityType<Robot5>> ENTITY_TYPE_ROBOT5 = ENTITY_TYPES.register("robo_sniper",
       () -> EntityType.Builder.<Robot5>of(Robot5::new, MobCategory.MONSTER).sized(1.0f, 2.25f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("robo_sniper"));
-  public static final RegistryObject<EntityType<Alosaurus>> ENTITY_TYPE_ALOSAURUS = ENTITY_TYPES.register("alosaurus",
+  public static final DeferredHolder<EntityType<?>, EntityType<Alosaurus>> ENTITY_TYPE_ALOSAURUS = ENTITY_TYPES.register("alosaurus",
       () -> EntityType.Builder.<Alosaurus>of(Alosaurus::new, MobCategory.MONSTER).sized(1.9f, 3.6f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("alosaurus"));
-  public static final RegistryObject<EntityType<Cryolophosaurus>> ENTITY_TYPE_CRYOLOPHOSAURUS = ENTITY_TYPES.register("cryolophosaurus",
+  public static final DeferredHolder<EntityType<?>, EntityType<Cryolophosaurus>> ENTITY_TYPE_CRYOLOPHOSAURUS = ENTITY_TYPES.register("cryolophosaurus",
       () -> EntityType.Builder.<Cryolophosaurus>of(Cryolophosaurus::new, MobCategory.MONSTER).sized(0.75f, 0.75f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("cryolophosaurus"));
-  public static final RegistryObject<EntityType<Basilisk>> ENTITY_TYPE_BASILISK = ENTITY_TYPES.register("basilisk",
+  public static final DeferredHolder<EntityType<?>, EntityType<Basilisk>> ENTITY_TYPE_BASILISK = ENTITY_TYPES.register("basilisk",
       () -> EntityType.Builder.<Basilisk>of(Basilisk::new, MobCategory.MONSTER).sized(1.6f, 3.5f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("basilisk"));
-  public static final RegistryObject<EntityType<Camarasaurus>> ENTITY_TYPE_CAMARASAURUS = ENTITY_TYPES.register("camarasaurus",
+  public static final DeferredHolder<EntityType<?>, EntityType<Camarasaurus>> ENTITY_TYPE_CAMARASAURUS = ENTITY_TYPES.register("camarasaurus",
       () -> EntityType.Builder.<Camarasaurus>of(Camarasaurus::new, MobCategory.MONSTER).sized(0.5f, 1.2f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("camarasaurus"));
-  public static final RegistryObject<EntityType<Hydrolisc>> ENTITY_TYPE_HYDROLISC = ENTITY_TYPES.register("hydrolisc",
+  public static final DeferredHolder<EntityType<?>, EntityType<Hydrolisc>> ENTITY_TYPE_HYDROLISC = ENTITY_TYPES.register("hydrolisc",
       () -> EntityType.Builder.<Hydrolisc>of(Hydrolisc::new, MobCategory.MONSTER).sized(0.5f, 0.5f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("hydrolisc"));
-  public static final RegistryObject<EntityType<VelocityRaptor>> ENTITY_TYPE_VELOCITY_RAPTOR = ENTITY_TYPES.register("velocity_raptor",
+  public static final DeferredHolder<EntityType<?>, EntityType<VelocityRaptor>> ENTITY_TYPE_VELOCITY_RAPTOR = ENTITY_TYPES.register("velocity_raptor",
       () -> EntityType.Builder.<VelocityRaptor>of(VelocityRaptor::new, MobCategory.MONSTER).sized(0.5f, 0.6f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("velocity_raptor"));
-  public static final RegistryObject<EntityType<Dragonfly>> ENTITY_TYPE_DRAGONFLY = ENTITY_TYPES.register("dragonfly",
+  public static final DeferredHolder<EntityType<?>, EntityType<Dragonfly>> ENTITY_TYPE_DRAGONFLY = ENTITY_TYPES.register("dragonfly",
       () -> EntityType.Builder.<Dragonfly>of(Dragonfly::new, MobCategory.AMBIENT).sized(1.5f, 0.5f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("dragonfly"));
-  public static final RegistryObject<EntityType<EmperorScorpion>> ENTITY_TYPE_EMPEROR_SCORPION = ENTITY_TYPES.register("emperor_scorpion",
+  public static final DeferredHolder<EntityType<?>, EntityType<EmperorScorpion>> ENTITY_TYPE_EMPEROR_SCORPION = ENTITY_TYPES.register("emperor_scorpion",
       () -> EntityType.Builder.<EmperorScorpion>of(EmperorScorpion::new, MobCategory.AMBIENT).sized(3.5f, 3.0f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("emperor_scorpion"));
-  public static final RegistryObject<EntityType<Scorpion>> ENTITY_TYPE_SCORPION = ENTITY_TYPES.register("scorpion",
+  public static final DeferredHolder<EntityType<?>, EntityType<Scorpion>> ENTITY_TYPE_SCORPION = ENTITY_TYPES.register("scorpion",
       () -> EntityType.Builder.<Scorpion>of(Scorpion::new, MobCategory.MONSTER).sized(0.85f, 0.55f).clientTrackingRange(32).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("scorpion"));
-  public static final RegistryObject<EntityType<CaveFisher>> ENTITY_TYPE_CAVE_FISHER = ENTITY_TYPES.register("cave_fisher",
+  public static final DeferredHolder<EntityType<?>, EntityType<CaveFisher>> ENTITY_TYPE_CAVE_FISHER = ENTITY_TYPES.register("cave_fisher",
       () -> EntityType.Builder.<CaveFisher>of(CaveFisher::new, MobCategory.MONSTER).sized(1.35f, 0.75f).clientTrackingRange(32).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("cave_fisher"));
-  public static final RegistryObject<EntityType<Spyro>> ENTITY_TYPE_BABY_DRAGON = ENTITY_TYPES.register("baby_dragon",
+  public static final DeferredHolder<EntityType<?>, EntityType<Spyro>> ENTITY_TYPE_BABY_DRAGON = ENTITY_TYPES.register("baby_dragon",
       () -> EntityType.Builder.<Spyro>of(Spyro::new, MobCategory.MONSTER).sized(0.6f, 1.8f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("baby_dragon"));
-  public static final RegistryObject<EntityType<Baryonyx>> ENTITY_TYPE_BARYONYX = ENTITY_TYPES.register("baryonyx",
+  public static final DeferredHolder<EntityType<?>, EntityType<Baryonyx>> ENTITY_TYPE_BARYONYX = ENTITY_TYPES.register("baryonyx",
       () -> EntityType.Builder.<Baryonyx>of(Baryonyx::new, MobCategory.CREATURE).sized(1.5f, 2.8f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("baryonyx"));
-  public static final RegistryObject<EntityType<GammaMetroid>> ENTITY_TYPE_GAMMA_METROID = ENTITY_TYPES.register("gamma_metroid",
+  public static final DeferredHolder<EntityType<?>, EntityType<GammaMetroid>> ENTITY_TYPE_GAMMA_METROID = ENTITY_TYPES.register("gamma_metroid",
       () -> EntityType.Builder.<GammaMetroid>of(GammaMetroid::new, MobCategory.MONSTER).sized(1.5f, 1.5f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("gamma_metroid"));
-  public static final RegistryObject<EntityType<GammaMetroid>> ENTITY_TYPE_WTF = ENTITY_TYPES.register("wtf",
+  public static final DeferredHolder<EntityType<?>, EntityType<GammaMetroid>> ENTITY_TYPE_WTF = ENTITY_TYPES.register("wtf",
       () -> EntityType.Builder.<GammaMetroid>of(GammaMetroid::new, MobCategory.MONSTER).sized(1.5f, 1.5f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("wtf"));
-  public static final RegistryObject<EntityType<Cockateil>> ENTITY_TYPE_BIRD = ENTITY_TYPES.register("bird",
+  public static final DeferredHolder<EntityType<?>, EntityType<Cockateil>> ENTITY_TYPE_BIRD = ENTITY_TYPES.register("bird",
       () -> EntityType.Builder.<Cockateil>of(Cockateil::new, MobCategory.AMBIENT).sized(0.5f, 0.5f).clientTrackingRange(32).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("bird"));
-  public static final RegistryObject<EntityType<RubyBird>> ENTITY_TYPE_RUBY_BIRD = ENTITY_TYPES.register("ruby_bird",
+  public static final DeferredHolder<EntityType<?>, EntityType<RubyBird>> ENTITY_TYPE_RUBY_BIRD = ENTITY_TYPES.register("ruby_bird",
       () -> EntityType.Builder.<RubyBird>of(RubyBird::new, MobCategory.MONSTER).sized(0.6f, 1.8f).clientTrackingRange(32).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("ruby_bird"));
-  public static final RegistryObject<EntityType<Kyuubi>> ENTITY_TYPE_KYUUBI = ENTITY_TYPES.register("kyuubi",
+  public static final DeferredHolder<EntityType<?>, EntityType<Kyuubi>> ENTITY_TYPE_KYUUBI = ENTITY_TYPES.register("kyuubi",
       () -> EntityType.Builder.<Kyuubi>of(Kyuubi::new, MobCategory.MONSTER).sized(0.5f, 1.25f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("kyuubi"));
-  public static final RegistryObject<EntityType<WaterDragon>> ENTITY_TYPE_WATER_DRAGON = ENTITY_TYPES.register("water_dragon",
+  public static final DeferredHolder<EntityType<?>, EntityType<WaterDragon>> ENTITY_TYPE_WATER_DRAGON = ENTITY_TYPES.register("water_dragon",
       () -> EntityType.Builder.<WaterDragon>of(WaterDragon::new, MobCategory.WATER_CREATURE).sized(1.25f, 1.9f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("water_dragon"));
-  public static final RegistryObject<EntityType<AttackSquid>> ENTITY_TYPE_ATTACK_SQUID = ENTITY_TYPES.register("attack_squid",
+  public static final DeferredHolder<EntityType<?>, EntityType<AttackSquid>> ENTITY_TYPE_ATTACK_SQUID = ENTITY_TYPES.register("attack_squid",
       () -> EntityType.Builder.<AttackSquid>of(AttackSquid::new, MobCategory.WATER_CREATURE).sized(1.0f, 1.25f).clientTrackingRange(32).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("attack_squid"));
-  public static final RegistryObject<EntityType<Alien>> ENTITY_TYPE_ALIEN = ENTITY_TYPES.register("alien",
+  public static final DeferredHolder<EntityType<?>, EntityType<Alien>> ENTITY_TYPE_ALIEN = ENTITY_TYPES.register("alien",
       () -> EntityType.Builder.<Alien>of(Alien::new, MobCategory.MONSTER).sized(1.1f, 3.25f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("alien"));
-  public static final RegistryObject<EntityType<Elevator>> ENTITY_TYPE_ELEVATOR = ENTITY_TYPES.register("hoverboard",
+  public static final DeferredHolder<EntityType<?>, EntityType<Elevator>> ENTITY_TYPE_ELEVATOR = ENTITY_TYPES.register("hoverboard",
       () -> EntityType.Builder.<Elevator>of(Elevator::new, MobCategory.MISC).sized(1.25f, 1.0f).clientTrackingRange(128).updateInterval(1).setShouldReceiveVelocityUpdates(true).build("hoverboard"));
-  public static final RegistryObject<EntityType<Kraken>> ENTITY_TYPE_THE_KRAKEN = ENTITY_TYPES.register("the_kraken",
+  public static final DeferredHolder<EntityType<?>, EntityType<Kraken>> ENTITY_TYPE_THE_KRAKEN = ENTITY_TYPES.register("the_kraken",
       () -> EntityType.Builder.<Kraken>of(Kraken::new, MobCategory.MONSTER).sized(2f, 2f).clientTrackingRange(128).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("the_kraken"));
-  public static final RegistryObject<EntityType<Lizard>> ENTITY_TYPE_LIZARD = ENTITY_TYPES.register("lizard",
+  public static final DeferredHolder<EntityType<?>, EntityType<Lizard>> ENTITY_TYPE_LIZARD = ENTITY_TYPES.register("lizard",
       () -> EntityType.Builder.<Lizard>of(Lizard::new, MobCategory.WATER_CREATURE).sized(1.5f, 1.25f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("lizard"));
-  public static final RegistryObject<EntityType<Cephadrome>> ENTITY_TYPE_CEPHADROME = ENTITY_TYPES.register("cephadrome",
+  public static final DeferredHolder<EntityType<?>, EntityType<Cephadrome>> ENTITY_TYPE_CEPHADROME = ENTITY_TYPES.register("cephadrome",
       () -> EntityType.Builder.<Cephadrome>of(Cephadrome::new, MobCategory.MISC).sized(2.5f, 2.25f).clientTrackingRange(128).updateInterval(3).setShouldReceiveVelocityUpdates(true).build("cephadrome"));
-  public static final RegistryObject<EntityType<Dragon>> ENTITY_TYPE_DRAGON = ENTITY_TYPES.register("dragon",
+  public static final DeferredHolder<EntityType<?>, EntityType<Dragon>> ENTITY_TYPE_DRAGON = ENTITY_TYPES.register("dragon",
       () -> EntityType.Builder.<Dragon>of(Dragon::new, MobCategory.CREATURE).sized(1.5f, 1.25f).clientTrackingRange(128).updateInterval(1).setShouldReceiveVelocityUpdates(true).build("dragon"));
-  public static final RegistryObject<EntityType<Chipmunk>> ENTITY_TYPE_CHIPMUNK = ENTITY_TYPES.register("chipmunk",
+  public static final DeferredHolder<EntityType<?>, EntityType<Chipmunk>> ENTITY_TYPE_CHIPMUNK = ENTITY_TYPES.register("chipmunk",
       () -> EntityType.Builder.<Chipmunk>of(Chipmunk::new, MobCategory.CREATURE).sized(0.35f, 0.35f).clientTrackingRange(32).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("chipmunk"));
-  public static final RegistryObject<EntityType<Gazelle>> ENTITY_TYPE_GAZELLE = ENTITY_TYPES.register("gazelle",
+  public static final DeferredHolder<EntityType<?>, EntityType<Gazelle>> ENTITY_TYPE_GAZELLE = ENTITY_TYPES.register("gazelle",
       () -> EntityType.Builder.<Gazelle>of(Gazelle::new, MobCategory.CREATURE).sized(0.6f, 1.8f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("gazelle"));
-  public static final RegistryObject<EntityType<Ostrich>> ENTITY_TYPE_OSTRICH = ENTITY_TYPES.register("ostrich",
+  public static final DeferredHolder<EntityType<?>, EntityType<Ostrich>> ENTITY_TYPE_OSTRICH = ENTITY_TYPES.register("ostrich",
       () -> EntityType.Builder.<Ostrich>of(Ostrich::new, MobCategory.CREATURE).sized(0.85f, 2.1f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(true).build("ostrich"));
-  public static final RegistryObject<EntityType<TrooperBug>> ENTITY_TYPE_TROOPER_BUG = ENTITY_TYPES.register("jumpy_bug",
+  public static final DeferredHolder<EntityType<?>, EntityType<TrooperBug>> ENTITY_TYPE_TROOPER_BUG = ENTITY_TYPES.register("jumpy_bug",
       () -> EntityType.Builder.<TrooperBug>of(TrooperBug::new, MobCategory.MONSTER).sized(3.0f, 3.5f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("jumpy_bug"));
-  public static final RegistryObject<EntityType<SpitBug>> ENTITY_TYPE_SPIT_BUG = ENTITY_TYPES.register("spit_bug",
+  public static final DeferredHolder<EntityType<?>, EntityType<SpitBug>> ENTITY_TYPE_SPIT_BUG = ENTITY_TYPES.register("spit_bug",
       () -> EntityType.Builder.<SpitBug>of(SpitBug::new, MobCategory.MONSTER).sized(2.0f, 2.0f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("spit_bug"));
-  public static final RegistryObject<EntityType<StinkBug>> ENTITY_TYPE_STINK_BUG = ENTITY_TYPES.register("stink_bug",
+  public static final DeferredHolder<EntityType<?>, EntityType<StinkBug>> ENTITY_TYPE_STINK_BUG = ENTITY_TYPES.register("stink_bug",
       () -> EntityType.Builder.<StinkBug>of(StinkBug::new, MobCategory.CREATURE).sized(0.55f, 0.55f).clientTrackingRange(32).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("stink_bug"));
-  public static final RegistryObject<EntityType<Tshirt>> ENTITY_TYPE_TSHIRT = ENTITY_TYPES.register("tshirt",
+  public static final DeferredHolder<EntityType<?>, EntityType<Tshirt>> ENTITY_TYPE_TSHIRT = ENTITY_TYPES.register("tshirt",
       () -> EntityType.Builder.<Tshirt>of(Tshirt::new, MobCategory.MONSTER).sized(0.6f, 1.8f).clientTrackingRange(32).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("tshirt"));
-  public static final RegistryObject<EntityType<Island>> ENTITY_TYPE_ISLAND = ENTITY_TYPES.register("island",
+  public static final DeferredHolder<EntityType<?>, EntityType<Island>> ENTITY_TYPE_ISLAND = ENTITY_TYPES.register("island",
       () -> EntityType.Builder.<Island>of(Island::new, MobCategory.MONSTER).sized(0.5f, 0.5f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("island"));
-  public static final RegistryObject<EntityType<IslandToo>> ENTITY_TYPE_ISLAND_TOO = ENTITY_TYPES.register("island_too",
+  public static final DeferredHolder<EntityType<?>, EntityType<IslandToo>> ENTITY_TYPE_ISLAND_TOO = ENTITY_TYPES.register("island_too",
       () -> EntityType.Builder.<IslandToo>of(IslandToo::new, MobCategory.MONSTER).sized(0.5f, 0.5f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("island_too"));
-  public static final RegistryObject<EntityType<CreepingHorror>> ENTITY_TYPE_CREEPING_HORROR = ENTITY_TYPES.register("creeping_horror",
+  public static final DeferredHolder<EntityType<?>, EntityType<CreepingHorror>> ENTITY_TYPE_CREEPING_HORROR = ENTITY_TYPES.register("creeping_horror",
       () -> EntityType.Builder.<CreepingHorror>of(CreepingHorror::new, MobCategory.MONSTER).sized(0.75f, 0.5f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("creeping_horror"));
-  public static final RegistryObject<EntityType<TerribleTerror>> ENTITY_TYPE_TERRIBLE_TERROR = ENTITY_TYPES.register("terrible_terror",
+  public static final DeferredHolder<EntityType<?>, EntityType<TerribleTerror>> ENTITY_TYPE_TERRIBLE_TERROR = ENTITY_TYPES.register("terrible_terror",
       () -> EntityType.Builder.<TerribleTerror>of(TerribleTerror::new, MobCategory.MONSTER).sized(1.0f, 0.75f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("terrible_terror"));
-  public static final RegistryObject<EntityType<CliffRacer>> ENTITY_TYPE_CLIFF_RACER = ENTITY_TYPES.register("cliff_racer",
+  public static final DeferredHolder<EntityType<?>, EntityType<CliffRacer>> ENTITY_TYPE_CLIFF_RACER = ENTITY_TYPES.register("cliff_racer",
       () -> EntityType.Builder.<CliffRacer>of(CliffRacer::new, MobCategory.AMBIENT).sized(0.75f, 0.5f).clientTrackingRange(32).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("cliff_racer"));
-  public static final RegistryObject<EntityType<Triffid>> ENTITY_TYPE_TRIFFID = ENTITY_TYPES.register("triffid",
+  public static final DeferredHolder<EntityType<?>, EntityType<Triffid>> ENTITY_TYPE_TRIFFID = ENTITY_TYPES.register("triffid",
       () -> EntityType.Builder.<Triffid>of(Triffid::new, MobCategory.MONSTER).sized(2.0f, 4.0f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("triffid"));
-  public static final RegistryObject<EntityType<PitchBlack>> ENTITY_TYPE_NIGHTMARE = ENTITY_TYPES.register("nightmare",
+  public static final DeferredHolder<EntityType<?>, EntityType<PitchBlack>> ENTITY_TYPE_NIGHTMARE = ENTITY_TYPES.register("nightmare",
       () -> EntityType.Builder.<PitchBlack>of(PitchBlack::new, MobCategory.MONSTER).sized(2.5f, 3.5f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("nightmare"));
-  public static final RegistryObject<EntityType<LurkingTerror>> ENTITY_TYPE_LURKING_TERROR = ENTITY_TYPES.register("lurking_terror",
+  public static final DeferredHolder<EntityType<?>, EntityType<LurkingTerror>> ENTITY_TYPE_LURKING_TERROR = ENTITY_TYPES.register("lurking_terror",
       () -> EntityType.Builder.<LurkingTerror>of(LurkingTerror::new, MobCategory.MONSTER).sized(1.75f, 1.25f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("lurking_terror"));
-  public static final RegistryObject<EntityType<Godzilla>> ENTITY_TYPE_MOBZILLA = ENTITY_TYPES.register("mobzilla",
+  public static final DeferredHolder<EntityType<?>, EntityType<Godzilla>> ENTITY_TYPE_MOBZILLA = ENTITY_TYPES.register("mobzilla",
       () -> EntityType.Builder.<Godzilla>of(Godzilla::new, MobCategory.MONSTER).sized(2f, 2f).clientTrackingRange(128).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("mobzilla"));
-  public static final RegistryObject<EntityType<Ghost>> ENTITY_TYPE_GHOST = ENTITY_TYPES.register("ghost",
+  public static final DeferredHolder<EntityType<?>, EntityType<Ghost>> ENTITY_TYPE_GHOST = ENTITY_TYPES.register("ghost",
       () -> EntityType.Builder.<Ghost>of(Ghost::new, MobCategory.AMBIENT).sized(0.5f, 1.5f).clientTrackingRange(32).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("ghost"));
-  public static final RegistryObject<EntityType<GhostSkelly>> ENTITY_TYPE_GHOST_PUMPKIN_SKELLY = ENTITY_TYPES.register("ghost_pumpkin_skelly",
+  public static final DeferredHolder<EntityType<?>, EntityType<GhostSkelly>> ENTITY_TYPE_GHOST_PUMPKIN_SKELLY = ENTITY_TYPES.register("ghost_pumpkin_skelly",
       () -> EntityType.Builder.<GhostSkelly>of(GhostSkelly::new, MobCategory.AMBIENT).sized(1.5f, 2.0f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("ghost_pumpkin_skelly"));
-  public static final RegistryObject<EntityType<WormSmall>> ENTITY_TYPE_SMALL_WORM = ENTITY_TYPES.register("small_worm",
+  public static final DeferredHolder<EntityType<?>, EntityType<WormSmall>> ENTITY_TYPE_SMALL_WORM = ENTITY_TYPES.register("small_worm",
       () -> EntityType.Builder.<WormSmall>of(WormSmall::new, MobCategory.MONSTER).sized(0.25f, 1.0f).clientTrackingRange(32).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("small_worm"));
-  public static final RegistryObject<EntityType<WormMedium>> ENTITY_TYPE_MEDIUM_WORM = ENTITY_TYPES.register("medium_worm",
+  public static final DeferredHolder<EntityType<?>, EntityType<WormMedium>> ENTITY_TYPE_MEDIUM_WORM = ENTITY_TYPES.register("medium_worm",
       () -> EntityType.Builder.<WormMedium>of(WormMedium::new, MobCategory.MONSTER).sized(0.5f, 2.0f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("medium_worm"));
-  public static final RegistryObject<EntityType<WormLarge>> ENTITY_TYPE_LARGE_WORM = ENTITY_TYPES.register("large_worm",
+  public static final DeferredHolder<EntityType<?>, EntityType<WormLarge>> ENTITY_TYPE_LARGE_WORM = ENTITY_TYPES.register("large_worm",
       () -> EntityType.Builder.<WormLarge>of(WormLarge::new, MobCategory.MONSTER).sized(1.55f, 2.5f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("large_worm"));
-  public static final RegistryObject<EntityType<Cassowary>> ENTITY_TYPE_CASSOWARY = ENTITY_TYPES.register("cassowary",
+  public static final DeferredHolder<EntityType<?>, EntityType<Cassowary>> ENTITY_TYPE_CASSOWARY = ENTITY_TYPES.register("cassowary",
       () -> EntityType.Builder.<Cassowary>of(Cassowary::new, MobCategory.CREATURE).sized(0.5f, 1.2f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("cassowary"));
-  public static final RegistryObject<EntityType<CloudShark>> ENTITY_TYPE_CLOUD_SHARK = ENTITY_TYPES.register("cloud_shark",
+  public static final DeferredHolder<EntityType<?>, EntityType<CloudShark>> ENTITY_TYPE_CLOUD_SHARK = ENTITY_TYPES.register("cloud_shark",
       () -> EntityType.Builder.<CloudShark>of(CloudShark::new, MobCategory.MONSTER).sized(1.0f, 0.75f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("cloud_shark"));
-  public static final RegistryObject<EntityType<GoldFish>> ENTITY_TYPE_GOLD_FISH = ENTITY_TYPES.register("gold_fish",
+  public static final DeferredHolder<EntityType<?>, EntityType<GoldFish>> ENTITY_TYPE_GOLD_FISH = ENTITY_TYPES.register("gold_fish",
       () -> EntityType.Builder.<GoldFish>of(GoldFish::new, MobCategory.CREATURE).sized(0.75f, 0.5f).clientTrackingRange(32).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("gold_fish"));
-  public static final RegistryObject<EntityType<LeafMonster>> ENTITY_TYPE_LEAF_MONSTER = ENTITY_TYPES.register("leaf_monster",
+  public static final DeferredHolder<EntityType<?>, EntityType<LeafMonster>> ENTITY_TYPE_LEAF_MONSTER = ENTITY_TYPES.register("leaf_monster",
       () -> EntityType.Builder.<LeafMonster>of(LeafMonster::new, MobCategory.MONSTER).sized(1.0f, 2.5f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("leaf_monster"));
-  public static final RegistryObject<EntityType<GodzillaHead>> ENTITY_TYPE_MOBZILLA_HEAD = ENTITY_TYPES.register("mobzilla_head",
+  public static final DeferredHolder<EntityType<?>, EntityType<GodzillaHead>> ENTITY_TYPE_MOBZILLA_HEAD = ENTITY_TYPES.register("mobzilla_head",
       () -> EntityType.Builder.<GodzillaHead>of(GodzillaHead::new, MobCategory.MISC).sized(9.9f, 10.0f).clientTrackingRange(128).updateInterval(10).setShouldReceiveVelocityUpdates(false).build("mobzilla_head"));
-  public static final RegistryObject<EntityType<EnderKnight>> ENTITY_TYPE_ENDER_KNIGHT = ENTITY_TYPES.register("ender_knight",
+  public static final DeferredHolder<EntityType<?>, EntityType<EnderKnight>> ENTITY_TYPE_ENDER_KNIGHT = ENTITY_TYPES.register("ender_knight",
       () -> EntityType.Builder.<EnderKnight>of(EnderKnight::new, MobCategory.MONSTER).sized(0.6f, 2.9f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(true).build("ender_knight"));
-  public static final RegistryObject<EntityType<EnderReaper>> ENTITY_TYPE_ENDER_REAPER = ENTITY_TYPES.register("ender_reaper",
+  public static final DeferredHolder<EntityType<?>, EntityType<EnderReaper>> ENTITY_TYPE_ENDER_REAPER = ENTITY_TYPES.register("ender_reaper",
       () -> EntityType.Builder.<EnderReaper>of(EnderReaper::new, MobCategory.MONSTER).sized(0.7f, 2.9f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(true).build("ender_reaper"));
-  public static final RegistryObject<EntityType<Beaver>> ENTITY_TYPE_BEAVER = ENTITY_TYPES.register("beaver",
+  public static final DeferredHolder<EntityType<?>, EntityType<Beaver>> ENTITY_TYPE_BEAVER = ENTITY_TYPES.register("beaver",
       () -> EntityType.Builder.<Beaver>of(Beaver::new, MobCategory.CREATURE).sized(0.6f, 0.8f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("beaver"));
-  public static final RegistryObject<EntityType<Termite>> ENTITY_TYPE_TERMITE = ENTITY_TYPES.register("termite",
+  public static final DeferredHolder<EntityType<?>, EntityType<Termite>> ENTITY_TYPE_TERMITE = ENTITY_TYPES.register("termite",
       () -> EntityType.Builder.<Termite>of(Termite::new, MobCategory.MONSTER).sized(0.2f, 0.2f).clientTrackingRange(32).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("termite"));
-  public static final RegistryObject<EntityType<Fairy>> ENTITY_TYPE_FAIRY = ENTITY_TYPES.register("fairy",
+  public static final DeferredHolder<EntityType<?>, EntityType<Fairy>> ENTITY_TYPE_FAIRY = ENTITY_TYPES.register("fairy",
       () -> EntityType.Builder.<Fairy>of(Fairy::new, MobCategory.AMBIENT).sized(0.4f, 0.8f).clientTrackingRange(32).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("fairy"));
-  public static final RegistryObject<EntityType<Peacock>> ENTITY_TYPE_PEACOCK = ENTITY_TYPES.register("peacock",
+  public static final DeferredHolder<EntityType<?>, EntityType<Peacock>> ENTITY_TYPE_PEACOCK = ENTITY_TYPES.register("peacock",
       () -> EntityType.Builder.<Peacock>of(Peacock::new, MobCategory.CREATURE).sized(0.65f, 1.2f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("peacock"));
-  public static final RegistryObject<EntityType<Rotator>> ENTITY_TYPE_ROTATOR = ENTITY_TYPES.register("rotator",
+  public static final DeferredHolder<EntityType<?>, EntityType<Rotator>> ENTITY_TYPE_ROTATOR = ENTITY_TYPES.register("rotator",
       () -> EntityType.Builder.<Rotator>of(Rotator::new, MobCategory.MONSTER).sized(1.0f, 2.0f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("rotator"));
-  public static final RegistryObject<EntityType<Vortex>> ENTITY_TYPE_VORTEX = ENTITY_TYPES.register("vortex",
+  public static final DeferredHolder<EntityType<?>, EntityType<Vortex>> ENTITY_TYPE_VORTEX = ENTITY_TYPES.register("vortex",
       () -> EntityType.Builder.<Vortex>of(Vortex::new, MobCategory.MONSTER).sized(2.0f, 4.0f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("vortex"));
-  public static final RegistryObject<EntityType<DungeonBeast>> ENTITY_TYPE_DUNGEON_BEAST = ENTITY_TYPES.register("dungeon_beast",
+  public static final DeferredHolder<EntityType<?>, EntityType<DungeonBeast>> ENTITY_TYPE_DUNGEON_BEAST = ENTITY_TYPES.register("dungeon_beast",
       () -> EntityType.Builder.<DungeonBeast>of(DungeonBeast::new, MobCategory.MONSTER).sized(1.15f, 1.1f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("dungeon_beast"));
-  public static final RegistryObject<EntityType<Rat>> ENTITY_TYPE_RAT = ENTITY_TYPES.register("rat",
+  public static final DeferredHolder<EntityType<?>, EntityType<Rat>> ENTITY_TYPE_RAT = ENTITY_TYPES.register("rat",
       () -> EntityType.Builder.<Rat>of(Rat::new, MobCategory.MONSTER).sized(0.25f, 0.5f).clientTrackingRange(32).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("rat"));
-  public static final RegistryObject<EntityType<Flounder>> ENTITY_TYPE_FLOUNDER = ENTITY_TYPES.register("flounder",
+  public static final DeferredHolder<EntityType<?>, EntityType<Flounder>> ENTITY_TYPE_FLOUNDER = ENTITY_TYPES.register("flounder",
       () -> EntityType.Builder.<Flounder>of(Flounder::new, MobCategory.WATER_CREATURE).sized(0.55f, 0.25f).clientTrackingRange(32).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("flounder"));
-  public static final RegistryObject<EntityType<Whale>> ENTITY_TYPE_WHALE = ENTITY_TYPES.register("whale",
+  public static final DeferredHolder<EntityType<?>, EntityType<Whale>> ENTITY_TYPE_WHALE = ENTITY_TYPES.register("whale",
       () -> EntityType.Builder.<Whale>of(Whale::new, MobCategory.WATER_CREATURE).sized(1.5f, 2.5f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("whale"));
-  public static final RegistryObject<EntityType<Irukandji>> ENTITY_TYPE_IRUKANDJI = ENTITY_TYPES.register("irukandji",
+  public static final DeferredHolder<EntityType<?>, EntityType<Irukandji>> ENTITY_TYPE_IRUKANDJI = ENTITY_TYPES.register("irukandji",
       () -> EntityType.Builder.<Irukandji>of(Irukandji::new, MobCategory.MONSTER).sized(0.25f, 0.25f).clientTrackingRange(32).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("irukandji"));
-  public static final RegistryObject<EntityType<Skate>> ENTITY_TYPE_SKATE = ENTITY_TYPES.register("skate",
+  public static final DeferredHolder<EntityType<?>, EntityType<Skate>> ENTITY_TYPE_SKATE = ENTITY_TYPES.register("skate",
       () -> EntityType.Builder.<Skate>of(Skate::new, MobCategory.MONSTER).sized(0.75f, 0.25f).clientTrackingRange(32).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("skate"));
-  public static final RegistryObject<EntityType<Urchin>> ENTITY_TYPE_URCHIN = ENTITY_TYPES.register("crystal_urchin",
+  public static final DeferredHolder<EntityType<?>, EntityType<Urchin>> ENTITY_TYPE_URCHIN = ENTITY_TYPES.register("crystal_urchin",
       () -> EntityType.Builder.<Urchin>of(Urchin::new, MobCategory.MONSTER).sized(1.35f, 2.1f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("crystal_urchin"));
-  public static final RegistryObject<EntityType<Mantis>> ENTITY_TYPE_MANTIS = ENTITY_TYPES.register("mantis",
+  public static final DeferredHolder<EntityType<?>, EntityType<Mantis>> ENTITY_TYPE_MANTIS = ENTITY_TYPES.register("mantis",
       () -> EntityType.Builder.<Mantis>of(Mantis::new, MobCategory.MONSTER).sized(2.5f, 3.25f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("mantis"));
-  public static final RegistryObject<EntityType<HerculesBeetle>> ENTITY_TYPE_HERCULES_BEETLE = ENTITY_TYPES.register("hercules_beetle",
+  public static final DeferredHolder<EntityType<?>, EntityType<HerculesBeetle>> ENTITY_TYPE_HERCULES_BEETLE = ENTITY_TYPES.register("hercules_beetle",
       () -> EntityType.Builder.<HerculesBeetle>of(HerculesBeetle::new, MobCategory.MONSTER).sized(3.25f, 2.75f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("hercules_beetle"));
-  public static final RegistryObject<EntityType<TRex>> ENTITY_TYPE_TREX = ENTITY_TYPES.register("trex",
+  public static final DeferredHolder<EntityType<?>, EntityType<TRex>> ENTITY_TYPE_TREX = ENTITY_TYPES.register("trex",
       () -> EntityType.Builder.<TRex>of(TRex::new, MobCategory.MONSTER).sized(2.0f, 4.2f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("trex"));
-  public static final RegistryObject<EntityType<TRex>> ENTITY_TYPE_T_REX = ENTITY_TYPES.register("t._rex",
+  public static final DeferredHolder<EntityType<?>, EntityType<TRex>> ENTITY_TYPE_T_REX = ENTITY_TYPES.register("t._rex",
       () -> EntityType.Builder.<TRex>of(TRex::new, MobCategory.MONSTER).sized(2.0f, 4.2f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("t._rex"));
-  public static final RegistryObject<EntityType<Stinky>> ENTITY_TYPE_STINKY = ENTITY_TYPES.register("stinky",
+  public static final DeferredHolder<EntityType<?>, EntityType<Stinky>> ENTITY_TYPE_STINKY = ENTITY_TYPES.register("stinky",
       () -> EntityType.Builder.<Stinky>of(Stinky::new, MobCategory.MONSTER).sized(0.6f, 1.8f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("stinky"));
-  public static final RegistryObject<EntityType<Coin>> ENTITY_TYPE_COIN = ENTITY_TYPES.register("coin",
+  public static final DeferredHolder<EntityType<?>, EntityType<Coin>> ENTITY_TYPE_COIN = ENTITY_TYPES.register("coin",
       () -> EntityType.Builder.<Coin>of(Coin::new, MobCategory.CREATURE).sized(0.6f, 1.8f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("coin"));
-  public static final RegistryObject<EntityType<TheKing>> ENTITY_TYPE_THE_KING = ENTITY_TYPES.register("the_king",
+  public static final DeferredHolder<EntityType<?>, EntityType<TheKing>> ENTITY_TYPE_THE_KING = ENTITY_TYPES.register("the_king",
       () -> EntityType.Builder.<TheKing>of(TheKing::new, MobCategory.MONSTER).sized(2f, 2f).clientTrackingRange(128).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("the_king"));
-  public static final RegistryObject<EntityType<KingHead>> ENTITY_TYPE_KING_HEAD = ENTITY_TYPES.register("king_head",
+  public static final DeferredHolder<EntityType<?>, EntityType<KingHead>> ENTITY_TYPE_KING_HEAD = ENTITY_TYPES.register("king_head",
       () -> EntityType.Builder.<KingHead>of(KingHead::new, MobCategory.MISC).sized(19.9f, 10.0f).clientTrackingRange(128).updateInterval(10).setShouldReceiveVelocityUpdates(false).build("king_head"));
-  public static final RegistryObject<EntityType<TheQueen>> ENTITY_TYPE_THE_QUEEN = ENTITY_TYPES.register("the_queen",
+  public static final DeferredHolder<EntityType<?>, EntityType<TheQueen>> ENTITY_TYPE_THE_QUEEN = ENTITY_TYPES.register("the_queen",
       () -> EntityType.Builder.<TheQueen>of(TheQueen::new, MobCategory.MONSTER).sized(2f, 2f).clientTrackingRange(128).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("the_queen"));
-  public static final RegistryObject<EntityType<QueenHead>> ENTITY_TYPE_QUEEN_HEAD = ENTITY_TYPES.register("queen_head",
+  public static final DeferredHolder<EntityType<?>, EntityType<QueenHead>> ENTITY_TYPE_QUEEN_HEAD = ENTITY_TYPES.register("queen_head",
       () -> EntityType.Builder.<QueenHead>of(QueenHead::new, MobCategory.MISC).sized(19.9f, 10.0f).clientTrackingRange(128).updateInterval(10).setShouldReceiveVelocityUpdates(false).build("queen_head"));
-  public static final RegistryObject<EntityType<Boyfriend>> ENTITY_TYPE_BOYFRIEND = ENTITY_TYPES.register("boyfriend",
+  public static final DeferredHolder<EntityType<?>, EntityType<Boyfriend>> ENTITY_TYPE_BOYFRIEND = ENTITY_TYPES.register("boyfriend",
       () -> EntityType.Builder.<Boyfriend>of(Boyfriend::new, MobCategory.CREATURE).sized(0.5f, 1.6f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("boyfriend"));
-  public static final RegistryObject<EntityType<ThePrince>> ENTITY_TYPE_THE_PRINCE = ENTITY_TYPES.register("the_prince",
+  public static final DeferredHolder<EntityType<?>, EntityType<ThePrince>> ENTITY_TYPE_THE_PRINCE = ENTITY_TYPES.register("the_prince",
       () -> EntityType.Builder.<ThePrince>of(ThePrince::new, MobCategory.MONSTER).sized(0.75f, 1.25f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("the_prince"));
-  public static final RegistryObject<EntityType<Molenoid>> ENTITY_TYPE_MOLENOID = ENTITY_TYPES.register("molenoid",
+  public static final DeferredHolder<EntityType<?>, EntityType<Molenoid>> ENTITY_TYPE_MOLENOID = ENTITY_TYPES.register("molenoid",
       () -> EntityType.Builder.<Molenoid>of(Molenoid::new, MobCategory.MONSTER).sized(3.9f, 2.6f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("molenoid"));
-  public static final RegistryObject<EntityType<SeaMonster>> ENTITY_TYPE_SEA_MONSTER = ENTITY_TYPES.register("sea_monster",
+  public static final DeferredHolder<EntityType<?>, EntityType<SeaMonster>> ENTITY_TYPE_SEA_MONSTER = ENTITY_TYPES.register("sea_monster",
       () -> EntityType.Builder.<SeaMonster>of(SeaMonster::new, MobCategory.WATER_CREATURE).sized(1.25f, 2.5f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("sea_monster"));
-  public static final RegistryObject<EntityType<SeaViper>> ENTITY_TYPE_SEA_VIPER = ENTITY_TYPES.register("sea_viper",
+  public static final DeferredHolder<EntityType<?>, EntityType<SeaViper>> ENTITY_TYPE_SEA_VIPER = ENTITY_TYPES.register("sea_viper",
       () -> EntityType.Builder.<SeaViper>of(SeaViper::new, MobCategory.WATER_CREATURE).sized(1.5f, 2.5f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("sea_viper"));
-  public static final RegistryObject<EntityType<EasterBunny>> ENTITY_TYPE_EASTER_BUNNY = ENTITY_TYPES.register("easter_bunny",
+  public static final DeferredHolder<EntityType<?>, EntityType<EasterBunny>> ENTITY_TYPE_EASTER_BUNNY = ENTITY_TYPES.register("easter_bunny",
       () -> EntityType.Builder.<EasterBunny>of(EasterBunny::new, MobCategory.MONSTER).sized(0.5f, 0.75f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("easter_bunny"));
-  public static final RegistryObject<EntityType<CaterKiller>> ENTITY_TYPE_CATERKILLER = ENTITY_TYPES.register("caterkiller",
+  public static final DeferredHolder<EntityType<?>, EntityType<CaterKiller>> ENTITY_TYPE_CATERKILLER = ENTITY_TYPES.register("caterkiller",
       () -> EntityType.Builder.<CaterKiller>of(CaterKiller::new, MobCategory.MONSTER).sized(0.6f, 1.8f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("caterkiller"));
-  public static final RegistryObject<EntityType<CrystalCow>> ENTITY_TYPE_CRYSTAL_COW = ENTITY_TYPES.register("crystal_apple_cow",
+  public static final DeferredHolder<EntityType<?>, EntityType<CrystalCow>> ENTITY_TYPE_CRYSTAL_COW = ENTITY_TYPES.register("crystal_apple_cow",
       () -> EntityType.Builder.<CrystalCow>of(CrystalCow::new, MobCategory.CREATURE).sized(0.6f, 1.4f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("crystal_apple_cow"));
-  public static final RegistryObject<EntityType<Leon>> ENTITY_TYPE_LEONOPTERYX = ENTITY_TYPES.register("leonopteryx",
+  public static final DeferredHolder<EntityType<?>, EntityType<Leon>> ENTITY_TYPE_LEONOPTERYX = ENTITY_TYPES.register("leonopteryx",
       () -> EntityType.Builder.<Leon>of(Leon::new, MobCategory.MONSTER).sized(3.5f, 8.25f).clientTrackingRange(64).updateInterval(3).setShouldReceiveVelocityUpdates(true).build("leonopteryx"));
-  public static final RegistryObject<EntityType<Hammerhead>> ENTITY_TYPE_HAMMERHEAD = ENTITY_TYPES.register("hammerhead",
+  public static final DeferredHolder<EntityType<?>, EntityType<Hammerhead>> ENTITY_TYPE_HAMMERHEAD = ENTITY_TYPES.register("hammerhead",
       () -> EntityType.Builder.<Hammerhead>of(Hammerhead::new, MobCategory.MONSTER).sized(3.0f, 5.0f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("hammerhead"));
-  public static final RegistryObject<EntityType<RubberDucky>> ENTITY_TYPE_RUBBER_DUCKY = ENTITY_TYPES.register("rubber_ducky",
+  public static final DeferredHolder<EntityType<?>, EntityType<RubberDucky>> ENTITY_TYPE_RUBBER_DUCKY = ENTITY_TYPES.register("rubber_ducky",
       () -> EntityType.Builder.<RubberDucky>of(RubberDucky::new, MobCategory.WATER_CREATURE).sized(0.6f, 1.4f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("rubber_ducky"));
-  public static final RegistryObject<EntityType<ThePrinceTeen>> ENTITY_TYPE_THE_YOUNG_PRINCE = ENTITY_TYPES.register("the_young_prince",
+  public static final DeferredHolder<EntityType<?>, EntityType<ThePrinceTeen>> ENTITY_TYPE_THE_YOUNG_PRINCE = ENTITY_TYPES.register("the_young_prince",
       () -> EntityType.Builder.<ThePrinceTeen>of(ThePrinceTeen::new, MobCategory.MONSTER).sized(0.6f, 1.8f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(true).build("the_young_prince"));
-  public static final RegistryObject<EntityType<BandP>> ENTITY_TYPE_CRIMINAL = ENTITY_TYPES.register("criminal",
+  public static final DeferredHolder<EntityType<?>, EntityType<BandP>> ENTITY_TYPE_CRIMINAL = ENTITY_TYPES.register("criminal",
       () -> EntityType.Builder.<BandP>of(BandP::new, MobCategory.MONSTER).sized(0.6f, 1.8f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("criminal"));
-  public static final RegistryObject<EntityType<RockBase>> ENTITY_TYPE_ROCK = ENTITY_TYPES.register("rock",
+  public static final DeferredHolder<EntityType<?>, EntityType<RockBase>> ENTITY_TYPE_ROCK = ENTITY_TYPES.register("rock",
       () -> EntityType.Builder.<RockBase>of(RockBase::new, MobCategory.MONSTER).sized(0.25f, 0.15f).clientTrackingRange(32).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("rock"));
-  public static final RegistryObject<EntityType<Brutalfly>> ENTITY_TYPE_BRUTALFLY = ENTITY_TYPES.register("brutalfly",
+  public static final DeferredHolder<EntityType<?>, EntityType<Brutalfly>> ENTITY_TYPE_BRUTALFLY = ENTITY_TYPES.register("brutalfly",
       () -> EntityType.Builder.<Brutalfly>of(Brutalfly::new, MobCategory.MONSTER).sized(5.0f, 2.0f).clientTrackingRange(128).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("brutalfly"));
-  public static final RegistryObject<EntityType<Nastysaurus>> ENTITY_TYPE_NASTYSAURUS = ENTITY_TYPES.register("nastysaurus",
+  public static final DeferredHolder<EntityType<?>, EntityType<Nastysaurus>> ENTITY_TYPE_NASTYSAURUS = ENTITY_TYPES.register("nastysaurus",
       () -> EntityType.Builder.<Nastysaurus>of(Nastysaurus::new, MobCategory.MONSTER).sized(2.2f, 4.6f).clientTrackingRange(128).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("nastysaurus"));
-  public static final RegistryObject<EntityType<Pointysaurus>> ENTITY_TYPE_POINTYSAURUS = ENTITY_TYPES.register("pointysaurus",
+  public static final DeferredHolder<EntityType<?>, EntityType<Pointysaurus>> ENTITY_TYPE_POINTYSAURUS = ENTITY_TYPES.register("pointysaurus",
       () -> EntityType.Builder.<Pointysaurus>of(Pointysaurus::new, MobCategory.MONSTER).sized(2.9f, 2.9f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("pointysaurus"));
-  public static final RegistryObject<EntityType<Cricket>> ENTITY_TYPE_CRICKET = ENTITY_TYPES.register("cricket",
+  public static final DeferredHolder<EntityType<?>, EntityType<Cricket>> ENTITY_TYPE_CRICKET = ENTITY_TYPES.register("cricket",
       () -> EntityType.Builder.<Cricket>of(Cricket::new, MobCategory.CREATURE).sized(0.1f, 0.1f).clientTrackingRange(32).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("cricket"));
-  public static final RegistryObject<EntityType<ThePrincess>> ENTITY_TYPE_THE_PRINCESS = ENTITY_TYPES.register("the_princess",
+  public static final DeferredHolder<EntityType<?>, EntityType<ThePrincess>> ENTITY_TYPE_THE_PRINCESS = ENTITY_TYPES.register("the_princess",
       () -> EntityType.Builder.<ThePrincess>of(ThePrincess::new, MobCategory.MONSTER).sized(0.75f, 1.25f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("the_princess"));
-  public static final RegistryObject<EntityType<Frog>> ENTITY_TYPE_FROG = ENTITY_TYPES.register("frog",
+  public static final DeferredHolder<EntityType<?>, EntityType<Frog>> ENTITY_TYPE_FROG = ENTITY_TYPES.register("frog",
       () -> EntityType.Builder.<Frog>of(Frog::new, MobCategory.WATER_CREATURE).sized(0.75f, 0.75f).clientTrackingRange(32).updateInterval(1).setShouldReceiveVelocityUpdates(true).build("frog"));
-  public static final RegistryObject<EntityType<ThePrinceAdult>> ENTITY_TYPE_THE_YOUNG_ADULT_PRINCE = ENTITY_TYPES.register("the_young_adult_prince",
+  public static final DeferredHolder<EntityType<?>, EntityType<ThePrinceAdult>> ENTITY_TYPE_THE_YOUNG_ADULT_PRINCE = ENTITY_TYPES.register("the_young_adult_prince",
       () -> EntityType.Builder.<ThePrinceAdult>of(ThePrinceAdult::new, MobCategory.MONSTER).sized(0.6f, 1.8f).clientTrackingRange(128).updateInterval(1).setShouldReceiveVelocityUpdates(true).build("the_young_adult_prince"));
-  public static final RegistryObject<EntityType<SpiderRobot>> ENTITY_TYPE_SPIDER_ROBOT = ENTITY_TYPES.register("robot_spider",
+  public static final DeferredHolder<EntityType<?>, EntityType<SpiderRobot>> ENTITY_TYPE_SPIDER_ROBOT = ENTITY_TYPES.register("robot_spider",
       () -> EntityType.Builder.<SpiderRobot>of(SpiderRobot::new, MobCategory.MONSTER).sized(3.25f, 2.25f).clientTrackingRange(128).updateInterval(3).setShouldReceiveVelocityUpdates(true).build("robot_spider"));
-  public static final RegistryObject<EntityType<SpiderDriver>> ENTITY_TYPE_SPIDER_DRIVER = ENTITY_TYPES.register("spider_driver",
+  public static final DeferredHolder<EntityType<?>, EntityType<SpiderDriver>> ENTITY_TYPE_SPIDER_DRIVER = ENTITY_TYPES.register("spider_driver",
       () -> EntityType.Builder.<SpiderDriver>of(SpiderDriver::new, MobCategory.MONSTER).sized(0.6f, 1.8f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("spider_driver"));
-  public static final RegistryObject<EntityType<GiantRobot>> ENTITY_TYPE_GIANT_ROBOT = ENTITY_TYPES.register("jeffery",
+  public static final DeferredHolder<EntityType<?>, EntityType<GiantRobot>> ENTITY_TYPE_GIANT_ROBOT = ENTITY_TYPES.register("jeffery",
       () -> EntityType.Builder.<GiantRobot>of(GiantRobot::new, MobCategory.MONSTER).sized(3.0f, 9.75f).clientTrackingRange(128).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("jeffery"));
-  public static final RegistryObject<EntityType<AntRobot>> ENTITY_TYPE_ANT_ROBOT = ENTITY_TYPES.register("robot_red_ant",
+  public static final DeferredHolder<EntityType<?>, EntityType<AntRobot>> ENTITY_TYPE_ANT_ROBOT = ENTITY_TYPES.register("robot_red_ant",
       () -> EntityType.Builder.<AntRobot>of(AntRobot::new, MobCategory.MONSTER).sized(4.0f, 2.5f).clientTrackingRange(128).updateInterval(1).setShouldReceiveVelocityUpdates(true).build("robot_red_ant"));
-  public static final RegistryObject<EntityType<Crab>> ENTITY_TYPE_CRAB = ENTITY_TYPES.register("crab",
+  public static final DeferredHolder<EntityType<?>, EntityType<Crab>> ENTITY_TYPE_CRAB = ENTITY_TYPES.register("crab",
       () -> EntityType.Builder.<Crab>of(Crab::new, MobCategory.WATER_CREATURE).sized(0.6f, 1.8f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(false).build("crab"));
-  public static final RegistryObject<EntityType<Shoes>> ENTITY_TYPE_SHOES = ENTITY_TYPES.register("shoes",
+  public static final DeferredHolder<EntityType<?>, EntityType<Shoes>> ENTITY_TYPE_SHOES = ENTITY_TYPES.register("shoes",
       () -> EntityType.Builder.<Shoes>of(Shoes::new, MobCategory.MISC).sized(0.25f, 0.25f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(true).build("shoes"));
-  public static final RegistryObject<EntityType<EntityCage>> ENTITY_TYPE_CAGE = ENTITY_TYPES.register("entity_cage",
+  public static final DeferredHolder<EntityType<?>, EntityType<EntityCage>> ENTITY_TYPE_CAGE = ENTITY_TYPES.register("entity_cage",
       () -> EntityType.Builder.<EntityCage>of(EntityCage::new, MobCategory.MISC).sized(0.25f, 0.25f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(true).build("entity_cage"));
-  public static final RegistryObject<EntityType<UltimateArrow>> ENTITY_TYPE_ULTIMATE_ARROW = ENTITY_TYPES.register("ultimate_arrow",
+  public static final DeferredHolder<EntityType<?>, EntityType<UltimateArrow>> ENTITY_TYPE_ULTIMATE_ARROW = ENTITY_TYPES.register("ultimate_arrow",
       () -> EntityType.Builder.<UltimateArrow>of(UltimateArrow::new, MobCategory.MISC).sized(0.25f, 0.25f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(true).build("ultimate_arrow"));
-  public static final RegistryObject<EntityType<IrukandjiArrow>> ENTITY_TYPE_IRUKANDJI_ARROW = ENTITY_TYPES.register("irukandji_arrow",
+  public static final DeferredHolder<EntityType<?>, EntityType<IrukandjiArrow>> ENTITY_TYPE_IRUKANDJI_ARROW = ENTITY_TYPES.register("irukandji_arrow",
       () -> EntityType.Builder.<IrukandjiArrow>of(IrukandjiArrow::new, MobCategory.MISC).sized(0.25f, 0.25f).clientTrackingRange(64).updateInterval(1).setShouldReceiveVelocityUpdates(true).build("irukandji_arrow"));
 
 private static void registerAllCritterCages() {
@@ -1122,266 +1114,266 @@ private static void registerAllCritterCages() {
 
     private static void registerAllPreInitBlocks() {
     BLOCKS.register("antblock", () -> new AntBlock(0));
-    BLOCKS.register("blockamethyst", BlockRuby::new);
-    BLOCKS.register("blockenderpearl", OreGenericEgg::new);
-    BLOCKS.register("blockeyeofender", OreGenericEgg::new);
-    BLOCKS.register("blockmobzillascale", BlockRuby::new);
-    BLOCKS.register("blockruby", BlockRuby::new);
-    BLOCKS.register("blockteleport", RTPBlock::new);
-    BLOCKS.register("blocktitanium", BlockTitanium::new);
-    BLOCKS.register("blockuranium", BlockUranium::new);
-    BLOCKS.register("corn_plant0", BlockCorn::new);
-    BLOCKS.register("corn_plant1", BlockCorn::new);
-    BLOCKS.register("corn_plant2", BlockCorn::new);
-    BLOCKS.register("corn_plant3", BlockCorn::new);
+    BLOCKS.register("blockamethyst", () -> new BlockRuby());
+    BLOCKS.register("blockenderpearl", () -> new OreGenericEgg());
+    BLOCKS.register("blockeyeofender", () -> new OreGenericEgg());
+    BLOCKS.register("blockmobzillascale", () -> new BlockRuby());
+    BLOCKS.register("blockruby", () -> new BlockRuby());
+    BLOCKS.register("blockteleport", () -> new RTPBlock());
+    BLOCKS.register("blocktitanium", () -> new BlockTitanium());
+    BLOCKS.register("blockuranium", () -> new BlockUranium());
+    BLOCKS.register("corn_plant0", () -> new BlockCorn());
+    BLOCKS.register("corn_plant1", () -> new BlockCorn());
+    BLOCKS.register("corn_plant2", () -> new BlockCorn());
+    BLOCKS.register("corn_plant3", () -> new BlockCorn());
     BLOCKS.register("creeperrepellent", () -> new CreeperRepellent());
     BLOCKS.register("crystalcoal", () -> new OreCrystal(0.6F, 6.0F, 20.0F));
     BLOCKS.register("crystalcrystal", () -> new OreCrystalCrystal(0.4F, 12.0F, 40.0F));
     BLOCKS.register("crystalfairy", () -> new OreBasicStone(2.5F, 14.0F, true));
-    BLOCKS.register("crystalpink_block", BlockCrystal::new);
+    BLOCKS.register("crystalpink_block", () -> new BlockCrystal());
     BLOCKS.register("crystalrat", () -> new OreBasicStone(2.5F, 14.0F, true));
-    BLOCKS.register("crystalsapling", BlockCrystalPlant::new);
-    BLOCKS.register("crystalsapling2", BlockCrystalPlant::new);
-    BLOCKS.register("crystalsapling3", BlockCrystalPlant::new);
+    BLOCKS.register("crystalsapling", () -> new BlockCrystalPlant());
+    BLOCKS.register("crystalsapling2", () -> new BlockCrystalPlant());
+    BLOCKS.register("crystalsapling3", () -> new BlockCrystalPlant());
     BLOCKS.register("crystalstone", () -> new OreBasicStone(2.0F, 10.0F, true));
     BLOCKS.register("crystaltorch", () -> new BlockCrystalTorch());
-    BLOCKS.register("ducttape", BlockDuctTape::new);
+    BLOCKS.register("ducttape", () -> new BlockDuctTape());
     BLOCKS.register("dungeonspawner", () -> new DungeonSpawnerBlock());
-    BLOCKS.register("experiencesapling", BlockExperiencePlant::new);
+    BLOCKS.register("experiencesapling", () -> new BlockExperiencePlant());
     BLOCKS.register("extremetorch", () -> new BlockExtremeTorch());
     BLOCKS.register("island", () -> new IslandBlock());
     BLOCKS.register("kingspawner", () -> new KingSpawnerBlock());
     BLOCKS.register("krakenrepellent", () -> new KrakenRepellent());
-    BLOCKS.register("lavafoam", Lavafoam::new);
-    BLOCKS.register("lettuce_0", BlockLettuce::new);
-    BLOCKS.register("lettuce_1", BlockLettuce::new);
-    BLOCKS.register("lettuce_2", BlockLettuce::new);
-    BLOCKS.register("lettuce_3", BlockLettuce::new);
+    BLOCKS.register("lavafoam", () -> new Lavafoam());
+    BLOCKS.register("lettuce_0", () -> new BlockLettuce());
+    BLOCKS.register("lettuce_1", () -> new BlockLettuce());
+    BLOCKS.register("lettuce_2", () -> new BlockLettuce());
+    BLOCKS.register("lettuce_3", () -> new BlockLettuce());
     BLOCKS.register("moledirt", () -> new MoleDirtBlock());
-    BLOCKS.register("oreamethyst", OreAmethyst::new);
-    BLOCKS.register("oreruby", OreRuby::new);
-    BLOCKS.register("oresalt", OreSalt::new);
-    BLOCKS.register("oretitanium", OreTitanium::new);
-    BLOCKS.register("oreuranium", OreUranium::new);
+    BLOCKS.register("oreamethyst", () -> new OreAmethyst());
+    BLOCKS.register("oreruby", () -> new OreRuby());
+    BLOCKS.register("oresalt", () -> new OreSalt());
+    BLOCKS.register("oretitanium", () -> new OreTitanium());
+    BLOCKS.register("oreuranium", () -> new OreUranium());
     BLOCKS.register("deepslate_oreamethyst", () -> new OreAmethyst(SoundType.DEEPSLATE));
     BLOCKS.register("deepslate_oreruby", () -> new OreRuby(SoundType.DEEPSLATE));
     BLOCKS.register("deepslate_oresalt", () -> new OreSalt(SoundType.DEEPSLATE));
     BLOCKS.register("deepslate_oretitanium", () -> new OreTitanium(SoundType.DEEPSLATE));
     BLOCKS.register("deepslate_oreuranium", () -> new OreUranium(SoundType.DEEPSLATE));
-    BLOCKS.register("pizza", BlockPizza::new);
+    BLOCKS.register("pizza", () -> new BlockPizza());
     BLOCKS.register("queenspawner", () -> new QueenSpawnerBlock());
-    BLOCKS.register("quinoa_0", BlockQuinoa::new);
-    BLOCKS.register("quinoa_1", BlockQuinoa::new);
-    BLOCKS.register("quinoa_2", BlockQuinoa::new);
-    BLOCKS.register("quinoa_3", BlockQuinoa::new);
-    BLOCKS.register("radish_plant", BlockRadish::new);
+    BLOCKS.register("quinoa_0", () -> new BlockQuinoa());
+    BLOCKS.register("quinoa_1", () -> new BlockQuinoa());
+    BLOCKS.register("quinoa_2", () -> new BlockQuinoa());
+    BLOCKS.register("quinoa_3", () -> new BlockQuinoa());
+    BLOCKS.register("radish_plant", () -> new BlockRadish());
     BLOCKS.register("rainbowantblock", () -> new AntBlock(0));
     BLOCKS.register("redantblock", () -> new AntBlock(0));
     BLOCKS.register("redanttroll", () -> new OreBasicStone(2.5F, 14.0F));
     BLOCKS.register("deepslate_redanttroll", () -> new OreBasicStone(4.5F, 14.0F));
-    BLOCKS.register("rice_plant", BlockRice::new);
+    BLOCKS.register("rice_plant", () -> new BlockRice());
     BLOCKS.register("termiteblock", () -> new AntBlock(0));
     BLOCKS.register("termitetroll", () -> new OreBasicStone(2.5F, 14.0F));
     BLOCKS.register("deepslate_termitetroll", () -> new OreBasicStone(4.5F, 14.0F));
     BLOCKS.register("tigerseye", () -> new OreCrystalCrystal(0.5F, 15.0F, 60.0F));
-    BLOCKS.register("tigerseye_block", BlockCrystal::new);
-    BLOCKS.register("tomato_plant0", BlockTomato::new);
-    BLOCKS.register("tomato_plant1", BlockTomato::new);
-    BLOCKS.register("tomato_plant2", BlockTomato::new);
-    BLOCKS.register("tomato_plant3", BlockTomato::new);
+    BLOCKS.register("tigerseye_block", () -> new BlockCrystal());
+    BLOCKS.register("tomato_plant0", () -> new BlockTomato());
+    BLOCKS.register("tomato_plant1", () -> new BlockTomato());
+    BLOCKS.register("tomato_plant2", () -> new BlockTomato());
+    BLOCKS.register("tomato_plant3", () -> new BlockTomato());
     BLOCKS.register("unstableantblock", () -> new AntBlock(0));
-    BLOCKS.register("butterfly_plant", BlockButterflyPlant::new);
-    BLOCKS.register("crystalflower_blue", MyBlockFlower::new);
-    BLOCKS.register("crystalflower_green", MyBlockFlower::new);
-    BLOCKS.register("crystalflower_red", MyBlockFlower::new);
-    BLOCKS.register("crystalflower_yellow", MyBlockFlower::new);
+    BLOCKS.register("butterfly_plant", () -> new BlockButterflyPlant());
+    BLOCKS.register("crystalflower_blue", () -> new MyBlockFlower());
+    BLOCKS.register("crystalflower_green", () -> new MyBlockFlower());
+    BLOCKS.register("crystalflower_red", () -> new MyBlockFlower());
+    BLOCKS.register("crystalflower_yellow", () -> new MyBlockFlower());
     BLOCKS.register("crystalfurnace", () -> new CrystalFurnace(2.0F, 10.0F));
-    BLOCKS.register("crystaltreeleaves", BlockCrystalLeaves::new);
-    BLOCKS.register("crystaltreeleaves2", BlockCrystalLeaves::new);
-    BLOCKS.register("crystaltreeleaves3", BlockCrystalLeaves::new);
-    BLOCKS.register("crystaltreelog", BlockCrystalTreeLog::new);
-    BLOCKS.register("duplicatortreelog", BlockDuplicatorLog::new);
-    BLOCKS.register("firefly_plant", BlockFireflyPlant::new);
-    BLOCKS.register("flower_black", MyBlockFlower::new);
-    BLOCKS.register("flower_blue", MyBlockFlower::new);
-    BLOCKS.register("flower_pink", MyBlockFlower::new);
-    BLOCKS.register("flower_scary", MyBlockFlower::new);
+    BLOCKS.register("crystaltreeleaves", () -> new BlockCrystalLeaves());
+    BLOCKS.register("crystaltreeleaves2", () -> new BlockCrystalLeaves());
+    BLOCKS.register("crystaltreeleaves3", () -> new BlockCrystalLeaves());
+    BLOCKS.register("crystaltreelog", () -> new BlockCrystalTreeLog());
+    BLOCKS.register("duplicatortreelog", () -> new BlockDuplicatorLog());
+    BLOCKS.register("firefly_plant", () -> new BlockFireflyPlant());
+    BLOCKS.register("flower_black", () -> new MyBlockFlower());
+    BLOCKS.register("flower_blue", () -> new MyBlockFlower());
+    BLOCKS.register("flower_pink", () -> new MyBlockFlower());
+    BLOCKS.register("flower_scary", () -> new MyBlockFlower());
     ChaosFlowerPots.registerBlocks(BLOCKS);
-    BLOCKS.register("leaves_apple", BlockAppleLeaves::new);
-    BLOCKS.register("leaves_cherry", BlockScaryLeaves::new);
-    BLOCKS.register("leaves_experience", BlockExperienceLeaves::new);
-    BLOCKS.register("leaves_peach", BlockScaryLeaves::new);
-    BLOCKS.register("leaves_scary", BlockScaryLeaves::new);
-    BLOCKS.register("mosquito_plant", BlockMosquitoPlant::new);
-    BLOCKS.register("moth_plant", BlockMothPlant::new);
-    BLOCKS.register("skytreelog", BlockSkyTreeLog::new);
-    BLOCKS.register("strawberry_plant", BlockStrawberry::new);
+    BLOCKS.register("leaves_apple", () -> new BlockAppleLeaves());
+    BLOCKS.register("leaves_cherry", () -> new BlockScaryLeaves());
+    BLOCKS.register("leaves_experience", () -> new BlockExperienceLeaves());
+    BLOCKS.register("leaves_peach", () -> new BlockScaryLeaves());
+    BLOCKS.register("leaves_scary", () -> new BlockScaryLeaves());
+    BLOCKS.register("mosquito_plant", () -> new BlockMosquitoPlant());
+    BLOCKS.register("moth_plant", () -> new BlockMothPlant());
+    BLOCKS.register("skytreelog", () -> new BlockSkyTreeLog());
+    BLOCKS.register("strawberry_plant", () -> new BlockStrawberry());
     BLOCKS.register("crystalgrass", () -> new CrystalGrass(0.6F, 2.0F));
     BLOCKS.register("crystalplanks", () -> new CrystalWood(1.5F, 4.0F));
     BLOCKS.register("crystalworkbench", () -> new CrystalWorkbench(1.0F, 5.0F));
     BLOCKS.register("crystaltermiteblock", () -> new CrystalAntBlock(0));
-    BLOCKS.register("orealien", OreGenericEgg::new);
-    BLOCKS.register("orealosaurus", OreGenericEgg::new);
-    BLOCKS.register("oreattacksquid", OreGenericEgg::new);
-    BLOCKS.register("orebaryonyx", OreGenericEgg::new);
-    BLOCKS.register("orebasilisc", OreGenericEgg::new);
-    BLOCKS.register("orebat", OreGenericEgg::new);
-    BLOCKS.register("orebeaver", OreGenericEgg::new);
-    BLOCKS.register("orebee", OreGenericEgg::new);
-    BLOCKS.register("oreblaze", OreGenericEgg::new);
-    BLOCKS.register("oreboyfriend", OreGenericEgg::new);
-    BLOCKS.register("orebrutalfly", OreGenericEgg::new);
-    BLOCKS.register("orecamarasaurus", OreGenericEgg::new);
-    BLOCKS.register("orecassowary", OreGenericEgg::new);
-    BLOCKS.register("orecaterkiller", OreGenericEgg::new);
-    BLOCKS.register("orecavefisher", OreGenericEgg::new);
-    BLOCKS.register("orecavespider", OreGenericEgg::new);
-    BLOCKS.register("orecephadrome", OreGenericEgg::new);
-    BLOCKS.register("orechicken", OreGenericEgg::new);
-    BLOCKS.register("orechipmunk", OreGenericEgg::new);
-    BLOCKS.register("orecliffracer", OreGenericEgg::new);
-    BLOCKS.register("orecloudshark", OreGenericEgg::new);
-    BLOCKS.register("orecockateil", OreGenericEgg::new);
-    BLOCKS.register("orecow", OreGenericEgg::new);
-    BLOCKS.register("orecrab", OreGenericEgg::new);
-    BLOCKS.register("orecreeper", OreGenericEgg::new);
-    BLOCKS.register("orecreepinghorror", OreGenericEgg::new);
-    BLOCKS.register("orecricket", OreGenericEgg::new);
-    BLOCKS.register("orecriminal", OreGenericEgg::new);
-    BLOCKS.register("orecryolophosaurus", OreGenericEgg::new);
-    BLOCKS.register("orecrystalcow", OreGenericEgg::new);
-    BLOCKS.register("oredragon", OreGenericEgg::new);
-    BLOCKS.register("oredragonfly", OreGenericEgg::new);
-    BLOCKS.register("oredungeonbeast", OreGenericEgg::new);
-    BLOCKS.register("oreeasterbunny", OreGenericEgg::new);
-    BLOCKS.register("oreemperorscorpion", OreGenericEgg::new);
-    BLOCKS.register("oreenchantedcow", OreGenericEgg::new);
-    BLOCKS.register("oreenderdragon", OreGenericEgg::new);
-    BLOCKS.register("oreenderknight", OreGenericEgg::new);
-    BLOCKS.register("oreenderman", OreGenericEgg::new);
-    BLOCKS.register("oreenderreaper", OreGenericEgg::new);
-    BLOCKS.register("orefairy", OreGenericEgg::new);
-    BLOCKS.register("oreflounder", OreGenericEgg::new);
-    BLOCKS.register("orefrog", OreGenericEgg::new);
-    BLOCKS.register("oregammametroid", OreGenericEgg::new);
-    BLOCKS.register("oregazelle", OreGenericEgg::new);
-    BLOCKS.register("oreghast", OreGenericEgg::new);
-    BLOCKS.register("oregirlfriend", OreGenericEgg::new);
-    BLOCKS.register("oregodzilla", OreGenericEgg::new);
-    BLOCKS.register("oregodzillapart", OreGenericEgg::new);
-    BLOCKS.register("oregoldcow", OreGenericEgg::new);
-    BLOCKS.register("oregoldfish", OreGenericEgg::new);
-    BLOCKS.register("orehammerhead", OreGenericEgg::new);
-    BLOCKS.register("orehercules", OreGenericEgg::new);
-    BLOCKS.register("orehorse", OreGenericEgg::new);
-    BLOCKS.register("orehydrolisc", OreGenericEgg::new);
-    BLOCKS.register("oreirongolem", OreGenericEgg::new);
-    BLOCKS.register("oreirukandji", OreGenericEgg::new);
-    BLOCKS.register("orekraken", OreGenericEgg::new);
-    BLOCKS.register("orekyuubi", OreGenericEgg::new);
-    BLOCKS.register("orelargeworm", OreGenericEgg::new);
-    BLOCKS.register("oreleafmonster", OreGenericEgg::new);
-    BLOCKS.register("oreleon", OreGenericEgg::new);
-    BLOCKS.register("orelizard", OreGenericEgg::new);
-    BLOCKS.register("orelurkingterror", OreGenericEgg::new);
-    BLOCKS.register("oremagmacube", OreGenericEgg::new);
-    BLOCKS.register("oremantis", OreGenericEgg::new);
-    BLOCKS.register("oremediumworm", OreGenericEgg::new);
-    BLOCKS.register("oremolenoid", OreGenericEgg::new);
-    BLOCKS.register("oremooshroom", OreGenericEgg::new);
-    BLOCKS.register("oremothra", OreGenericEgg::new);
-    BLOCKS.register("orenastysaurus", OreGenericEgg::new);
-    BLOCKS.register("orenightmare", OreGenericEgg::new);
-    BLOCKS.register("oreocelot", OreGenericEgg::new);
-    BLOCKS.register("oreostrich", OreGenericEgg::new);
-    BLOCKS.register("orepeacock", OreGenericEgg::new);
-    BLOCKS.register("orepig", OreGenericEgg::new);
-    BLOCKS.register("orepointysaurus", OreGenericEgg::new);
-    BLOCKS.register("orerat", OreGenericEgg::new);
-    BLOCKS.register("oreredcow", OreGenericEgg::new);
-    BLOCKS.register("orerotator", OreGenericEgg::new);
-    BLOCKS.register("orerubberducky", OreGenericEgg::new);
-    BLOCKS.register("orescorpion", OreGenericEgg::new);
-    BLOCKS.register("oreseamonster", OreGenericEgg::new);
-    BLOCKS.register("oreseaviper", OreGenericEgg::new);
-    BLOCKS.register("oresheep", OreGenericEgg::new);
-    BLOCKS.register("oresilverfish", OreGenericEgg::new);
-    BLOCKS.register("oreskate", OreGenericEgg::new);
-    BLOCKS.register("oreskeleton", OreGenericEgg::new);
-    BLOCKS.register("oreslime", OreGenericEgg::new);
-    BLOCKS.register("oresmallworm", OreGenericEgg::new);
-    BLOCKS.register("oresnowgolem", OreGenericEgg::new);
-    BLOCKS.register("orespider", OreGenericEgg::new);
-    BLOCKS.register("orespiderdriver", OreGenericEgg::new);
-    BLOCKS.register("orespit", OreGenericEgg::new);
-    BLOCKS.register("orespyro", OreGenericEgg::new);
-    BLOCKS.register("oresquid", OreGenericEgg::new);
-    BLOCKS.register("orestink", OreGenericEgg::new);
-    BLOCKS.register("orestinky", OreGenericEgg::new);
-    BLOCKS.register("oreterribleterror", OreGenericEgg::new);
-    BLOCKS.register("oretheking", OreGenericEgg::new);
-    BLOCKS.register("orethekingpart", OreGenericEgg::new);
-    BLOCKS.register("orethequeen", OreGenericEgg::new);
-    BLOCKS.register("orethequeenpart", OreGenericEgg::new);
-    BLOCKS.register("oretrex", OreGenericEgg::new);
-    BLOCKS.register("oretriffid", OreGenericEgg::new);
-    BLOCKS.register("oretrooper", OreGenericEgg::new);
-    BLOCKS.register("oretshirt", OreGenericEgg::new);
-    BLOCKS.register("oreurchin", OreGenericEgg::new);
-    BLOCKS.register("orevelocityraptor", OreGenericEgg::new);
-    BLOCKS.register("orevillager", OreGenericEgg::new);
-    BLOCKS.register("orevortex", OreGenericEgg::new);
-    BLOCKS.register("orewaterdragon", OreGenericEgg::new);
-    BLOCKS.register("orewhale", OreGenericEgg::new);
-    BLOCKS.register("orewitch", OreGenericEgg::new);
-    BLOCKS.register("orewitherboss", OreGenericEgg::new);
-    BLOCKS.register("orewitherskeleton", OreGenericEgg::new);
-    BLOCKS.register("orewolf", OreGenericEgg::new);
-    BLOCKS.register("orezombie", OreGenericEgg::new);
-    BLOCKS.register("orezombiepigman", OreGenericEgg::new);
-    BLOCKS.register("oreallay", OreGenericEgg::new);
-    BLOCKS.register("oreaxolotl", OreGenericEgg::new);
-    BLOCKS.register("orecamel", OreGenericEgg::new);
-    BLOCKS.register("orecat", OreGenericEgg::new);
-    BLOCKS.register("orecod", OreGenericEgg::new);
-    BLOCKS.register("oredolphin", OreGenericEgg::new);
-    BLOCKS.register("oredrowned", OreGenericEgg::new);
-    BLOCKS.register("oreelderguardian", OreGenericEgg::new);
-    BLOCKS.register("oreendermite", OreGenericEgg::new);
-    BLOCKS.register("oreevoker", OreGenericEgg::new);
-    BLOCKS.register("orefox", OreGenericEgg::new);
-    BLOCKS.register("oreglowsquid", OreGenericEgg::new);
-    BLOCKS.register("oregoat", OreGenericEgg::new);
-    BLOCKS.register("oreguardian", OreGenericEgg::new);
-    BLOCKS.register("orehoglin", OreGenericEgg::new);
-    BLOCKS.register("orehoneybee", OreGenericEgg::new);
-    BLOCKS.register("orehusk", OreGenericEgg::new);
-    BLOCKS.register("orellama", OreGenericEgg::new);
-    BLOCKS.register("orepanda", OreGenericEgg::new);
-    BLOCKS.register("oreparrot", OreGenericEgg::new);
-    BLOCKS.register("orephantom", OreGenericEgg::new);
-    BLOCKS.register("orepiglin", OreGenericEgg::new);
-    BLOCKS.register("orepiglinbrute", OreGenericEgg::new);
-    BLOCKS.register("orepillager", OreGenericEgg::new);
-    BLOCKS.register("orepolarbear", OreGenericEgg::new);
-    BLOCKS.register("orepufferfish", OreGenericEgg::new);
-    BLOCKS.register("orerabbit", OreGenericEgg::new);
-    BLOCKS.register("oreravager", OreGenericEgg::new);
-    BLOCKS.register("oresalmon", OreGenericEgg::new);
-    BLOCKS.register("oreshulker", OreGenericEgg::new);
-    BLOCKS.register("oresniffer", OreGenericEgg::new);
-    BLOCKS.register("orestray", OreGenericEgg::new);
-    BLOCKS.register("orestrider", OreGenericEgg::new);
-    BLOCKS.register("oretadpole", OreGenericEgg::new);
-    BLOCKS.register("oretraderllama", OreGenericEgg::new);
-    BLOCKS.register("oretropicalfish", OreGenericEgg::new);
-    BLOCKS.register("oreturtle", OreGenericEgg::new);
-    BLOCKS.register("orevanillafrog", OreGenericEgg::new);
-    BLOCKS.register("orevex", OreGenericEgg::new);
-    BLOCKS.register("orevindicator", OreGenericEgg::new);
-    BLOCKS.register("orewanderingtrader", OreGenericEgg::new);
-    BLOCKS.register("orewarden", OreGenericEgg::new);
-    BLOCKS.register("orezoglin", OreGenericEgg::new);
+    BLOCKS.register("orealien", () -> new OreGenericEgg());
+    BLOCKS.register("orealosaurus", () -> new OreGenericEgg());
+    BLOCKS.register("oreattacksquid", () -> new OreGenericEgg());
+    BLOCKS.register("orebaryonyx", () -> new OreGenericEgg());
+    BLOCKS.register("orebasilisc", () -> new OreGenericEgg());
+    BLOCKS.register("orebat", () -> new OreGenericEgg());
+    BLOCKS.register("orebeaver", () -> new OreGenericEgg());
+    BLOCKS.register("orebee", () -> new OreGenericEgg());
+    BLOCKS.register("oreblaze", () -> new OreGenericEgg());
+    BLOCKS.register("oreboyfriend", () -> new OreGenericEgg());
+    BLOCKS.register("orebrutalfly", () -> new OreGenericEgg());
+    BLOCKS.register("orecamarasaurus", () -> new OreGenericEgg());
+    BLOCKS.register("orecassowary", () -> new OreGenericEgg());
+    BLOCKS.register("orecaterkiller", () -> new OreGenericEgg());
+    BLOCKS.register("orecavefisher", () -> new OreGenericEgg());
+    BLOCKS.register("orecavespider", () -> new OreGenericEgg());
+    BLOCKS.register("orecephadrome", () -> new OreGenericEgg());
+    BLOCKS.register("orechicken", () -> new OreGenericEgg());
+    BLOCKS.register("orechipmunk", () -> new OreGenericEgg());
+    BLOCKS.register("orecliffracer", () -> new OreGenericEgg());
+    BLOCKS.register("orecloudshark", () -> new OreGenericEgg());
+    BLOCKS.register("orecockateil", () -> new OreGenericEgg());
+    BLOCKS.register("orecow", () -> new OreGenericEgg());
+    BLOCKS.register("orecrab", () -> new OreGenericEgg());
+    BLOCKS.register("orecreeper", () -> new OreGenericEgg());
+    BLOCKS.register("orecreepinghorror", () -> new OreGenericEgg());
+    BLOCKS.register("orecricket", () -> new OreGenericEgg());
+    BLOCKS.register("orecriminal", () -> new OreGenericEgg());
+    BLOCKS.register("orecryolophosaurus", () -> new OreGenericEgg());
+    BLOCKS.register("orecrystalcow", () -> new OreGenericEgg());
+    BLOCKS.register("oredragon", () -> new OreGenericEgg());
+    BLOCKS.register("oredragonfly", () -> new OreGenericEgg());
+    BLOCKS.register("oredungeonbeast", () -> new OreGenericEgg());
+    BLOCKS.register("oreeasterbunny", () -> new OreGenericEgg());
+    BLOCKS.register("oreemperorscorpion", () -> new OreGenericEgg());
+    BLOCKS.register("oreenchantedcow", () -> new OreGenericEgg());
+    BLOCKS.register("oreenderdragon", () -> new OreGenericEgg());
+    BLOCKS.register("oreenderknight", () -> new OreGenericEgg());
+    BLOCKS.register("oreenderman", () -> new OreGenericEgg());
+    BLOCKS.register("oreenderreaper", () -> new OreGenericEgg());
+    BLOCKS.register("orefairy", () -> new OreGenericEgg());
+    BLOCKS.register("oreflounder", () -> new OreGenericEgg());
+    BLOCKS.register("orefrog", () -> new OreGenericEgg());
+    BLOCKS.register("oregammametroid", () -> new OreGenericEgg());
+    BLOCKS.register("oregazelle", () -> new OreGenericEgg());
+    BLOCKS.register("oreghast", () -> new OreGenericEgg());
+    BLOCKS.register("oregirlfriend", () -> new OreGenericEgg());
+    BLOCKS.register("oregodzilla", () -> new OreGenericEgg());
+    BLOCKS.register("oregodzillapart", () -> new OreGenericEgg());
+    BLOCKS.register("oregoldcow", () -> new OreGenericEgg());
+    BLOCKS.register("oregoldfish", () -> new OreGenericEgg());
+    BLOCKS.register("orehammerhead", () -> new OreGenericEgg());
+    BLOCKS.register("orehercules", () -> new OreGenericEgg());
+    BLOCKS.register("orehorse", () -> new OreGenericEgg());
+    BLOCKS.register("orehydrolisc", () -> new OreGenericEgg());
+    BLOCKS.register("oreirongolem", () -> new OreGenericEgg());
+    BLOCKS.register("oreirukandji", () -> new OreGenericEgg());
+    BLOCKS.register("orekraken", () -> new OreGenericEgg());
+    BLOCKS.register("orekyuubi", () -> new OreGenericEgg());
+    BLOCKS.register("orelargeworm", () -> new OreGenericEgg());
+    BLOCKS.register("oreleafmonster", () -> new OreGenericEgg());
+    BLOCKS.register("oreleon", () -> new OreGenericEgg());
+    BLOCKS.register("orelizard", () -> new OreGenericEgg());
+    BLOCKS.register("orelurkingterror", () -> new OreGenericEgg());
+    BLOCKS.register("oremagmacube", () -> new OreGenericEgg());
+    BLOCKS.register("oremantis", () -> new OreGenericEgg());
+    BLOCKS.register("oremediumworm", () -> new OreGenericEgg());
+    BLOCKS.register("oremolenoid", () -> new OreGenericEgg());
+    BLOCKS.register("oremooshroom", () -> new OreGenericEgg());
+    BLOCKS.register("oremothra", () -> new OreGenericEgg());
+    BLOCKS.register("orenastysaurus", () -> new OreGenericEgg());
+    BLOCKS.register("orenightmare", () -> new OreGenericEgg());
+    BLOCKS.register("oreocelot", () -> new OreGenericEgg());
+    BLOCKS.register("oreostrich", () -> new OreGenericEgg());
+    BLOCKS.register("orepeacock", () -> new OreGenericEgg());
+    BLOCKS.register("orepig", () -> new OreGenericEgg());
+    BLOCKS.register("orepointysaurus", () -> new OreGenericEgg());
+    BLOCKS.register("orerat", () -> new OreGenericEgg());
+    BLOCKS.register("oreredcow", () -> new OreGenericEgg());
+    BLOCKS.register("orerotator", () -> new OreGenericEgg());
+    BLOCKS.register("orerubberducky", () -> new OreGenericEgg());
+    BLOCKS.register("orescorpion", () -> new OreGenericEgg());
+    BLOCKS.register("oreseamonster", () -> new OreGenericEgg());
+    BLOCKS.register("oreseaviper", () -> new OreGenericEgg());
+    BLOCKS.register("oresheep", () -> new OreGenericEgg());
+    BLOCKS.register("oresilverfish", () -> new OreGenericEgg());
+    BLOCKS.register("oreskate", () -> new OreGenericEgg());
+    BLOCKS.register("oreskeleton", () -> new OreGenericEgg());
+    BLOCKS.register("oreslime", () -> new OreGenericEgg());
+    BLOCKS.register("oresmallworm", () -> new OreGenericEgg());
+    BLOCKS.register("oresnowgolem", () -> new OreGenericEgg());
+    BLOCKS.register("orespider", () -> new OreGenericEgg());
+    BLOCKS.register("orespiderdriver", () -> new OreGenericEgg());
+    BLOCKS.register("orespit", () -> new OreGenericEgg());
+    BLOCKS.register("orespyro", () -> new OreGenericEgg());
+    BLOCKS.register("oresquid", () -> new OreGenericEgg());
+    BLOCKS.register("orestink", () -> new OreGenericEgg());
+    BLOCKS.register("orestinky", () -> new OreGenericEgg());
+    BLOCKS.register("oreterribleterror", () -> new OreGenericEgg());
+    BLOCKS.register("oretheking", () -> new OreGenericEgg());
+    BLOCKS.register("orethekingpart", () -> new OreGenericEgg());
+    BLOCKS.register("orethequeen", () -> new OreGenericEgg());
+    BLOCKS.register("orethequeenpart", () -> new OreGenericEgg());
+    BLOCKS.register("oretrex", () -> new OreGenericEgg());
+    BLOCKS.register("oretriffid", () -> new OreGenericEgg());
+    BLOCKS.register("oretrooper", () -> new OreGenericEgg());
+    BLOCKS.register("oretshirt", () -> new OreGenericEgg());
+    BLOCKS.register("oreurchin", () -> new OreGenericEgg());
+    BLOCKS.register("orevelocityraptor", () -> new OreGenericEgg());
+    BLOCKS.register("orevillager", () -> new OreGenericEgg());
+    BLOCKS.register("orevortex", () -> new OreGenericEgg());
+    BLOCKS.register("orewaterdragon", () -> new OreGenericEgg());
+    BLOCKS.register("orewhale", () -> new OreGenericEgg());
+    BLOCKS.register("orewitch", () -> new OreGenericEgg());
+    BLOCKS.register("orewitherboss", () -> new OreGenericEgg());
+    BLOCKS.register("orewitherskeleton", () -> new OreGenericEgg());
+    BLOCKS.register("orewolf", () -> new OreGenericEgg());
+    BLOCKS.register("orezombie", () -> new OreGenericEgg());
+    BLOCKS.register("orezombiepigman", () -> new OreGenericEgg());
+    BLOCKS.register("oreallay", () -> new OreGenericEgg());
+    BLOCKS.register("oreaxolotl", () -> new OreGenericEgg());
+    BLOCKS.register("orecamel", () -> new OreGenericEgg());
+    BLOCKS.register("orecat", () -> new OreGenericEgg());
+    BLOCKS.register("orecod", () -> new OreGenericEgg());
+    BLOCKS.register("oredolphin", () -> new OreGenericEgg());
+    BLOCKS.register("oredrowned", () -> new OreGenericEgg());
+    BLOCKS.register("oreelderguardian", () -> new OreGenericEgg());
+    BLOCKS.register("oreendermite", () -> new OreGenericEgg());
+    BLOCKS.register("oreevoker", () -> new OreGenericEgg());
+    BLOCKS.register("orefox", () -> new OreGenericEgg());
+    BLOCKS.register("oreglowsquid", () -> new OreGenericEgg());
+    BLOCKS.register("oregoat", () -> new OreGenericEgg());
+    BLOCKS.register("oreguardian", () -> new OreGenericEgg());
+    BLOCKS.register("orehoglin", () -> new OreGenericEgg());
+    BLOCKS.register("orehoneybee", () -> new OreGenericEgg());
+    BLOCKS.register("orehusk", () -> new OreGenericEgg());
+    BLOCKS.register("orellama", () -> new OreGenericEgg());
+    BLOCKS.register("orepanda", () -> new OreGenericEgg());
+    BLOCKS.register("oreparrot", () -> new OreGenericEgg());
+    BLOCKS.register("orephantom", () -> new OreGenericEgg());
+    BLOCKS.register("orepiglin", () -> new OreGenericEgg());
+    BLOCKS.register("orepiglinbrute", () -> new OreGenericEgg());
+    BLOCKS.register("orepillager", () -> new OreGenericEgg());
+    BLOCKS.register("orepolarbear", () -> new OreGenericEgg());
+    BLOCKS.register("orepufferfish", () -> new OreGenericEgg());
+    BLOCKS.register("orerabbit", () -> new OreGenericEgg());
+    BLOCKS.register("oreravager", () -> new OreGenericEgg());
+    BLOCKS.register("oresalmon", () -> new OreGenericEgg());
+    BLOCKS.register("oreshulker", () -> new OreGenericEgg());
+    BLOCKS.register("oresniffer", () -> new OreGenericEgg());
+    BLOCKS.register("orestray", () -> new OreGenericEgg());
+    BLOCKS.register("orestrider", () -> new OreGenericEgg());
+    BLOCKS.register("oretadpole", () -> new OreGenericEgg());
+    BLOCKS.register("oretraderllama", () -> new OreGenericEgg());
+    BLOCKS.register("oretropicalfish", () -> new OreGenericEgg());
+    BLOCKS.register("oreturtle", () -> new OreGenericEgg());
+    BLOCKS.register("orevanillafrog", () -> new OreGenericEgg());
+    BLOCKS.register("orevex", () -> new OreGenericEgg());
+    BLOCKS.register("orevindicator", () -> new OreGenericEgg());
+    BLOCKS.register("orewanderingtrader", () -> new OreGenericEgg());
+    BLOCKS.register("orewarden", () -> new OreGenericEgg());
+    BLOCKS.register("orezoglin", () -> new OreGenericEgg());
   }
 
   private static void registerAllPreInitItems() {
@@ -1390,19 +1382,19 @@ private static void registerAllCritterCages() {
         () ->
             new ItemPizza(
                 (BlockPizza)
-                    BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "pizza"))));
+                    BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "pizza"))));
     ITEMS.register(
         "ducttape",
         () ->
             new ItemDuctTape(
                 (BlockDuctTape)
-                    BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "ducttape"))));
+                    BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "ducttape"))));
     ITEMS.register(
         "island",
         () ->
             new IslandBlock.ItemIslandBlock(
                 (IslandBlock)
-                    BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "island")),
+                    BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "island")),
                 new Item.Properties()));
     ITEMS.register("acid", () -> new ItemAcid(BaseItemID + 247));
     ITEMS.register("antrobotkit", () -> new ItemSpiderRobotKit(BaseItemID + 473));
@@ -1414,7 +1406,7 @@ private static void registerAllCritterCages() {
             new ItemButterflySeed(
                 (BlockButterflyPlant)
                     BuiltInRegistries.BLOCK.get(
-                        new ResourceLocation(MODID, "butterfly_plant")),
+                        ResourceLocation.fromNamespaceAndPath(MODID, "butterfly_plant")),
                 Blocks.FARMLAND));
     ITEMS.register("cherrytree_seed", () -> new ItemAppleSeed(BaseItemID + 217));
     ITEMS.register(
@@ -1425,7 +1417,7 @@ private static void registerAllCritterCages() {
                 0.75F,
                 (BlockCorn)
                     BuiltInRegistries.BLOCK.get(
-                        new ResourceLocation(MODID, "corn_plant0")),
+                        ResourceLocation.fromNamespaceAndPath(MODID, "corn_plant0")),
                 Blocks.FARMLAND));
     ITEMS.register("creeperlauncher", () -> new ItemCreeperLauncher(BaseItemID + 252));
     ITEMS.register("crystalsticks", () -> new ItemCrystalSticks(BaseItemID + 254));
@@ -1438,7 +1430,7 @@ private static void registerAllCritterCages() {
             new ItemFireflySeed(
                 (BlockFireflyPlant)
                     BuiltInRegistries.BLOCK.get(
-                        new ResourceLocation(MODID, "firefly_plant")),
+                        ResourceLocation.fromNamespaceAndPath(MODID, "firefly_plant")),
                 Blocks.FARMLAND));
     ITEMS.register("greenfish", () -> new ItemGenericFish(3, 0.5F, false));
     ITEMS.register("greyfish", () -> new ItemGenericFish(5, 0.5F, false));
@@ -1455,7 +1447,7 @@ private static void registerAllCritterCages() {
                 0.45F,
                 (BlockLettuce)
                     BuiltInRegistries.BLOCK.get(
-                        new ResourceLocation(MODID, "lettuce_0")),
+                        ResourceLocation.fromNamespaceAndPath(MODID, "lettuce_0")),
                 Blocks.FARMLAND));
     ITEMS.register("magicapple", () -> new ItemMagicApple(BaseItemID + 236));
     ITEMS.register("minersdream", () -> new ItemMinersDream(BaseItemID + 237));
@@ -1465,7 +1457,7 @@ private static void registerAllCritterCages() {
             new ItemMosquitoSeed(
                 (BlockMosquitoPlant)
                     BuiltInRegistries.BLOCK.get(
-                        new ResourceLocation(MODID, "mosquito_plant")),
+                        ResourceLocation.fromNamespaceAndPath(MODID, "mosquito_plant")),
                 Blocks.FARMLAND));
     ITEMS.register(
         "moth_seed",
@@ -1473,7 +1465,7 @@ private static void registerAllCritterCages() {
             new ItemMothSeed(
                 (BlockMothPlant)
                     BuiltInRegistries.BLOCK.get(
-                        new ResourceLocation(MODID, "moth_plant")),
+                        ResourceLocation.fromNamespaceAndPath(MODID, "moth_plant")),
                 Blocks.FARMLAND));
     ITEMS.register("netherlost", () -> new ItemNetherLost(BaseItemID + 253));
     ITEMS.register("peachtree_seed", () -> new ItemAppleSeed(BaseItemID + 218));
@@ -1486,10 +1478,10 @@ private static void registerAllCritterCages() {
                 0.85F,
                 (BlockQuinoa)
                     BuiltInRegistries.BLOCK.get(
-                        new ResourceLocation(MODID, "quinoa_0")),
+                        ResourceLocation.fromNamespaceAndPath(MODID, "quinoa_0")),
                 (CrystalGrass)
                     BuiltInRegistries.BLOCK.get(
-                        new ResourceLocation(MODID, "crystalgrass"))));
+                        ResourceLocation.fromNamespaceAndPath(MODID, "crystalgrass"))));
     ITEMS.register(
         "radish",
         () ->
@@ -1498,7 +1490,7 @@ private static void registerAllCritterCages() {
                 0.45F,
                 (BlockRadish)
                     BuiltInRegistries.BLOCK.get(
-                        new ResourceLocation(MODID, "radish_plant")),
+                        ResourceLocation.fromNamespaceAndPath(MODID, "radish_plant")),
                 Blocks.FARMLAND));
     ITEMS.register("randomdungeon", () -> new ItemRandomDungeon(BaseItemID + 421));
     ITEMS.register("raygun", () -> new ItemRayGun(BaseItemID + 243));
@@ -1510,10 +1502,10 @@ private static void registerAllCritterCages() {
                 0.65F,
                 (BlockRice)
                     BuiltInRegistries.BLOCK.get(
-                        new ResourceLocation(MODID, "rice_plant")),
+                        ResourceLocation.fromNamespaceAndPath(MODID, "rice_plant")),
                 (CrystalGrass)
                     BuiltInRegistries.BLOCK.get(
-                        new ResourceLocation(MODID, "crystalgrass"))));
+                        ResourceLocation.fromNamespaceAndPath(MODID, "crystalgrass"))));
     ITEMS.register("rock", () -> new ItemRock(BaseItemID + 435));
     ITEMS.register("rockblue", () -> new ItemRock(BaseItemID + 439));
     ITEMS.register("rockcrystalblue", () -> new ItemRock(BaseItemID + 445));
@@ -1540,7 +1532,7 @@ private static void registerAllCritterCages() {
             new ItemStrawberrySeed(
                 (BlockStrawberry)
                     BuiltInRegistries.BLOCK.get(
-                        new ResourceLocation(MODID, "strawberry_plant")),
+                        ResourceLocation.fromNamespaceAndPath(MODID, "strawberry_plant")),
                 Blocks.FARMLAND));
     ITEMS.register("thunderstaff", () -> new ItemThunderStaff(BaseItemID + 240));
     ITEMS.register(
@@ -1551,7 +1543,7 @@ private static void registerAllCritterCages() {
                 0.55F,
                 (BlockTomato)
                     BuiltInRegistries.BLOCK.get(
-                        new ResourceLocation(MODID, "tomato_plant0")),
+                        ResourceLocation.fromNamespaceAndPath(MODID, "tomato_plant0")),
                 Blocks.FARMLAND));
     ITEMS.register("waterball", () -> new ItemWaterBall(BaseItemID + 244));
     ITEMS.register("woodfish", () -> new ItemGenericFish(5, 0.7F, false));
@@ -1866,22 +1858,33 @@ private static void registerAllCritterCages() {
     ITEMS.register("deadstinkbug", () -> new ItemSalt(BaseItemID + 155));
   }
 
-  public ChaosPersists() {
+  public ChaosPersists(IEventBus modBus) {
+    BLOCKS.register(modBus);
+    ITEMS.register(modBus);
+    ENTITY_TYPES.register(modBus);
+    BLOCK_ENTITY_TYPES.register(modBus);
+    MENU_TYPES.register(modBus);
+    CREATIVE_MODE_TABS.register(modBus);
+    BIOME_MODIFIER_SERIALIZERS.register(modBus);
+    com.astryxion.chaospersists.loot.ChaosLootModifiers.register(modBus);
+    com.astryxion.chaospersists.world.dimension.structure.ChaosLocateStructures.STRUCTURE_TYPES.register(modBus);
+    com.astryxion.chaospersists.world.dimension.structure.ChaosLocateStructures.STRUCTURE_PIECES.register(modBus);
     instance = this;
     proxy =
-        net.minecraftforge.fml.loading.FMLEnvironment.dist == net.minecraftforge.api.distmarker.Dist.CLIENT
+        net.neoforged.fml.loading.FMLEnvironment.dist == net.neoforged.api.distmarker.Dist.CLIENT
             ? new com.astryxion.chaospersists.client.proxy.ClientProxyChaos()
             : new com.astryxion.chaospersists.proxy.CommonProxyChaos();
-    IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
+    modBus.addListener(com.astryxion.chaospersists.network.MessageMountControl::register);
     modBus.addListener(this::commonSetup);
     modBus.addListener(this::onEntityAttributeCreation);
+    modBus.addListener(com.astryxion.chaospersists.entity.ChaosSpawnPlacements::registerAll);
     modBus.addListener(this::buildCreativeModeTabContents);
     // Never bind client-only listeners on dedicated server — @OnlyIn methods are stripped and
     // resolving them causes NoSuchMethodError (registerEntityRenderers crash).
-    if (net.minecraftforge.fml.loading.FMLEnvironment.dist.isClient()) {
+    if (net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) {
       com.astryxion.chaospersists.client.event.ClientModBusEvents.register(modBus, this);
     }
-    MinecraftForge.EVENT_BUS.register(this);
+    NeoForge.EVENT_BUS.register(this);
     ensureEarlyConfigLoaded();
   }
 
@@ -1900,7 +1903,7 @@ private static void registerAllCritterCages() {
   private static void loadEarlyMobConfig() {
     Configuration config =
         new Configuration(
-            net.minecraftforge.fml.loading.FMLPaths.CONFIGDIR.get()
+            net.neoforged.fml.loading.FMLPaths.CONFIGDIR.get()
                 .resolve("chaospersists.cfg")
                 .toFile());
     config.load();
@@ -1911,7 +1914,7 @@ private static void registerAllCritterCages() {
   private static void loadEarlyWeaponArmorConfig() {
     Configuration config =
         new Configuration(
-            net.minecraftforge.fml.loading.FMLPaths.CONFIGDIR.get()
+            net.neoforged.fml.loading.FMLPaths.CONFIGDIR.get()
                 .resolve("chaospersists.cfg")
                 .toFile());
     config.load();
@@ -2126,7 +2129,7 @@ private static void registerAllCritterCages() {
                     queenbattleaxe_stats.damage,
                     queenbattleaxe_stats.enchantability);
     armorULTIMATE =
-        (ArmorMaterial)
+        (EnumHelper.ArmorSpec)
             (Object)
                 EnumHelper.addArmorMaterial(
                     "ULTIMATE",
@@ -2142,7 +2145,7 @@ private static void registerAllCritterCages() {
                     net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_GENERIC,
                     armorToughnessFor("ULTIMATE"));
     armorMOBZILLA =
-        (ArmorMaterial)
+        (EnumHelper.ArmorSpec)
             (Object)
                 EnumHelper.addArmorMaterial(
                     "MOBZILLA",
@@ -2158,7 +2161,7 @@ private static void registerAllCritterCages() {
                     net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_GENERIC,
                     armorToughnessFor("MOBZILLA"));
     armorLAVAEEL =
-        (ArmorMaterial)
+        (EnumHelper.ArmorSpec)
             (Object)
                 EnumHelper.addArmorMaterial(
                     "LAVAEEL",
@@ -2174,7 +2177,7 @@ private static void registerAllCritterCages() {
                     net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_GENERIC,
                     armorToughnessFor("LAVAEEL"));
     armorMOTHSCALE =
-        (ArmorMaterial)
+        (EnumHelper.ArmorSpec)
             (Object)
                 EnumHelper.addArmorMaterial(
                     "MOTHSCALE",
@@ -2190,7 +2193,7 @@ private static void registerAllCritterCages() {
                     net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_GENERIC,
                     armorToughnessFor("MOTHSCALE"));
     armorEMERALD =
-        (ArmorMaterial)
+        (EnumHelper.ArmorSpec)
             (Object)
                 EnumHelper.addArmorMaterial(
                     "EMERALD",
@@ -2206,7 +2209,7 @@ private static void registerAllCritterCages() {
                     net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_GENERIC,
                     armorToughnessFor("EMERALD"));
     armorEXPERIENCE =
-        (ArmorMaterial)
+        (EnumHelper.ArmorSpec)
             (Object)
                 EnumHelper.addArmorMaterial(
                     "EXPERIENCE",
@@ -2222,7 +2225,7 @@ private static void registerAllCritterCages() {
                     net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_GENERIC,
                     armorToughnessFor("EXPERIENCE"));
     armorRUBY =
-        (ArmorMaterial)
+        (EnumHelper.ArmorSpec)
             (Object)
                 EnumHelper.addArmorMaterial(
                     "RUBY",
@@ -2238,7 +2241,7 @@ private static void registerAllCritterCages() {
                     net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_GENERIC,
                     armorToughnessFor("RUBY"));
     armorAMETHYST =
-        (ArmorMaterial)
+        (EnumHelper.ArmorSpec)
             (Object)
                 EnumHelper.addArmorMaterial(
                     "AMETHYST",
@@ -2254,7 +2257,7 @@ private static void registerAllCritterCages() {
                     net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_GENERIC,
                     armorToughnessFor("AMETHYST"));
     armorPINK =
-        (ArmorMaterial)
+        (EnumHelper.ArmorSpec)
             (Object)
                 EnumHelper.addArmorMaterial(
                     "PINK",
@@ -2270,7 +2273,7 @@ private static void registerAllCritterCages() {
                     net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_GENERIC,
                     armorToughnessFor("PINK"));
     armorTIGERSEYE =
-        (ArmorMaterial)
+        (EnumHelper.ArmorSpec)
             (Object)
                 EnumHelper.addArmorMaterial(
                     "TIGERSEYE",
@@ -2286,7 +2289,7 @@ private static void registerAllCritterCages() {
                     net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_GENERIC,
                     armorToughnessFor("TIGERSEYE"));
     armorPEACOCK =
-        (ArmorMaterial)
+        (EnumHelper.ArmorSpec)
             (Object)
                 EnumHelper.addArmorMaterial(
                     "PEACOCK",
@@ -2302,7 +2305,7 @@ private static void registerAllCritterCages() {
                     net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_GENERIC,
                     armorToughnessFor("PEACOCK"));
     armorROYAL =
-        (ArmorMaterial)
+        (EnumHelper.ArmorSpec)
             (Object)
                 EnumHelper.addArmorMaterial(
                     "ROYAL",
@@ -2318,7 +2321,7 @@ private static void registerAllCritterCages() {
                     net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_GENERIC,
                     armorToughnessFor("ROYAL"));
     armorLAPIS =
-        (ArmorMaterial)
+        (EnumHelper.ArmorSpec)
             (Object)
                 EnumHelper.addArmorMaterial(
                     "LAPIS",
@@ -2334,7 +2337,7 @@ private static void registerAllCritterCages() {
                     net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_GENERIC,
                     armorToughnessFor("LAPIS"));
     armorQUEEN =
-        (ArmorMaterial)
+        (EnumHelper.ArmorSpec)
             (Object)
                 EnumHelper.addArmorMaterial(
                     "QUEEN",
@@ -2359,13 +2362,10 @@ private static void registerAllCritterCages() {
 
   /** Client-only FMLClientSetup; bound from {@link com.astryxion.chaospersists.client.event.ClientModBusEvents}. */
   @OnlyIn(Dist.CLIENT)
-  public void clientInit(final net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent event) {
+  public void clientInit(final net.neoforged.fml.event.lifecycle.FMLClientSetupEvent event) {
     event.enqueueWork(
         () -> {
           proxy.registerBlockRenderLayers();
-          net.minecraft.client.gui.screens.MenuScreens.register(
-              MENU_CRYSTAL_WORKBENCH.get(),
-              com.astryxion.chaospersists.client.gui.CrystalWorkbenchGUI::new);
           load(new FMLInitializationEvent());
         });
   }
@@ -2384,39 +2384,65 @@ private static void registerAllCritterCages() {
   }
 
   private void buildCreativeModeTabContents(BuildCreativeModeTabContentsEvent event) {
-    applyChaosCreativeTabs();
-    ResourceKey<CreativeModeTab> tabKey = event.getTabKey();
-    FeatureFlagSet flags = event.getFlags();
-    java.util.List<Item> tabItems = new java.util.ArrayList<>();
-    for (Item item : BuiltInRegistries.ITEM) {
-      CreativeModeTab assigned = CreativeTabCompat.getCreativeTab(item);
-      if (assigned == null) {
-        continue;
+    try {
+      applyChaosCreativeTabs();
+      ResourceKey<CreativeModeTab> tabKey = event.getTabKey();
+      FeatureFlagSet flags = event.getFlags();
+      java.util.List<Item> tabItems = new java.util.ArrayList<>();
+      for (Item item : BuiltInRegistries.ITEM) {
+        CreativeModeTab assigned = CreativeTabCompat.getCreativeTab(item);
+        if (assigned == null) {
+          continue;
+        }
+        if (BuiltInRegistries.CREATIVE_MODE_TAB.getResourceKey(assigned).orElse(null) != tabKey) {
+          continue;
+        }
+        if (!isValidCreativeTabItem(item, flags)) {
+          continue;
+        }
+        if (!com.astryxion.chaospersists.config.ChaosMobAccess.isItemAllowed(item)) {
+          continue;
+        }
+        tabItems.add(item);
       }
-      if (BuiltInRegistries.CREATIVE_MODE_TAB.getResourceKey(assigned).orElse(null) != tabKey) {
-        continue;
+      if (chaosTabKey("chaos_weapons").equals(tabKey)) {
+        tabItems.sort(chaosWeaponTabComparator());
+      } else if (chaosTabKey("chaos_armor").equals(tabKey)) {
+        tabItems.sort(chaosArmorTabComparator());
+      } else {
+        tabItems.sort(
+            Comparator.comparing(
+                item -> BuiltInRegistries.ITEM.getKey(item).toString(), Comparator.naturalOrder()));
       }
-      if (!isValidCreativeTabItem(item, flags)) {
-        continue;
+      for (Item item : tabItems) {
+        ItemStack stack;
+        try {
+          stack = item.getDefaultInstance();
+          if (stack == null || stack.isEmpty()) {
+            stack = new ItemStack(item);
+          }
+          if (stack.isEmpty()) {
+            continue;
+          }
+          if (stack.getCount() != 1) {
+            stack = stack.copyWithCount(1);
+          }
+          event.accept(stack);
+        } catch (RuntimeException ex) {
+          // One bad item must not abort the whole tab rebuild (creative inventory crash).
+          LOGGER.warn(
+              "Skipping creative tab entry for {}: {}",
+              BuiltInRegistries.ITEM.getKey(item),
+              ex.toString());
+        }
       }
-      if (!com.astryxion.chaospersists.config.ChaosMobAccess.isItemAllowed(item)) {
-        continue;
-      }
-      tabItems.add(item);
+      normalizeCreativeTabEntryStacks(event);
+    } catch (RuntimeException ex) {
+      LOGGER.error(
+          "Chaos creative tab build failed for {}: {}",
+          event.getTabKey(),
+          ex.toString());
     }
-    if (chaosTabKey("chaos_weapons").equals(tabKey)) {
-      tabItems.sort(chaosWeaponTabComparator());
-    } else if (chaosTabKey("chaos_armor").equals(tabKey)) {
-      tabItems.sort(chaosArmorTabComparator());
-    } else {
-      tabItems.sort(
-          Comparator.comparing(
-              item -> BuiltInRegistries.ITEM.getKey(item).toString(), Comparator.naturalOrder()));
-    }
-    for (Item item : tabItems) {
-      event.accept(new ItemStack(item, 1));
-    }
-    normalizeCreativeTabEntryStacks(event);
   }
 
   private static boolean isValidCreativeTabItem(Item item, FeatureFlagSet flags) {
@@ -2441,58 +2467,54 @@ private static void registerAllCritterCages() {
 
   /** Forge creative tabs require stack size 1; drop broken BlockItems and fix counts. */
   private static void normalizeCreativeTabEntryStacks(BuildCreativeModeTabContentsEvent event) {
-    var entries = event.getEntries();
-    FeatureFlagSet flags = event.getFlags();
-    java.util.List<java.util.Map.Entry<ItemStack, CreativeModeTab.TabVisibility>> snapshot =
-        new java.util.ArrayList<>();
-    for (java.util.Map.Entry<ItemStack, CreativeModeTab.TabVisibility> entry : entries) {
-      snapshot.add(entry);
-    }
-    for (java.util.Map.Entry<ItemStack, CreativeModeTab.TabVisibility> entry : snapshot) {
-      ItemStack stack = entry.getKey();
-      if (!isValidCreativeTabStack(stack, flags)
+    for (ItemStack stack : java.util.List.copyOf(event.getParentEntries())) {
+      if (stack == null
+          || !isValidCreativeTabStack(stack, event.getFlags())
           || !com.astryxion.chaospersists.config.ChaosMobAccess.isItemAllowed(stack.getItem())) {
-        entries.remove(stack);
-        continue;
+        if (stack != null) {
+          event.remove(stack, CreativeModeTab.TabVisibility.PARENT_TAB_ONLY);
+        }
       }
-      if (stack.getCount() == 1) {
-        continue;
+    }
+    for (ItemStack stack : java.util.List.copyOf(event.getSearchEntries())) {
+      if (stack == null
+          || !isValidCreativeTabStack(stack, event.getFlags())
+          || !com.astryxion.chaospersists.config.ChaosMobAccess.isItemAllowed(stack.getItem())) {
+        if (stack != null) {
+          event.remove(stack, CreativeModeTab.TabVisibility.SEARCH_TAB_ONLY);
+        }
       }
-      entries.remove(stack);
-      ItemStack fixed = stack.copy();
-      fixed.setCount(1);
-      entries.put(fixed, entry.getValue());
     }
   }
 
   public static ResourceKey<Level> getUtopiaDimensionKey() {
     return ResourceKey.create(
-        Registries.DIMENSION, new ResourceLocation(MODID, "utopia"));
+        Registries.DIMENSION, ResourceLocation.fromNamespaceAndPath(MODID, "utopia"));
   }
 
   public static ResourceKey<Level> getMiningDimensionKey() {
     return ResourceKey.create(
-        Registries.DIMENSION, new ResourceLocation(MODID, "mining"));
+        Registries.DIMENSION, ResourceLocation.fromNamespaceAndPath(MODID, "mining"));
   }
 
   public static ResourceKey<Level> getVillageDimensionKey() {
     return ResourceKey.create(
-        Registries.DIMENSION, new ResourceLocation(MODID, "village"));
+        Registries.DIMENSION, ResourceLocation.fromNamespaceAndPath(MODID, "village"));
   }
 
   public static ResourceKey<Level> getDangerDimensionKey() {
     return ResourceKey.create(
-        Registries.DIMENSION, new ResourceLocation(MODID, "danger"));
+        Registries.DIMENSION, ResourceLocation.fromNamespaceAndPath(MODID, "danger"));
   }
 
   public static ResourceKey<Level> getCrystalDimensionKey() {
     return ResourceKey.create(
-        Registries.DIMENSION, new ResourceLocation(MODID, "crystal"));
+        Registries.DIMENSION, ResourceLocation.fromNamespaceAndPath(MODID, "crystal"));
   }
 
   public static ResourceKey<Level> getChaosDimensionKey() {
     return ResourceKey.create(
-        Registries.DIMENSION, new ResourceLocation(MODID, "chaos"));
+        Registries.DIMENSION, ResourceLocation.fromNamespaceAndPath(MODID, "chaos"));
   }
 
   /** @deprecated Use {@link #getDangerDimensionKey()}; stem renamed from {@code islands} to {@code danger}. */
@@ -2671,14 +2693,14 @@ private static void registerAllCritterCages() {
 
     @OnlyIn(Dist.CLIENT)
   public void registerEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
-    final ResourceLocation texLaserBall = new ResourceLocation("chaospersists", "textures/item/laserball.png");
-    final ResourceLocation texIceBall = new ResourceLocation("chaospersists", "textures/item/iceball.png");
-    final ResourceLocation texAcid = new ResourceLocation("chaospersists", "textures/item/acid.png");
-    final ResourceLocation texDeadIruk = new ResourceLocation("chaospersists", "textures/item/deadirukandji.png");
+    final ResourceLocation texLaserBall = ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/item/laserball.png");
+    final ResourceLocation texIceBall = ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/item/iceball.png");
+    final ResourceLocation texAcid = ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/item/acid.png");
+    final ResourceLocation texDeadIruk = ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/item/deadirukandji.png");
     final ResourceLocation texThunderBolt =
-            new ResourceLocation("chaospersists", "textures/entity/thunder_bolt.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/thunder_bolt.png");
     final ResourceLocation texArrow =
-            new ResourceLocation("textures/entity/projectiles/arrow.png");
+            ResourceLocation.parse("textures/entity/projectiles/arrow.png");
     event.registerEntityRenderer(ENTITY_TYPE_ACID.get(), ctx -> new RenderThrowableBillboard(ctx, texAcid));
     event.registerEntityRenderer(ENTITY_TYPE_BETTER_FIREBALL.get(), ctx -> new ThrownItemRenderer<>(ctx, 3.0F, true));
     event.registerEntityRenderer(ENTITY_TYPE_ALIEN.get(), ctx -> new RenderAlien(ctx, new ModelAlien(0.22f), 0.35f, 1.1f));
@@ -3391,20 +3413,20 @@ private static void registerAllCritterCages() {
   public static Item MyStepUp;
   public static Item MyStepDown;
   public static Item MyStepAccross;
-  public static ArmorMaterial armorULTIMATE;
-  public static ArmorMaterial armorMOBZILLA;
-  public static ArmorMaterial armorLAVAEEL;
-  public static ArmorMaterial armorMOTHSCALE;
-  public static ArmorMaterial armorEMERALD;
-  public static ArmorMaterial armorEXPERIENCE;
-  public static ArmorMaterial armorRUBY;
-  public static ArmorMaterial armorAMETHYST;
-  public static ArmorMaterial armorPINK;
-  public static ArmorMaterial armorTIGERSEYE;
-  public static ArmorMaterial armorPEACOCK;
-  public static ArmorMaterial armorROYAL;
-  public static ArmorMaterial armorLAPIS;
-  public static ArmorMaterial armorQUEEN;
+  public static EnumHelper.ArmorSpec armorULTIMATE;
+  public static EnumHelper.ArmorSpec armorMOBZILLA;
+  public static EnumHelper.ArmorSpec armorLAVAEEL;
+  public static EnumHelper.ArmorSpec armorMOTHSCALE;
+  public static EnumHelper.ArmorSpec armorEMERALD;
+  public static EnumHelper.ArmorSpec armorEXPERIENCE;
+  public static EnumHelper.ArmorSpec armorRUBY;
+  public static EnumHelper.ArmorSpec armorAMETHYST;
+  public static EnumHelper.ArmorSpec armorPINK;
+  public static EnumHelper.ArmorSpec armorTIGERSEYE;
+  public static EnumHelper.ArmorSpec armorPEACOCK;
+  public static EnumHelper.ArmorSpec armorROYAL;
+  public static EnumHelper.ArmorSpec armorLAPIS;
+  public static EnumHelper.ArmorSpec armorQUEEN;
   public static ItemChaosArmor UltimateHelmet;
   public static ItemChaosArmor UltimateBody;
   public static ItemChaosArmor UltimateLegs;
@@ -4014,7 +4036,7 @@ private static void registerAllCritterCages() {
   {
     try
     {
-      Attribute attr = net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH;
+      Attribute attr = net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH.value();
       if (!(attr instanceof RangedAttribute))
       {
         return;
@@ -4217,7 +4239,7 @@ private static void registerAllCritterCages() {
                 weapons,
                 "UltimateBowPetHeal",
                 5,
-                "Health restored when an Ultimate Bow arrow hits a tamed pet (or Girlfriend / Boyfriend). Chaos Persists default is 5 (OreSpawn 1.7.10 was 1). Range 1-5.")
+                "Health restored when an Ultimate Bow arrow hits a tamed pet (or Girlfriend / Boyfriend). 1 is the original amount. Range 1-5.")
             .getInt();
 
     if (UltimateSwordMagic < 1) UltimateSwordMagic = 1;
@@ -4268,36 +4290,36 @@ private static void registerAllCritterCages() {
     BiomeVillageID = BaseBiomeID + 3;
     BiomeChaosID = BaseBiomeID + 4;
     BiomeMiningID = BaseBiomeID + 5;
-    MinecraftForge.EVENT_BUS.register(instance);
-    MinecraftForge.EVENT_BUS.register(chaospersistsGen);
+    NeoForge.EVENT_BUS.register(instance);
+    NeoForge.EVENT_BUS.register(chaospersistsGen);
 
     proxy.registerSoundThings();
 
     laySomeEggs();
 
-    MyOreUraniumBlock = (OreUranium) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "oreuranium"));
+    MyOreUraniumBlock = (OreUranium) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "oreuranium"));
     MyDeepslateOreUraniumBlock =
-        BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "deepslate_oreuranium"));
-    MyOreTitaniumBlock = (OreTitanium) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "oretitanium"));
+        BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "deepslate_oreuranium"));
+    MyOreTitaniumBlock = (OreTitanium) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "oretitanium"));
     MyDeepslateOreTitaniumBlock =
-        BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "deepslate_oretitanium"));
-    MyIngotUranium = (IngotUranium) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "ingoturanium"));
-    MyIngotTitanium = (IngotTitanium) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "ingottitanium"));
-    MyBlockUraniumBlock = (BlockUranium) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "blockuranium"));
-    MyBlockTitaniumBlock = (BlockTitanium) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "blocktitanium"));
-    MyBlockMobzillaScaleBlock = (BlockRuby) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "blockmobzillascale"));
-    MyLavafoamBlock = (Lavafoam) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "lavafoam"));
-    MyBlockRubyBlock = (BlockRuby) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "blockruby"));
-    MyBlockAmethystBlock = (BlockRuby) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "blockamethyst"));
-    MyCrystalPinkBlock = (BlockCrystal) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "crystalpink_block"));
-    MyCrystalPinkIngot = (IngotUranium) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "crystalpink_ingot"));
-    MyTigersEyeBlock = (BlockCrystal) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "tigerseye_block"));
-    MyTigersEyeIngot = (IngotUranium) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "tigerseye_ingot"));
+        BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "deepslate_oretitanium"));
+    MyIngotUranium = (IngotUranium) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "ingoturanium"));
+    MyIngotTitanium = (IngotTitanium) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "ingottitanium"));
+    MyBlockUraniumBlock = (BlockUranium) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "blockuranium"));
+    MyBlockTitaniumBlock = (BlockTitanium) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "blocktitanium"));
+    MyBlockMobzillaScaleBlock = (BlockRuby) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "blockmobzillascale"));
+    MyLavafoamBlock = (Lavafoam) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "lavafoam"));
+    MyBlockRubyBlock = (BlockRuby) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "blockruby"));
+    MyBlockAmethystBlock = (BlockRuby) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "blockamethyst"));
+    MyCrystalPinkBlock = (BlockCrystal) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalpink_block"));
+    MyCrystalPinkIngot = (IngotUranium) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalpink_ingot"));
+    MyTigersEyeBlock = (BlockCrystal) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "tigerseye_block"));
+    MyTigersEyeIngot = (IngotUranium) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "tigerseye_ingot"));
 
-    MyPizzaBlock = (BlockPizza) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "pizza"));
-    MyPizzaItem = BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "pizza"));
-    MyDuctTapeBlock = (BlockDuctTape) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "ducttape"));
-    MyDuctTapeItem = BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "ducttape"));
+    MyPizzaBlock = (BlockPizza) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "pizza"));
+    MyPizzaItem = BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "pizza"));
+    MyDuctTapeBlock = (BlockDuctTape) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "ducttape"));
+    MyDuctTapeItem = BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "ducttape"));
 
     toolULTIMATE = EnumHelper.addToolMaterial("ULTIMATE", ultimate_stats.harvestlevel, ultimate_stats.maxuses, ultimate_stats.efficiency, ultimate_stats.damage, ultimate_stats.enchantability);
 
@@ -4329,137 +4351,137 @@ private static void registerAllCritterCages() {
 
     toolQUEENBATTLE = EnumHelper.addToolMaterial("QUEENBATTLE", queenbattleaxe_stats.harvestlevel, queenbattleaxe_stats.maxuses, queenbattleaxe_stats.efficiency, queenbattleaxe_stats.damage, queenbattleaxe_stats.enchantability);
 
-    MyUltimateSword = (UltimateSword) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "ultimatesword"));
-    MyUltimatePickaxe = (UltimatePickaxe) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "ultimatepickaxe"));
-    MyUltimateShovel = (UltimateShovel) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "ultimateshovel"));
-    MyUltimateHoe = (UltimateHoe) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "ultimatehoe"));
-    MyUltimateAxe = (UltimateAxe) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "ultimateaxe"));
-    MyNightmareSword = (NightmareSword) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "nightmaresword"));
-    MyBertha = (Bertha) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "berthasmall"));
-    MySlice = (Bertha) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "slicesmall"));
-    MyRoyal = (Bertha) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "royalsmall"));
-    MyHammy = (Bertha) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "hammysmall"));
-    MyBattleAxe = (UltimateSword) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "battleaxesmall"));
-    MyChainsaw = (UltimateSword) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "chainsawsmall"));
-    MyQueenBattleAxe = (UltimateSword) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "queenbattleaxesmall"));
+    MyUltimateSword = (UltimateSword) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "ultimatesword"));
+    MyUltimatePickaxe = (UltimatePickaxe) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "ultimatepickaxe"));
+    MyUltimateShovel = (UltimateShovel) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "ultimateshovel"));
+    MyUltimateHoe = (UltimateHoe) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "ultimatehoe"));
+    MyUltimateAxe = (UltimateAxe) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "ultimateaxe"));
+    MyNightmareSword = (NightmareSword) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "nightmaresword"));
+    MyBertha = (Bertha) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "berthasmall"));
+    MySlice = (Bertha) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "slicesmall"));
+    MyRoyal = (Bertha) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "royalsmall"));
+    MyHammy = (Bertha) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "hammysmall"));
+    MyBattleAxe = (UltimateSword) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "battleaxesmall"));
+    MyChainsaw = (UltimateSword) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "chainsawsmall"));
+    MyQueenBattleAxe = (UltimateSword) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "queenbattleaxesmall"));
 
-    MyEmeraldSword = (EmeraldSword) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "emeraldsword"));
-    MyEmeraldPickaxe = (EmeraldPickaxe) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "emeraldpickaxe"));
-    MyEmeraldShovel = (EmeraldShovel) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "emeraldshovel"));
-    MyEmeraldHoe = (EmeraldHoe) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "emeraldhoe"));
-    MyEmeraldAxe = (EmeraldAxe) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "emeraldaxe"));
-    MyExperienceSword = (ExperienceSword) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "experiencesword"));
-    MyPoisonSword = (PoisonSword) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "poisonsword"));
-    MyRatSword = (RatSword) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "ratsword"));
-    MyFairySword = (FairySword) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "fairysword"));
-    MyMantisClaw = (MantisClaw) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "mantisclaw"));
-    MyBigHammer = (BigHammer) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "bighammer"));
-    MyRubySword = (RubySword) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "rubysword"));
-    MyRubyPickaxe = (RubyPickaxe) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "rubypickaxe"));
-    MyRubyShovel = (RubyShovel) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "rubyshovel"));
-    MyRubyHoe = (RubyHoe) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "rubyhoe"));
-    MyRubyAxe = (RubyAxe) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "rubyaxe"));
-    MyAmethystSword = (AmethystSword) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "amethystsword"));
-    MyAmethystPickaxe = (AmethystPickaxe) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "amethystpickaxe"));
-    MyAmethystShovel = (AmethystShovel) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "amethystshovel"));
-    MyAmethystHoe = (AmethystHoe) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "amethysthoe"));
-    MyAmethystAxe = (AmethystAxe) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "amethystaxe"));
-    MyCrystalWoodSword = (CrystalSword) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "crystalwoodsword"));
-    MyCrystalWoodPickaxe = (CrystalPickaxe) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "crystalwoodpickaxe"));
-    MyCrystalWoodShovel = (CrystalShovel) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "crystalwoodshovel"));
-    MyCrystalWoodHoe = (CrystalHoe) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "crystalwoodhoe"));
-    MyCrystalWoodAxe = (CrystalAxe) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "crystalwoodaxe"));
-    MyCrystalPinkSword = (CrystalSword) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "crystalpinksword"));
-    MyCrystalPinkPickaxe = (CrystalPickaxe) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "crystalpinkpickaxe"));
-    MyCrystalPinkShovel = (CrystalShovel) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "crystalpinkshovel"));
-    MyCrystalPinkHoe = (CrystalHoe) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "crystalpinkhoe"));
-    MyCrystalPinkAxe = (CrystalAxe) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "crystalpinkaxe"));
-    MyCrystalStoneSword = (CrystalSword) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "crystalstonesword"));
-    MyCrystalStonePickaxe = (CrystalPickaxe) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "crystalstonepickaxe"));
-    MyCrystalStoneShovel = (CrystalShovel) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "crystalstoneshovel"));
-    MyCrystalStoneHoe = (CrystalHoe) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "crystalstonehoe"));
-    MyCrystalStoneAxe = (CrystalAxe) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "crystalstoneaxe"));
-    MyTigersEyeSword = (CrystalSword) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "tigerseye_sword"));
-    MyTigersEyePickaxe = (CrystalPickaxe) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "tigerseye_pickaxe"));
-    MyTigersEyeShovel = (CrystalShovel) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "tigerseye_shovel"));
-    MyTigersEyeHoe = (CrystalHoe) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "tigerseye_hoe"));
-    MyTigersEyeAxe = (CrystalAxe) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "tigerseye_axe"));
-    MyRoseSword = (EmeraldSword) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "rosesword"));
+    MyEmeraldSword = (EmeraldSword) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "emeraldsword"));
+    MyEmeraldPickaxe = (EmeraldPickaxe) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "emeraldpickaxe"));
+    MyEmeraldShovel = (EmeraldShovel) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "emeraldshovel"));
+    MyEmeraldHoe = (EmeraldHoe) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "emeraldhoe"));
+    MyEmeraldAxe = (EmeraldAxe) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "emeraldaxe"));
+    MyExperienceSword = (ExperienceSword) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "experiencesword"));
+    MyPoisonSword = (PoisonSword) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "poisonsword"));
+    MyRatSword = (RatSword) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "ratsword"));
+    MyFairySword = (FairySword) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "fairysword"));
+    MyMantisClaw = (MantisClaw) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "mantisclaw"));
+    MyBigHammer = (BigHammer) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "bighammer"));
+    MyRubySword = (RubySword) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "rubysword"));
+    MyRubyPickaxe = (RubyPickaxe) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "rubypickaxe"));
+    MyRubyShovel = (RubyShovel) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "rubyshovel"));
+    MyRubyHoe = (RubyHoe) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "rubyhoe"));
+    MyRubyAxe = (RubyAxe) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "rubyaxe"));
+    MyAmethystSword = (AmethystSword) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "amethystsword"));
+    MyAmethystPickaxe = (AmethystPickaxe) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "amethystpickaxe"));
+    MyAmethystShovel = (AmethystShovel) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "amethystshovel"));
+    MyAmethystHoe = (AmethystHoe) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "amethysthoe"));
+    MyAmethystAxe = (AmethystAxe) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "amethystaxe"));
+    MyCrystalWoodSword = (CrystalSword) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalwoodsword"));
+    MyCrystalWoodPickaxe = (CrystalPickaxe) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalwoodpickaxe"));
+    MyCrystalWoodShovel = (CrystalShovel) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalwoodshovel"));
+    MyCrystalWoodHoe = (CrystalHoe) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalwoodhoe"));
+    MyCrystalWoodAxe = (CrystalAxe) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalwoodaxe"));
+    MyCrystalPinkSword = (CrystalSword) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalpinksword"));
+    MyCrystalPinkPickaxe = (CrystalPickaxe) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalpinkpickaxe"));
+    MyCrystalPinkShovel = (CrystalShovel) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalpinkshovel"));
+    MyCrystalPinkHoe = (CrystalHoe) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalpinkhoe"));
+    MyCrystalPinkAxe = (CrystalAxe) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalpinkaxe"));
+    MyCrystalStoneSword = (CrystalSword) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalstonesword"));
+    MyCrystalStonePickaxe = (CrystalPickaxe) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalstonepickaxe"));
+    MyCrystalStoneShovel = (CrystalShovel) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalstoneshovel"));
+    MyCrystalStoneHoe = (CrystalHoe) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalstonehoe"));
+    MyCrystalStoneAxe = (CrystalAxe) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalstoneaxe"));
+    MyTigersEyeSword = (CrystalSword) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "tigerseye_sword"));
+    MyTigersEyePickaxe = (CrystalPickaxe) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "tigerseye_pickaxe"));
+    MyTigersEyeShovel = (CrystalShovel) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "tigerseye_shovel"));
+    MyTigersEyeHoe = (CrystalHoe) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "tigerseye_hoe"));
+    MyTigersEyeAxe = (CrystalAxe) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "tigerseye_axe"));
+    MyRoseSword = (EmeraldSword) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "rosesword"));
 
-    MyItemShoes = (ItemShoes) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "redheels"));
-    MyItemShoes_1 = (ItemShoes) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "blackheels"));
-    MyItemShoes_2 = (ItemShoes) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "slippers"));
-    MyItemShoes_3 = (ItemShoes) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "boots"));
-    MyItemGameController = (ItemShoes) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "gamecontroller"));
+    MyItemShoes = (ItemShoes) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "redheels"));
+    MyItemShoes_1 = (ItemShoes) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "blackheels"));
+    MyItemShoes_2 = (ItemShoes) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "slippers"));
+    MyItemShoes_3 = (ItemShoes) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "boots"));
+    MyItemGameController = (ItemShoes) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "gamecontroller"));
 
-    MyUltimateBow = (UltimateBow) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "ultimatebow"));
-    MySkateBow = (SkateBow) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "skatebow"));
+    MyUltimateBow = (UltimateBow) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "ultimatebow"));
+    MySkateBow = (SkateBow) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "skatebow"));
 
-    MyUltimateFishingRod = (UltimateFishingRod) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "ultimatefishingrod"));
+    MyUltimateFishingRod = (UltimateFishingRod) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "ultimatefishingrod"));
     UltimateFishingRod = new ItemStack(MyUltimateFishingRod);
 
-    MyFireFish = (ItemFireFish) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "firefish"));
-    MySunFish = (ItemSunFish) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "sunfish"));
-    MyLavaEel = (ItemLavaEel) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "lavaeel"));
-    MyMothScale = (ItemSalt) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "mothscale"));
-    MyQueenScale = (ItemSalt) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "queenscale"));
-    MyNightmareScale = (ItemSalt) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "nightmarescale"));
-    MyEmperorScorpionScale = (ItemSalt) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "emperorscorpionscale"));
-    MyBasiliskScale = (ItemSalt) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "basiliskscale"));
-    MyWaterDragonScale = (ItemSalt) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "waterdragonscale"));
-    MyPeacockFeather = (ItemSalt) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "peacockfeather"));
-    MyJumpyBugScale = (ItemSalt) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "jumpybugscale"));
-    MyKrakenTooth = (ItemSalt) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "krakentooth"));
-    MyGodzillaScale = (ItemSalt) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "godzillascale"));
-    GreenGoo = (ItemSalt) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "greengoo"));
-    SpiderRobotKit = (ItemSpiderRobotKit) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "spiderrobotkit"));
-    AntRobotKit = (ItemSpiderRobotKit) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "antrobotkit"));
-    ZooKeeper = (ItemZooKeeper) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "zookeeper"));
-    CreeperLauncher = (ItemCreeperLauncher) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "creeperlauncher"));
-    NetherLost = (ItemNetherLost) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "netherlost"));
-    CrystalSticks = (ItemCrystalSticks) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "crystalsticks"));
-    MySunspotUrchin = (ItemSunspotUrchin) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "sunspoturchin"));
-    MySparkFish = (ItemSparkFish) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "sparkfish"));
-    MyWaterBall = (ItemWaterBall) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "waterball"));
-    MyLaserBall = (ItemLaserBall) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "laserball"));
-    MyIceBall = (ItemIceBall) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "iceball"));
-    MySmallRock = (ItemRock) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "rocksmall"));
-    MyRock = (ItemRock) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "rock"));
-    MyRedRock = (ItemRock) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "rockred"));
-    MyCrystalRedRock = (ItemRock) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "rockcrystalred"));
-    MyCrystalGreenRock = (ItemRock) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "rockcrystalgreen"));
-    MyCrystalBlueRock = (ItemRock) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "rockcrystalblue"));
-    MyCrystalTNTRock = (ItemRock) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "rockcrystaltnt"));
-    MyGreenRock = (ItemRock) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "rockgreen"));
-    MyBlueRock = (ItemRock) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "rockblue"));
-    MyPurpleRock = (ItemRock) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "rockpurple"));
-    MySpikeyRock = (ItemRock) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "rockspikey"));
-    MyTNTRock = (ItemRock) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "rocktnt"));
-    MyRayGun = (ItemRayGun) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "raygun"));
-    MyThunderStaff = (ItemThunderStaff) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "thunderstaff"));
-    MyWrench = (ItemWrench) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "wrench"));
-    MyAcid = (ItemAcid) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "acid"));
-    MyIrukandji = (ItemIrukandji) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "deadirukandji"));
-    MyIrukandjiArrow = (ItemIrukandjiArrow) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "irukandjiarrow"));
-    MyGreenFish = (ItemGenericFish) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "greenfish"));
-    MyBlueFish = (ItemGenericFish) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "bluefish"));
-    MyPinkFish = (ItemGenericFish) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "pinkfish"));
-    MyRockFish = (ItemGenericFish) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "rockfish"));
-    MyWoodFish = (ItemGenericFish) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "woodfish"));
-    MyGreyFish = (ItemGenericFish) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "greyfish"));
-    Sifter = (ItemSifter) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "sifter"));
-    MySquidZooka = (ItemSquidZooka) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "squidzookasmall"));
+    MyFireFish = (ItemFireFish) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "firefish"));
+    MySunFish = (ItemSunFish) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "sunfish"));
+    MyLavaEel = (ItemLavaEel) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "lavaeel"));
+    MyMothScale = (ItemSalt) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "mothscale"));
+    MyQueenScale = (ItemSalt) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "queenscale"));
+    MyNightmareScale = (ItemSalt) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "nightmarescale"));
+    MyEmperorScorpionScale = (ItemSalt) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "emperorscorpionscale"));
+    MyBasiliskScale = (ItemSalt) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "basiliskscale"));
+    MyWaterDragonScale = (ItemSalt) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "waterdragonscale"));
+    MyPeacockFeather = (ItemSalt) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "peacockfeather"));
+    MyJumpyBugScale = (ItemSalt) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "jumpybugscale"));
+    MyKrakenTooth = (ItemSalt) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "krakentooth"));
+    MyGodzillaScale = (ItemSalt) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "godzillascale"));
+    GreenGoo = (ItemSalt) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "greengoo"));
+    SpiderRobotKit = (ItemSpiderRobotKit) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "spiderrobotkit"));
+    AntRobotKit = (ItemSpiderRobotKit) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "antrobotkit"));
+    ZooKeeper = (ItemZooKeeper) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "zookeeper"));
+    CreeperLauncher = (ItemCreeperLauncher) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "creeperlauncher"));
+    NetherLost = (ItemNetherLost) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "netherlost"));
+    CrystalSticks = (ItemCrystalSticks) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalsticks"));
+    MySunspotUrchin = (ItemSunspotUrchin) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "sunspoturchin"));
+    MySparkFish = (ItemSparkFish) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "sparkfish"));
+    MyWaterBall = (ItemWaterBall) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "waterball"));
+    MyLaserBall = (ItemLaserBall) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "laserball"));
+    MyIceBall = (ItemIceBall) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "iceball"));
+    MySmallRock = (ItemRock) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "rocksmall"));
+    MyRock = (ItemRock) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "rock"));
+    MyRedRock = (ItemRock) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "rockred"));
+    MyCrystalRedRock = (ItemRock) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "rockcrystalred"));
+    MyCrystalGreenRock = (ItemRock) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "rockcrystalgreen"));
+    MyCrystalBlueRock = (ItemRock) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "rockcrystalblue"));
+    MyCrystalTNTRock = (ItemRock) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "rockcrystaltnt"));
+    MyGreenRock = (ItemRock) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "rockgreen"));
+    MyBlueRock = (ItemRock) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "rockblue"));
+    MyPurpleRock = (ItemRock) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "rockpurple"));
+    MySpikeyRock = (ItemRock) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "rockspikey"));
+    MyTNTRock = (ItemRock) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "rocktnt"));
+    MyRayGun = (ItemRayGun) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "raygun"));
+    MyThunderStaff = (ItemThunderStaff) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "thunderstaff"));
+    MyWrench = (ItemWrench) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "wrench"));
+    MyAcid = (ItemAcid) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "acid"));
+    MyIrukandji = (ItemIrukandji) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "deadirukandji"));
+    MyIrukandjiArrow = (ItemIrukandjiArrow) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "irukandjiarrow"));
+    MyGreenFish = (ItemGenericFish) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "greenfish"));
+    MyBlueFish = (ItemGenericFish) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "bluefish"));
+    MyPinkFish = (ItemGenericFish) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "pinkfish"));
+    MyRockFish = (ItemGenericFish) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "rockfish"));
+    MyWoodFish = (ItemGenericFish) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "woodfish"));
+    MyGreyFish = (ItemGenericFish) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "greyfish"));
+    Sifter = (ItemSifter) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "sifter"));
+    MySquidZooka = (ItemSquidZooka) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "squidzookasmall"));
 
-    BerthaHandle = (ItemSalt) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "bbhandle"));
-    BerthaGuard = (ItemSalt) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "bbguard"));
-    BerthaBlade = (ItemSalt) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "bbblade"));
-    MolenoidNose = (ItemSalt) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "molenoidnose"));
-    SeaMonsterScale = (ItemSalt) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "seamonsterscale"));
-    WormTooth = (ItemSalt) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "wormtooth"));
-    TRexTooth = (ItemSalt) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "trextooth"));
-    CaterKillerJaw = (ItemSalt) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "caterkillerjaw"));
-    SeaViperTongue = (ItemSalt) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "seavipertongue"));
-    VortexEye = (ItemSalt) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "vortexeye"));
+    BerthaHandle = (ItemSalt) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "bbhandle"));
+    BerthaGuard = (ItemSalt) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "bbguard"));
+    BerthaBlade = (ItemSalt) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "bbblade"));
+    MolenoidNose = (ItemSalt) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "molenoidnose"));
+    SeaMonsterScale = (ItemSalt) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "seamonsterscale"));
+    WormTooth = (ItemSalt) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "wormtooth"));
+    TRexTooth = (ItemSalt) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "trextooth"));
+    CaterKillerJaw = (ItemSalt) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "caterkillerjaw"));
+    SeaViperTongue = (ItemSalt) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "seavipertongue"));
+    VortexEye = (ItemSalt) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "vortexeye"));
 
     armorULTIMATE = EnumHelper.addArmorMaterial("ULTIMATE", "chaospersists", Ultimate_armorstats.durability, new int[] { Ultimate_armorstats.head_protection, Ultimate_armorstats.chest_protection, Ultimate_armorstats.leg_protection, Ultimate_armorstats.boot_protection }, Ultimate_armorstats.enchantability, SoundEvents.ARMOR_EQUIP_GENERIC, armorToughnessFor("ULTIMATE"));
 
@@ -4489,220 +4511,220 @@ private static void registerAllCritterCages() {
 
     armorQUEEN = EnumHelper.addArmorMaterial("QUEEN", "chaospersists", Queen_armorstats.durability, new int[] { Queen_armorstats.head_protection, Queen_armorstats.chest_protection, Queen_armorstats.leg_protection, Queen_armorstats.boot_protection }, Queen_armorstats.enchantability, SoundEvents.ARMOR_EQUIP_GENERIC, armorToughnessFor("QUEEN"));
 
-    UltimateHelmet = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "ultimate_helmet"));
-    UltimateBody = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "ultimate_chest"));
-    UltimateLegs = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "ultimate_leggings"));
-    UltimateBoots = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "ultimate_boots"));
-    LavaEelHelmet = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "lavaeel_helmet"));
-    LavaEelBody = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "lavaeel_chest"));
-    LavaEelLegs = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "lavaeel_leggings"));
-    LavaEelBoots = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "lavaeel_boots"));
-    MothScaleHelmet = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "mothscale_helmet"));
-    MothScaleBody = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "mothscale_chest"));
-    MothScaleLegs = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "mothscale_leggings"));
-    MothScaleBoots = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "mothscale_boots"));
-    EmeraldHelmet = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "emerald_helmet"));
-    EmeraldBody = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "emerald_chest"));
-    EmeraldLegs = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "emerald_leggings"));
-    EmeraldBoots = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "emerald_boots"));
-    ExperienceHelmet = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "experience_helmet"));
-    ExperienceBody = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "experience_chest"));
-    ExperienceLegs = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "experience_leggings"));
-    ExperienceBoots = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "experience_boots"));
-    RubyHelmet = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "ruby_helmet"));
-    RubyBody = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "ruby_chest"));
-    RubyLegs = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "ruby_leggings"));
-    RubyBoots = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "ruby_boots"));
-    AmethystHelmet = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "amethyst_helmet"));
-    AmethystBody = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "amethyst_chest"));
-    AmethystLegs = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "amethyst_leggings"));
-    AmethystBoots = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "amethyst_boots"));
-    CrystalPinkHelmet = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "pink_helmet"));
-    CrystalPinkBody = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "pink_chest"));
-    CrystalPinkLegs = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "pink_leggings"));
-    CrystalPinkBoots = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "pink_boots"));
-    TigersEyeHelmet = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "tigerseye_helmet"));
-    TigersEyeBody = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "tigerseye_chest"));
-    TigersEyeLegs = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "tigerseye_leggings"));
-    TigersEyeBoots = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "tigerseye_boots"));
-    PeacockFeatherBoots = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "peacock_boots"));
-    PeacockFeatherHelmet = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "peacock_helmet"));
-    PeacockFeatherBody = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "peacock_chest"));
-    PeacockFeatherLegs = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "peacock_leggings"));
-    MobzillaHelmet = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "mobzilla_helmet"));
-    MobzillaBody = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "mobzilla_chest"));
-    MobzillaLegs = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "mobzilla_leggings"));
-    MobzillaBoots = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "mobzilla_boots"));
-    RoyalHelmet = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "royal_helmet"));
-    RoyalBody = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "royal_chest"));
-    RoyalLegs = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "royal_leggings"));
-    RoyalBoots = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "royal_boots"));
-    LapisHelmet = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "lapis_helmet"));
-    LapisBody = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "lapis_chest"));
-    LapisLegs = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "lapis_leggings"));
-    LapisBoots = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "lapis_boots"));
-    QueenHelmet = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "queen_helmet"));
-    QueenBody = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "queen_chest"));
-    QueenLegs = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "queen_leggings"));
-    QueenBoots = (ItemChaosArmor) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "queen_boots"));
+    UltimateHelmet = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "ultimate_helmet"));
+    UltimateBody = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "ultimate_chest"));
+    UltimateLegs = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "ultimate_leggings"));
+    UltimateBoots = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "ultimate_boots"));
+    LavaEelHelmet = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "lavaeel_helmet"));
+    LavaEelBody = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "lavaeel_chest"));
+    LavaEelLegs = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "lavaeel_leggings"));
+    LavaEelBoots = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "lavaeel_boots"));
+    MothScaleHelmet = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "mothscale_helmet"));
+    MothScaleBody = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "mothscale_chest"));
+    MothScaleLegs = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "mothscale_leggings"));
+    MothScaleBoots = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "mothscale_boots"));
+    EmeraldHelmet = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "emerald_helmet"));
+    EmeraldBody = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "emerald_chest"));
+    EmeraldLegs = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "emerald_leggings"));
+    EmeraldBoots = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "emerald_boots"));
+    ExperienceHelmet = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "experience_helmet"));
+    ExperienceBody = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "experience_chest"));
+    ExperienceLegs = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "experience_leggings"));
+    ExperienceBoots = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "experience_boots"));
+    RubyHelmet = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "ruby_helmet"));
+    RubyBody = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "ruby_chest"));
+    RubyLegs = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "ruby_leggings"));
+    RubyBoots = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "ruby_boots"));
+    AmethystHelmet = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "amethyst_helmet"));
+    AmethystBody = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "amethyst_chest"));
+    AmethystLegs = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "amethyst_leggings"));
+    AmethystBoots = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "amethyst_boots"));
+    CrystalPinkHelmet = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "pink_helmet"));
+    CrystalPinkBody = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "pink_chest"));
+    CrystalPinkLegs = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "pink_leggings"));
+    CrystalPinkBoots = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "pink_boots"));
+    TigersEyeHelmet = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "tigerseye_helmet"));
+    TigersEyeBody = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "tigerseye_chest"));
+    TigersEyeLegs = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "tigerseye_leggings"));
+    TigersEyeBoots = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "tigerseye_boots"));
+    PeacockFeatherBoots = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "peacock_boots"));
+    PeacockFeatherHelmet = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "peacock_helmet"));
+    PeacockFeatherBody = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "peacock_chest"));
+    PeacockFeatherLegs = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "peacock_leggings"));
+    MobzillaHelmet = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "mobzilla_helmet"));
+    MobzillaBody = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "mobzilla_chest"));
+    MobzillaLegs = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "mobzilla_leggings"));
+    MobzillaBoots = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "mobzilla_boots"));
+    RoyalHelmet = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "royal_helmet"));
+    RoyalBody = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "royal_chest"));
+    RoyalLegs = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "royal_leggings"));
+    RoyalBoots = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "royal_boots"));
+    LapisHelmet = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "lapis_helmet"));
+    LapisBody = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "lapis_chest"));
+    LapisLegs = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "lapis_leggings"));
+    LapisBoots = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "lapis_boots"));
+    QueenHelmet = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "queen_helmet"));
+    QueenBody = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "queen_chest"));
+    QueenLegs = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "queen_leggings"));
+    QueenBoots = (ItemChaosArmor) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "queen_boots"));
 
-    MyOreSaltBlock = (OreSalt) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "oresalt"));
+    MyOreSaltBlock = (OreSalt) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "oresalt"));
     MyDeepslateOreSaltBlock =
-        BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "deepslate_oresalt"));
-    MySalt = (ItemSalt) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "salt"));
-    MyPopcorn = (ItemPopcorn) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "popcorn"));
-    MyButteredPopcorn = (ItemPopcorn) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "popcorn_buttered"));
-    MyButteredSaltedPopcorn = (ItemPopcorn) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "popcorn_buttered_salted"));
-    MyPopcornBag = (ItemPopcorn) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "popcorn_bag"));
-    MyButter = (ItemPopcorn) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "butter"));
-    MyCornDog = (ItemPopcorn) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "corndog_cooked"));
-    MyRawCornDog = (ItemPopcorn) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "corndog_raw"));
-    MyButterCandy = (ItemSunFish) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "buttercandy"));
-    MyBacon = (ItemSunFish) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cookedbacon"));
-    MyRawBacon = (ItemPopcorn) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "bacon"));
-    MyCrabMeat = (ItemSunFish) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cookedcrabmeat"));
-    MyRawCrabMeat = (ItemPopcorn) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "crabmeat"));
-    MyCheese = (ItemPopcorn) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cheese"));
-    MySalad = (ItemPopcorn) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "salad"));
-    MyBLT = (ItemPopcorn) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "blt_sandwich"));
-    MyCrabbyPatty = (ItemPopcorn) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "crabbypatty"));
-    MyOreRubyBlock = (OreRuby) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "oreruby"));
+        BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "deepslate_oresalt"));
+    MySalt = (ItemSalt) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "salt"));
+    MyPopcorn = (ItemPopcorn) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "popcorn"));
+    MyButteredPopcorn = (ItemPopcorn) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "popcorn_buttered"));
+    MyButteredSaltedPopcorn = (ItemPopcorn) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "popcorn_buttered_salted"));
+    MyPopcornBag = (ItemPopcorn) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "popcorn_bag"));
+    MyButter = (ItemPopcorn) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "butter"));
+    MyCornDog = (ItemPopcorn) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "corndog_cooked"));
+    MyRawCornDog = (ItemPopcorn) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "corndog_raw"));
+    MyButterCandy = (ItemSunFish) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "buttercandy"));
+    MyBacon = (ItemSunFish) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cookedbacon"));
+    MyRawBacon = (ItemPopcorn) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "bacon"));
+    MyCrabMeat = (ItemSunFish) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cookedcrabmeat"));
+    MyRawCrabMeat = (ItemPopcorn) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "crabmeat"));
+    MyCheese = (ItemPopcorn) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cheese"));
+    MySalad = (ItemPopcorn) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "salad"));
+    MyBLT = (ItemPopcorn) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "blt_sandwich"));
+    MyCrabbyPatty = (ItemPopcorn) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "crabbypatty"));
+    MyOreRubyBlock = (OreRuby) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "oreruby"));
     MyDeepslateOreRubyBlock =
-        BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "deepslate_oreruby"));
-    MyRuby = (ItemSalt) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "ruby"));
-    MyOreAmethystBlock = (OreAmethyst) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "oreamethyst"));
+        BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "deepslate_oreruby"));
+    MyRuby = (ItemSalt) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "ruby"));
+    MyOreAmethystBlock = (OreAmethyst) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "oreamethyst"));
     MyDeepslateOreAmethystBlock =
-        BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "deepslate_oreamethyst"));
-    MyAmethyst = (ItemSalt) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "amethyst"));
-    UraniumNugget = (ItemSalt) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "uranium_nugget"));
-    TitaniumNugget = (ItemSalt) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "titanium_nugget"));
-    CrystalStone = (OreBasicStone) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "crystalstone"));
-    CrystalCoal = (OreCrystal) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "crystalcoal"));
-    CrystalGrass = (CrystalGrass) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "crystalgrass"));
-    CrystalCrystal = (OreCrystalCrystal) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "crystalcrystal"));
-    TigersEye = (OreCrystalCrystal) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "tigerseye"));
-    CrystalPlanksBlock = (CrystalWood) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "crystalplanks"));
-    CrystalWorkbenchBlock = (CrystalWorkbench) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "crystalworkbench"));
-    CrystalFurnaceBlock = (CrystalFurnace) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "crystalfurnace"));
-    MyPeacock = (ItemPopcorn) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cookedpeacock"));
-    MyRawPeacock = (ItemPopcorn) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "rawpeacock"));
-    CrystalRat = (OreBasicStone) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "crystalrat"));
-    CrystalFairy = (OreBasicStone) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "crystalfairy"));
-    RedAntTroll = (OreBasicStone) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "redanttroll"));
-    TermiteTroll = (OreBasicStone) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "termitetroll"));
+        BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "deepslate_oreamethyst"));
+    MyAmethyst = (ItemSalt) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "amethyst"));
+    UraniumNugget = (ItemSalt) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "uranium_nugget"));
+    TitaniumNugget = (ItemSalt) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "titanium_nugget"));
+    CrystalStone = (OreBasicStone) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalstone"));
+    CrystalCoal = (OreCrystal) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalcoal"));
+    CrystalGrass = (CrystalGrass) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalgrass"));
+    CrystalCrystal = (OreCrystalCrystal) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalcrystal"));
+    TigersEye = (OreCrystalCrystal) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "tigerseye"));
+    CrystalPlanksBlock = (CrystalWood) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalplanks"));
+    CrystalWorkbenchBlock = (CrystalWorkbench) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalworkbench"));
+    CrystalFurnaceBlock = (CrystalFurnace) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalfurnace"));
+    MyPeacock = (ItemPopcorn) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cookedpeacock"));
+    MyRawPeacock = (ItemPopcorn) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "rawpeacock"));
+    CrystalRat = (OreBasicStone) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalrat"));
+    CrystalFairy = (OreBasicStone) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalfairy"));
+    RedAntTroll = (OreBasicStone) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "redanttroll"));
+    TermiteTroll = (OreBasicStone) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "termitetroll"));
     DeepslateRedAntTroll =
         (OreBasicStone)
             BuiltInRegistries.BLOCK.get(
-                new ResourceLocation(MODID, "deepslate_redanttroll"));
+                ResourceLocation.fromNamespaceAndPath(MODID, "deepslate_redanttroll"));
     DeepslateTermiteTroll =
         (OreBasicStone)
             BuiltInRegistries.BLOCK.get(
-                new ResourceLocation(MODID, "deepslate_termitetroll"));
+                ResourceLocation.fromNamespaceAndPath(MODID, "deepslate_termitetroll"));
 
-    MyRTPBlock = (RTPBlock) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "blockteleport"));
-    MyStepUp = (StepUp) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "step_up"));
-    MyStepDown = (StepDown) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "step_down"));
-    MyStepAccross = (StepAccross) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "step_accross"));
-    MyMoleDirtBlock = (MoleDirtBlock) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "moledirt"));
+    MyRTPBlock = (RTPBlock) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "blockteleport"));
+    MyStepUp = (StepUp) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "step_up"));
+    MyStepDown = (StepDown) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "step_down"));
+    MyStepAccross = (StepAccross) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "step_accross"));
+    MyMoleDirtBlock = (MoleDirtBlock) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "moledirt"));
 
     initializeCagesAndEggs();
 
-    MyStrawberry = (ItemStrawberry) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "strawberry"));
-    MyStrawberryPlant = (BlockStrawberry) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "strawberry_plant"));
-    MyStrawberrySeed = (ItemStrawberrySeed) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "strawberry_seed"));
-    MyButterflyPlant = (BlockButterflyPlant) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "butterfly_plant"));
-    MyButterflySeed = (ItemButterflySeed) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "butterfly_seed"));
-    MyMothPlant = (BlockMothPlant) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "moth_plant"));
-    MyMothSeed = (ItemMothSeed) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "moth_seed"));
-    MyMosquitoPlant = (BlockMosquitoPlant) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "mosquito_plant"));
-    MyMosquitoSeed = (ItemMosquitoSeed) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "mosquito_seed"));
-    MyFireflyPlant = (BlockFireflyPlant) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "firefly_plant"));
-    MyFireflySeed = (ItemFireflySeed) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "firefly_seed"));
-    MyRadishPlant = (BlockRadish) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "radish_plant"));
-    MyRadish = (ItemRadish) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "radish"));
-    MyCherry = (ItemStrawberry) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cherries"));
-    MyPeach = (ItemStrawberry) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "peach"));
-    MyCrystalApple = (ItemSunFish) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "crystalapple"));
-    MyLove = (ItemSunFish) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "heart"));
-    MyRicePlant = (BlockRice) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "rice_plant"));
-    MyRice = (ItemRadish) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "rice"));
+    MyStrawberry = (ItemStrawberry) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "strawberry"));
+    MyStrawberryPlant = (BlockStrawberry) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "strawberry_plant"));
+    MyStrawberrySeed = (ItemStrawberrySeed) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "strawberry_seed"));
+    MyButterflyPlant = (BlockButterflyPlant) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "butterfly_plant"));
+    MyButterflySeed = (ItemButterflySeed) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "butterfly_seed"));
+    MyMothPlant = (BlockMothPlant) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "moth_plant"));
+    MyMothSeed = (ItemMothSeed) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "moth_seed"));
+    MyMosquitoPlant = (BlockMosquitoPlant) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "mosquito_plant"));
+    MyMosquitoSeed = (ItemMosquitoSeed) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "mosquito_seed"));
+    MyFireflyPlant = (BlockFireflyPlant) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "firefly_plant"));
+    MyFireflySeed = (ItemFireflySeed) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "firefly_seed"));
+    MyRadishPlant = (BlockRadish) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "radish_plant"));
+    MyRadish = (ItemRadish) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "radish"));
+    MyCherry = (ItemStrawberry) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cherries"));
+    MyPeach = (ItemStrawberry) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "peach"));
+    MyCrystalApple = (ItemSunFish) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalapple"));
+    MyLove = (ItemSunFish) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "heart"));
+    MyRicePlant = (BlockRice) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "rice_plant"));
+    MyRice = (ItemRadish) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "rice"));
 
-    MyElevator = (ItemElevator) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "elevator"));
+    MyElevator = (ItemElevator) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "elevator"));
 
-    MyCornPlant1 = (BlockCorn) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "corn_plant0"));
-    MyCornPlant2 = (BlockCorn) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "corn_plant1"));
-    MyCornPlant3 = (BlockCorn) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "corn_plant2"));
-    MyCornPlant4 = (BlockCorn) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "corn_plant3"));
-    MyCornCob = (ItemCornCob) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "corn_seed"));
-    MyQuinoaPlant1 = (BlockQuinoa) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "quinoa_0"));
-    MyQuinoaPlant2 = (BlockQuinoa) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "quinoa_1"));
-    MyQuinoaPlant3 = (BlockQuinoa) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "quinoa_2"));
-    MyQuinoaPlant4 = (BlockQuinoa) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "quinoa_3"));
-    MyQuinoa = (ItemCornCob) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "quinoa"));
+    MyCornPlant1 = (BlockCorn) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "corn_plant0"));
+    MyCornPlant2 = (BlockCorn) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "corn_plant1"));
+    MyCornPlant3 = (BlockCorn) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "corn_plant2"));
+    MyCornPlant4 = (BlockCorn) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "corn_plant3"));
+    MyCornCob = (ItemCornCob) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "corn_seed"));
+    MyQuinoaPlant1 = (BlockQuinoa) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "quinoa_0"));
+    MyQuinoaPlant2 = (BlockQuinoa) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "quinoa_1"));
+    MyQuinoaPlant3 = (BlockQuinoa) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "quinoa_2"));
+    MyQuinoaPlant4 = (BlockQuinoa) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "quinoa_3"));
+    MyQuinoa = (ItemCornCob) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "quinoa"));
 
-    MyTomatoPlant1 = (BlockTomato) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "tomato_plant0"));
-    MyTomatoPlant2 = (BlockTomato) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "tomato_plant1"));
-    MyTomatoPlant3 = (BlockTomato) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "tomato_plant2"));
-    MyTomatoPlant4 = (BlockTomato) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "tomato_plant3"));
-    MyTomato = (ItemTomato) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "tomato_seed"));
-    MyLettucePlant1 = (BlockLettuce) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "lettuce_0"));
-    MyLettucePlant2 = (BlockLettuce) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "lettuce_1"));
-    MyLettucePlant3 = (BlockLettuce) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "lettuce_2"));
-    MyLettucePlant4 = (BlockLettuce) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "lettuce_3"));
-    MyLettuce = (ItemLettuce) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "lettuce_seed"));
+    MyTomatoPlant1 = (BlockTomato) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "tomato_plant0"));
+    MyTomatoPlant2 = (BlockTomato) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "tomato_plant1"));
+    MyTomatoPlant3 = (BlockTomato) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "tomato_plant2"));
+    MyTomatoPlant4 = (BlockTomato) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "tomato_plant3"));
+    MyTomato = (ItemTomato) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "tomato_seed"));
+    MyLettucePlant1 = (BlockLettuce) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "lettuce_0"));
+    MyLettucePlant2 = (BlockLettuce) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "lettuce_1"));
+    MyLettucePlant3 = (BlockLettuce) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "lettuce_2"));
+    MyLettucePlant4 = (BlockLettuce) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "lettuce_3"));
+    MyLettuce = (ItemLettuce) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "lettuce_seed"));
 
-    MagicApple = (ItemMagicApple) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "magicapple"));
-    MinersDream = (ItemMinersDream) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "minersdream"));
-    ExtremeTorch = (BlockExtremeTorch) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "extremetorch"));
-    KrakenRepellent = (KrakenRepellent) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "krakenrepellent"));
-    MyIslandBlock = (IslandBlock) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "island"));
-    CreeperRepellent = (CreeperRepellent) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "creeperrepellent"));
-    ZooCage2 = (ZooCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "zoo2"));
-    ZooCage4 = (ZooCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "zoo4"));
-    ZooCage6 = (ZooCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "zoo6"));
-    ZooCage8 = (ZooCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "zoo8"));
-    ZooCage10 = (ZooCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "zoo10"));
-    InstantShelter = (InstantShelter) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "instantshelter"));
-    InstantGarden = (InstantGarden) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "instantgarden"));
-    CrystalTorch = (BlockCrystalTorch) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "crystaltorch"));
-    MyKingSpawnerBlock = (KingSpawnerBlock) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "kingspawner"));
-    MyQueenSpawnerBlock = (QueenSpawnerBlock) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "queenspawner"));
-    RandomDungeon = (ItemRandomDungeon) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "randomdungeon"));
-    MyDungeonSpawnerBlock = (DungeonSpawnerBlock) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "dungeonspawner"));
+    MagicApple = (ItemMagicApple) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "magicapple"));
+    MinersDream = (ItemMinersDream) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "minersdream"));
+    ExtremeTorch = (BlockExtremeTorch) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "extremetorch"));
+    KrakenRepellent = (KrakenRepellent) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "krakenrepellent"));
+    MyIslandBlock = (IslandBlock) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "island"));
+    CreeperRepellent = (CreeperRepellent) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "creeperrepellent"));
+    ZooCage2 = (ZooCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "zoo2"));
+    ZooCage4 = (ZooCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "zoo4"));
+    ZooCage6 = (ZooCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "zoo6"));
+    ZooCage8 = (ZooCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "zoo8"));
+    ZooCage10 = (ZooCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "zoo10"));
+    InstantShelter = (InstantShelter) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "instantshelter"));
+    InstantGarden = (InstantGarden) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "instantgarden"));
+    CrystalTorch = (BlockCrystalTorch) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystaltorch"));
+    MyKingSpawnerBlock = (KingSpawnerBlock) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "kingspawner"));
+    MyQueenSpawnerBlock = (QueenSpawnerBlock) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "queenspawner"));
+    RandomDungeon = (ItemRandomDungeon) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "randomdungeon"));
+    MyDungeonSpawnerBlock = (DungeonSpawnerBlock) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "dungeonspawner"));
 
-    MyAppleLeaves = (BlockAppleLeaves) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "leaves_apple"));
-    MyAppleSeed = (ItemAppleSeed) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "appletree_seed"));
-    MySkyTreeLog = (BlockSkyTreeLog) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "skytreelog"));
+    MyAppleLeaves = (BlockAppleLeaves) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "leaves_apple"));
+    MyAppleSeed = (ItemAppleSeed) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "appletree_seed"));
+    MySkyTreeLog = (BlockSkyTreeLog) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "skytreelog"));
 
-    MyDT = (BlockDuplicatorLog) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "duplicatortreelog"));
-    MyExperienceLeaves = (BlockExperienceLeaves) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "leaves_experience"));
-    MyExperienceCatcher = (ExperienceCatcher) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "experiencecatcher"));
-    MyExperienceTreeSeed = (ItemExperienceTreeSeed) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "experiencetree_seed"));
-    MyExperiencePlant = (BlockExperiencePlant) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "experiencesapling"));
-    MyDeadStinkBug = (ItemSalt) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "deadstinkbug"));
-    MyFlowerPinkBlock = (MyBlockFlower) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "flower_pink"));
-    MyFlowerBlueBlock = (MyBlockFlower) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "flower_blue"));
-    MyFlowerBlackBlock = (MyBlockFlower) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "flower_black"));
-    MyFlowerScaryBlock = (MyBlockFlower) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "flower_scary"));
-    MyScaryLeaves = (BlockScaryLeaves) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "leaves_scary"));
-    MyCherryLeaves = (BlockScaryLeaves) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "leaves_cherry"));
-    MyPeachLeaves = (BlockScaryLeaves) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "leaves_peach"));
-    MyCherrySeed = (ItemAppleSeed) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cherrytree_seed"));
-    MyPeachSeed = (ItemAppleSeed) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "peachtree_seed"));
-    CrystalFlowerRedBlock = (MyBlockFlower) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "crystalflower_red"));
-    CrystalFlowerGreenBlock = (MyBlockFlower) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "crystalflower_green"));
-    CrystalFlowerBlueBlock = (MyBlockFlower) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "crystalflower_blue"));
-    CrystalFlowerYellowBlock = (MyBlockFlower) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "crystalflower_yellow"));
-    MyCrystalLeaves = (BlockCrystalLeaves) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "crystaltreeleaves"));
-    MyCrystalTreeLog = (BlockCrystalTreeLog) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "crystaltreelog"));
-    MyCrystalLeaves2 = (BlockCrystalLeaves) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "crystaltreeleaves2"));
-    MyCrystalLeaves3 = (BlockCrystalLeaves) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "crystaltreeleaves3"));
-    MyCrystalPlant = (BlockCrystalPlant) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "crystalsapling"));
-    MyCrystalPlant2 = (BlockCrystalPlant) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "crystalsapling2"));
-    MyCrystalPlant3 = (BlockCrystalPlant) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "crystalsapling3"));
+    MyDT = (BlockDuplicatorLog) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "duplicatortreelog"));
+    MyExperienceLeaves = (BlockExperienceLeaves) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "leaves_experience"));
+    MyExperienceCatcher = (ExperienceCatcher) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "experiencecatcher"));
+    MyExperienceTreeSeed = (ItemExperienceTreeSeed) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "experiencetree_seed"));
+    MyExperiencePlant = (BlockExperiencePlant) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "experiencesapling"));
+    MyDeadStinkBug = (ItemSalt) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "deadstinkbug"));
+    MyFlowerPinkBlock = (MyBlockFlower) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "flower_pink"));
+    MyFlowerBlueBlock = (MyBlockFlower) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "flower_blue"));
+    MyFlowerBlackBlock = (MyBlockFlower) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "flower_black"));
+    MyFlowerScaryBlock = (MyBlockFlower) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "flower_scary"));
+    MyScaryLeaves = (BlockScaryLeaves) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "leaves_scary"));
+    MyCherryLeaves = (BlockScaryLeaves) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "leaves_cherry"));
+    MyPeachLeaves = (BlockScaryLeaves) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "leaves_peach"));
+    MyCherrySeed = (ItemAppleSeed) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cherrytree_seed"));
+    MyPeachSeed = (ItemAppleSeed) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "peachtree_seed"));
+    CrystalFlowerRedBlock = (MyBlockFlower) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalflower_red"));
+    CrystalFlowerGreenBlock = (MyBlockFlower) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalflower_green"));
+    CrystalFlowerBlueBlock = (MyBlockFlower) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalflower_blue"));
+    CrystalFlowerYellowBlock = (MyBlockFlower) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalflower_yellow"));
+    MyCrystalLeaves = (BlockCrystalLeaves) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystaltreeleaves"));
+    MyCrystalTreeLog = (BlockCrystalTreeLog) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystaltreelog"));
+    MyCrystalLeaves2 = (BlockCrystalLeaves) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystaltreeleaves2"));
+    MyCrystalLeaves3 = (BlockCrystalLeaves) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystaltreeleaves3"));
+    MyCrystalPlant = (BlockCrystalPlant) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalsapling"));
+    MyCrystalPlant2 = (BlockCrystalPlant) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalsapling2"));
+    MyCrystalPlant3 = (BlockCrystalPlant) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "crystalsapling3"));
 
-    MyEnderPearlBlock = (OreGenericEgg) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "blockenderpearl"));
-    MyEyeOfEnderBlock = (OreGenericEgg) BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "blockeyeofender"));
+    MyEnderPearlBlock = (OreGenericEgg) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "blockenderpearl"));
+    MyEyeOfEnderBlock = (OreGenericEgg) BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "blockeyeofender"));
 
     make_some_more_things();
     proxy.registerBlockModels();
@@ -4712,12 +4734,12 @@ private static void registerAllCritterCages() {
 
   /** 1.20.1 registry paths must be [a-z0-9/._-]; 1.12 ids used PascalCase. */
   private static ResourceLocation cpId(String path) {
-    return new ResourceLocation(MODID, path.toLowerCase(Locale.ROOT));
+    return ResourceLocation.fromNamespaceAndPath(MODID, path.toLowerCase(Locale.ROOT));
   }
 
   private static ResourceLocation normalizeRegistryPath(ResourceLocation id) {
     String path = id.getPath().toLowerCase(Locale.ROOT);
-    return new ResourceLocation(id.getNamespace(), path);
+    return ResourceLocation.fromNamespaceAndPath(id.getNamespace(), path);
   }
 
   private ResourceLocation nextRecipeId(ResourceLocation baseId)
@@ -4730,7 +4752,7 @@ private static void registerAllCritterCages() {
     }
     int suffix = seen.intValue();
     recipeNameUseCounts.put(key, Integer.valueOf(suffix + 1));
-    return new ResourceLocation(baseId.getNamespace(), baseId.getPath() + "_" + suffix);
+    return ResourceLocation.fromNamespaceAndPath(baseId.getNamespace(), baseId.getPath() + "_" + suffix);
   }
 
   private void addShapedRecipe(ResourceLocation name, ResourceLocation group, ItemStack output, Object... params)
@@ -5059,7 +5081,7 @@ private static void registerAllCritterCages() {
 
     GameRegistry.findRegistry(Item.class).register(MyPizzaItem);
     GameRegistry.findRegistry(Item.class).register(MyDuctTapeItem);
-    GameRegistry.findRegistry(Item.class).register(BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "island")));
+    GameRegistry.findRegistry(Item.class).register(BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "island")));
     GameRegistry.findRegistry(Item.class).register(MyIngotUranium);
     GameRegistry.findRegistry(Item.class).register(MyCrystalPinkIngot);
     GameRegistry.findRegistry(Item.class).register(MyTigersEyeIngot);
@@ -5952,23 +5974,23 @@ private static void registerAllCritterCages() {
     GameRegistry.addSmelting(MyOreAmethystBlock, new ItemStack(MyAmethyst, 1), 1.0F);
     GameRegistry.addSmelting(MyOreSaltBlock, new ItemStack(MySalt, 8), 0.1F);
     GameRegistry.addSmelting(
-        BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "deepslate_oreuranium")),
+        BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "deepslate_oreuranium")),
         new ItemStack(UraniumNugget),
         0.3F);
     GameRegistry.addSmelting(
-        BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "deepslate_oretitanium")),
+        BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "deepslate_oretitanium")),
         new ItemStack(TitaniumNugget),
         0.3F);
     GameRegistry.addSmelting(
-        BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "deepslate_oreruby")),
+        BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "deepslate_oreruby")),
         new ItemStack(MyRuby, 1),
         1.0F);
     GameRegistry.addSmelting(
-        BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "deepslate_oreamethyst")),
+        BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "deepslate_oreamethyst")),
         new ItemStack(MyAmethyst, 1),
         1.0F);
     GameRegistry.addSmelting(
-        BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, "deepslate_oresalt")),
+        BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, "deepslate_oresalt")),
         new ItemStack(MySalt, 8),
         0.1F);
     GameRegistry.addSmelting(MyCornCob, new ItemStack(MyPopcorn), 0.1F);
@@ -7314,13 +7336,12 @@ private static void registerAllCritterCages() {
 
     proxy.registerKeyboardInput();
 
-    proxy.registerNetworkStuff();
 
     NetworkRegistry.INSTANCE.registerGuiHandler(this, new ChaosGUIHandler());
 
     DoDispenserRegistrations();
 
-    ChaosSpawnPlacements.registerAllAfterLegacySpawns();
+    ChaosSpawnPlacements.refreshLegacyRules();
   }
 
   @SubscribeEvent
@@ -7333,11 +7354,11 @@ private static void registerAllCritterCages() {
 
   /** Tamed Girlfriends and Boyfriends assist in combat like wolves when their owner damages a mob. */
   @SubscribeEvent
-  public void onLivingHurtOwnerAssistGirlfriends(LivingHurtEvent event) {
+  public void onLivingHurtOwnerAssistGirlfriends(LivingIncomingDamageEvent event) {
     if (event == null || event.getEntity() == null) {
       return;
     }
-    LivingEntity victim = event.getEntity();
+    LivingEntity victim = (LivingEntity) event.getEntity();
     DamageSource src = event.getSource();
     if (src == null) {
       return;
@@ -7382,11 +7403,11 @@ private static void registerAllCritterCages() {
    * Vanilla mobs wearing OreSpawn armor (zombies, skeletons, husks, etc.) use the same curve.
    */
   @SubscribeEvent
-  public void onLivingHurtLegacyArmorParity(LivingHurtEvent event) {
+  public void onLivingHurtLegacyArmorParity(LivingIncomingDamageEvent event) {
     if (event == null || event.getEntity() == null) {
       return;
     }
-    LivingEntity living = event.getEntity();
+    LivingEntity living = (LivingEntity) event.getEntity();
     if (living.level() == null || living.level().isClientSide()) {
       return;
     }
@@ -7424,7 +7445,7 @@ private static void registerAllCritterCages() {
       toughness = (float)toughAttr.getValue();
     }
 
-    float vanillaFinalAtIncoming = net.minecraft.world.damagesource.CombatRules.getDamageAfterAbsorb(incoming, (float)armor, toughness);
+    float vanillaFinalAtIncoming = com.astryxion.chaospersists.util.ChaosArmorMath.vanillaDamageAfterArmor(incoming, (float)armor, toughness);
     if (vanillaFinalAtIncoming <= legacyFinal + 1.0e-4f) {
       return;
     }
@@ -7433,7 +7454,7 @@ private static void registerAllCritterCages() {
     float low = 0.0f;
     float high = incoming;
     float cappedHigh = incoming * 8.0f + 40.0f;
-    while (net.minecraft.world.damagesource.CombatRules.getDamageAfterAbsorb(high, (float)armor, toughness) < legacyFinal && high < cappedHigh) {
+    while (com.astryxion.chaospersists.util.ChaosArmorMath.vanillaDamageAfterArmor(high, (float)armor, toughness) < legacyFinal && high < cappedHigh) {
       high *= 2.0f;
     }
     if (high > cappedHigh) {
@@ -7441,7 +7462,7 @@ private static void registerAllCritterCages() {
     }
     for (int i = 0; i < 14; ++i) {
       float mid = (low + high) * 0.5f;
-      float out = net.minecraft.world.damagesource.CombatRules.getDamageAfterAbsorb(mid, (float)armor, toughness);
+      float out = com.astryxion.chaospersists.util.ChaosArmorMath.vanillaDamageAfterArmor(mid, (float)armor, toughness);
       if (out < legacyFinal) {
         low = mid;
       } else {
@@ -7517,7 +7538,7 @@ private static void registerAllCritterCages() {
   }
 
   @SubscribeEvent
-  public void onBlockOverworldNaturalChaosSpawns(MobSpawnEvent.FinalizeSpawn event) {
+  public void onBlockOverworldNaturalChaosSpawns(FinalizeSpawnEvent event) {
     if (event == null || event.getEntity() == null) {
       return;
     }
@@ -7539,7 +7560,7 @@ private static void registerAllCritterCages() {
       return;
     }
     if (SpawnerFixHelper.isNearMatchingSpawnerAt(event.getPos(), event.getLevel(), mobId)) {
-      event.setResult(Event.Result.ALLOW);
+      event.setResult(MobSpawnEvent.SpawnPlacementCheck.Result.SUCCEED);
     }
   }
 
@@ -7557,7 +7578,7 @@ private static void registerAllCritterCages() {
     }
     // Allow only when the mob still fits the space; bypass legacy display-name spawn rules only.
     if (mob.checkSpawnObstruction(event.getLevel())) {
-      event.setResult(Event.Result.ALLOW);
+      event.setResult(MobSpawnEvent.PositionCheck.Result.SUCCEED);
     }
   }
 
@@ -7610,10 +7631,7 @@ private static void registerAllCritterCages() {
   }
 
   @SubscribeEvent
-  public void onServerTickRelightFastPlacedChunks(TickEvent.ServerTickEvent event) {
-    if (event.phase != TickEvent.Phase.END) {
-      return;
-    }
+  public void onServerTickRelightFastPlacedChunks(ServerTickEvent.Post event) {
     net.minecraft.server.MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
     if (server == null) {
       return;
@@ -7736,11 +7754,11 @@ private static void registerAllCritterCages() {
 
   /** Keep loaded ground pets catching up onto solid ground (never midair) when the owner moves far. */
   @SubscribeEvent
-  public void onPlayerTickBringGroundPets(TickEvent.PlayerTickEvent event) {
-    if (event.phase != TickEvent.Phase.END || event.player.level().isClientSide) {
+  public void onPlayerTickBringGroundPets(PlayerTickEvent.Post event) {
+    if (event.getEntity().level().isClientSide) {
       return;
     }
-    if (!(event.player instanceof ServerPlayer player)) {
+    if (!(event.getEntity() instanceof ServerPlayer player)) {
       return;
     }
     if (player.tickCount % 20 != 0) {
@@ -7812,11 +7830,12 @@ private static void registerAllCritterCages() {
   }
 
   @SubscribeEvent
-  public void onLivingUpdate(LivingEvent.LivingTickEvent event) {
+  public void onLivingUpdate(EntityTickEvent.Post event) {
+        if (!(event.getEntity() instanceof net.minecraft.world.entity.LivingEntity)) return;
     if (event == null || event.getEntity() == null) {
       return;
     }
-    LivingEntity base = event.getEntity();
+    LivingEntity base = (LivingEntity) event.getEntity();
     if (base.level() == null || base.level().isClientSide()) {
       return;
     }
@@ -7885,233 +7904,233 @@ private static void registerAllCritterCages() {
 
   public void initializeCagesAndEggs()
   {
-    CageEmpty = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cageempty"));
-    CagedSpider = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagespider"));
-    CagedBat = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagebat"));
-    CagedCow = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagecow"));
-    CagedPig = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagepig"));
-    CagedSquid = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagesquid"));
-    CagedChicken = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagechicken"));
-    CagedCreeper = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagecreeper"));
-    CagedSkeleton = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cageskeleton"));
-    CagedZombie = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagezombie"));
-    CagedSlime = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cageslime"));
-    CagedGhast = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cageghast"));
-    CagedZombiePigman = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagezombiepigman"));
-    CagedEnderman = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cageenderman"));
-    CagedCaveSpider = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagecavespider"));
-    CagedSilverfish = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagesilverfish"));
-    CagedMagmaCube = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagemagmacube"));
-    CagedWitch = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagewitch"));
-    CagedSheep = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagesheep"));
-    CagedWolf = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagewolf"));
-    CagedMooshroom = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagemooshroom"));
-    CagedOcelot = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cageocelot"));
-    CagedBlaze = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cageblaze"));
-    CagedGirlfriend = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagegirlfriend"));
-    CagedBoyfriend = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cageboyfriend"));
-    CagedWitherSkeleton = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagewitherskeleton"));
-    CagedEnderDragon = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cageenderdragon"));
-    CagedSnowGolem = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagesnowgolem"));
-    CagedIronGolem = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cageirongolem"));
-    CagedWitherBoss = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagewitherboss"));
-    CagedRedCow = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cageredcow"));
-    CagedGoldCow = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagegoldcow"));
-    CagedEnchantedCow = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cageenchantedcow"));
-    CagedMOTHRA = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagemothra"));
-    CagedAlo = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagealosaurus"));
-    CagedCryo = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagecryolophosaurus"));
-    CagedCama = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagecamarasaurus"));
-    CagedVelo = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagevelocityraptor"));
-    CagedHydro = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagehydrolisc"));
-    CagedBasil = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagebasilisc"));
-    CagedDragonfly = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagedragonfly"));
-    CagedEmperorScorpion = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cageemperorscorpion"));
-    CagedScorpion = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagescorpion"));
-    CagedCaveFisher = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagecavefisher"));
-    CagedSpyro = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagespyro"));
-    CagedBaryonyx = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagebaryonyx"));
-    CagedGammaMetroid = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagegammametroid"));
-    CagedCockateil = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagecockateil"));
-    CagedKyuubi = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagekyuubi"));
-    CagedAlien = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagealien"));
-    CagedAttackSquid = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cageattacksquid"));
-    CagedWaterDragon = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagewaterdragon"));
-    CagedCephadrome = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagecephadrome"));
-    CagedKraken = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagekraken"));
-    CagedLizard = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagelizard"));
-    CagedDragon = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagedragon"));
-    CagedBee = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagebee"));
-    CagedHorse = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagehorse"));
-    CagedFirefly = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagefirefly"));
-    CagedChipmunk = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagechipmunk"));
-    CagedGazelle = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagegazelle"));
-    CagedOstrich = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cageostrich"));
-    CagedTrooper = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagetrooper"));
-    CagedSpit = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagespit"));
-    CagedStink = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagestink"));
-    CagedCreepingHorror = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagecreepinghorror"));
-    CagedTerribleTerror = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cageterribleterror"));
-    CagedCliffRacer = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagecliffracer"));
-    CagedTriffid = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagetriffid"));
-    CagedPitchBlack = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagenightmare"));
-    CagedLurkingTerror = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagelurkingterror"));
-    CagedSmallWorm = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagesmallworm"));
-    CagedMediumWorm = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagemediumworm"));
-    CagedLargeWorm = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagelargeworm"));
-    CagedCassowary = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagecassowary"));
-    CagedCloudShark = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagecloudshark"));
-    CagedGoldFish = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagegoldfish"));
-    CagedLeafMonster = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cageleafmonster"));
-    CagedEnderKnight = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cageenderknight"));
-    CagedEnderReaper = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cageenderreaper"));
-    CagedBeaver = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagebeaver"));
-    CagedUrchin = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cageurchin"));
-    CagedFlounder = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cageflounder"));
-    CagedSkate = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cageskate"));
-    CagedRotator = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagerotator"));
-    CagedPeacock = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagepeacock"));
-    CagedFairy = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagefairy"));
-    CagedDungeonBeast = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagedungeonbeast"));
-    CagedVortex = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagevortex"));
-    CagedRat = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagerat"));
-    CagedWhale = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagewhale"));
-    CagedIrukandji = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cageirukandji"));
-    CagedTRex = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagetrex"));
-    CagedHercules = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagehercules"));
-    CagedMantis = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagemantis"));
-    CagedStinky = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagestinky"));
-    CagedEasterBunny = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cageeasterbunny"));
-    CagedCaterKiller = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagecaterkiller"));
-    CagedMolenoid = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagemolenoid"));
-    CagedSeaMonster = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cageseamonster"));
-    CagedSeaViper = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cageseaviper"));
-    CagedLeon = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cageleon"));
-    CagedHammerhead = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagehammerhead"));
-    CagedRubberDucky = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagerubberducky"));
-    CagedCrystalCow = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagecrystalcow"));
-    CagedVillager = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagevillager"));
-    CagedCriminal = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagecriminal"));
-    CagedBrutalfly = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagebrutalfly"));
-    CagedNastysaurus = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagenastysaurus"));
-    CagedPointysaurus = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagepointysaurus"));
-    CagedCricket = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagecricket"));
-    CagedFrog = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagefrog"));
-    CagedSpiderDriver = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagespiderdriver"));
-    CagedCrab = (CritterCage) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "cagecrab"));
+    CageEmpty = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cageempty"));
+    CagedSpider = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagespider"));
+    CagedBat = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagebat"));
+    CagedCow = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagecow"));
+    CagedPig = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagepig"));
+    CagedSquid = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagesquid"));
+    CagedChicken = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagechicken"));
+    CagedCreeper = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagecreeper"));
+    CagedSkeleton = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cageskeleton"));
+    CagedZombie = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagezombie"));
+    CagedSlime = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cageslime"));
+    CagedGhast = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cageghast"));
+    CagedZombiePigman = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagezombiepigman"));
+    CagedEnderman = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cageenderman"));
+    CagedCaveSpider = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagecavespider"));
+    CagedSilverfish = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagesilverfish"));
+    CagedMagmaCube = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagemagmacube"));
+    CagedWitch = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagewitch"));
+    CagedSheep = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagesheep"));
+    CagedWolf = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagewolf"));
+    CagedMooshroom = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagemooshroom"));
+    CagedOcelot = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cageocelot"));
+    CagedBlaze = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cageblaze"));
+    CagedGirlfriend = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagegirlfriend"));
+    CagedBoyfriend = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cageboyfriend"));
+    CagedWitherSkeleton = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagewitherskeleton"));
+    CagedEnderDragon = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cageenderdragon"));
+    CagedSnowGolem = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagesnowgolem"));
+    CagedIronGolem = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cageirongolem"));
+    CagedWitherBoss = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagewitherboss"));
+    CagedRedCow = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cageredcow"));
+    CagedGoldCow = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagegoldcow"));
+    CagedEnchantedCow = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cageenchantedcow"));
+    CagedMOTHRA = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagemothra"));
+    CagedAlo = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagealosaurus"));
+    CagedCryo = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagecryolophosaurus"));
+    CagedCama = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagecamarasaurus"));
+    CagedVelo = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagevelocityraptor"));
+    CagedHydro = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagehydrolisc"));
+    CagedBasil = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagebasilisc"));
+    CagedDragonfly = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagedragonfly"));
+    CagedEmperorScorpion = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cageemperorscorpion"));
+    CagedScorpion = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagescorpion"));
+    CagedCaveFisher = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagecavefisher"));
+    CagedSpyro = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagespyro"));
+    CagedBaryonyx = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagebaryonyx"));
+    CagedGammaMetroid = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagegammametroid"));
+    CagedCockateil = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagecockateil"));
+    CagedKyuubi = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagekyuubi"));
+    CagedAlien = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagealien"));
+    CagedAttackSquid = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cageattacksquid"));
+    CagedWaterDragon = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagewaterdragon"));
+    CagedCephadrome = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagecephadrome"));
+    CagedKraken = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagekraken"));
+    CagedLizard = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagelizard"));
+    CagedDragon = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagedragon"));
+    CagedBee = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagebee"));
+    CagedHorse = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagehorse"));
+    CagedFirefly = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagefirefly"));
+    CagedChipmunk = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagechipmunk"));
+    CagedGazelle = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagegazelle"));
+    CagedOstrich = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cageostrich"));
+    CagedTrooper = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagetrooper"));
+    CagedSpit = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagespit"));
+    CagedStink = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagestink"));
+    CagedCreepingHorror = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagecreepinghorror"));
+    CagedTerribleTerror = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cageterribleterror"));
+    CagedCliffRacer = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagecliffracer"));
+    CagedTriffid = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagetriffid"));
+    CagedPitchBlack = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagenightmare"));
+    CagedLurkingTerror = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagelurkingterror"));
+    CagedSmallWorm = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagesmallworm"));
+    CagedMediumWorm = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagemediumworm"));
+    CagedLargeWorm = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagelargeworm"));
+    CagedCassowary = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagecassowary"));
+    CagedCloudShark = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagecloudshark"));
+    CagedGoldFish = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagegoldfish"));
+    CagedLeafMonster = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cageleafmonster"));
+    CagedEnderKnight = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cageenderknight"));
+    CagedEnderReaper = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cageenderreaper"));
+    CagedBeaver = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagebeaver"));
+    CagedUrchin = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cageurchin"));
+    CagedFlounder = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cageflounder"));
+    CagedSkate = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cageskate"));
+    CagedRotator = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagerotator"));
+    CagedPeacock = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagepeacock"));
+    CagedFairy = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagefairy"));
+    CagedDungeonBeast = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagedungeonbeast"));
+    CagedVortex = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagevortex"));
+    CagedRat = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagerat"));
+    CagedWhale = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagewhale"));
+    CagedIrukandji = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cageirukandji"));
+    CagedTRex = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagetrex"));
+    CagedHercules = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagehercules"));
+    CagedMantis = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagemantis"));
+    CagedStinky = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagestinky"));
+    CagedEasterBunny = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cageeasterbunny"));
+    CagedCaterKiller = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagecaterkiller"));
+    CagedMolenoid = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagemolenoid"));
+    CagedSeaMonster = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cageseamonster"));
+    CagedSeaViper = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cageseaviper"));
+    CagedLeon = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cageleon"));
+    CagedHammerhead = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagehammerhead"));
+    CagedRubberDucky = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagerubberducky"));
+    CagedCrystalCow = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagecrystalcow"));
+    CagedVillager = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagevillager"));
+    CagedCriminal = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagecriminal"));
+    CagedBrutalfly = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagebrutalfly"));
+    CagedNastysaurus = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagenastysaurus"));
+    CagedPointysaurus = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagepointysaurus"));
+    CagedCricket = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagecricket"));
+    CagedFrog = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagefrog"));
+    CagedSpiderDriver = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagespiderdriver"));
+    CagedCrab = (CritterCage) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "cagecrab"));
 
-    EnderDragonEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggenderdragon"));
-    WitherBossEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggwitherboss"));
-    GirlfriendEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "egggirlfriend"));
-    RedCowEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggredcow"));
-    CrystalCowEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggcrystalcow"));
-    GoldCowEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "egggoldcow"));
-    EnchantedCowEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggenchantedcow"));
-    MOTHRAEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggmothra"));
-    AloEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggalosaurus"));
-    CryoEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggcryolophosaurus"));
-    CamaEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggcamarasaurus"));
-    VeloEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggvelocityraptor"));
-    HydroEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "egghydrolisc"));
-    BasilEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggbasilisc"));
-    DragonflyEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggdragonfly"));
-    EmperorScorpionEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggemperorscorpion"));
-    ScorpionEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggscorpion"));
-    CaveFisherEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggcavefisher"));
-    SpyroEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggspyro"));
-    BaryonyxEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggbaryonyx"));
-    GammaMetroidEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "egggammametroid"));
-    CockateilEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggcockateil"));
-    KyuubiEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggkyuubi"));
-    AlienEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggalien"));
-    AttackSquidEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggattacksquid"));
-    WaterDragonEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggwaterdragon"));
-    CephadromeEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggcephadrome"));
-    KrakenEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggkraken"));
-    LizardEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "egglizard"));
-    DragonEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggdragon"));
-    BeeEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggbee"));
-    TrooperBugEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggtrooper"));
-    SpitBugEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggspit"));
-    StinkBugEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggstink"));
-    OstrichEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggostrich"));
-    GazelleEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "egggazelle"));
-    ChipmunkEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggchipmunk"));
-    CreepingHorrorEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggcreepinghorror"));
-    TerribleTerrorEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggterribleterror"));
-    CliffRacerEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggcliffracer"));
-    TriffidEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggtriffid"));
-    PitchBlackEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggnightmare"));
-    LurkingTerrorEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "egglurkingterror"));
-    GodzillaEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "egggodzilla"));
-    SmallWormEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggsmallworm"));
-    MediumWormEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggmediumworm"));
-    LargeWormEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "egglargeworm"));
-    CassowaryEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggcassowary"));
-    CloudSharkEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggcloudshark"));
-    GoldFishEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "egggoldfish"));
-    LeafMonsterEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggleafmonster"));
-    TshirtEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggtshirt"));
-    EnderKnightEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggenderknight"));
-    EnderReaperEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggenderreaper"));
-    BeaverEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggbeaver"));
-    RotatorEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggrotator"));
-    VortexEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggvortex"));
-    PeacockEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggpeacock"));
-    FairyEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggfairy"));
-    DungeonBeastEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggdungeonbeast"));
-    RatEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggrat"));
-    FlounderEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggflounder"));
-    WhaleEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggwhale"));
-    IrukandjiEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggirukandji"));
-    SkateEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggskate"));
-    UrchinEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggurchin"));
-    Robot1Egg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggrobot1"));
-    Robot2Egg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggrobot2"));
-    Robot3Egg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggrobot3"));
-    Robot4Egg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggrobot4"));
-    GhostEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggghost"));
-    GhostSkellyEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggghostskelly"));
-    BrownAntEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggbrownant"));
-    RedAntEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggredant"));
-    RainbowAntEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggrainbowant"));
-    UnstableAntEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggunstableant"));
-    TermiteEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggtermite"));
-    ButterflyEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggbutterfly"));
-    MothEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggmoth"));
-    MosquitoEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggmosquito"));
-    FireflyEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggfirefly"));
-    TRexEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggtrex"));
-    HerculesEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "egghercules"));
-    MantisEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggmantis"));
-    StinkyEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggstinky"));
-    Robot5Egg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggrobot5"));
-    CoinEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggcoin"));
-    BoyfriendEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggboyfriend"));
-    TheKingEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggtheking"));
-    TheQueenEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggthequeen"));
-    ThePrinceEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggtheprince"));
-    EasterBunnyEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggeasterbunny"));
-    MolenoidEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggmolenoid"));
-    SeaMonsterEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggseamonster"));
-    SeaViperEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggseaviper"));
-    CaterKillerEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggcaterkiller"));
-    RubberDuckyEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggrubberducky"));
-    HammerheadEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "egghammerhead"));
-    LeonEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggleon"));
-    CriminalEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggcriminal"));
-    BrutalflyEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggbrutalfly"));
-    NastysaurusEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggnastysaurus"));
-    PointysaurusEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggpointysaurus"));
-    CricketEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggcricket"));
-    ThePrincessEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggtheprincess"));
-    FrogEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggfrog"));
-    JefferyEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggrobot6"));
-    AntRobotEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggantrobot"));
-    SpiderRobotEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggspiderrobot"));
-    SpiderDriverEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggspiderdriver"));
-    CrabEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggcrab"));
-    RockEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(new ResourceLocation(MODID, "eggrock"));
+    EnderDragonEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggenderdragon"));
+    WitherBossEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggwitherboss"));
+    GirlfriendEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "egggirlfriend"));
+    RedCowEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggredcow"));
+    CrystalCowEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggcrystalcow"));
+    GoldCowEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "egggoldcow"));
+    EnchantedCowEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggenchantedcow"));
+    MOTHRAEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggmothra"));
+    AloEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggalosaurus"));
+    CryoEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggcryolophosaurus"));
+    CamaEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggcamarasaurus"));
+    VeloEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggvelocityraptor"));
+    HydroEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "egghydrolisc"));
+    BasilEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggbasilisc"));
+    DragonflyEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggdragonfly"));
+    EmperorScorpionEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggemperorscorpion"));
+    ScorpionEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggscorpion"));
+    CaveFisherEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggcavefisher"));
+    SpyroEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggspyro"));
+    BaryonyxEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggbaryonyx"));
+    GammaMetroidEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "egggammametroid"));
+    CockateilEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggcockateil"));
+    KyuubiEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggkyuubi"));
+    AlienEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggalien"));
+    AttackSquidEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggattacksquid"));
+    WaterDragonEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggwaterdragon"));
+    CephadromeEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggcephadrome"));
+    KrakenEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggkraken"));
+    LizardEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "egglizard"));
+    DragonEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggdragon"));
+    BeeEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggbee"));
+    TrooperBugEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggtrooper"));
+    SpitBugEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggspit"));
+    StinkBugEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggstink"));
+    OstrichEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggostrich"));
+    GazelleEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "egggazelle"));
+    ChipmunkEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggchipmunk"));
+    CreepingHorrorEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggcreepinghorror"));
+    TerribleTerrorEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggterribleterror"));
+    CliffRacerEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggcliffracer"));
+    TriffidEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggtriffid"));
+    PitchBlackEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggnightmare"));
+    LurkingTerrorEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "egglurkingterror"));
+    GodzillaEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "egggodzilla"));
+    SmallWormEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggsmallworm"));
+    MediumWormEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggmediumworm"));
+    LargeWormEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "egglargeworm"));
+    CassowaryEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggcassowary"));
+    CloudSharkEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggcloudshark"));
+    GoldFishEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "egggoldfish"));
+    LeafMonsterEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggleafmonster"));
+    TshirtEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggtshirt"));
+    EnderKnightEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggenderknight"));
+    EnderReaperEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggenderreaper"));
+    BeaverEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggbeaver"));
+    RotatorEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggrotator"));
+    VortexEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggvortex"));
+    PeacockEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggpeacock"));
+    FairyEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggfairy"));
+    DungeonBeastEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggdungeonbeast"));
+    RatEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggrat"));
+    FlounderEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggflounder"));
+    WhaleEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggwhale"));
+    IrukandjiEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggirukandji"));
+    SkateEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggskate"));
+    UrchinEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggurchin"));
+    Robot1Egg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggrobot1"));
+    Robot2Egg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggrobot2"));
+    Robot3Egg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggrobot3"));
+    Robot4Egg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggrobot4"));
+    GhostEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggghost"));
+    GhostSkellyEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggghostskelly"));
+    BrownAntEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggbrownant"));
+    RedAntEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggredant"));
+    RainbowAntEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggrainbowant"));
+    UnstableAntEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggunstableant"));
+    TermiteEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggtermite"));
+    ButterflyEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggbutterfly"));
+    MothEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggmoth"));
+    MosquitoEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggmosquito"));
+    FireflyEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggfirefly"));
+    TRexEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggtrex"));
+    HerculesEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "egghercules"));
+    MantisEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggmantis"));
+    StinkyEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggstinky"));
+    Robot5Egg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggrobot5"));
+    CoinEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggcoin"));
+    BoyfriendEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggboyfriend"));
+    TheKingEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggtheking"));
+    TheQueenEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggthequeen"));
+    ThePrinceEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggtheprince"));
+    EasterBunnyEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggeasterbunny"));
+    MolenoidEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggmolenoid"));
+    SeaMonsterEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggseamonster"));
+    SeaViperEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggseaviper"));
+    CaterKillerEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggcaterkiller"));
+    RubberDuckyEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggrubberducky"));
+    HammerheadEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "egghammerhead"));
+    LeonEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggleon"));
+    CriminalEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggcriminal"));
+    BrutalflyEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggbrutalfly"));
+    NastysaurusEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggnastysaurus"));
+    PointysaurusEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggpointysaurus"));
+    CricketEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggcricket"));
+    ThePrincessEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggtheprincess"));
+    FrogEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggfrog"));
+    JefferyEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggrobot6"));
+    AntRobotEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggantrobot"));
+    SpiderRobotEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggspiderrobot"));
+    SpiderDriverEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggspiderdriver"));
+    CrabEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggcrab"));
+    RockEgg = (ItemSpawnEgg) BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(MODID, "eggrock"));
   }
 
   private void DoDispenserRegistrations()
@@ -8461,6 +8480,7 @@ private static void registerAllCritterCages() {
       case CHESTPLATE -> 1;
       case LEGGINGS -> 2;
       case BOOTS -> 3;
+      default -> 99;
     };
   }
 
@@ -8580,7 +8600,7 @@ private static void registerAllCritterCages() {
         }
         // Edible crop items (corn, tomato, radish, quinoa, rice, lettuce) and pizza
         // are BlockItems, but belong in Chaos Foods like vanilla cake.
-        if (item.isEdible() || "pizza".equals(lower)) {
+        if (item.components().has(net.minecraft.core.component.DataComponents.FOOD) || "pizza".equals(lower)) {
           CreativeTabCompat.setCreativeTab(item, tabChaosFoods);
           continue;
         }
@@ -8594,7 +8614,7 @@ private static void registerAllCritterCages() {
         CreativeTabCompat.setCreativeTab(item, tabChaosTools);
       } else if (item instanceof ItemSpawnEgg) {
         CreativeTabCompat.setCreativeTab(item, tabChaosMobs);
-      } else if (item.isEdible()) {
+      } else if (item.components().has(net.minecraft.core.component.DataComponents.FOOD)) {
         CreativeTabCompat.setCreativeTab(item, tabChaosFoods);
       } else if (item instanceof ArmorItem) {
         CreativeTabCompat.setCreativeTab(item, tabChaosArmor);
@@ -9423,11 +9443,11 @@ private static void registerAllCritterCages() {
 
   private OreGenericEgg oreEggBlock(String path) {
     return (OreGenericEgg)
-        BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, path));
+        BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, path));
   }
 
   private Block antBlock(String path) {
-    return BuiltInRegistries.BLOCK.get(new ResourceLocation(MODID, path));
+    return BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(MODID, path));
   }
 
   private void laySomeEggs()

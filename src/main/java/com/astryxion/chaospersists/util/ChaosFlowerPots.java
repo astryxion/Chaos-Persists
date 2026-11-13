@@ -7,7 +7,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.FlowerPotBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
-import net.minecraftforge.registries.DeferredRegister;
+import net.neoforged.neoforge.registries.DeferredRegister;
 
 /**
  * Registers filled flower-pot blocks for OreSpawn flowers and maps them onto the vanilla empty pot.
@@ -45,8 +45,8 @@ public final class ChaosFlowerPots {
                             new FlowerPotBlock(
                                     () -> (FlowerPotBlock) Blocks.FLOWER_POT,
                                     () -> BuiltInRegistries.BLOCK.get(
-                                            new ResourceLocation(ChaosPersists.MODID, flower)),
-                                    BlockBehaviour.Properties.copy(Blocks.FLOWER_POT)
+                                            ResourceLocation.fromNamespaceAndPath(ChaosPersists.MODID, flower)),
+                                    BlockBehaviour.Properties.ofFullCopy(Blocks.FLOWER_POT)
                                             .instabreak()
                                             .noOcclusion()));
         }
@@ -56,8 +56,8 @@ public final class ChaosFlowerPots {
     public static void bindToVanillaFlowerPot() {
         FlowerPotBlock empty = (FlowerPotBlock) Blocks.FLOWER_POT;
         for (String flower : POTTABLE_FLOWERS) {
-            ResourceLocation flowerId = new ResourceLocation(ChaosPersists.MODID, flower);
-            ResourceLocation pottedId = new ResourceLocation(ChaosPersists.MODID, pottedPath(flower));
+            ResourceLocation flowerId = ResourceLocation.fromNamespaceAndPath(ChaosPersists.MODID, flower);
+            ResourceLocation pottedId = ResourceLocation.fromNamespaceAndPath(ChaosPersists.MODID, pottedPath(flower));
             empty.addPlant(flowerId, () -> BuiltInRegistries.BLOCK.get(pottedId));
         }
     }

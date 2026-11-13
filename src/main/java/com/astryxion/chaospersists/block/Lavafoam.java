@@ -16,8 +16,8 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import org.joml.Vector3f;
 
 public class Lavafoam extends Block {
@@ -45,7 +45,7 @@ public class Lavafoam extends Block {
 
     @Override
     public net.minecraft.world.item.ItemStack getCloneItemStack(
-            net.minecraft.world.level.BlockGetter level, BlockPos pos, BlockState state) {
+            net.minecraft.world.level.LevelReader level, BlockPos pos, BlockState state) {
         return new net.minecraft.world.item.ItemStack(this);
     }
 

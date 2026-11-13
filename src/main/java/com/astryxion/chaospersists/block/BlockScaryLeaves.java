@@ -17,12 +17,12 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
-import net.minecraftforge.common.IForgeShearable;
+import net.neoforged.neoforge.common.IShearable;
 
-public class BlockScaryLeaves extends LeavesBlock implements IForgeShearable {
+public class BlockScaryLeaves extends LeavesBlock implements IShearable {
 
     public BlockScaryLeaves() {
-        super(net.minecraft.world.level.block.Block.Properties.copy(Blocks.OAK_LEAVES).sound(SoundType.GRASS).randomTicks());
+        super(net.minecraft.world.level.block.Block.Properties.ofFullCopy(Blocks.OAK_LEAVES).sound(SoundType.GRASS).randomTicks());
     }
 
     @Override
@@ -39,13 +39,13 @@ public class BlockScaryLeaves extends LeavesBlock implements IForgeShearable {
     }
 
     @Override
-    public boolean isShearable(ItemStack item, Level level, BlockPos pos) {
+    public boolean isShearable(net.minecraft.world.entity.player.Player player, ItemStack item, Level level, BlockPos pos) {
         return true;
     }
 
     @Override
     public List<ItemStack> onSheared(
-            net.minecraft.world.entity.player.Player player, ItemStack item, Level level, BlockPos pos, int fortune) {
+            net.minecraft.world.entity.player.Player player, ItemStack item, Level level, BlockPos pos) {
         return Collections.singletonList(new ItemStack(this));
     }
 

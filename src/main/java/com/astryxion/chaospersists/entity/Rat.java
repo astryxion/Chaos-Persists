@@ -52,7 +52,7 @@ public class Rat extends Monster {
 
     public Rat(EntityType<? extends Rat> type, Level par1World) {
         super(type, par1World);
-        this.setMaxUpStep(0.5f);
+        getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.STEP_HEIGHT).setBaseValue(0.5f);
         this.xpReward = 5;
         this.goalSelector.addGoal(0, new FloatGoal(this));
         this.goalSelector.addGoal(1, new PanicGoal(this, 1.350000023841858));
@@ -72,9 +72,9 @@ public class Rat extends Monster {
     }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(ATTACKING, (byte) 0);
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(ATTACKING, (byte) 0);
     }
 
     @Override
@@ -107,7 +107,7 @@ public class Rat extends Monster {
     }
 
     @Override
-    protected void jumpFromGround() {
+    public void jumpFromGround() {
         super.jumpFromGround();
         this.setDeltaMovement(this.getDeltaMovement().add(0.0, 0.25, 0.0));
         this.setPos(this.getX(), this.getY() + 0.25, this.getZ());
@@ -139,11 +139,11 @@ public class Rat extends Monster {
     }
 
     @Override
-    protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+    protected void dropCustomDeathLoot(net.minecraft.server.level.ServerLevel serverLevel, DamageSource source, boolean recentlyHit) {
         if (DatapackLoot.useEntityTable(this)) {
             return;
         }
-        super.dropCustomDeathLoot(source, looting, recentlyHit);
+        super.dropCustomDeathLoot(serverLevel, source, recentlyHit);
         this.spawnAtLocation(Items.ROTTEN_FLESH);
     }
 

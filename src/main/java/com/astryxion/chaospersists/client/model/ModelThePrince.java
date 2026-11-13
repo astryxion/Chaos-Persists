@@ -146,7 +146,7 @@ public class ModelThePrince extends EntityModel<ThePrince> implements RoyalWingM
     }
 
     @Override
-    public void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
+    public void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, int color) {
         ThePrince entity = this.animEntity;
         float ageInTicks = this.animAgeInTicks;
         float limbSwingAmount = this.animLimbSwingAmount;
@@ -278,44 +278,44 @@ float h3;
         this.headfin.z = this.jaw.z;
         this.snout.x = this.jaw.x = (this.head.x = this.neck.x - (float)Math.sin(this.neck.yRot) * 7.0f * (float)Math.sin(this.neck.xRot));
         this.headfin.x = this.jaw.x;
-        this.body.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.neck1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.neck.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.neckbase.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.head.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Rleg1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Lleg1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.snout.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.tail1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.tail2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.tail3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.tail4.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Tail5.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Tail6.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Lneck1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Lneck.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Lhead.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Lsnout.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Rneck1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Rneck.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Rhead.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Rsnout.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.headfin.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Lheadfin.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Rheadfin.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Backfin.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Ljaw.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.jaw.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Rjaw.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.body.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.neck1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.neck.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.neckbase.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.head.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Rleg1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Lleg1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.snout.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.tail1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.tail2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.tail3.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.tail4.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Tail5.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Tail6.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Lneck1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Lneck.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Lhead.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Lsnout.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Rneck1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Rneck.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Rhead.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Rsnout.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.headfin.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Lheadfin.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Rheadfin.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Backfin.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Ljaw.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.jaw.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Rjaw.render(poseStack, buffer, packedLight, packedOverlay, color);
     }
 
     @Override
     public void renderWingMembranes(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay) {
-        this.Rwing2.render(poseStack, buffer, packedLight, packedOverlay, 0.75f, 0.75f, 0.75f, 0.55f);
-        this.Rwing3.render(poseStack, buffer, packedLight, packedOverlay, 0.75f, 0.75f, 0.75f, 0.55f);
-        this.Lwing2.render(poseStack, buffer, packedLight, packedOverlay, 0.75f, 0.75f, 0.75f, 0.55f);
-        this.Lwing3.render(poseStack, buffer, packedLight, packedOverlay, 0.75f, 0.75f, 0.75f, 0.55f);
-        this.Lwing.render(poseStack, buffer, packedLight, packedOverlay, 0.75f, 0.75f, 0.75f, 0.55f);
-        this.Rwing.render(poseStack, buffer, packedLight, packedOverlay, 0.75f, 0.75f, 0.75f, 0.55f);
+        this.Rwing2.render(poseStack, buffer, packedLight, packedOverlay, net.minecraft.util.FastColor.ARGB32.colorFromFloat(0.55f, 0.75f, 0.75f, 0.75f));
+        this.Rwing3.render(poseStack, buffer, packedLight, packedOverlay, net.minecraft.util.FastColor.ARGB32.colorFromFloat(0.55f, 0.75f, 0.75f, 0.75f));
+        this.Lwing2.render(poseStack, buffer, packedLight, packedOverlay, net.minecraft.util.FastColor.ARGB32.colorFromFloat(0.55f, 0.75f, 0.75f, 0.75f));
+        this.Lwing3.render(poseStack, buffer, packedLight, packedOverlay, net.minecraft.util.FastColor.ARGB32.colorFromFloat(0.55f, 0.75f, 0.75f, 0.75f));
+        this.Lwing.render(poseStack, buffer, packedLight, packedOverlay, net.minecraft.util.FastColor.ARGB32.colorFromFloat(0.55f, 0.75f, 0.75f, 0.75f));
+        this.Rwing.render(poseStack, buffer, packedLight, packedOverlay, net.minecraft.util.FastColor.ARGB32.colorFromFloat(0.55f, 0.75f, 0.75f, 0.75f));
     }
 }

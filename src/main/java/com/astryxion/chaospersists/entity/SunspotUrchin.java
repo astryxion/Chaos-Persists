@@ -47,7 +47,7 @@ public class SunspotUrchin extends ThrowableProjectile {
     }
 
     @Override
-    protected void defineSynchedData() {}
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {}
 
     @Override
     protected void onHit(HitResult result) {
@@ -65,7 +65,7 @@ public class SunspotUrchin extends ThrowableProjectile {
             if (!(hit instanceof Player)) {
                 hit.hurt(this.damageSources().thrown(this, this.getOwner()), damage);
                 if (!hit.fireImmune()) {
-                    hit.setSecondsOnFire(5);
+                    hit.igniteForSeconds(5);
                 }
             }
         } else if (result.getType() == HitResult.Type.BLOCK) {

@@ -15,7 +15,7 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 public class RenderButterfly extends MobRenderer<EntityButterfly, ModelButterfly> {
     private static final ResourceLocation CREEPER_ARMOR =
-            new ResourceLocation("textures/entity/creeper/creeper_armor.png");
+            ResourceLocation.parse("textures/entity/creeper/creeper_armor.png");
     private final float scale;
 
     public RenderButterfly(EntityRendererProvider.Context context, ModelButterfly model, float shadow, float scale) {
@@ -73,10 +73,7 @@ public class RenderButterfly extends MobRenderer<EntityButterfly, ModelButterfly
                             vertexConsumer,
                             packedLight,
                             OverlayTexture.NO_OVERLAY,
-                            0.5f,
-                            0.5f,
-                            0.5f,
-                            1.0f);
+                            net.minecraft.util.FastColor.ARGB32.colorFromFloat(1.0f, 0.5f, 0.5f, 0.5f));
             poseStack.popPose();
         }
     }

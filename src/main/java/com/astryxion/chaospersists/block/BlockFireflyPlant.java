@@ -19,7 +19,7 @@ import net.minecraft.world.phys.AABB;
 public class BlockFireflyPlant extends CropBlock {
 
     public BlockFireflyPlant() {
-        super(net.minecraft.world.level.block.Block.Properties.copy(Blocks.WHEAT).noOcclusion());
+        super(net.minecraft.world.level.block.Block.Properties.ofFullCopy(Blocks.WHEAT).noOcclusion());
     }
 
     @Override

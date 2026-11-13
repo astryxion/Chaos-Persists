@@ -12,7 +12,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.client.extensions.common.IClientItemExtensions;
+import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 
 public class ItemSquidZooka extends Item {
 
@@ -33,7 +33,7 @@ public class ItemSquidZooka extends Item {
                 player.getX(),
                 player.getY(),
                 player.getZ(),
-                SoundEvents.GENERIC_EXPLODE,
+                SoundEvents.GENERIC_EXPLODE.value(),
                 SoundSource.PLAYERS,
                 0.5f,
                 0.5f);
@@ -90,7 +90,7 @@ public class ItemSquidZooka extends Item {
                 0.1,
                 Math.sin(Math.toRadians(player.getYHeadRot() - 90.0f)) * 0.45);
 
-        stack.hurtAndBreak(1, player, p -> p.broadcastBreakEvent(hand));
+        stack.hurtAndBreak(1, player, net.minecraft.world.entity.LivingEntity.getSlotForHand(hand));
 
         return InteractionResultHolder.sidedSuccess(stack, level.isClientSide());
     }

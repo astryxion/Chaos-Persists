@@ -127,20 +127,17 @@ public class ModelCricket extends EntityModel<Cricket> {
             VertexConsumer buffer,
             int packedLight,
             int packedOverlay,
-            float red,
-            float green,
-            float blue,
-            float alpha) {
-        this.body.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.head.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.abdomen.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.lfleg.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.lrleg.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.rfleg.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.rrleg.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.lleg1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.rleg1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.lleg2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.rleg2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+            int color) {
+        this.body.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.head.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.abdomen.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.lfleg.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.lrleg.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.rfleg.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.rrleg.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.lleg1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.rleg1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.lleg2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.rleg2.render(poseStack, buffer, packedLight, packedOverlay, color);
     }
 }

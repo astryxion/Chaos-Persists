@@ -9,7 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderSpiderRobot extends MobRenderer<SpiderRobot, ModelSpiderRobot> {
     private static final ResourceLocation TEXTURE =
-            new ResourceLocation("chaospersists", "textures/entity/spiderrobottexture.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/spiderrobottexture.png");
     private final float scale;
 
     public RenderSpiderRobot(

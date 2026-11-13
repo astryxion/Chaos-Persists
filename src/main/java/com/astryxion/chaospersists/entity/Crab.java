@@ -55,7 +55,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.SpawnerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 public class Crab extends Monster {
     private static final EntityDataAccessor<Byte> ATTACKING =
@@ -92,10 +92,10 @@ public class Crab extends Monster {
     }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(ATTACKING, (byte) 0);
-        this.entityData.define(CRAB_SCALE, 25);
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(ATTACKING, (byte) 0);
+        builder.define(CRAB_SCALE, 25);
     }
 
     public float getCrabScale() {
@@ -125,10 +125,9 @@ public class Crab extends Monster {
             ServerLevelAccessor level,
             net.minecraft.world.DifficultyInstance difficulty,
             MobSpawnType reason,
-            @Nullable SpawnGroupData spawnData,
-            @Nullable CompoundTag dataTag) {
-        spawnData = super.finalizeSpawn(level, difficulty, reason, spawnData, dataTag);
-        if (dataTag == null || !dataTag.contains("Fscale")) {
+            @Nullable SpawnGroupData spawnData) {
+        spawnData = super.finalizeSpawn(level, difficulty, reason, spawnData);
+        {
             if (isCrabSpawnerNear(level, this.blockPosition())) {
                 this.setCrabScale(0.35f);
             } else {
@@ -157,7 +156,7 @@ public class Crab extends Monster {
     }
 
     @Override
-    public EntityDimensions getDimensions(Pose pose) {
+    public EntityDimensions getDefaultDimensions(Pose pose) {
         float scale = this.getCrabScale();
         return EntityDimensions.scalable(2.5f * scale, 3.5f * scale);
     }
@@ -171,8 +170,8 @@ public class Crab extends Monster {
     }
 
     @Override
-    public boolean canBreatheUnderwater() {
-        return true;
+    protected int decreaseAirSupply(int airSupply) {
+        return airSupply;
     }
 
     @Override
@@ -237,15 +236,15 @@ public class Crab extends Monster {
     }
 
     @Override
-    protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+    protected void dropCustomDeathLoot(net.minecraft.server.level.ServerLevel serverLevel, DamageSource source, boolean recentlyHit) {
         if (DatapackLoot.useEntityTable(this)) {
             return;
         }
         Item meat = ChaosPersists.MyRawCrabMeat;
         if (meat == null) {
             meat =
-                    ForgeRegistries.ITEMS.getValue(
-                            new ResourceLocation("chaospersists", "crabmeat"));
+                    BuiltInRegistries.ITEM.get(
+                            ResourceLocation.fromNamespaceAndPath("chaospersists", "crabmeat"));
         }
         if (meat == null) {
             return;

@@ -24,20 +24,20 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.Level.ExplosionInteraction;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.common.ForgeMod;
+import net.neoforged.neoforge.common.NeoForgeMod;
 
 public class Bertha extends SwordItem {
     /**
-     * Extra {@link ForgeMod#ENTITY_REACH} while held in the main hand. Same approach as
+     * Extra {@link NeoForgeMod#ENTITY_REACH} while held in the main hand. Same approach as
      * popular 1.20.1 reach weapons (e.g. EEEABs chainsword): additive on the Forge 3-block base.
      */
-    private static final UUID ENTITY_REACH_UUID = UUID.fromString("A3C8E1B4-6D2F-4A91-8B7C-5E0F9D4A2C18");
+    private static final net.minecraft.resources.ResourceLocation ENTITY_REACH_UUID = net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", "a3c8e1b4-6d2f-4a91-8b7c-5e0f9d4a2c18");
 
     public Bertha(Tier tier) {
-        super(tier, 3, -2.4f, new Properties().stacksTo(1).durability(9000));
+        super(tier, new Properties().stacksTo(1).durability(9000).attributes(SwordItem.createAttributes(tier, 3, -2.4f)));
     }
 
-    /** Forge survival {@link ForgeMod#ENTITY_REACH} base. Extra modifiers add on top of this. */
+    /** Forge survival {@link NeoForgeMod#ENTITY_REACH} base. Extra modifiers add on top of this. */
     private static final double SURVIVAL_ENTITY_REACH_BASE = 3.0;
 
     /**
@@ -58,50 +58,46 @@ public class Bertha extends SwordItem {
     }
 
     @Override
-    public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(EquipmentSlot slot) {
-        if (slot != EquipmentSlot.MAINHAND) {
-            return super.getDefaultAttributeModifiers(slot);
-        }
-        ImmutableMultimap.Builder<Attribute, AttributeModifier> builder = ImmutableMultimap.builder();
-        builder.putAll(super.getDefaultAttributeModifiers(slot));
-        builder.put(
-                ForgeMod.ENTITY_REACH.get(),
-                new AttributeModifier(
-                        ENTITY_REACH_UUID,
-                        "Weapon modifier",
-                        extraEntityReach(),
-                        AttributeModifier.Operation.ADDITION));
-        return builder.build();
+    public net.minecraft.world.item.component.ItemAttributeModifiers getDefaultAttributeModifiers(ItemStack stack) {
+        ItemStack safe = (stack == null || stack.isEmpty()) ? new ItemStack(this) : stack;
+        var modifiers = super.getDefaultAttributeModifiers(safe);
+        double extra = extraEntityReach();
+        if (extra <= 0.0) return modifiers;
+        return modifiers.withModifierAdded(
+                net.minecraft.world.entity.ai.attributes.Attributes.ENTITY_INTERACTION_RANGE,
+                new AttributeModifier(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(
+                        "chaospersists", "weapon_reach"), extra, AttributeModifier.Operation.ADD_VALUE),
+                net.minecraft.world.entity.EquipmentSlotGroup.MAINHAND);
     }
 
     @Override
     public void onCraftedBy(ItemStack stack, Level level, Player player) {
         if (this == ChaosPersists.MyRoyal) {
-            stack.enchant(Enchantments.UNBREAKING, 5);
+            stack.enchant(level.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 5);
         } else if (this != ChaosPersists.MyHammy) {
-            stack.enchant(Enchantments.KNOCKBACK, 5);
-            stack.enchant(Enchantments.BANE_OF_ARTHROPODS, 1);
-            stack.enchant(Enchantments.FIRE_ASPECT, 1);
+            stack.enchant(level.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.KNOCKBACK), 5);
+            stack.enchant(level.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.BANE_OF_ARTHROPODS), 1);
+            stack.enchant(level.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FIRE_ASPECT), 1);
         }
     }
 
     @Override
     public void inventoryTick(ItemStack stack, Level level, Entity entity, int slot, boolean selected) {
-        this.ensureEnchantments(stack);
+        this.ensureEnchantments(stack, level);
     }
 
-    private void ensureEnchantments(ItemStack stack) {
-        int lvl = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.KNOCKBACK, stack);
+    private void ensureEnchantments(ItemStack stack, Level level) {
+        int lvl = com.astryxion.chaospersists.util.ChaosEnchantments.level(Enchantments.KNOCKBACK, stack);
         if (lvl == 0) {
-            lvl = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.UNBREAKING, stack);
+            lvl = com.astryxion.chaospersists.util.ChaosEnchantments.level(Enchantments.UNBREAKING, stack);
         }
         if (lvl <= 0) {
             if (this == ChaosPersists.MyRoyal) {
-                stack.enchant(Enchantments.UNBREAKING, 5);
+                stack.enchant(level.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 5);
             } else if (this != ChaosPersists.MyHammy) {
-                stack.enchant(Enchantments.KNOCKBACK, 5);
-                stack.enchant(Enchantments.BANE_OF_ARTHROPODS, 1);
-                stack.enchant(Enchantments.FIRE_ASPECT, 1);
+                stack.enchant(level.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.KNOCKBACK), 5);
+                stack.enchant(level.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.BANE_OF_ARTHROPODS), 1);
+                stack.enchant(level.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FIRE_ASPECT), 1);
             }
         }
     }
@@ -254,7 +250,7 @@ public class Bertha extends SwordItem {
 
     @Override
     public boolean hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
-        stack.hurtAndBreak(1, attacker, e -> e.broadcastBreakEvent(EquipmentSlot.MAINHAND));
+        stack.hurtAndBreak(1, attacker, EquipmentSlot.MAINHAND);
         if (!attacker.level().isClientSide) {
             applyBerthaImpact(attacker, target);
             if (this == ChaosPersists.MyHammy) {
@@ -275,12 +271,12 @@ public class Bertha extends SwordItem {
     }
 
     @Override
-    public int getUseDuration(ItemStack stack) {
+    public int getUseDuration(ItemStack stack, net.minecraft.world.entity.LivingEntity user) {
         return 9000;
     }
 
     @Override
-    public void initializeClient(java.util.function.Consumer<net.minecraftforge.client.extensions.common.IClientItemExtensions> consumer) {
+    public void initializeClient(java.util.function.Consumer<net.neoforged.neoforge.client.extensions.common.IClientItemExtensions> consumer) {
         com.astryxion.chaospersists.client.item.BigWeaponClientExtensions.register(consumer, this);
     }
 }

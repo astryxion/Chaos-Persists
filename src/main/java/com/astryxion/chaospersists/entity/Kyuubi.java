@@ -178,7 +178,7 @@ public class Kyuubi extends Monster {
     }
 
     @Override
-    protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+    protected void dropCustomDeathLoot(net.minecraft.server.level.ServerLevel serverLevel, DamageSource source, boolean recentlyHit) {
         if (DatapackLoot.useEntityTable(this)) {
             return;
         }
@@ -221,12 +221,7 @@ public class Kyuubi extends Monster {
             if (this.distanceToSqr(target) < 64.0
                     && (this.getRandom().nextInt(6) == 0 || this.getRandom().nextInt(8) == 1)) {
                 SmallFireball fireball =
-                        new SmallFireball(
-                                this.level(),
-                                this,
-                                target.getX() - this.getX(),
-                                target.getY() + 0.75 - (this.getY() + 1.25),
-                                target.getZ() - this.getZ());
+                        new SmallFireball(this.level(), this, new net.minecraft.world.phys.Vec3(target.getX() - this.getX(), target.getY() + 0.75 - (this.getY() + 1.25), target.getZ() - this.getZ()));
                 fireball.moveTo(this.getX(), this.getY() + 1.25, this.getZ(), this.getYRot(), this.getXRot());
                 this.level()
                         .playSound(

@@ -91,11 +91,11 @@ public class PitchBlack extends Monster {
     }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(ATTACKING, (byte) 0);
-        this.entityData.define(ACTIVITY, (byte) 0);
-        this.entityData.define(SCALE_INT, 0);
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(ATTACKING, (byte) 0);
+        builder.define(ACTIVITY, (byte) 0);
+        builder.define(SCALE_INT, 0);
         // Minecraft may call defineSynchedData() from the Entity base constructor before
         // this subclass's field initializers run, so ensure renderdata is non-null.
         if (this.renderdata == null) {
@@ -112,8 +112,8 @@ public class PitchBlack extends Monster {
     }
 
     @Override
-    public void onAddedToWorld() {
-        super.onAddedToWorld();
+    public void onAddedToLevel() {
+        super.onAddedToLevel();
         if (!this.level().isClientSide && !this.scaleInitialized) {
             this.assignInitialScaleIfNeeded();
         }
@@ -674,7 +674,7 @@ public class PitchBlack extends Monster {
     }
 
     @Override
-    protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+    protected void dropCustomDeathLoot(net.minecraft.server.level.ServerLevel serverLevel, DamageSource source, boolean recentlyHit) {
         if (DatapackLoot.useEntityTable(this)) {
             return;
         }
@@ -803,7 +803,7 @@ public class PitchBlack extends Monster {
     }
 
     @Override
-    public EntityDimensions getDimensions(net.minecraft.world.entity.Pose pose) {
+    public EntityDimensions getDefaultDimensions(net.minecraft.world.entity.Pose pose) {
         float scale = this.getPitchBlackScale();
         return EntityDimensions.fixed(2.5f * scale, 3.5f * scale);
     }

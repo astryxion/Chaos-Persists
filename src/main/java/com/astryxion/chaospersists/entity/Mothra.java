@@ -43,7 +43,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 public class Mothra extends EntityButterfly {
     private BlockPos mothraFlightTarget = null;
@@ -106,7 +106,7 @@ public class Mothra extends EntityButterfly {
 
     @Override
     protected net.minecraft.sounds.SoundEvent getDeathSound() {
-        return SoundEvents.GENERIC_EXPLODE;
+        return SoundEvents.GENERIC_EXPLODE.value();
     }
 
     @Override
@@ -422,7 +422,7 @@ public class Mothra extends EntityButterfly {
     }
 
     @Override
-    protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+    protected void dropCustomDeathLoot(net.minecraft.server.level.ServerLevel serverLevel, DamageSource source, boolean recentlyHit) {
         if (DatapackLoot.useEntityTable(this)) {
             return;
         }
@@ -446,7 +446,7 @@ public class Mothra extends EntityButterfly {
             this.dropItemRand(Items.GOLD_NUGGET, 1);
         }
         Item mothScale =
-                ForgeRegistries.ITEMS.getValue(new ResourceLocation("chaospersists", "mothscale"));
+                BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath("chaospersists", "mothscale"));
         if (mothScale != null) {
             for (var4 = 0; var4 < 25; ++var4) {
                 this.dropItemRand(mothScale, 1);
@@ -456,7 +456,7 @@ public class Mothra extends EntityButterfly {
             this.dropItemRand(Items.BLAZE_ROD, 1);
         }
         this.dropItemRand(Items.NETHER_STAR, 1);
-        if (this.level() instanceof ServerLevel serverLevel) {
+        {
             for (var4 = 0; var4 < 20; ++var4) {
                 spawnCreature(serverLevel, "moth", this.getX() + 0.5, this.getY() + 1.0, this.getZ() + 0.5);
             }
@@ -464,8 +464,8 @@ public class Mothra extends EntityButterfly {
     }
 
     public static Entity spawnCreature(ServerLevel level, String entityPath, double px, double py, double pz) {
-        ResourceLocation id = new ResourceLocation("chaospersists", entityPath);
-        EntityType<?> type = ForgeRegistries.ENTITY_TYPES.getValue(id);
+        ResourceLocation id = ResourceLocation.fromNamespaceAndPath("chaospersists", entityPath);
+        EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.get(id);
         if (type == null) {
             return null;
         }
@@ -493,12 +493,7 @@ public class Mothra extends EntityButterfly {
         double cz = this.getZ() + xzoff * Math.cos(Math.toRadians(this.getYRot()));
         if (this.level().getDifficulty() == Difficulty.EASY) {
             SmallFireball sf =
-                    new SmallFireball(
-                            this.level(),
-                            this,
-                            par1.getX() - cx,
-                            par1.getY() + 0.55 - (this.getY() + yoff),
-                            par1.getZ() - cz);
+                    new SmallFireball(this.level(), this, new net.minecraft.world.phys.Vec3(par1.getX() - cx, par1.getY() + 0.55 - (this.getY() + yoff), par1.getZ() - cz));
             sf.moveTo(cx, this.getY() + yoff, cz, this.getYRot(), 0.0f);
             this.level()
                     .playSound(
@@ -514,12 +509,7 @@ public class Mothra extends EntityButterfly {
         } else if (this.level().getDifficulty() == Difficulty.NORMAL) {
             if (this.getRandom().nextInt(2) == 0) {
                 SmallFireball sf =
-                        new SmallFireball(
-                                this.level(),
-                                this,
-                                par1.getX() - cx,
-                                par1.getY() + 0.55 - (this.getY() + yoff),
-                                par1.getZ() - cz);
+                        new SmallFireball(this.level(), this, new net.minecraft.world.phys.Vec3(par1.getX() - cx, par1.getY() + 0.55 - (this.getY() + yoff), par1.getZ() - cz));
                 sf.moveTo(cx, this.getY() + yoff, cz, this.getYRot(), 0.0f);
                 this.level()
                         .playSound(

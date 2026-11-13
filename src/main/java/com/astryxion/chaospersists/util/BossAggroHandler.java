@@ -1,5 +1,7 @@
 package com.astryxion.chaospersists.util;
 
+import net.neoforged.neoforge.event.tick.EntityTickEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.entity.Alien;
 import com.astryxion.chaospersists.entity.Alosaurus;
@@ -43,10 +45,10 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraftforge.event.entity.living.LivingEvent;
-import net.minecraftforge.event.entity.living.LivingHurtEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.neoforge.event.entity.living.LivingEvent;
+import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
 
 /**
  * 1.7.10 parity: {@code attackEntityFrom} set both {@code attackTarget} and {@code entityToAttack},
@@ -54,22 +56,22 @@ import net.minecraftforge.fml.common.Mod;
  * 1.20 only has one target field, so while the damaging entity is alive we keep that target
  * and raise follow range to the attribute cap.
  */
-@Mod.EventBusSubscriber(modid = ChaosPersists.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(modid = ChaosPersists.MODID, bus = EventBusSubscriber.Bus.GAME)
 public final class BossAggroHandler {
     private static final String NBT_ATTACKER = "ChaosBossAggroAtk";
     /** Vanilla FOLLOW_RANGE max is 2048; this is far enough that running away is not a cheese. */
     private static final double HURT_FOLLOW_RANGE = 1024.0;
-    private static final UUID FOLLOW_RANGE_BONUS_ID =
-            UUID.fromString("8c3d7e21-4b9a-4f0e-9c1d-2a6b8e5f7d10");
+    private static final net.minecraft.resources.ResourceLocation FOLLOW_RANGE_BONUS_ID =
+            net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", "8c3d7e21-4b9a-4f0e-9c1d-2a6b8e5f7d10");
 
     private BossAggroHandler() {}
 
     @SubscribeEvent
-    public static void onBossHurt(LivingHurtEvent event) {
+    public static void onBossHurt(LivingIncomingDamageEvent event) {
         if (event == null || event.isCanceled() || event.getAmount() <= 0.0f) {
             return;
         }
-        LivingEntity victim = event.getEntity();
+        LivingEntity victim = (LivingEntity) event.getEntity();
         if (!(victim instanceof Mob boss)
                 || victim.level() == null
                 || victim.level().isClientSide
@@ -91,11 +93,12 @@ public final class BossAggroHandler {
     }
 
     @SubscribeEvent
-    public static void onBossTick(LivingEvent.LivingTickEvent event) {
+    public static void onBossTick(EntityTickEvent.Post event) {
+        if (!(event.getEntity() instanceof net.minecraft.world.entity.LivingEntity)) return;
         if (event == null || event.getEntity() == null) {
             return;
         }
-        LivingEntity entity = event.getEntity();
+        LivingEntity entity = (LivingEntity) event.getEntity();
         if (!(entity instanceof Mob boss)
                 || boss.level() == null
                 || boss.level().isClientSide
@@ -174,9 +177,8 @@ public final class BossAggroHandler {
         follow.addTransientModifier(
                 new AttributeModifier(
                         FOLLOW_RANGE_BONUS_ID,
-                        "OreSpawn boss hurt aggro",
                         bonus,
-                        AttributeModifier.Operation.ADDITION));
+                        AttributeModifier.Operation.ADD_VALUE));
     }
 
     private static void resetHurtAggro(Mob boss) {

@@ -13,7 +13,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.entity.PartEntity;
+import net.neoforged.neoforge.entity.PartEntity;
 
 /**
  * Ultimate Bow / Royal Guardian (and other Bertha weapons) skip damage on tamed pets. Ice and Fire
@@ -25,11 +25,11 @@ public final class FriendlyWeaponHits {
     public static final TagKey<EntityType<?>> MULTIPART_HITBOXES =
             TagKey.create(
                     Registries.ENTITY_TYPE,
-                    new ResourceLocation(ChaosPersists.MODID, "multipart_hitboxes"));
+                    ResourceLocation.fromNamespaceAndPath(ChaosPersists.MODID, "multipart_hitboxes"));
     public static final TagKey<EntityType<?>> FRIENDLY_WEAPON_IGNORE =
             TagKey.create(
                     Registries.ENTITY_TYPE,
-                    new ResourceLocation(ChaosPersists.MODID, "friendly_weapon_ignore"));
+                    ResourceLocation.fromNamespaceAndPath(ChaosPersists.MODID, "friendly_weapon_ignore"));
 
     private FriendlyWeaponHits() {}
 

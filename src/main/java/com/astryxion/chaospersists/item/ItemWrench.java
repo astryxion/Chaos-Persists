@@ -1,5 +1,6 @@
 package com.astryxion.chaospersists.item;
 
+import net.neoforged.fml.common.EventBusSubscriber;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.entity.AntRobot;
 import com.astryxion.chaospersists.entity.SpiderRobot;
@@ -17,14 +18,14 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.event.entity.player.AttackEntityEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
 
 /**
  * Same behavior as OreSpawn 1.7.10: left-click specific robots to dismantle and drop a damaged kit.
  */
-@Mod.EventBusSubscriber(modid = ChaosPersists.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(modid = ChaosPersists.MODID, bus = EventBusSubscriber.Bus.GAME)
 public class ItemWrench extends Item {
     private static final DustParticleOptions RED_DUST =
             new DustParticleOptions(new Vector3f(1.0f, 0.0f, 0.0f), 1.0f);
@@ -101,7 +102,7 @@ public class ItemWrench extends Item {
         } else {
             dropKit(level, living, ChaosPersists.AntRobotKit, damageTaken);
         }
-        stack.hurtAndBreak(2, player, p -> p.broadcastBreakEvent(hand));
+        stack.hurtAndBreak(2, player, net.minecraft.world.entity.LivingEntity.getSlotForHand(hand));
         clearSlotIfBroken(player, stack, hand);
         playDismantleEffects(level, entity);
         return true;
@@ -157,7 +158,7 @@ public class ItemWrench extends Item {
                 entity.getX(),
                 entity.getY(),
                 entity.getZ(),
-                SoundEvents.GENERIC_EXPLODE,
+                SoundEvents.GENERIC_EXPLODE.value(),
                 SoundSource.PLAYERS,
                 0.5f,
                 1.5f);

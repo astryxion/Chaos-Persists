@@ -46,7 +46,7 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 public class Frog extends Animal {
     private static final net.minecraft.network.syncher.EntityDataAccessor<Integer> SINGING =
@@ -75,10 +75,10 @@ public class Frog extends Animal {
     }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(SINGING, 0);
-        this.entityData.define(JUMPING, 0);
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(SINGING, 0);
+        builder.define(JUMPING, 0);
     }
 
     @Override
@@ -90,8 +90,8 @@ public class Frog extends Animal {
     }
 
     @Override
-    public boolean canBreatheUnderwater() {
-        return true;
+    protected int decreaseAirSupply(int airSupply) {
+        return airSupply;
     }
 
     public int getSinging() {
@@ -163,7 +163,7 @@ public class Frog extends Animal {
                     player.getX(),
                     player.getY(),
                     player.getZ(),
-                    SoundEvents.GENERIC_EXPLODE,
+                    SoundEvents.GENERIC_EXPLODE.value(),
                     SoundSource.PLAYERS,
                     1.0f,
                     world.getRandom().nextFloat() * 0.2f + 0.9f);
@@ -258,7 +258,7 @@ public class Frog extends Animal {
     }
 
     @Override
-    protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+    protected void dropCustomDeathLoot(net.minecraft.server.level.ServerLevel serverLevel, DamageSource source, boolean recentlyHit) {
         if (DatapackLoot.useEntityTable(this)) {
             return;
         }
@@ -497,9 +497,9 @@ public class Frog extends Animal {
     public static Entity spawnCreature(Level level, String par1, double par2, double par4, double par6) {
         ResourceLocation res =
                 par1.contains(":")
-                        ? new ResourceLocation(par1)
-                        : new ResourceLocation("chaospersists", par1.toLowerCase());
-        EntityType<?> type = ForgeRegistries.ENTITY_TYPES.getValue(res);
+                        ? ResourceLocation.parse(par1)
+                        : ResourceLocation.fromNamespaceAndPath("chaospersists", par1.toLowerCase());
+        EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.get(res);
         if (type == null || !(level instanceof ServerLevel serverLevel)) {
             return null;
         }

@@ -44,7 +44,7 @@ public final class CommandMining {
             return 0;
         }
         MiningTeleporter teleporter = new MiningTeleporter(player.getX(), player.getZ());
-        player.changeDimension(world, teleporter);
+        player.changeDimension(teleporter.transition(player, world));
         player.displayClientMessage(
                 Component.literal("Teleported to Mining.").withStyle(ChatFormatting.GREEN), true);
         return 1;

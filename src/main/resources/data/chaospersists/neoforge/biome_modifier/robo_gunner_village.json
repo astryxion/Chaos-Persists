@@ -1,0 +1,10 @@
+{
+  "type": "neoforge:add_spawns",
+  "spawners": {
+    "type": "chaospersists:robo_gunner",
+    "weight": 12,
+    "minCount": 2,
+    "maxCount": 4
+  },
+  "biomes": "chaospersists:village_dimension"
+}

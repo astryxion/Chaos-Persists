@@ -14,9 +14,10 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
-import net.minecraftforge.common.ForgeSpawnEggItem;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.common.DeferredSpawnEggItem;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 /**
  * Per-mob {@code Enable} flags fully disable a mob. {@code AllMobsDisable} only stops natural
@@ -172,7 +173,7 @@ public final class ChaosMobAccess {
         if (type == null) {
             return true;
         }
-        ResourceLocation key = ForgeRegistries.ENTITY_TYPES.getKey(type);
+        ResourceLocation key = BuiltInRegistries.ENTITY_TYPE.getKey(type);
         if (key == null || !ChaosPersists.MODID.equals(key.getNamespace())) {
             return true;
         }
@@ -213,8 +214,10 @@ public final class ChaosMobAccess {
             }
             return null;
         }
-        if (item instanceof ForgeSpawnEggItem forgeEgg) {
-            EntityType<?> type = forgeEgg.getType(null);
+        if (item instanceof DeferredSpawnEggItem forgeEgg) {
+            // SpawnEggItem.getType reads ENTITY_DATA via stack.getOrDefault — null stack NPEs
+            // (creative tab rebuild walks every tab's entries, including other mods' deferred eggs).
+            EntityType<?> type = forgeEgg.getType(new ItemStack(forgeEgg));
             if (type != null && !isEntityEnabled(type)) {
                 return ITEM_DISABLED;
             }
@@ -236,7 +239,7 @@ public final class ChaosMobAccess {
         if (itemId == null) {
             return null;
         }
-        Item item = ForgeRegistries.ITEMS.getValue(itemId);
+        Item item = BuiltInRegistries.ITEM.get(itemId);
         return disabledItemMessage(item);
     }
 

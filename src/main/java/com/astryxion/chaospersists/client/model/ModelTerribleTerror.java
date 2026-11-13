@@ -127,27 +127,27 @@ public class ModelTerribleTerror extends EntityModel<TerribleTerror> {
     }
 
     @Override
-    public void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
-        this.Horn1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Horn2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Snout.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Head.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Jaw.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Neck.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Body.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Wing1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Wing2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Tail1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Tail2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Tail3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Tail4.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.FL11.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.FL12.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.FL21.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.FL22.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.BL21.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.BL22.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.BL11.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.BL12.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+    public void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, int color) {
+        this.Horn1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Horn2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Snout.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Head.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Jaw.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Neck.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Body.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Wing1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Wing2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Tail1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Tail2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Tail3.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Tail4.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.FL11.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.FL12.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.FL21.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.FL22.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.BL21.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.BL22.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.BL11.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.BL12.render(poseStack, buffer, packedLight, packedOverlay, color);
     }
 }

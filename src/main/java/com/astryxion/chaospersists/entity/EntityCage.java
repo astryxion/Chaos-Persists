@@ -21,7 +21,7 @@ import net.minecraft.world.entity.animal.Squid;
 import net.minecraft.world.entity.animal.Wolf;
 import net.minecraft.world.entity.animal.horse.Horse;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
-import net.minecraftforge.entity.PartEntity;
+import net.neoforged.neoforge.entity.PartEntity;
 import net.minecraft.world.entity.animal.IronGolem;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
 import net.minecraft.world.entity.monster.Blaze;
@@ -82,7 +82,7 @@ extends ThrowableProjectile {
     }
 
     @Override
-    protected void defineSynchedData() {}
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {}
 
     public int getCageIndex() {
         return this.my_index;
@@ -110,10 +110,10 @@ extends ThrowableProjectile {
                 for (int var3 = 0; var3 < 4; ++var3) {
                     this.throwerLevel.addParticle(ParticleTypes.SMOKE, hitEntity.getX(), hitEntity.getY() + 0.25, hitEntity.getZ(), 0.0, 0.0, 0.0);
                     this.throwerLevel.addParticle(ParticleTypes.EXPLOSION, hitEntity.getX(), hitEntity.getY() + 0.25, hitEntity.getZ(), 0.0, 0.0, 0.0);
-                    this.throwerLevel.addParticle(ParticleTypes.ENTITY_EFFECT, hitEntity.getX(), hitEntity.getY() + 0.25, hitEntity.getZ(), 1.0, 0.0, 0.0);
+                    this.throwerLevel.addParticle(net.minecraft.core.particles.ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, 0xFFFF0000), hitEntity.getX(), hitEntity.getY() + 0.25, hitEntity.getZ(), 1.0, 0.0, 0.0);
                 }
                 if (this.thrower != null) {
-                    this.throwerLevel.playSound(null, this.thrower.getX(), this.thrower.getY(), this.thrower.getZ(), SoundEvents.GENERIC_EXPLODE, SoundSource.NEUTRAL, 1.0f, 1.5f);
+                    this.throwerLevel.playSound(null, this.thrower.getX(), this.thrower.getY(), this.thrower.getZ(), SoundEvents.GENERIC_EXPLODE.value(), SoundSource.NEUTRAL, 1.0f, 1.5f);
                 }
             }
             if (!this.level().isClientSide) {

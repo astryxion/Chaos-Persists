@@ -13,15 +13,15 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderPurplePower extends EntityRenderer<PurplePower> {
     private static final ResourceLocation TEXTURE =
-            new ResourceLocation("chaospersists", "textures/entity/purplepowertexture.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/purplepowertexture.png");
     private static final ResourceLocation TEXTURE2 =
-            new ResourceLocation("chaospersists", "textures/entity/purplepowertexture2.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/purplepowertexture2.png");
     private static final ResourceLocation TEXTURE3 =
-            new ResourceLocation("chaospersists", "textures/entity/purplepowertexture3.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/purplepowertexture3.png");
     private static final ResourceLocation TEXTURE4 =
-            new ResourceLocation("chaospersists", "textures/entity/purplepowertexture4.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/purplepowertexture4.png");
     private static final ResourceLocation TEXTURE10 =
-            new ResourceLocation("chaospersists", "textures/entity/purplepowertexture10.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/purplepowertexture10.png");
 
     /**
      * OreSpawn {@code RenderPurplePower.preRenderScale} for non-zero types (Princess crystals 1-3,
@@ -61,10 +61,7 @@ public class RenderPurplePower extends EntityRenderer<PurplePower> {
                 buffer.getBuffer(RenderType.entityTranslucent(this.getTextureLocation(entity))),
                 packedLight,
                 OverlayTexture.NO_OVERLAY,
-                1.0F,
-                1.0F,
-                1.0F,
-                1.0F);
+                net.minecraft.util.FastColor.ARGB32.colorFromFloat(1.0F, 1.0F, 1.0F, 1.0F));
         poseStack.popPose();
     }
 

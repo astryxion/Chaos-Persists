@@ -5,10 +5,11 @@ import com.astryxion.chaospersists.client.model.ModelGhostSkelly;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
+import net.minecraft.resources.ResourceLocation;
 
 public class RenderGhostSkelly extends MobRenderer<GhostSkelly, ModelGhostSkelly> {
     private static final net.minecraft.resources.ResourceLocation TEXTURE =
-            new net.minecraft.resources.ResourceLocation(
+            net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(
                     "chaospersists", "textures/entity/ghostskellytexture.png");
     private final float scale;
 
@@ -29,7 +30,7 @@ public class RenderGhostSkelly extends MobRenderer<GhostSkelly, ModelGhostSkelly
 
     @Override
     protected RenderType getRenderType(GhostSkelly entity, boolean bodyVisible, boolean translucent, boolean glowing) {
-        net.minecraft.resources.ResourceLocation tex = this.getTextureLocation(entity);
+        ResourceLocation tex = this.getTextureLocation(entity);
         if (translucent) {
             return RenderType.itemEntityTranslucentCull(tex);
         } else if (bodyVisible) {

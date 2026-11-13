@@ -78,6 +78,7 @@ public class RubberDucky extends TamableAnimal {
 
     public RubberDucky(EntityType<? extends RubberDucky> type, Level level) {
         super(type, level);
+        this.setOrderedToSit(false);
         this.xpReward = 15;
         this.renderdata = new RenderInfo();
         this.targetSorter = new GenericTargetSorter(this);
@@ -101,16 +102,15 @@ public class RubberDucky extends TamableAnimal {
     }
 
     @Override
-    public EntityDimensions getDimensions(Pose pose) {
+    public EntityDimensions getDefaultDimensions(Pose pose) {
         return EntityDimensions.scalable(0.33f, 0.5f);
     }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(BYTE23, (byte) 0);
-        this.entityData.define(BYTE22, (byte) 0);
-        this.setOrderedToSit(false);
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(BYTE23, (byte) 0);
+        builder.define(BYTE22, (byte) 0);
         if (this.getAge() < 0) {
             this.setAge(-this.getAge());
         }
@@ -271,7 +271,7 @@ public class RubberDucky extends TamableAnimal {
     }
 
     @Override
-    protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+    protected void dropCustomDeathLoot(net.minecraft.server.level.ServerLevel serverLevel, DamageSource source, boolean recentlyHit) {
         if (DatapackLoot.useEntityTable(this)) {
             return;
         }
@@ -296,7 +296,7 @@ public class RubberDucky extends TamableAnimal {
             if (!this.isTame()) {
                 if (!this.level().isClientSide) {
                     if (this.getRandom().nextInt(2) == 0) {
-                        this.setTame(true);
+                        this.setTame(true, true);
                         this.setOwnerUUID(par1EntityPlayer.getUUID());
                         spawnTamingParticles(true);
                         this.level().broadcastEntityEvent(this, (byte) 7);
@@ -330,7 +330,7 @@ public class RubberDucky extends TamableAnimal {
                 && par1EntityPlayer.distanceToSqr(this) < 16.0
                 && this.isOwnedBy(par1EntityPlayer)) {
             if (!this.level().isClientSide) {
-                this.setTame(false);
+                this.setTame(false, true);
                 this.setOwnerUUID(null);
                 spawnTamingParticles(false);
                 this.level().broadcastEntityEvent(this, (byte) 6);
@@ -646,7 +646,7 @@ public class RubberDucky extends TamableAnimal {
                         continue;
                     }
                     ResourceLocation rubberId =
-                            new ResourceLocation("chaospersists", "rubber_ducky");
+                            ResourceLocation.fromNamespaceAndPath("chaospersists", "rubber_ducky");
                     ResourceLocation norm = SpawnerFixHelper.normalizeSpawnerEntityId(id);
                     if (SpawnerFixHelper.entityIdsMatchForSpawner(norm, rubberId)
                             || "Rubber Ducky".equals(id.getPath())) {
@@ -680,7 +680,7 @@ public class RubberDucky extends TamableAnimal {
                         continue;
                     }
                     ResourceLocation rubberId =
-                            new ResourceLocation("chaospersists", "rubber_ducky");
+                            ResourceLocation.fromNamespaceAndPath("chaospersists", "rubber_ducky");
                     ResourceLocation norm = SpawnerFixHelper.normalizeSpawnerEntityId(id);
                     if (SpawnerFixHelper.entityIdsMatchForSpawner(norm, rubberId)
                             || "Rubber Ducky".equals(id.getPath())) {

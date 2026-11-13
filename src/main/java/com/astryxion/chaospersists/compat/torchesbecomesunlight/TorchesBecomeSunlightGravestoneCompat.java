@@ -1,5 +1,7 @@
 package com.astryxion.chaospersists.compat.torchesbecomesunlight;
 
+import net.neoforged.neoforge.event.tick.EntityTickEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.util.ChaosBosses;
 import java.lang.reflect.Field;
@@ -18,11 +20,11 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraftforge.event.entity.living.LivingEvent;
-import net.minecraftforge.event.entity.living.LivingHealEvent;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.neoforge.event.entity.living.LivingEvent;
+import net.neoforged.neoforge.event.entity.living.LivingHealEvent;
+import net.neoforged.bus.api.EventPriority;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
 
 /**
  * Gathering Torches Become Sunlight Gravestone (phase two) is built around players: a 40-damage /
@@ -31,13 +33,13 @@ import net.minecraftforge.fml.common.Mod;
  * Queen purple {@code setHealth} slices get eaten by that window, and OreSpawn bosses are not
  * meant to be halved or farmed for lifesteal.
  */
-@Mod.EventBusSubscriber(modid = ChaosPersists.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(modid = ChaosPersists.MODID, bus = EventBusSubscriber.Bus.GAME)
 public final class TorchesBecomeSunlightGravestoneCompat {
 
     private static final String HALVE_MODIFIER = "boss_fight_health_halve";
-    private static final Attribute[] HALVE_ATTRIBUTES = {
+    private static final java.util.List<net.minecraft.core.Holder<Attribute>> HALVE_ATTRIBUTES = java.util.List.of(
         Attributes.MAX_HEALTH, Attributes.ARMOR, Attributes.ARMOR_TOUGHNESS, Attributes.ATTACK_DAMAGE
-    };
+    );
 
     private static EntityDataAccessor<Float> healthId;
     private static boolean healthIdResolved;
@@ -81,11 +83,12 @@ public final class TorchesBecomeSunlightGravestoneCompat {
     }
 
     @SubscribeEvent(priority = EventPriority.HIGH)
-    public static void onLivingTick(LivingEvent.LivingTickEvent event) {
+    public static void onLivingTick(EntityTickEvent.Post event) {
+        if (!(event.getEntity() instanceof net.minecraft.world.entity.LivingEntity)) return;
         if (!TorchesBecomeSunlightDamageCompat.isPresent() || event == null) {
             return;
         }
-        LivingEntity living = event.getEntity();
+        LivingEntity living = (LivingEntity) event.getEntity();
         if (living == null || living.level() == null || living.level().isClientSide) {
             return;
         }
@@ -103,7 +106,7 @@ public final class TorchesBecomeSunlightGravestoneCompat {
                 || event.getAmount() <= 0.0f) {
             return;
         }
-        LivingEntity healer = event.getEntity();
+        LivingEntity healer = (LivingEntity) event.getEntity();
         if (!isGravestone(healer) || healer.level() == null || healer.level().isClientSide) {
             return;
         }
@@ -118,15 +121,15 @@ public final class TorchesBecomeSunlightGravestoneCompat {
         float oldMax = living.getMaxHealth();
         float oldHp = living.getHealth();
         boolean removed = false;
-        for (Attribute attribute : HALVE_ATTRIBUTES) {
+        for (net.minecraft.core.Holder<Attribute> attribute : HALVE_ATTRIBUTES) {
             AttributeInstance instance = living.getAttribute(attribute);
             if (instance == null) {
                 continue;
             }
             List<AttributeModifier> copy = new ArrayList<>(instance.getModifiers());
             for (AttributeModifier modifier : copy) {
-                if (modifier != null && HALVE_MODIFIER.equals(modifier.getName())) {
-                    instance.removeModifier(modifier.getId());
+                if (modifier != null && modifier.id().getPath().equals(HALVE_MODIFIER)) {
+                    instance.removeModifier(modifier.id());
                     removed = true;
                 }
             }

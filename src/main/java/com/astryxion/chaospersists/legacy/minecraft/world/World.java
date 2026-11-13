@@ -63,7 +63,7 @@ public class World {
 
   public Biome getBiome(BlockPos pos) {
     Holder<net.minecraft.world.level.biome.Biome> holder = level.getBiome(pos);
-    return Biome.wrap(holder.value());
+    return Biome.wrap(holder);
   }
 
   public RandomSource getRandom() {

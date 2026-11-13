@@ -8,7 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderGiantRobot extends MobRenderer<GiantRobot, ModelGiantRobot> {
     private static final ResourceLocation TEXTURE =
-            new ResourceLocation("chaospersists", "textures/entity/giantrobottexture.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/giantrobottexture.png");
     private final float scale;
 
     public RenderGiantRobot(

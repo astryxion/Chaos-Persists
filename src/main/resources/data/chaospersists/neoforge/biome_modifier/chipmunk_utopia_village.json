@@ -1,0 +1,13 @@
+{
+  "type": "neoforge:add_spawns",
+  "spawners": {
+    "type": "chaospersists:chipmunk",
+    "weight": 3,
+    "minCount": 1,
+    "maxCount": 2
+  },
+  "biomes": [
+    "chaospersists:utopia",
+    "chaospersists:village_dimension"
+  ]
+}

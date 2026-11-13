@@ -316,8 +316,8 @@ public class GenericDungeon {
             String path) {
         net.minecraft.resources.ResourceLocation id =
                 SpawnerFixHelper.normalizeSpawnerEntityId(
-                        new net.minecraft.resources.ResourceLocation(namespace, path));
-        net.minecraft.world.entity.EntityType<?> type = net.minecraftforge.registries.ForgeRegistries.ENTITY_TYPES.getValue(id);
+                        net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(namespace, path));
+        net.minecraft.world.entity.EntityType<?> type = net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.get(id);
         if (type != null) {
             spawner.setEntityId(type, level.getRandom());
         }
@@ -574,37 +574,37 @@ public class GenericDungeon {
             worldLevel.setBlock(new net.minecraft.core.BlockPos(cposx - 3, cposy + 1 + j, cposz - 3), Blocks.SPAWNER.defaultBlockState(), 2);
             tileentitymobspawner = this.getSpawnerTileEntity(worldLevel, cposx - 3, cposy + 1 + j, cposz - 3);
             if (tileentitymobspawner != null) {
-                this.setSpawnerEntityId(tileentitymobspawner, new net.minecraft.resources.ResourceLocation("chaospersists", "terrible_terror"));
+                this.setSpawnerEntityId(tileentitymobspawner, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", "terrible_terror"));
             }
             worldLevel.setBlock(new net.minecraft.core.BlockPos(cposx - 3, cposy + 1 + j, cposz + width + 2), Blocks.SPAWNER.defaultBlockState(), 2);
             tileentitymobspawner = this.getSpawnerTileEntity(worldLevel, cposx - 3, cposy + 1 + j, cposz + width + 2);
             if (tileentitymobspawner != null) {
-                this.setSpawnerEntityId(tileentitymobspawner, new net.minecraft.resources.ResourceLocation("chaospersists", "terrible_terror"));
+                this.setSpawnerEntityId(tileentitymobspawner, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", "terrible_terror"));
             }
             worldLevel.setBlock(new net.minecraft.core.BlockPos(cposx + width + 2, cposy + 1 + j, cposz - 3), Blocks.SPAWNER.defaultBlockState(), 2);
             tileentitymobspawner = this.getSpawnerTileEntity(worldLevel, cposx + width + 2, cposy + 1 + j, cposz - 3);
             if (tileentitymobspawner != null) {
-                this.setSpawnerEntityId(tileentitymobspawner, new net.minecraft.resources.ResourceLocation("chaospersists", "terrible_terror"));
+                this.setSpawnerEntityId(tileentitymobspawner, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", "terrible_terror"));
             }
             worldLevel.setBlock(new net.minecraft.core.BlockPos(cposx + width + 2, cposy + 1 + j, cposz + width + 2), Blocks.SPAWNER.defaultBlockState(), 2);
             tileentitymobspawner = this.getSpawnerTileEntity(worldLevel, cposx + width + 2, cposy + 1 + j, cposz + width + 2);
             if (tileentitymobspawner == null) continue;
-            this.setSpawnerEntityId(tileentitymobspawner, new net.minecraft.resources.ResourceLocation("chaospersists", "terrible_terror"));
+            this.setSpawnerEntityId(tileentitymobspawner, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", "terrible_terror"));
         }
         worldLevel.setBlock(new net.minecraft.core.BlockPos(cposx + width / 2, cposy + 2, cposz + width / 2), Blocks.SPAWNER.defaultBlockState(), 2);
         tileentitymobspawner = this.getSpawnerTileEntity(worldLevel, cposx + width / 2, cposy + 2, cposz + width / 2);
         if (tileentitymobspawner != null) {
-            this.setSpawnerEntityId(tileentitymobspawner, new net.minecraft.resources.ResourceLocation("chaospersists", "emperor_scorpion"));
+            this.setSpawnerEntityId(tileentitymobspawner, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", "emperor_scorpion"));
         }
         worldLevel.setBlock(new net.minecraft.core.BlockPos(cposx + width / 2, cposy + 3, cposz + width / 2), Blocks.SPAWNER.defaultBlockState(), 2);
         tileentitymobspawner = this.getSpawnerTileEntity(worldLevel, cposx + width / 2, cposy + 3, cposz + width / 2);
         if (tileentitymobspawner != null) {
-            this.setSpawnerEntityId(tileentitymobspawner, new net.minecraft.resources.ResourceLocation("chaospersists", "emperor_scorpion"));
+            this.setSpawnerEntityId(tileentitymobspawner, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", "emperor_scorpion"));
         }
         worldLevel.setBlock(new net.minecraft.core.BlockPos(cposx + width / 2, cposy + 4, cposz + width / 2), Blocks.SPAWNER.defaultBlockState(), 2);
         tileentitymobspawner = this.getSpawnerTileEntity(worldLevel, cposx + width / 2, cposy + 4, cposz + width / 2);
         if (tileentitymobspawner != null) {
-            this.setSpawnerEntityId(tileentitymobspawner, new net.minecraft.resources.ResourceLocation("chaospersists", "emperor_scorpion"));
+            this.setSpawnerEntityId(tileentitymobspawner, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", "emperor_scorpion"));
         }
         j = height;
         this.buildLevel(worldLevel, cposx + 1, cposy + j, cposz + 1, width - 2, 10, 4, "Cloud Shark", 1, -1, 5, 1, level);
@@ -687,7 +687,7 @@ public class GenericDungeon {
                 worldLevel.setBlock(new net.minecraft.core.BlockPos(cposx + (i -= span / 2) + width / 2, cposy + j, cposz + (k -= span / 2) + width / 2), Blocks.SPAWNER.defaultBlockState(), 2);
                 tileentitymobspawner = this.getSpawnerTileEntity(worldLevel, cposx + i + width / 2, cposy + j, cposz + k + width / 2);
                 if (tileentitymobspawner == null) continue;
-                this.setSpawnerEntityId(tileentitymobspawner, new net.minecraft.resources.ResourceLocation("chaospersists", "large_worm"));
+                this.setSpawnerEntityId(tileentitymobspawner, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", "large_worm"));
             }
         }
     }
@@ -777,22 +777,22 @@ public class GenericDungeon {
             worldLevel.setBlock(new net.minecraft.core.BlockPos(cposx - (pw - 1), cposy + j + 1, cposz - (pw - 1)), Blocks.SPAWNER.defaultBlockState(), 2);
             tileentitymobspawner = this.getSpawnerTileEntity(worldLevel, cposx - (pw - 1), cposy + j + 1, cposz - (pw - 1));
             if (tileentitymobspawner != null) {
-                this.setSpawnerEntityId(tileentitymobspawner, new net.minecraft.resources.ResourceLocation("chaospersists", critter.toLowerCase().replace(' ', '_')));
+                this.setSpawnerEntityId(tileentitymobspawner, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", critter.toLowerCase().replace(' ', '_')));
             }
             worldLevel.setBlock(new net.minecraft.core.BlockPos(cposx - (pw - 1), cposy + j + 1, cposz + width + (pw - 2)), Blocks.SPAWNER.defaultBlockState(), 2);
             tileentitymobspawner = this.getSpawnerTileEntity(worldLevel, cposx - (pw - 1), cposy + j + 1, cposz + width + (pw - 2));
             if (tileentitymobspawner != null) {
-                this.setSpawnerEntityId(tileentitymobspawner, new net.minecraft.resources.ResourceLocation("chaospersists", critter.toLowerCase().replace(' ', '_')));
+                this.setSpawnerEntityId(tileentitymobspawner, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", critter.toLowerCase().replace(' ', '_')));
             }
             worldLevel.setBlock(new net.minecraft.core.BlockPos(cposx + width + (pw - 2), cposy + j + 1, cposz - (pw - 1)), Blocks.SPAWNER.defaultBlockState(), 2);
             tileentitymobspawner = this.getSpawnerTileEntity(worldLevel, cposx + width + (pw - 2), cposy + j + 1, cposz - (pw - 1));
             if (tileentitymobspawner != null) {
-                this.setSpawnerEntityId(tileentitymobspawner, new net.minecraft.resources.ResourceLocation("chaospersists", critter.toLowerCase().replace(' ', '_')));
+                this.setSpawnerEntityId(tileentitymobspawner, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", critter.toLowerCase().replace(' ', '_')));
             }
             worldLevel.setBlock(new net.minecraft.core.BlockPos(cposx + width + (pw - 2), cposy + j + 1, cposz + width + (pw - 2)), Blocks.SPAWNER.defaultBlockState(), 2);
             tileentitymobspawner = this.getSpawnerTileEntity(worldLevel, cposx + width + (pw - 2), cposy + j + 1, cposz + width + (pw - 2));
             if (tileentitymobspawner == null) continue;
-            this.setSpawnerEntityId(tileentitymobspawner, new net.minecraft.resources.ResourceLocation("chaospersists", critter.toLowerCase().replace(' ', '_')));
+            this.setSpawnerEntityId(tileentitymobspawner, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", critter.toLowerCase().replace(' ', '_')));
         }
         this.addLevelDecorations(worldLevel, cposx, cposy, cposz, width, height, decor, level);
     }
@@ -815,22 +815,22 @@ public class GenericDungeon {
             worldLevel.setBlock(new net.minecraft.core.BlockPos(cposx + width / 2 - 1, cposy + height + 2, cposz + width / 2), Blocks.SPAWNER.defaultBlockState(), 2);
             tileentitymobspawner = this.getSpawnerTileEntity(worldLevel, cposx + width / 2 - 1, cposy + height + 2, cposz + width / 2);
             if (tileentitymobspawner != null) {
-                this.setSpawnerEntityId(tileentitymobspawner, new net.minecraft.resources.ResourceLocation("chaospersists", "nightmare"));
+                this.setSpawnerEntityId(tileentitymobspawner, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", "nightmare"));
             }
             worldLevel.setBlock(new net.minecraft.core.BlockPos(cposx + width / 2 + 1, cposy + height + 2, cposz + width / 2), Blocks.SPAWNER.defaultBlockState(), 2);
             tileentitymobspawner = this.getSpawnerTileEntity(worldLevel, cposx + width / 2 + 1, cposy + height + 2, cposz + width / 2);
             if (tileentitymobspawner != null) {
-                this.setSpawnerEntityId(tileentitymobspawner, new net.minecraft.resources.ResourceLocation("chaospersists", "nightmare"));
+                this.setSpawnerEntityId(tileentitymobspawner, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", "nightmare"));
             }
             worldLevel.setBlock(new net.minecraft.core.BlockPos(cposx + width / 2, cposy + height + 2, cposz + width / 2 - 1), Blocks.SPAWNER.defaultBlockState(), 2);
             tileentitymobspawner = this.getSpawnerTileEntity(worldLevel, cposx + width / 2, cposy + height + 2, cposz + width / 2 - 1);
             if (tileentitymobspawner != null) {
-                this.setSpawnerEntityId(tileentitymobspawner, new net.minecraft.resources.ResourceLocation("chaospersists", "nightmare"));
+                this.setSpawnerEntityId(tileentitymobspawner, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", "nightmare"));
             }
             worldLevel.setBlock(new net.minecraft.core.BlockPos(cposx + width / 2, cposy + height + 2, cposz + width / 2 + 1), Blocks.SPAWNER.defaultBlockState(), 2);
             tileentitymobspawner = this.getSpawnerTileEntity(worldLevel, cposx + width / 2, cposy + height + 2, cposz + width / 2 + 1);
             if (tileentitymobspawner != null) {
-                this.setSpawnerEntityId(tileentitymobspawner, new net.minecraft.resources.ResourceLocation("chaospersists", "nightmare"));
+                this.setSpawnerEntityId(tileentitymobspawner, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", "nightmare"));
             }
             for (int i = 1; i < width - 1; ++i) {
                 for (j = 1; j < 5; ++j) {
@@ -842,17 +842,17 @@ public class GenericDungeon {
             worldLevel.setBlock(new net.minecraft.core.BlockPos(cposx + width / 2, cposy + 2, cposz + width / 2), Blocks.SPAWNER.defaultBlockState(), 2);
             tileentitymobspawner = this.getSpawnerTileEntity(worldLevel, cposx + width / 2, cposy + 2, cposz + width / 2);
             if (tileentitymobspawner != null) {
-                this.setSpawnerEntityId(tileentitymobspawner, new net.minecraft.resources.ResourceLocation("chaospersists", "large_worm"));
+                this.setSpawnerEntityId(tileentitymobspawner, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", "large_worm"));
             }
             worldLevel.setBlock(new net.minecraft.core.BlockPos(cposx + width / 2, cposy + 3, cposz + width / 2), Blocks.SPAWNER.defaultBlockState(), 2);
             tileentitymobspawner = this.getSpawnerTileEntity(worldLevel, cposx + width / 2, cposy + 3, cposz + width / 2);
             if (tileentitymobspawner != null) {
-                this.setSpawnerEntityId(tileentitymobspawner, new net.minecraft.resources.ResourceLocation("chaospersists", "large_worm"));
+                this.setSpawnerEntityId(tileentitymobspawner, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", "large_worm"));
             }
             worldLevel.setBlock(new net.minecraft.core.BlockPos(cposx + width / 2, cposy + 4, cposz + width / 2), Blocks.SPAWNER.defaultBlockState(), 2);
             tileentitymobspawner = this.getSpawnerTileEntity(worldLevel, cposx + width / 2, cposy + 4, cposz + width / 2);
             if (tileentitymobspawner != null) {
-                this.setSpawnerEntityId(tileentitymobspawner, new net.minecraft.resources.ResourceLocation("chaospersists", "large_worm"));
+                this.setSpawnerEntityId(tileentitymobspawner, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", "large_worm"));
             }
             for (j = 0; j < 10; ++j) {
                 this.FastSetBlock(worldLevel, cposx + 1, cposy + j, cposz + 1, Blocks.AIR);
@@ -871,12 +871,12 @@ public class GenericDungeon {
             worldLevel.setBlock(new net.minecraft.core.BlockPos(cposx + width / 2, cposy + 2, cposz + width / 2), Blocks.SPAWNER.defaultBlockState(), 2);
             tileentitymobspawner = this.getSpawnerTileEntity(worldLevel, cposx + width / 2, cposy + 2, cposz + width / 2);
             if (tileentitymobspawner != null) {
-                this.setSpawnerEntityId(tileentitymobspawner, new net.minecraft.resources.ResourceLocation("chaospersists", critter.toLowerCase().replace(' ', '_')));
+                this.setSpawnerEntityId(tileentitymobspawner, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", critter.toLowerCase().replace(' ', '_')));
             }
             worldLevel.setBlock(new net.minecraft.core.BlockPos(cposx + width / 2, cposy + 3, cposz + width / 2), Blocks.SPAWNER.defaultBlockState(), 2);
             tileentitymobspawner = this.getSpawnerTileEntity(worldLevel, cposx + width / 2, cposy + 3, cposz + width / 2);
             if (tileentitymobspawner != null) {
-                this.setSpawnerEntityId(tileentitymobspawner, new net.minecraft.resources.ResourceLocation("chaospersists", critter.toLowerCase().replace(' ', '_')));
+                this.setSpawnerEntityId(tileentitymobspawner, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", critter.toLowerCase().replace(' ', '_')));
             }
             for (j = 1; j < 5; ++j) {
                 this.FastSetBlock(worldLevel, cposx + width / 2 - 1, cposy + j, cposz + width / 2, Blocks.BEDROCK);
@@ -904,12 +904,12 @@ public class GenericDungeon {
             worldLevel.setBlock(new net.minecraft.core.BlockPos(cposx + width / 2, cposy + 2, cposz + width / 2), Blocks.SPAWNER.defaultBlockState(), 2);
             tileentitymobspawner = this.getSpawnerTileEntity(worldLevel, cposx + width / 2, cposy + 2, cposz + width / 2);
             if (tileentitymobspawner != null) {
-                this.setSpawnerEntityId(tileentitymobspawner, new net.minecraft.resources.ResourceLocation("chaospersists", critter.toLowerCase().replace(' ', '_')));
+                this.setSpawnerEntityId(tileentitymobspawner, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", critter.toLowerCase().replace(' ', '_')));
             }
             worldLevel.setBlock(new net.minecraft.core.BlockPos(cposx + width / 2, cposy + 3, cposz + width / 2), Blocks.SPAWNER.defaultBlockState(), 2);
             tileentitymobspawner = this.getSpawnerTileEntity(worldLevel, cposx + width / 2, cposy + 3, cposz + width / 2);
             if (tileentitymobspawner != null) {
-                this.setSpawnerEntityId(tileentitymobspawner, new net.minecraft.resources.ResourceLocation("chaospersists", critter.toLowerCase().replace(' ', '_')));
+                this.setSpawnerEntityId(tileentitymobspawner, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", critter.toLowerCase().replace(' ', '_')));
             }
             for (j = 1; j < 5; ++j) {
                 this.FastSetBlock(worldLevel, cposx + width / 2 - 1, cposy + j, cposz + width / 2, Blocks.BEDROCK);
@@ -941,12 +941,12 @@ public class GenericDungeon {
             worldLevel.setBlock(new net.minecraft.core.BlockPos(cposx + width / 2, cposy + 2, cposz + width / 2), Blocks.SPAWNER.defaultBlockState(), 2);
             tileentitymobspawner = this.getSpawnerTileEntity(worldLevel, cposx + width / 2, cposy + 2, cposz + width / 2);
             if (tileentitymobspawner != null) {
-                this.setSpawnerEntityId(tileentitymobspawner, new net.minecraft.resources.ResourceLocation("chaospersists", critter.toLowerCase().replace(' ', '_')));
+                this.setSpawnerEntityId(tileentitymobspawner, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", critter.toLowerCase().replace(' ', '_')));
             }
             worldLevel.setBlock(new net.minecraft.core.BlockPos(cposx + width / 2, cposy + 3, cposz + width / 2), Blocks.SPAWNER.defaultBlockState(), 2);
             tileentitymobspawner = this.getSpawnerTileEntity(worldLevel, cposx + width / 2, cposy + 3, cposz + width / 2);
             if (tileentitymobspawner != null) {
-                this.setSpawnerEntityId(tileentitymobspawner, new net.minecraft.resources.ResourceLocation("chaospersists", critter.toLowerCase().replace(' ', '_')));
+                this.setSpawnerEntityId(tileentitymobspawner, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", critter.toLowerCase().replace(' ', '_')));
             }
             for (j = 1; j < 5; ++j) {
                 this.FastSetBlock(worldLevel, cposx + width / 2 - 1, cposy + j, cposz + width / 2, Blocks.BEDROCK);
@@ -982,12 +982,12 @@ public class GenericDungeon {
             worldLevel.setBlock(new net.minecraft.core.BlockPos(cposx + width / 2, cposy + 2, cposz + width / 2), Blocks.SPAWNER.defaultBlockState(), 2);
             tileentitymobspawner = this.getSpawnerTileEntity(worldLevel, cposx + width / 2, cposy + 2, cposz + width / 2);
             if (tileentitymobspawner != null) {
-                this.setSpawnerEntityId(tileentitymobspawner, new net.minecraft.resources.ResourceLocation("chaospersists", critter.toLowerCase().replace(' ', '_')));
+                this.setSpawnerEntityId(tileentitymobspawner, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", critter.toLowerCase().replace(' ', '_')));
             }
             worldLevel.setBlock(new net.minecraft.core.BlockPos(cposx + width / 2, cposy + 3, cposz + width / 2), Blocks.SPAWNER.defaultBlockState(), 2);
             tileentitymobspawner = this.getSpawnerTileEntity(worldLevel, cposx + width / 2, cposy + 3, cposz + width / 2);
             if (tileentitymobspawner != null) {
-                this.setSpawnerEntityId(tileentitymobspawner, new net.minecraft.resources.ResourceLocation("chaospersists", critter.toLowerCase().replace(' ', '_')));
+                this.setSpawnerEntityId(tileentitymobspawner, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", critter.toLowerCase().replace(' ', '_')));
             }
             for (j = 1; j < 5; ++j) {
                 this.FastSetBlock(worldLevel, cposx + width / 2 - 1, cposy + j, cposz + width / 2, Blocks.BEDROCK);
@@ -1022,12 +1022,12 @@ public class GenericDungeon {
             worldLevel.setBlock(new net.minecraft.core.BlockPos(cposx + width / 2, cposy + 2, cposz + width / 2), Blocks.SPAWNER.defaultBlockState(), 2);
             tileentitymobspawner = this.getSpawnerTileEntity(worldLevel, cposx + width / 2, cposy + 2, cposz + width / 2);
             if (tileentitymobspawner != null) {
-                this.setSpawnerEntityId(tileentitymobspawner, new net.minecraft.resources.ResourceLocation("chaospersists", critter.toLowerCase().replace(' ', '_')));
+                this.setSpawnerEntityId(tileentitymobspawner, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", critter.toLowerCase().replace(' ', '_')));
             }
             worldLevel.setBlock(new net.minecraft.core.BlockPos(cposx + width / 2, cposy + 3, cposz + width / 2), Blocks.SPAWNER.defaultBlockState(), 2);
             tileentitymobspawner = this.getSpawnerTileEntity(worldLevel, cposx + width / 2, cposy + 3, cposz + width / 2);
             if (tileentitymobspawner != null) {
-                this.setSpawnerEntityId(tileentitymobspawner, new net.minecraft.resources.ResourceLocation("chaospersists", critter.toLowerCase().replace(' ', '_')));
+                this.setSpawnerEntityId(tileentitymobspawner, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", critter.toLowerCase().replace(' ', '_')));
             }
             for (j = 1; j < 5; ++j) {
                 this.FastSetBlock(worldLevel, cposx + width / 2 - 1, cposy + j, cposz + width / 2, Blocks.BEDROCK);
@@ -6457,37 +6457,37 @@ public class GenericDungeon {
             worldLevel.setBlock(new net.minecraft.core.BlockPos(cposx - 3, cposy + 1 + j, cposz - 3), Blocks.SPAWNER.defaultBlockState(), 2);
             tileentitymobspawner = this.getSpawnerTileEntity(worldLevel, cposx - 3, cposy + 1 + j, cposz - 3);
             if (tileentitymobspawner != null) {
-                this.setSpawnerEntityId(tileentitymobspawner, new net.minecraft.resources.ResourceLocation("chaospersists", "lurking_terror"));
+                this.setSpawnerEntityId(tileentitymobspawner, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", "lurking_terror"));
             }
             worldLevel.setBlock(new net.minecraft.core.BlockPos(cposx - 3, cposy + 1 + j, cposz + width + 2), Blocks.SPAWNER.defaultBlockState(), 2);
             tileentitymobspawner = this.getSpawnerTileEntity(worldLevel, cposx - 3, cposy + 1 + j, cposz + width + 2);
             if (tileentitymobspawner != null) {
-                this.setSpawnerEntityId(tileentitymobspawner, new net.minecraft.resources.ResourceLocation("chaospersists", "lurking_terror"));
+                this.setSpawnerEntityId(tileentitymobspawner, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", "lurking_terror"));
             }
             worldLevel.setBlock(new net.minecraft.core.BlockPos(cposx + width + 2, cposy + 1 + j, cposz - 3), Blocks.SPAWNER.defaultBlockState(), 2);
             tileentitymobspawner = this.getSpawnerTileEntity(worldLevel, cposx + width + 2, cposy + 1 + j, cposz - 3);
             if (tileentitymobspawner != null) {
-                this.setSpawnerEntityId(tileentitymobspawner, new net.minecraft.resources.ResourceLocation("chaospersists", "lurking_terror"));
+                this.setSpawnerEntityId(tileentitymobspawner, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", "lurking_terror"));
             }
             worldLevel.setBlock(new net.minecraft.core.BlockPos(cposx + width + 2, cposy + 1 + j, cposz + width + 2), Blocks.SPAWNER.defaultBlockState(), 2);
             tileentitymobspawner = this.getSpawnerTileEntity(worldLevel, cposx + width + 2, cposy + 1 + j, cposz + width + 2);
             if (tileentitymobspawner == null) continue;
-            this.setSpawnerEntityId(tileentitymobspawner, new net.minecraft.resources.ResourceLocation("chaospersists", "lurking_terror"));
+            this.setSpawnerEntityId(tileentitymobspawner, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", "lurking_terror"));
         }
         worldLevel.setBlock(new net.minecraft.core.BlockPos(cposx + width / 2, cposy + 2, cposz + width / 2), Blocks.SPAWNER.defaultBlockState(), 2);
         tileentitymobspawner = this.getSpawnerTileEntity(worldLevel, cposx + width / 2, cposy + 2, cposz + width / 2);
         if (tileentitymobspawner != null) {
-            this.setSpawnerEntityId(tileentitymobspawner, new net.minecraft.resources.ResourceLocation("chaospersists", "emperor_scorpion"));
+            this.setSpawnerEntityId(tileentitymobspawner, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", "emperor_scorpion"));
         }
         worldLevel.setBlock(new net.minecraft.core.BlockPos(cposx + width / 2, cposy + 3, cposz + width / 2), Blocks.SPAWNER.defaultBlockState(), 2);
         tileentitymobspawner = this.getSpawnerTileEntity(worldLevel, cposx + width / 2, cposy + 3, cposz + width / 2);
         if (tileentitymobspawner != null) {
-            this.setSpawnerEntityId(tileentitymobspawner, new net.minecraft.resources.ResourceLocation("chaospersists", "emperor_scorpion"));
+            this.setSpawnerEntityId(tileentitymobspawner, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", "emperor_scorpion"));
         }
         worldLevel.setBlock(new net.minecraft.core.BlockPos(cposx + width / 2, cposy + 4, cposz + width / 2), Blocks.SPAWNER.defaultBlockState(), 2);
         tileentitymobspawner = this.getSpawnerTileEntity(worldLevel, cposx + width / 2, cposy + 4, cposz + width / 2);
         if (tileentitymobspawner != null) {
-            this.setSpawnerEntityId(tileentitymobspawner, new net.minecraft.resources.ResourceLocation("chaospersists", "emperor_scorpion"));
+            this.setSpawnerEntityId(tileentitymobspawner, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", "emperor_scorpion"));
         }
         j = height;
         this.buildLevelQ(worldLevel, cposx + 1, cposy + j, cposz + 1, width - 2, 10, 4, "Rotator", 1, -1, 5, 1, level);
@@ -6570,7 +6570,7 @@ public class GenericDungeon {
                 worldLevel.setBlock(new net.minecraft.core.BlockPos(cposx + (i -= span / 2) + width / 2, cposy + j, cposz + (k -= span / 2) + width / 2), Blocks.SPAWNER.defaultBlockState(), 2);
                 tileentitymobspawner = this.getSpawnerTileEntity(worldLevel, cposx + i + width / 2, cposy + j, cposz + k + width / 2);
                 if (tileentitymobspawner == null) continue;
-                this.setSpawnerEntityId(tileentitymobspawner, new net.minecraft.resources.ResourceLocation("chaospersists", "large_worm"));
+                this.setSpawnerEntityId(tileentitymobspawner, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", "large_worm"));
             }
         }
     }
@@ -6660,22 +6660,22 @@ public class GenericDungeon {
             worldLevel.setBlock(new net.minecraft.core.BlockPos(cposx - (pw - 1), cposy + j + 1, cposz - (pw - 1)), Blocks.SPAWNER.defaultBlockState(), 2);
             tileentitymobspawner = this.getSpawnerTileEntity(worldLevel, cposx - (pw - 1), cposy + j + 1, cposz - (pw - 1));
             if (tileentitymobspawner != null) {
-                this.setSpawnerEntityId(tileentitymobspawner, new net.minecraft.resources.ResourceLocation("chaospersists", critter.toLowerCase().replace(' ', '_')));
+                this.setSpawnerEntityId(tileentitymobspawner, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", critter.toLowerCase().replace(' ', '_')));
             }
             worldLevel.setBlock(new net.minecraft.core.BlockPos(cposx - (pw - 1), cposy + j + 1, cposz + width + (pw - 2)), Blocks.SPAWNER.defaultBlockState(), 2);
             tileentitymobspawner = this.getSpawnerTileEntity(worldLevel, cposx - (pw - 1), cposy + j + 1, cposz + width + (pw - 2));
             if (tileentitymobspawner != null) {
-                this.setSpawnerEntityId(tileentitymobspawner, new net.minecraft.resources.ResourceLocation("chaospersists", critter.toLowerCase().replace(' ', '_')));
+                this.setSpawnerEntityId(tileentitymobspawner, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", critter.toLowerCase().replace(' ', '_')));
             }
             worldLevel.setBlock(new net.minecraft.core.BlockPos(cposx + width + (pw - 2), cposy + j + 1, cposz - (pw - 1)), Blocks.SPAWNER.defaultBlockState(), 2);
             tileentitymobspawner = this.getSpawnerTileEntity(worldLevel, cposx + width + (pw - 2), cposy + j + 1, cposz - (pw - 1));
             if (tileentitymobspawner != null) {
-                this.setSpawnerEntityId(tileentitymobspawner, new net.minecraft.resources.ResourceLocation("chaospersists", critter.toLowerCase().replace(' ', '_')));
+                this.setSpawnerEntityId(tileentitymobspawner, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", critter.toLowerCase().replace(' ', '_')));
             }
             worldLevel.setBlock(new net.minecraft.core.BlockPos(cposx + width + (pw - 2), cposy + j + 1, cposz + width + (pw - 2)), Blocks.SPAWNER.defaultBlockState(), 2);
             tileentitymobspawner = this.getSpawnerTileEntity(worldLevel, cposx + width + (pw - 2), cposy + j + 1, cposz + width + (pw - 2));
             if (tileentitymobspawner == null) continue;
-            this.setSpawnerEntityId(tileentitymobspawner, new net.minecraft.resources.ResourceLocation("chaospersists", critter.toLowerCase().replace(' ', '_')));
+            this.setSpawnerEntityId(tileentitymobspawner, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", critter.toLowerCase().replace(' ', '_')));
         }
         this.addLevelDecorationsQ(worldLevel, cposx, cposy, cposz, width, height, decor, level);
     }
@@ -6698,22 +6698,22 @@ public class GenericDungeon {
             worldLevel.setBlock(new net.minecraft.core.BlockPos(cposx + width / 2 - 1, cposy + height + 2, cposz + width / 2), Blocks.SPAWNER.defaultBlockState(), 2);
             tileentitymobspawner = this.getSpawnerTileEntity(worldLevel, cposx + width / 2 - 1, cposy + height + 2, cposz + width / 2);
             if (tileentitymobspawner != null) {
-                this.setSpawnerEntityId(tileentitymobspawner, new net.minecraft.resources.ResourceLocation("chaospersists", "nightmare"));
+                this.setSpawnerEntityId(tileentitymobspawner, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", "nightmare"));
             }
             worldLevel.setBlock(new net.minecraft.core.BlockPos(cposx + width / 2 + 1, cposy + height + 2, cposz + width / 2), Blocks.SPAWNER.defaultBlockState(), 2);
             tileentitymobspawner = this.getSpawnerTileEntity(worldLevel, cposx + width / 2 + 1, cposy + height + 2, cposz + width / 2);
             if (tileentitymobspawner != null) {
-                this.setSpawnerEntityId(tileentitymobspawner, new net.minecraft.resources.ResourceLocation("chaospersists", "nightmare"));
+                this.setSpawnerEntityId(tileentitymobspawner, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", "nightmare"));
             }
             worldLevel.setBlock(new net.minecraft.core.BlockPos(cposx + width / 2, cposy + height + 2, cposz + width / 2 - 1), Blocks.SPAWNER.defaultBlockState(), 2);
             tileentitymobspawner = this.getSpawnerTileEntity(worldLevel, cposx + width / 2, cposy + height + 2, cposz + width / 2 - 1);
             if (tileentitymobspawner != null) {
-                this.setSpawnerEntityId(tileentitymobspawner, new net.minecraft.resources.ResourceLocation("chaospersists", "nightmare"));
+                this.setSpawnerEntityId(tileentitymobspawner, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", "nightmare"));
             }
             worldLevel.setBlock(new net.minecraft.core.BlockPos(cposx + width / 2, cposy + height + 2, cposz + width / 2 + 1), Blocks.SPAWNER.defaultBlockState(), 2);
             tileentitymobspawner = this.getSpawnerTileEntity(worldLevel, cposx + width / 2, cposy + height + 2, cposz + width / 2 + 1);
             if (tileentitymobspawner != null) {
-                this.setSpawnerEntityId(tileentitymobspawner, new net.minecraft.resources.ResourceLocation("chaospersists", "nightmare"));
+                this.setSpawnerEntityId(tileentitymobspawner, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", "nightmare"));
             }
             for (int i = 1; i < width - 1; ++i) {
                 for (j = 1; j < 5; ++j) {
@@ -6725,17 +6725,17 @@ public class GenericDungeon {
             worldLevel.setBlock(new net.minecraft.core.BlockPos(cposx + width / 2, cposy + 2, cposz + width / 2), Blocks.SPAWNER.defaultBlockState(), 2);
             tileentitymobspawner = this.getSpawnerTileEntity(worldLevel, cposx + width / 2, cposy + 2, cposz + width / 2);
             if (tileentitymobspawner != null) {
-                this.setSpawnerEntityId(tileentitymobspawner, new net.minecraft.resources.ResourceLocation("chaospersists", "large_worm"));
+                this.setSpawnerEntityId(tileentitymobspawner, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", "large_worm"));
             }
             worldLevel.setBlock(new net.minecraft.core.BlockPos(cposx + width / 2, cposy + 3, cposz + width / 2), Blocks.SPAWNER.defaultBlockState(), 2);
             tileentitymobspawner = this.getSpawnerTileEntity(worldLevel, cposx + width / 2, cposy + 3, cposz + width / 2);
             if (tileentitymobspawner != null) {
-                this.setSpawnerEntityId(tileentitymobspawner, new net.minecraft.resources.ResourceLocation("chaospersists", "large_worm"));
+                this.setSpawnerEntityId(tileentitymobspawner, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", "large_worm"));
             }
             worldLevel.setBlock(new net.minecraft.core.BlockPos(cposx + width / 2, cposy + 4, cposz + width / 2), Blocks.SPAWNER.defaultBlockState(), 2);
             tileentitymobspawner = this.getSpawnerTileEntity(worldLevel, cposx + width / 2, cposy + 4, cposz + width / 2);
             if (tileentitymobspawner != null) {
-                this.setSpawnerEntityId(tileentitymobspawner, new net.minecraft.resources.ResourceLocation("chaospersists", "large_worm"));
+                this.setSpawnerEntityId(tileentitymobspawner, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", "large_worm"));
             }
             for (j = 0; j < 10; ++j) {
                 this.FastSetBlock(worldLevel, cposx + 1, cposy + j, cposz + 1, Blocks.AIR);
@@ -6754,12 +6754,12 @@ public class GenericDungeon {
             worldLevel.setBlock(new net.minecraft.core.BlockPos(cposx + width / 2, cposy + 2, cposz + width / 2), Blocks.SPAWNER.defaultBlockState(), 2);
             tileentitymobspawner = this.getSpawnerTileEntity(worldLevel, cposx + width / 2, cposy + 2, cposz + width / 2);
             if (tileentitymobspawner != null) {
-                this.setSpawnerEntityId(tileentitymobspawner, new net.minecraft.resources.ResourceLocation("chaospersists", critter.toLowerCase().replace(' ', '_')));
+                this.setSpawnerEntityId(tileentitymobspawner, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", critter.toLowerCase().replace(' ', '_')));
             }
             worldLevel.setBlock(new net.minecraft.core.BlockPos(cposx + width / 2, cposy + 3, cposz + width / 2), Blocks.SPAWNER.defaultBlockState(), 2);
             tileentitymobspawner = this.getSpawnerTileEntity(worldLevel, cposx + width / 2, cposy + 3, cposz + width / 2);
             if (tileentitymobspawner != null) {
-                this.setSpawnerEntityId(tileentitymobspawner, new net.minecraft.resources.ResourceLocation("chaospersists", critter.toLowerCase().replace(' ', '_')));
+                this.setSpawnerEntityId(tileentitymobspawner, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", critter.toLowerCase().replace(' ', '_')));
             }
             for (j = 1; j < 5; ++j) {
                 this.FastSetBlock(worldLevel, cposx + width / 2 - 1, cposy + j, cposz + width / 2, Blocks.BEDROCK);
@@ -6787,12 +6787,12 @@ public class GenericDungeon {
             worldLevel.setBlock(new net.minecraft.core.BlockPos(cposx + width / 2, cposy + 2, cposz + width / 2), Blocks.SPAWNER.defaultBlockState(), 2);
             tileentitymobspawner = this.getSpawnerTileEntity(worldLevel, cposx + width / 2, cposy + 2, cposz + width / 2);
             if (tileentitymobspawner != null) {
-                this.setSpawnerEntityId(tileentitymobspawner, new net.minecraft.resources.ResourceLocation("chaospersists", critter.toLowerCase().replace(' ', '_')));
+                this.setSpawnerEntityId(tileentitymobspawner, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", critter.toLowerCase().replace(' ', '_')));
             }
             worldLevel.setBlock(new net.minecraft.core.BlockPos(cposx + width / 2, cposy + 3, cposz + width / 2), Blocks.SPAWNER.defaultBlockState(), 2);
             tileentitymobspawner = this.getSpawnerTileEntity(worldLevel, cposx + width / 2, cposy + 3, cposz + width / 2);
             if (tileentitymobspawner != null) {
-                this.setSpawnerEntityId(tileentitymobspawner, new net.minecraft.resources.ResourceLocation("chaospersists", critter.toLowerCase().replace(' ', '_')));
+                this.setSpawnerEntityId(tileentitymobspawner, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", critter.toLowerCase().replace(' ', '_')));
             }
             for (j = 1; j < 5; ++j) {
                 this.FastSetBlock(worldLevel, cposx + width / 2 - 1, cposy + j, cposz + width / 2, Blocks.BEDROCK);
@@ -6824,12 +6824,12 @@ public class GenericDungeon {
             worldLevel.setBlock(new net.minecraft.core.BlockPos(cposx + width / 2, cposy + 2, cposz + width / 2), Blocks.SPAWNER.defaultBlockState(), 2);
             tileentitymobspawner = this.getSpawnerTileEntity(worldLevel, cposx + width / 2, cposy + 2, cposz + width / 2);
             if (tileentitymobspawner != null) {
-                this.setSpawnerEntityId(tileentitymobspawner, new net.minecraft.resources.ResourceLocation("chaospersists", critter.toLowerCase().replace(' ', '_')));
+                this.setSpawnerEntityId(tileentitymobspawner, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", critter.toLowerCase().replace(' ', '_')));
             }
             worldLevel.setBlock(new net.minecraft.core.BlockPos(cposx + width / 2, cposy + 3, cposz + width / 2), Blocks.SPAWNER.defaultBlockState(), 2);
             tileentitymobspawner = this.getSpawnerTileEntity(worldLevel, cposx + width / 2, cposy + 3, cposz + width / 2);
             if (tileentitymobspawner != null) {
-                this.setSpawnerEntityId(tileentitymobspawner, new net.minecraft.resources.ResourceLocation("chaospersists", critter.toLowerCase().replace(' ', '_')));
+                this.setSpawnerEntityId(tileentitymobspawner, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", critter.toLowerCase().replace(' ', '_')));
             }
             for (j = 1; j < 5; ++j) {
                 this.FastSetBlock(worldLevel, cposx + width / 2 - 1, cposy + j, cposz + width / 2, Blocks.BEDROCK);
@@ -6865,12 +6865,12 @@ public class GenericDungeon {
             worldLevel.setBlock(new net.minecraft.core.BlockPos(cposx + width / 2, cposy + 2, cposz + width / 2), Blocks.SPAWNER.defaultBlockState(), 2);
             tileentitymobspawner = this.getSpawnerTileEntity(worldLevel, cposx + width / 2, cposy + 2, cposz + width / 2);
             if (tileentitymobspawner != null) {
-                this.setSpawnerEntityId(tileentitymobspawner, new net.minecraft.resources.ResourceLocation("chaospersists", critter.toLowerCase().replace(' ', '_')));
+                this.setSpawnerEntityId(tileentitymobspawner, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", critter.toLowerCase().replace(' ', '_')));
             }
             worldLevel.setBlock(new net.minecraft.core.BlockPos(cposx + width / 2, cposy + 3, cposz + width / 2), Blocks.SPAWNER.defaultBlockState(), 2);
             tileentitymobspawner = this.getSpawnerTileEntity(worldLevel, cposx + width / 2, cposy + 3, cposz + width / 2);
             if (tileentitymobspawner != null) {
-                this.setSpawnerEntityId(tileentitymobspawner, new net.minecraft.resources.ResourceLocation("chaospersists", critter.toLowerCase().replace(' ', '_')));
+                this.setSpawnerEntityId(tileentitymobspawner, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", critter.toLowerCase().replace(' ', '_')));
             }
             for (j = 1; j < 5; ++j) {
                 this.FastSetBlock(worldLevel, cposx + width / 2 - 1, cposy + j, cposz + width / 2, Blocks.BEDROCK);
@@ -6905,12 +6905,12 @@ public class GenericDungeon {
             worldLevel.setBlock(new net.minecraft.core.BlockPos(cposx + width / 2, cposy + 2, cposz + width / 2), Blocks.SPAWNER.defaultBlockState(), 2);
             tileentitymobspawner = this.getSpawnerTileEntity(worldLevel, cposx + width / 2, cposy + 2, cposz + width / 2);
             if (tileentitymobspawner != null) {
-                this.setSpawnerEntityId(tileentitymobspawner, new net.minecraft.resources.ResourceLocation("chaospersists", critter.toLowerCase().replace(' ', '_')));
+                this.setSpawnerEntityId(tileentitymobspawner, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", critter.toLowerCase().replace(' ', '_')));
             }
             worldLevel.setBlock(new net.minecraft.core.BlockPos(cposx + width / 2, cposy + 3, cposz + width / 2), Blocks.SPAWNER.defaultBlockState(), 2);
             tileentitymobspawner = this.getSpawnerTileEntity(worldLevel, cposx + width / 2, cposy + 3, cposz + width / 2);
             if (tileentitymobspawner != null) {
-                this.setSpawnerEntityId(tileentitymobspawner, new net.minecraft.resources.ResourceLocation("chaospersists", critter.toLowerCase().replace(' ', '_')));
+                this.setSpawnerEntityId(tileentitymobspawner, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", critter.toLowerCase().replace(' ', '_')));
             }
             for (j = 1; j < 5; ++j) {
                 this.FastSetBlock(worldLevel, cposx + width / 2 - 1, cposy + j, cposz + width / 2, Blocks.BEDROCK);

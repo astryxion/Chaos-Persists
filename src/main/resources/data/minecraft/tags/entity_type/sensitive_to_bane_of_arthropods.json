@@ -1,0 +1,22 @@
+{
+  "replace": false,
+  "values": [
+    "chaospersists:ant",
+    "chaospersists:bee",
+    "chaospersists:brutalfly",
+    "chaospersists:butterfly",
+    "chaospersists:caterkiller",
+    "chaospersists:cave_fisher",
+    "chaospersists:cricket",
+    "chaospersists:dragonfly",
+    "chaospersists:emperor_scorpion",
+    "chaospersists:firefly",
+    "chaospersists:hercules_beetle",
+    "chaospersists:jumpy_bug",
+    "chaospersists:mantis",
+    "chaospersists:mosquito",
+    "chaospersists:scorpion",
+    "chaospersists:spit_bug",
+    "chaospersists:stink_bug"
+  ]
+}

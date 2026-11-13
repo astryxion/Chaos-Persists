@@ -66,13 +66,10 @@ public class ModelGhost extends EntityModel<Ghost> {
             VertexConsumer buffer,
             int packedLight,
             int packedOverlay,
-            float red,
-            float green,
-            float blue,
-            float alpha) {
+            int color) {
         float ghostAlpha = 0.25f;
-        this.headAndBody.render(poseStack, buffer, packedLight, packedOverlay, 0.75f, 0.75f, 0.75f, ghostAlpha);
-        this.lArm.render(poseStack, buffer, packedLight, packedOverlay, 0.75f, 0.75f, 0.75f, ghostAlpha);
-        this.rArm.render(poseStack, buffer, packedLight, packedOverlay, 0.75f, 0.75f, 0.75f, ghostAlpha);
+        this.headAndBody.render(poseStack, buffer, packedLight, packedOverlay, net.minecraft.util.FastColor.ARGB32.colorFromFloat(ghostAlpha, 0.75f, 0.75f, 0.75f));
+        this.lArm.render(poseStack, buffer, packedLight, packedOverlay, net.minecraft.util.FastColor.ARGB32.colorFromFloat(ghostAlpha, 0.75f, 0.75f, 0.75f));
+        this.rArm.render(poseStack, buffer, packedLight, packedOverlay, net.minecraft.util.FastColor.ARGB32.colorFromFloat(ghostAlpha, 0.75f, 0.75f, 0.75f));
     }
 }

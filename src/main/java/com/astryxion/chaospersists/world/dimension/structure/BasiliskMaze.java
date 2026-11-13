@@ -267,11 +267,11 @@ public class BasiliskMaze {
     private net.minecraft.world.entity.Entity spawnCreature(
             net.minecraft.world.level.Level level, String par1, double par2, double par4, double par6) {
         net.minecraft.resources.ResourceLocation id =
-                new net.minecraft.resources.ResourceLocation(
+                net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(
                         par1.contains(":") ? par1.split(":")[0] : "chaospersists",
                         par1.contains(":") ? par1.split(":")[1] : par1);
         net.minecraft.world.entity.EntityType<?> type =
-                net.minecraftforge.registries.ForgeRegistries.ENTITY_TYPES.getValue(id);
+                net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.get(id);
         if (type == null) {
             return null;
         }
@@ -336,9 +336,9 @@ public class BasiliskMaze {
         if (blockEntity instanceof net.minecraft.world.level.block.entity.SpawnerBlockEntity spawner) {
             net.minecraft.resources.ResourceLocation id =
                     SpawnerFixHelper.normalizeSpawnerEntityId(
-                            new net.minecraft.resources.ResourceLocation("chaospersists", "basilisk"));
+                            net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", "basilisk"));
             net.minecraft.world.entity.EntityType<?> type =
-                    net.minecraftforge.registries.ForgeRegistries.ENTITY_TYPES.getValue(id);
+                    net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.get(id);
             if (type != null) {
                 spawner.setEntityId(type, level.getRandom());
             }

@@ -72,10 +72,6 @@ public class Baryonyx extends Animal {
         super.tick();
     }
 
-    @Override
-    public boolean canBreatheUnderwater() {
-        return false;
-    }
 
     public int mygetMaxHealth() {
         return 40;
@@ -103,7 +99,8 @@ public class Baryonyx extends Animal {
 
     @Override
     protected void dropCustomDeathLoot(
-            net.minecraft.world.damagesource.DamageSource source, int looting, boolean recentlyHit) {
+            net.minecraft.server.level.ServerLevel serverLevel, net.minecraft.world.damagesource.DamageSource source, boolean recentlyHit) {
+        int looting = com.astryxion.chaospersists.util.ChaosEnchantments.looting(source);
         if (DatapackLoot.useEntityTable(this)) {
             return;
         }

@@ -112,13 +112,13 @@ public class Termite extends EntityAnt {
             if (world == null) {
                 return InteractionResult.FAIL;
             }
-            serverPlayer.changeDimension(world, new CrystalTeleporter(serverPlayer.getX(), serverPlayer.getZ()));
+            serverPlayer.changeDimension((new CrystalTeleporter(serverPlayer.getX(), serverPlayer.getZ())).transition(serverPlayer, world));
         } else {
             ServerLevel world = serverPlayer.server.getLevel(Level.OVERWORLD);
             if (world == null) {
                 return InteractionResult.FAIL;
             }
-            serverPlayer.changeDimension(world, new UtopiaTeleporter(serverPlayer.getX(), serverPlayer.getZ()));
+            serverPlayer.changeDimension((new UtopiaTeleporter(serverPlayer.getX(), serverPlayer.getZ())).transition(serverPlayer, world));
         }
         return InteractionResult.SUCCESS;
     }

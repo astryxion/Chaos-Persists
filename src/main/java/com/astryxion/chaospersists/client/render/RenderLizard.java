@@ -11,11 +11,11 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderLizard extends MobRenderer<Lizard, ModelLizard> {
     private static final ResourceLocation TEXTURE =
-            new ResourceLocation("chaospersists", "textures/entity/lizard.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/lizard.png");
     private static final ResourceLocation TEXTURE2 =
-            new ResourceLocation("chaospersists", "textures/entity/lizard2.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/lizard2.png");
     private static final ResourceLocation TEXTURE3 =
-            new ResourceLocation("chaospersists", "textures/entity/lizard3.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/lizard3.png");
     private final float scale;
 
     public RenderLizard(EntityRendererProvider.Context context, ModelLizard model, float shadow, float scale) {

@@ -65,14 +65,11 @@ public class ModelElevator extends EntityModel<Elevator> {
             VertexConsumer buffer,
             int packedLight,
             int packedOverlay,
-            float red,
-            float green,
-            float blue,
-            float alpha) {
-        this.shape1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.shape2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.shape3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.shape4.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.shape5.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+            int color) {
+        this.shape1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.shape2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.shape3.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.shape4.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.shape5.render(poseStack, buffer, packedLight, packedOverlay, color);
     }
 }

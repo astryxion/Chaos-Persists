@@ -31,7 +31,7 @@ public class ItemPizza extends BlockItem {
         if (player == null || !player.mayUseItemAt(placePos, context.getClickedFace(), stack)) {
             return InteractionResult.FAIL;
         }
-        if (!block.canSurvive(block.defaultBlockState(), level, placePos)) {
+        if (!block.defaultBlockState().canSurvive(level, placePos)) {
             return InteractionResult.FAIL;
         }
         BlockPlaceContext placeContext = new BlockPlaceContext(context);

@@ -45,7 +45,7 @@ import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.AABB;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 public class Chipmunk extends EntityCannonFodder {
     private float moveSpeed = 0.38f;
@@ -143,7 +143,7 @@ public class Chipmunk extends EntityCannonFodder {
             if (!this.isTame()) {
                 if (!this.level().isClientSide) {
                     if (this.getRandom().nextInt(2) == 0) {
-                        this.setTame(true);
+                        this.setTame(true, true);
                         this.setOwnerUUID(par1EntityPlayer.getUUID());
                         spawnTamingParticles(true);
                         this.level().broadcastEntityEvent(this, (byte) 7);
@@ -177,7 +177,7 @@ public class Chipmunk extends EntityCannonFodder {
                 && par1EntityPlayer.distanceToSqr(this) < 16.0
                 && this.isOwnedBy(par1EntityPlayer)) {
             if (!this.level().isClientSide) {
-                this.setTame(false);
+                this.setTame(false, true);
                 this.setOwnerUUID(null);
                 spawnTamingParticles(false);
                 this.level().broadcastEntityEvent(this, (byte) 6);
@@ -232,7 +232,7 @@ public class Chipmunk extends EntityCannonFodder {
     }
 
     @Override
-    protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+    protected void dropCustomDeathLoot(net.minecraft.server.level.ServerLevel serverLevel, DamageSource source, boolean recentlyHit) {
         if (DatapackLoot.useEntityTable(this)) {
             return;
         }
@@ -243,7 +243,7 @@ public class Chipmunk extends EntityCannonFodder {
                 this.spawnAtLocation(Blocks.POPPY.asItem());
             }
         } else {
-            super.dropCustomDeathLoot(source, looting, recentlyHit);
+            super.dropCustomDeathLoot(serverLevel, source, recentlyHit);
             this.spawnAtLocation(Items.WHEAT);
         }
     }
@@ -307,7 +307,7 @@ public class Chipmunk extends EntityCannonFodder {
 
     public boolean isBreedingItem(ItemStack par1ItemStack) {
         Item crystal =
-                ForgeRegistries.ITEMS.getValue(new ResourceLocation("chaospersists", "crystalapple"));
+                BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath("chaospersists", "crystalapple"));
         if (crystal == null) {
             crystal = ChaosPersists.MyCrystalApple;
         }

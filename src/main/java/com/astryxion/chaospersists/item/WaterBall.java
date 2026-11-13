@@ -1,8 +1,8 @@
 package com.astryxion.chaospersists.item;
 
 import com.astryxion.chaospersists.core.ChaosPersists;
-import com.astryxion.chaospersists.entity.AttackSquid;
 import com.astryxion.chaospersists.util.MyUtils;
+import com.astryxion.chaospersists.entity.AttackSquid;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
@@ -15,7 +15,7 @@ import net.minecraft.world.entity.projectile.ThrowableProjectile;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 
@@ -52,7 +52,7 @@ public class WaterBall extends ThrowableProjectile {
     }
 
     @Override
-    protected void defineSynchedData() {}
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {}
 
     @Override
     public void tick() {
@@ -120,8 +120,8 @@ public class WaterBall extends ThrowableProjectile {
                     damage);
             if (this.random.nextInt(10) == 1) {
                 Item waterball =
-                        ForgeRegistries.ITEMS.getValue(
-                                new ResourceLocation("chaospersists", "waterball"));
+                        BuiltInRegistries.ITEM.get(
+                                ResourceLocation.fromNamespaceAndPath("chaospersists", "waterball"));
                 if (waterball != null) {
                     entity.spawnAtLocation(new ItemStack(waterball));
                 }

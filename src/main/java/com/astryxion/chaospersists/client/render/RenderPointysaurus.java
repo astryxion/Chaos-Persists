@@ -9,7 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderPointysaurus extends MobRenderer<Pointysaurus, ModelPointysaurus> {
     private static final ResourceLocation TEXTURE =
-            new ResourceLocation("chaospersists", "textures/entity/pointysaurustexture.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/pointysaurustexture.png");
     private final float scale;
 
     public RenderPointysaurus(EntityRendererProvider.Context context, ModelPointysaurus model, float shadow, float scale) {

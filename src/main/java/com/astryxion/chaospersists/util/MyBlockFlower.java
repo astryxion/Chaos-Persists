@@ -18,15 +18,25 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class MyBlockFlower extends BushBlock {
+    public static final com.mojang.serialization.MapCodec<MyBlockFlower> CODEC = simpleCodec(MyBlockFlower::new);
+
+    @Override
+    protected com.mojang.serialization.MapCodec<? extends BushBlock> codec() {
+        return CODEC;
+    }
 
     private static final VoxelShape SHAPE = Block.box(4.8D, 0.0D, 4.8D, 11.2D, 9.6D, 11.2D);
 
     public MyBlockFlower() {
-        super(Block.Properties.of()
+        this(Block.Properties.of()
                 .noCollission()
                 .instabreak()
                 .sound(SoundType.GRASS)
                 .offsetType(OffsetType.XZ));
+    }
+
+    private MyBlockFlower(Properties properties) {
+        super(properties);
     }
 
     @Override
@@ -39,7 +49,7 @@ public class MyBlockFlower extends BushBlock {
     }
 
     @Override
-    public ItemStack getCloneItemStack(BlockGetter level, BlockPos pos, BlockState state) {
+    public ItemStack getCloneItemStack(net.minecraft.world.level.LevelReader level, BlockPos pos, BlockState state) {
         return new ItemStack(this);
     }
 

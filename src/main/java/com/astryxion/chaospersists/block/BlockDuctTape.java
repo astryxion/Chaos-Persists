@@ -54,7 +54,7 @@ public class BlockDuctTape extends Block {
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+    public InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         eatDuctTapeSlice(level, pos, player);
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
@@ -114,7 +114,7 @@ public class BlockDuctTape extends Block {
     }
 
     @Override
-    public ItemStack getCloneItemStack(BlockGetter level, BlockPos pos, BlockState state) {
+    public ItemStack getCloneItemStack(net.minecraft.world.level.LevelReader level, BlockPos pos, BlockState state) {
         return new ItemStack(ChaosPersists.MyDuctTapeItem);
     }
 }

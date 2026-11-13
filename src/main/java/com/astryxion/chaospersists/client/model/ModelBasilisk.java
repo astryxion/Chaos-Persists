@@ -131,27 +131,27 @@ public class ModelBasilisk extends EntityModel<Basilisk> {
     }
 
     @Override
-    public void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
-        this.body3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.body2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.body1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.body4.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.body5.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.body6.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.tail1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.tail2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.tail3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.tail4.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.neck2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.neck1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.head.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.rog_1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.rog_2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.rog_3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.rog_4.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.rog_5.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.rog_6.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.snout.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.jaw.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+    public void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, int color) {
+        this.body3.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.body2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.body1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.body4.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.body5.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.body6.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.tail1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.tail2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.tail3.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.tail4.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.neck2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.neck1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.head.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.rog_1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.rog_2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.rog_3.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.rog_4.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.rog_5.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.rog_6.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.snout.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.jaw.render(poseStack, buffer, packedLight, packedOverlay, color);
     }
 }

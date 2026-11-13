@@ -137,7 +137,7 @@ public class LaserBall extends ThrowableProjectile {
 
             hit.hurt(this.damageSources().thrown(this, this.getOwner()), var2);
             if (this.is_iceball == 0 && hit instanceof net.minecraft.world.entity.LivingEntity living) {
-                living.setSecondsOnFire(8);
+                living.igniteForSeconds(8);
             }
         } else if (this.is_irukandji != 0) {
             if (ChaosPersists.MyIrukandji != null) {
@@ -180,7 +180,7 @@ public class LaserBall extends ThrowableProjectile {
                                 this.random.nextGaussian());
             }
 
-            this.playSound(SoundEvents.GENERIC_EXPLODE, 0.5f, 1.0f + (this.random.nextFloat() - this.random.nextFloat()) * 0.5f);
+            this.playSound(SoundEvents.GENERIC_EXPLODE.value(), 0.5f, 1.0f + (this.random.nextFloat() - this.random.nextFloat()) * 0.5f);
             if (this.is_special != 0 || this.is_iceball != 0) {
                 this.level()
                         .explode(
@@ -267,6 +267,6 @@ public class LaserBall extends ThrowableProjectile {
     }
 
     @Override
-    protected void defineSynchedData() {
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
     }
 }

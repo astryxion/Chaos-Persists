@@ -54,8 +54,8 @@ public class EntityThrownRock extends ThrowableProjectile {
     }
 
     @Override
-    protected void defineSynchedData() {
-        this.entityData.define(ROCK_TYPE_DW, 0);
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        builder.define(ROCK_TYPE_DW, 0);
     }
 
     public int getRockType() {
@@ -93,7 +93,7 @@ public class EntityThrownRock extends ThrowableProjectile {
             }
             if (rockType == 3 && e != owner) {
                 applyPlayerRockHit(e, owner, 5.0f, 0.2, 0.025);
-                e.setSecondsOnFire(1);
+                e.igniteForSeconds(1);
             }
             if (rockType == 4 && e != owner) {
                 applyPlayerRockHit(e, owner, 5.0f, 0.2, 0.025);
@@ -122,7 +122,7 @@ public class EntityThrownRock extends ThrowableProjectile {
             }
             if (rockType == 9 && e != owner) {
                 applyPlayerRockHit(e, owner, 150.0f, 0.2, 0.025);
-                e.setSecondsOnFire(3);
+                e.igniteForSeconds(3);
                 if (e instanceof LivingEntity living) {
                     living.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 100, 0));
                 }

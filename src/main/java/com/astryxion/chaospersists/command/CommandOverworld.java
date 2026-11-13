@@ -39,7 +39,7 @@ public final class CommandOverworld {
             return 0;
         }
         UtopiaTeleporter teleporter = new UtopiaTeleporter(player.getX(), player.getZ());
-        player.changeDimension(world, teleporter);
+        player.changeDimension(teleporter.transition(player, world));
         player.displayClientMessage(
                 Component.literal("Teleported to Overworld.").withStyle(ChatFormatting.GREEN), true);
         return 1;

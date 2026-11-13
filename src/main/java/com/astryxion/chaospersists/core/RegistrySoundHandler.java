@@ -1,16 +1,17 @@
 package com.astryxion.chaospersists.core;
 
+import net.neoforged.fml.common.EventBusSubscriber;
 import net.minecraft.core.registries.Registries;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.registries.RegisterEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.registries.RegisterEvent;
 
 /**
  * Registers mod sounds in 1.20.1. Static EventBusSubscriber so we are on the
  * mod bus as soon as the mod loads, ensuring RegisterEvent for SoundEvent
  * is received (fired during registry setup; static subscriber guarantees registration).
  */
-@Mod.EventBusSubscriber(modid = ChaosPersists.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = ChaosPersists.MODID, bus = EventBusSubscriber.Bus.MOD)
 public class RegistrySoundHandler {
 
     @SubscribeEvent

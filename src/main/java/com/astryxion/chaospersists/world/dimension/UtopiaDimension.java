@@ -1,22 +1,23 @@
 package com.astryxion.chaospersists.world.dimension;
 
+import net.neoforged.fml.common.EventBusSubscriber;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.event.RegisterDimensionSpecialEffectsEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.neoforge.client.event.RegisterDimensionSpecialEffectsEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
 
 /**
  * Utopia dimension client effects (ported from Craziness Awakened {@code UtopiaDimension}).
  */
-@Mod.EventBusSubscriber(modid = ChaosPersists.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = ChaosPersists.MODID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public final class UtopiaDimension {
     public static final ResourceLocation UTOPIA_EFFECTS =
-            new ResourceLocation(ChaosPersists.MODID, "utopia");
+            ResourceLocation.fromNamespaceAndPath(ChaosPersists.MODID, "utopia");
 
     private UtopiaDimension() {}
 

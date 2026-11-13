@@ -65,10 +65,7 @@ public class ModelPurplePower extends EntityModel<PurplePower> {
             VertexConsumer buffer,
             int packedLight,
             int packedOverlay,
-            float red,
-            float green,
-            float blue,
-            float alpha) {
+            int color) {
         PurplePower p = this.animEntity;
         float rf1 = 1.0f;
         float newangle = 0.0f;
@@ -82,7 +79,7 @@ public class ModelPurplePower extends EntityModel<PurplePower> {
         poseStack.mulPose(Axis.XP.rotationDegrees(rf1));
         for (int i = 0; i < 6; ++i) {
             this.shape1.zRot = newangle;
-            this.shape1.render(poseStack, buffer, packedLight, packedOverlay, a, b, c, d);
+            this.shape1.render(poseStack, buffer, packedLight, packedOverlay, net.minecraft.util.FastColor.ARGB32.colorFromFloat(d, a, b, c));
             newangle += 1.0471976f;
         }
         poseStack.mulPose(Axis.XP.rotationDegrees(-rf1));
@@ -92,7 +89,7 @@ public class ModelPurplePower extends EntityModel<PurplePower> {
         poseStack.mulPose(Axis.YP.rotationDegrees(rf1));
         for (int i = 0; i < 6; ++i) {
             this.shape2.zRot = newangle;
-            this.shape2.render(poseStack, buffer, packedLight, packedOverlay, a, b, c, d);
+            this.shape2.render(poseStack, buffer, packedLight, packedOverlay, net.minecraft.util.FastColor.ARGB32.colorFromFloat(d, a, b, c));
             newangle += 1.0471976f;
         }
         poseStack.mulPose(Axis.YP.rotationDegrees(-rf1));
@@ -102,7 +99,7 @@ public class ModelPurplePower extends EntityModel<PurplePower> {
         poseStack.mulPose(Axis.ZP.rotationDegrees(rf1));
         for (int i = 0; i < 6; ++i) {
             this.shape3.zRot = newangle;
-            this.shape3.render(poseStack, buffer, packedLight, packedOverlay, a, b, c, d);
+            this.shape3.render(poseStack, buffer, packedLight, packedOverlay, net.minecraft.util.FastColor.ARGB32.colorFromFloat(d, a, b, c));
             newangle += 1.0471976f;
         }
         poseStack.mulPose(Axis.ZP.rotationDegrees(-rf1));

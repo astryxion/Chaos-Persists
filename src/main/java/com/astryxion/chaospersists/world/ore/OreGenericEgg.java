@@ -13,16 +13,26 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.LootParams;
 
 public class OreGenericEgg extends FallingBlock {
+    public static final com.mojang.serialization.MapCodec<OreGenericEgg> CODEC = simpleCodec(OreGenericEgg::new);
+
+    @Override
+    protected com.mojang.serialization.MapCodec<? extends FallingBlock> codec() {
+        return CODEC;
+    }
 
     public OreGenericEgg() {
         this(0);
     }
 
     public OreGenericEgg(int oldid) {
-        super(Block.Properties.of()
+        this(Block.Properties.of()
                 .strength(0.6f, 3.0f)
                 .sound(SoundType.GRAVEL)
                 .noOcclusion());
+    }
+
+    private OreGenericEgg(Properties properties) {
+        super(properties);
     }
 
     @Override

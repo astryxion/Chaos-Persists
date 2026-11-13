@@ -19,7 +19,7 @@ public class ItemRadish extends BlockItem {
 
     private static Properties foodProperties(int nutrition, float saturation) {
         return new Properties()
-                .food(new FoodProperties.Builder().nutrition(nutrition).saturationMod(saturation).build());
+                .food(new FoodProperties.Builder().nutrition(nutrition).saturationModifier(saturation).build());
     }
 
     @Override

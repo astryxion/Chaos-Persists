@@ -20,7 +20,7 @@ public class BlockRadish extends CropBlock {
     }
 
     public BlockRadish(int par1) {
-        super(net.minecraft.world.level.block.Block.Properties.copy(Blocks.WHEAT).noOcclusion());
+        super(net.minecraft.world.level.block.Block.Properties.ofFullCopy(Blocks.WHEAT).noOcclusion());
     }
 
     @Override

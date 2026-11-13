@@ -30,11 +30,11 @@ public final class DatapackLoot {
     return hasTable(server, entity.getLootTable());
   }
 
-  public static boolean hasTable(ServerLevel level, ResourceLocation id) {
+  public static boolean hasTable(ServerLevel level, net.minecraft.resources.ResourceKey<LootTable> id) {
     if (level == null || level.getServer() == null || id == null || BuiltInLootTables.EMPTY.equals(id)) {
       return false;
     }
-    LootTable table = level.getServer().getLootData().getLootTable(id);
+    LootTable table = level.getServer().reloadableRegistries().getLootTable(id);
     return table != null && table != LootTable.EMPTY;
   }
 
@@ -44,12 +44,12 @@ public final class DatapackLoot {
     if (level == null || block == null) {
       return null;
     }
-    ResourceLocation id = block.getLootTable();
+    net.minecraft.resources.ResourceKey<LootTable> id = block.getLootTable();
     if (!hasTable(level, id)) {
       return null;
     }
     LootParams params =
         builder.withParameter(LootContextParams.BLOCK_STATE, state).create(LootContextParamSets.BLOCK);
-    return level.getServer().getLootData().getLootTable(id).getRandomItems(params);
+    return level.getServer().reloadableRegistries().getLootTable(id).getRandomItems(params);
   }
 }

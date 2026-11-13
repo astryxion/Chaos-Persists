@@ -1,0 +1,13 @@
+{
+  "type": "neoforge:add_spawns",
+  "spawners": {
+    "type": "chaospersists:enchanted_golden_apple_cow",
+    "weight": 5,
+    "minCount": 2,
+    "maxCount": 4
+  },
+  "biomes": [
+    "chaospersists:utopia",
+    "chaospersists:village_dimension"
+  ]
+}

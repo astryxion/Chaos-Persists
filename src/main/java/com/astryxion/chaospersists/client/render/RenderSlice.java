@@ -2,7 +2,7 @@
  * Decompiled with CFR 0_125.
  * 
  * Could not load the following classes:
- *  net.minecraftforge.fml.client.FMLClientHandler
+ *  net.neoforged.fml.client.FMLClientHandler
  *  com.astryxion.chaospersists.ModelSlice
  *  com.astryxion.chaospersists.RenderSlice
  *  com.astryxion.chaospersists.RenderSlice$1
@@ -10,9 +10,9 @@
  *  net.minecraft.client.renderer.texture.TextureManager
  *  net.minecraft.item.ItemStack
  *  net.minecraft.util.ResourceLocation
- *  net.minecraftforge.client.IItemRenderer
- *  net.minecraftforge.client.IItemRenderer$ItemRenderType
- *  net.minecraftforge.client.IItemRenderer$ItemRendererHelper
+ *  net.neoforged.neoforge.client.IItemRenderer
+ *  net.neoforged.neoforge.client.IItemRenderer$ItemRenderType
+ *  net.neoforged.neoforge.client.IItemRenderer$ItemRendererHelper
  *  org.lwjgl.opengl.GL11
  */
 package com.astryxion.chaospersists.client.render;
@@ -31,7 +31,7 @@ import net.minecraft.world.item.ItemStack;
 public class RenderSlice implements IItemRenderer {
     protected ModelSlice modelSlice = new ModelSlice();
     private static final ResourceLocation texture =
-            new ResourceLocation("chaospersists", "textures/entity/slicetexture.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/slicetexture.png");
 
     @Override
     public boolean handleRenderType(ItemStack item, ItemRenderType type) {

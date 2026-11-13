@@ -215,26 +215,23 @@ public class ModelUrchin extends EntityModel<Urchin> {
             VertexConsumer buffer,
             int packedLight,
             int packedOverlay,
-            float red,
-            float green,
-            float blue,
-            float alpha) {
-        this.if1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.if2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.if3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.if4.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.of1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.of2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.of3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.of4.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.center.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.tis1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.tis2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.tis3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.tis4.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.tos1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.tos2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.tos3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.tos4.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+            int color) {
+        this.if1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.if2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.if3.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.if4.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.of1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.of2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.of3.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.of4.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.center.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.tis1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.tis2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.tis3.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.tis4.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.tos1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.tos2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.tos3.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.tos4.render(poseStack, buffer, packedLight, packedOverlay, color);
     }
 }

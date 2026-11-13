@@ -16,14 +16,15 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ContainerObjectSelectionList;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 /** Mods-menu config: General holds pack/gameplay options; other tabs are lists. */
 @OnlyIn(Dist.CLIENT)
@@ -407,7 +408,7 @@ public class ChaosConfigScreen extends Screen {
     public void tick() {
         super.tick();
         if (this.searchBox != null) {
-            this.searchBox.tick();
+    
         }
         if (this.statList != null) {
             this.statList.tickBoxes();
@@ -423,8 +424,8 @@ public class ChaosConfigScreen extends Screen {
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        this.renderBackground(graphics);
-        graphics.drawCenteredString(this.font, this.title, this.width / 2, 8, 0xFFFFFF);
+        // 1.21 blurs in renderBackground; Screen.render() calls it again, so avoid super.render().
+        this.renderBackground(graphics, mouseX, mouseY, partialTick);
         if (this.optionList != null) {
             this.optionList.render(graphics, mouseX, mouseY, partialTick);
         }
@@ -437,7 +438,10 @@ public class ChaosConfigScreen extends Screen {
         if (this.statList != null) {
             this.statList.render(graphics, mouseX, mouseY, partialTick);
         }
-        super.render(graphics, mouseX, mouseY, partialTick);
+        for (Renderable renderable : this.renderables) {
+            renderable.render(graphics, mouseX, mouseY, partialTick);
+        }
+        graphics.drawCenteredString(this.font, this.title, this.width / 2, 8, 0xFFFFFF);
     }
 
     private static Component optionLabel(String key) {
@@ -519,7 +523,7 @@ public class ChaosConfigScreen extends Screen {
                 int y1,
                 int itemHeight,
                 List<OptionDef> options) {
-            super(minecraft, width, height, y0, y1, itemHeight);
+            super(minecraft, width, y1 - y0, y0, itemHeight);
             List<OptionDef> pair = new ArrayList<>();
             for (OptionDef def : options) {
                 if (def.kind == Kind.HEADER) {
@@ -558,7 +562,7 @@ public class ChaosConfigScreen extends Screen {
 
     private final class StructureList extends ContainerObjectSelectionList<PairWidgetRow> {
         private StructureList(Minecraft minecraft, int width, int height, int y0, int y1, int itemHeight) {
-            super(minecraft, width, height, y0, y1, itemHeight);
+            super(minecraft, width, y1 - y0, y0, itemHeight);
             this.reload();
         }
 
@@ -600,7 +604,7 @@ public class ChaosConfigScreen extends Screen {
 
     private final class MobList extends ContainerObjectSelectionList<PairWidgetRow> {
         private MobList(Minecraft minecraft, int width, int height, int y0, int y1, int itemHeight) {
-            super(minecraft, width, height, y0, y1, itemHeight);
+            super(minecraft, width, y1 - y0, y0, itemHeight);
             this.reload();
         }
 
@@ -643,7 +647,7 @@ public class ChaosConfigScreen extends Screen {
 
     private final class StatList extends ContainerObjectSelectionList<StatRow> {
         private StatList(Minecraft minecraft, int width, int height, int y0, int y1, int itemHeight) {
-            super(minecraft, width, height, y0, y1, itemHeight);
+            super(minecraft, width, y1 - y0, y0, itemHeight);
             this.reload();
         }
 
@@ -700,7 +704,7 @@ public class ChaosConfigScreen extends Screen {
         }
 
         private void tick() {
-            this.box.tick();
+
         }
 
         @Override

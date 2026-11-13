@@ -20,20 +20,20 @@ public class ExperienceSword extends SwordItem {
     private Level worldObjr = null;
 
     public ExperienceSword(Tier tier) {
-        super(tier, ChaosWeaponDamage.modifierFor(tier, WEAPON_DAMAGE), -2.4f, new Properties().stacksTo(1).durability(1400));
+        super(tier, new Properties().stacksTo(1).durability(1400).attributes(SwordItem.createAttributes(tier, ChaosWeaponDamage.modifierFor(tier, WEAPON_DAMAGE), -2.4f)));
     }
 
     @Override
     public void onCraftedBy(ItemStack stack, Level level, Player player) {
-        stack.enchant(Enchantments.SHARPNESS, 2);
-        stack.enchant(Enchantments.MOB_LOOTING, 3);
+        stack.enchant(level.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.SHARPNESS), 2);
+        stack.enchant(level.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.LOOTING), 3);
     }
 
     @Override
     public void inventoryTick(ItemStack stack, Level level, Entity entity, int slot, boolean selected) {
-        if (EnchantmentHelper.getItemEnchantmentLevel(Enchantments.SHARPNESS, stack) <= 0) {
-            stack.enchant(Enchantments.SHARPNESS, 2);
-            stack.enchant(Enchantments.MOB_LOOTING, 3);
+        if (com.astryxion.chaospersists.util.ChaosEnchantments.level(Enchantments.SHARPNESS, stack) <= 0) {
+            stack.enchant(level.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.SHARPNESS), 2);
+            stack.enchant(level.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.LOOTING), 3);
         }
         LivingEntity e = null;
         ItemChaosArmor ia = null;
@@ -158,12 +158,12 @@ public class ExperienceSword extends SwordItem {
                 ++j;
             }
         }
-        stack.hurtAndBreak(1, attacker, e -> e.broadcastBreakEvent(EquipmentSlot.MAINHAND));
+        stack.hurtAndBreak(1, attacker, EquipmentSlot.MAINHAND);
         return true;
     }
 
     @Override
-    public int getUseDuration(ItemStack stack) {
+    public int getUseDuration(ItemStack stack, net.minecraft.world.entity.LivingEntity user) {
         return 3000;
     }
 }

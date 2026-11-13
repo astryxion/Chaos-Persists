@@ -91,20 +91,20 @@ public class ModelWhale extends EntityModel<Whale> {
     }
 
     @Override
-    public void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
-        this.belly.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.body.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.back.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.tail1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.tail2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.tailfin1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.tailfin2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.backfin.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.head.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.jaw.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.lfin1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.lfin2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.rfin1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.rfin2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+    public void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, int color) {
+        this.belly.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.body.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.back.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.tail1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.tail2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.tailfin1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.tailfin2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.backfin.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.head.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.jaw.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.lfin1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.lfin2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.rfin1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.rfin2.render(poseStack, buffer, packedLight, packedOverlay, color);
     }
 }

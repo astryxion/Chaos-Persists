@@ -10,7 +10,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -23,11 +22,11 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 public class Firefly extends AmbientCreature {
     private static final ResourceLocation TEXTURE =
-            new ResourceLocation("chaospersists", "textures/entity/fireflytexture.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/fireflytexture.png");
     int my_blink = 0;
     int blinker = 0;
     int myspace = 0;
@@ -45,10 +44,6 @@ public class Firefly extends AmbientCreature {
                 .add(Attributes.ATTACK_DAMAGE, 0.0);
     }
 
-    @Override
-    public MobType getMobType() {
-        return MobType.ARTHROPOD;
-    }
 
     public ResourceLocation getTexture(Firefly a) {
         return TEXTURE;
@@ -223,13 +218,13 @@ public class Firefly extends AmbientCreature {
     }
 
     @Override
-    protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+    protected void dropCustomDeathLoot(net.minecraft.server.level.ServerLevel serverLevel, DamageSource source, boolean recentlyHit) {
         if (DatapackLoot.useEntityTable(this)) {
             return;
         }
-        super.dropCustomDeathLoot(source, looting, recentlyHit);
+        super.dropCustomDeathLoot(serverLevel, source, recentlyHit);
         net.minecraft.world.level.block.Block block =
-                ForgeRegistries.BLOCKS.getValue(new ResourceLocation("chaospersists", "extremetorch"));
+                BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath("chaospersists", "extremetorch"));
         if (block != null) {
             this.spawnAtLocation(new ItemStack(block));
         }

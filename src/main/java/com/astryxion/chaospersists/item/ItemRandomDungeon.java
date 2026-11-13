@@ -27,14 +27,14 @@ public class ItemRandomDungeon extends Item {
 
     @Override
     public void onCraftedBy(ItemStack stack, Level world, Player player) {
-        stack.enchant(Enchantments.BLOCK_FORTUNE, 2);
+        stack.enchant(world.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FORTUNE), 2);
     }
 
     @Override
     public void inventoryTick(ItemStack stack, Level world, net.minecraft.world.entity.Entity entity, int slot, boolean selected) {
-        int lvl = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.BLOCK_FORTUNE, stack);
+        int lvl = com.astryxion.chaospersists.util.ChaosEnchantments.level(Enchantments.FORTUNE, stack);
         if (lvl <= 0) {
-            stack.enchant(Enchantments.BLOCK_FORTUNE, 2);
+            stack.enchant(world.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FORTUNE), 2);
         }
     }
 

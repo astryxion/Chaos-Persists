@@ -148,29 +148,29 @@ public class ModelBee extends EntityModel<Bee> {
     }
 
     @Override
-    public void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
-        this.Sting.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Abdomnem1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Abdomnem2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Abdomnem3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Abdomnem4.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Abdomnem5.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.MainBody.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Neck.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Head.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.WingRight.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.WingLeft.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.RA1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.LA1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.LA2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.RA2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.RA3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.LA3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.LeftPom.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.RightPom.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.LeftPincerExtra.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.LeftPincerMain.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.RightPincerMain.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.RightPincerExtra.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+    public void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, int color) {
+        this.Sting.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Abdomnem1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Abdomnem2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Abdomnem3.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Abdomnem4.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Abdomnem5.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.MainBody.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Neck.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Head.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.WingRight.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.WingLeft.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.RA1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.LA1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.LA2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.RA2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.RA3.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.LA3.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.LeftPom.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.RightPom.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.LeftPincerExtra.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.LeftPincerMain.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.RightPincerMain.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.RightPincerExtra.render(poseStack, buffer, packedLight, packedOverlay, color);
     }
 }

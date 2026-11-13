@@ -1,13 +1,14 @@
 package com.astryxion.chaospersists.compat.mobbattle;
 
+import net.neoforged.fml.common.EventBusSubscriber;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.util.MyUtils;
 import javax.annotation.Nullable;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraftforge.event.level.ExplosionEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.neoforge.event.level.ExplosionEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModList;
+import net.neoforged.fml.common.Mod;
 
 /**
  * Mob Battle uses vanilla scoreboard teams: same-team entities are allies, and a teamed
@@ -16,7 +17,7 @@ import net.minecraftforge.fml.common.Mod;
  * <p>King / Queen / Mobzilla fireballs still explode with a null source (1.7.10), so vanilla
  * friendly-fire never applies. Strip scoreboard allies out of that blast.
  */
-@Mod.EventBusSubscriber(modid = ChaosPersists.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(modid = ChaosPersists.MODID, bus = EventBusSubscriber.Bus.GAME)
 public final class MobBattleTeamCompat {
 
     public static final String MOBBATTLE_MODID = "mobbattle";

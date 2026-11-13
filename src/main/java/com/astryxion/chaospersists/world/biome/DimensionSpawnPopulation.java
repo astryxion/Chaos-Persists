@@ -13,7 +13,7 @@ import net.minecraft.world.level.NaturalSpawner;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.MobSpawnSettings;
 import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraftforge.event.level.LevelEvent;
+import net.neoforged.neoforge.event.level.LevelEvent;
 
 /**
  * OreSpawn 1.7.10 chunk providers call {@code SpawnerAnimals.performWorldGenSpawning} at the end of
@@ -36,6 +36,11 @@ public final class DimensionSpawnPopulation {
      * Call at the end of deferred chunk decoration ({@code ChaosWorld#runChunkWorldGen}).
      */
     public static void afterChunkDecoration(ServerLevel level, LevelChunk chunk) {
+        // Spawning into chunks that are about to unload (empty dim / non-entity-ticking) can corrupt
+        // PersistentEntitySectionManager.chunksToUnload during removeIf (FastUtil AIOOBE).
+        if (level.players().isEmpty() || !level.isPositionEntityTicking(chunk.getPos().getWorldPosition())) {
+            return;
+        }
         if (level.dimension().equals(ChaosPersists.getMiningDimensionKey())) {
             Holder<Biome> miningBiome =
                     BiomeMiningDimension.getChunkGenSpawnBiome(level.registryAccess());

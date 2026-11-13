@@ -172,26 +172,23 @@ public class ModelChipmunk extends EntityModel<Chipmunk> {
             VertexConsumer buffer,
             int packedLight,
             int packedOverlay,
-            float red,
-            float green,
-            float blue,
-            float alpha) {
-        this.cheek2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.leg1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.leg2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.leg3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.leg4.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.tail2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.neck.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.head.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.mouthUnder.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.cheek1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.ear2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.nose.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.ear1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.body.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.bodyTail.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.tail1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+            int color) {
+        this.cheek2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.leg1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.leg2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.leg3.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.leg4.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.tail2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.neck.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.head.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.mouthUnder.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.cheek1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.ear2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.nose.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.ear1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.body.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.bodyTail.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.tail1.render(poseStack, buffer, packedLight, packedOverlay, color);
     }
 
     public void renderHats(
@@ -205,9 +202,9 @@ public class ModelChipmunk extends EntityModel<Chipmunk> {
             float blue,
             float alpha) {
         if (entity.get_is_activated() != 0) {
-            this.hat1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+            this.hat1.render(poseStack, buffer, packedLight, packedOverlay, net.minecraft.util.FastColor.ARGB32.colorFromFloat(alpha, red, green, blue));
             if (entity.get_is_activated() > 1) {
-                this.hat2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+                this.hat2.render(poseStack, buffer, packedLight, packedOverlay, net.minecraft.util.FastColor.ARGB32.colorFromFloat(alpha, red, green, blue));
             }
         }
     }

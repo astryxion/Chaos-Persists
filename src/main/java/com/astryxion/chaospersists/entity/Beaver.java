@@ -326,8 +326,8 @@ public class Beaver extends Animal {
     }
 
     @Override
-    public boolean canBreatheUnderwater() {
-        return true;
+    protected int decreaseAirSupply(int airSupply) {
+        return airSupply;
     }
 
     public int mygetMaxHealth() {

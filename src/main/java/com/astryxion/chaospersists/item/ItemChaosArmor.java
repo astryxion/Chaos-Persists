@@ -18,8 +18,8 @@ public class ItemChaosArmor extends ArmorItem {
     private int armor_material = 0;
     private int armor_type = 0;
 
-    public ItemChaosArmor(ArmorMaterial material, int unused, int slotIndex) {
-        super(material, SLOT_TYPES[slotIndex], new Properties().stacksTo(1));
+    public ItemChaosArmor(com.astryxion.chaospersists.legacy.forge.common.util.EnumHelper.ArmorSpec material, int unused, int slotIndex) {
+        super(material.material(), SLOT_TYPES[slotIndex], new Properties().durability(material.durabilityFor(SLOT_TYPES[slotIndex])));
         this.armor_material = 0;
         if (material == ChaosPersists.armorLAVAEEL) {
             this.armor_material = 1;
@@ -73,74 +73,77 @@ public class ItemChaosArmor extends ArmorItem {
 
     @Override
     public void onCraftedBy(ItemStack stack, Level level, Player player) {
-        applyArmorEnchantments(stack);
+        applyArmorEnchantments(stack, level);
     }
 
     @Override
     public void inventoryTick(ItemStack stack, Level level, Entity entity, int slot, boolean selected) {
+        if (entity instanceof Player player && player.getItemBySlot(getEquipmentSlot()) == stack) {
+            applyEquippedEffects(player);
+        }
         ArmorStats stats = getArmorStats();
         if (stats == null) {
             return;
         }
         int enchanted = stats.e_aquaaffinity + stats.e_blastprotection + stats.e_featherfalling + stats.e_fireprotection;
         if ((enchanted += stats.e_projectileprotection + stats.e_protection + stats.e_respiration + stats.e_unbreaking) > 0) {
-            int lvl = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.ALL_DAMAGE_PROTECTION, stack);
+            int lvl = com.astryxion.chaospersists.util.ChaosEnchantments.level(Enchantments.PROTECTION, stack);
             if (lvl <= 0) {
-                lvl = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.FIRE_PROTECTION, stack);
+                lvl = com.astryxion.chaospersists.util.ChaosEnchantments.level(Enchantments.FIRE_PROTECTION, stack);
             }
             if (lvl <= 0) {
-                lvl = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.BLAST_PROTECTION, stack);
+                lvl = com.astryxion.chaospersists.util.ChaosEnchantments.level(Enchantments.BLAST_PROTECTION, stack);
             }
             if (lvl <= 0) {
-                lvl = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.PROJECTILE_PROTECTION, stack);
+                lvl = com.astryxion.chaospersists.util.ChaosEnchantments.level(Enchantments.PROJECTILE_PROTECTION, stack);
             }
             if (lvl <= 0) {
-                lvl = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.RESPIRATION, stack);
+                lvl = com.astryxion.chaospersists.util.ChaosEnchantments.level(Enchantments.RESPIRATION, stack);
             }
             if (lvl <= 0) {
-                lvl = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.AQUA_AFFINITY, stack);
+                lvl = com.astryxion.chaospersists.util.ChaosEnchantments.level(Enchantments.AQUA_AFFINITY, stack);
             }
             if (lvl <= 0) {
-                lvl = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.UNBREAKING, stack);
+                lvl = com.astryxion.chaospersists.util.ChaosEnchantments.level(Enchantments.UNBREAKING, stack);
             }
             if (lvl <= 0) {
-                lvl = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.FALL_PROTECTION, stack);
+                lvl = com.astryxion.chaospersists.util.ChaosEnchantments.level(Enchantments.FEATHER_FALLING, stack);
             }
             if (lvl == 0) {
-                applyArmorEnchantments(stack);
+                applyArmorEnchantments(stack, level);
             }
         }
     }
 
-    private void applyArmorEnchantments(ItemStack stack) {
+    private void applyArmorEnchantments(ItemStack stack, Level level) {
         ArmorStats a = getArmorStats();
         if (a == null) {
             return;
         }
         if (a.e_protection != 0) {
-            stack.enchant(Enchantments.ALL_DAMAGE_PROTECTION, a.e_protection);
+            stack.enchant(level.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROTECTION), a.e_protection);
         }
         if (a.e_fireprotection != 0) {
-            stack.enchant(Enchantments.FIRE_PROTECTION, a.e_fireprotection);
+            stack.enchant(level.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FIRE_PROTECTION), a.e_fireprotection);
         }
         if (a.e_blastprotection != 0) {
-            stack.enchant(Enchantments.BLAST_PROTECTION, a.e_blastprotection);
+            stack.enchant(level.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.BLAST_PROTECTION), a.e_blastprotection);
         }
         if (a.e_projectileprotection != 0) {
-            stack.enchant(Enchantments.PROJECTILE_PROTECTION, a.e_projectileprotection);
+            stack.enchant(level.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROJECTILE_PROTECTION), a.e_projectileprotection);
         }
         if (a.e_unbreaking != 0) {
-            stack.enchant(Enchantments.UNBREAKING, a.e_unbreaking);
+            stack.enchant(level.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), a.e_unbreaking);
         }
         if (this.armor_type == 3 && a.e_featherfalling != 0) {
-            stack.enchant(Enchantments.FALL_PROTECTION, a.e_featherfalling);
+            stack.enchant(level.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FEATHER_FALLING), a.e_featherfalling);
         }
         if (this.armor_type == 0) {
             if (a.e_respiration != 0) {
-                stack.enchant(Enchantments.RESPIRATION, a.e_respiration);
+                stack.enchant(level.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.RESPIRATION), a.e_respiration);
             }
             if (a.e_aquaaffinity != 0) {
-                stack.enchant(Enchantments.AQUA_AFFINITY, a.e_aquaaffinity);
+                stack.enchant(level.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.AQUA_AFFINITY), a.e_aquaaffinity);
             }
         }
     }
@@ -169,9 +172,9 @@ public class ItemChaosArmor extends ArmorItem {
     }
 
     @Override
-    public String getArmorTexture(ItemStack stack, Entity entity, EquipmentSlot slot, String type) {
+    public net.minecraft.resources.ResourceLocation getArmorTexture(ItemStack stack, Entity entity, EquipmentSlot slot, ArmorMaterial.Layer materialLayer, boolean inner) {
         String layer = slot == EquipmentSlot.LEGS ? "2" : "1";
-        return "chaospersists:textures/armor/" + getArmorTextureBaseName() + "_" + layer + ".png";
+        return net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/armor/" + getArmorTextureBaseName() + "_" + layer + ".png");
     }
 
     private String getArmorTextureBaseName() {
@@ -193,8 +196,7 @@ public class ItemChaosArmor extends ArmorItem {
         };
     }
 
-    @Override
-    public void onArmorTick(ItemStack stack, Level level, Player player) {
+    private void applyEquippedEffects(Player player) {
         ItemStack boots;
         if ((this.armor_material == 11 || this.armor_material == 9)
                 && player != null

@@ -1,21 +1,4 @@
 {
-  "parent": "block/cube_bottom_top",
-  "textures": {
-    "bottom": "chaospersists:block/crystaltermite_bottom",
-    "top": "chaospersists:block/crystaltermite_top",
-    "side": "chaospersists:block/crystaltermite_side"
-  }
-}
-{
-  "parent": "chaospersists:block/antblock_parent",
-  "textures": {
-    "particle": "chaospersists:block/crystaltermite_side",
-    "bottom": "chaospersists:block/crystaltermite_bottom",
-    "top": "chaospersists:block/crystaltermite_top",
-    "side": "chaospersists:block/crystaltermite_side"
-  }
-}
-{
   "parent": "chaospersists:block/antblock_parent",
   "textures": {
     "particle": "chaospersists:block/crystaltermite_side",

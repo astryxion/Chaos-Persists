@@ -1,5 +1,6 @@
 package com.astryxion.chaospersists.compat.cataclysm;
 
+import net.neoforged.fml.common.EventBusSubscriber;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.util.ChaosBosses;
 import net.minecraft.resources.ResourceKey;
@@ -13,10 +14,10 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraftforge.event.entity.living.LivingHurtEvent;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
+import net.neoforged.bus.api.EventPriority;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
 
 /**
  * Cataclysm often deals magic / armor-bypass hits plus a percent of max health (Ignis flame
@@ -25,7 +26,7 @@ import net.minecraftforge.fml.common.Mod;
  * Chaos Persists bosses use the same OreSpawn defense curve on those hits so they are not
  * melted by percent-HP magic that skips {@code getArmorValue()}.
  */
-@Mod.EventBusSubscriber(modid = ChaosPersists.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(modid = ChaosPersists.MODID, bus = EventBusSubscriber.Bus.GAME)
 public final class CataclysmDamageCompat {
 
     /**
@@ -37,7 +38,7 @@ public final class CataclysmDamageCompat {
     private CataclysmDamageCompat() {}
 
     @SubscribeEvent(priority = EventPriority.HIGH)
-    public static void onLivingHurt(LivingHurtEvent event) {
+    public static void onLivingHurt(LivingIncomingDamageEvent event) {
         if (!CataclysmBlazingBrandCompat.isPresent()
                 || event.isCanceled()
                 || event.getAmount() <= 0.0f) {
@@ -73,7 +74,8 @@ public final class CataclysmDamageCompat {
             float afterArmor = getDamageAfterAbsorbUncapped(amount, armor, toughness);
             amount = amount * (1.0f - resist) + afterArmor * resist;
             if (source.is(DamageTypeTags.BYPASSES_ENCHANTMENTS)) {
-                int k = EnchantmentHelper.getDamageProtection(victim.getArmorSlots(), source);
+                float k = victim.level() instanceof net.minecraft.server.level.ServerLevel level
+                ? EnchantmentHelper.getDamageProtection(level, victim, source) : 0.0F;
                 if (k > 0) {
                     float enchanted = amount * (1.0f - Mth.clamp(k, 0, 20) / 25.0f);
                     amount = amount * (1.0f - resist) + enchanted * resist;

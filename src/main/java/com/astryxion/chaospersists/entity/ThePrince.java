@@ -57,13 +57,18 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 import com.astryxion.chaospersists.util.MyUtils;
 import com.astryxion.chaospersists.util.PetCombatHelper;
 import com.astryxion.chaospersists.util.PetOrderInteract;
 import com.astryxion.chaospersists.util.RoyalPetFollowHelper;
 
 public class ThePrince extends TamableAnimal {
+    @Override
+    public boolean isFood(net.minecraft.world.item.ItemStack stack) {
+        return stack.is(net.minecraft.world.item.Items.WHEAT);
+    }
+
     private static final EntityDataAccessor<Integer> SPYRO_FIRE =
             SynchedEntityData.defineId(ThePrince.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> ACTIVITY =
@@ -91,6 +96,8 @@ public class ThePrince extends TamableAnimal {
 
     public ThePrince(EntityType<? extends ThePrince> type, Level level) {
         super(type, level);
+        this.setOrderedToSit(false);
+        this.setTame(false, true);
         this.fireImmune();
         this.xpReward = 50;
         this.moveSpeed = 0.32f;
@@ -124,25 +131,23 @@ public class ThePrince extends TamableAnimal {
     }
 
     @Override
-    public EntityDimensions getDimensions(Pose pose) {
+    public EntityDimensions getDefaultDimensions(Pose pose) {
         return EntityDimensions.scalable(0.75f, 1.25f);
     }
 
     @Override
-    public void onAddedToWorld() {
-        super.onAddedToWorld();
+    public void onAddedToLevel() {
+        super.onAddedToLevel();
         this.refreshDimensions();
     }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
         this.activity = 1;
-        this.entityData.define(ATTACKING, 0);
-        this.entityData.define(ACTIVITY, this.activity);
-        this.entityData.define(SPYRO_FIRE, 1);
-        this.setOrderedToSit(false);
-        this.setTame(false);
+        builder.define(ATTACKING, 0);
+        builder.define(ACTIVITY, this.activity);
+        builder.define(SPYRO_FIRE, 1);
         this.noPhysics = false;
     }
 
@@ -211,8 +216,8 @@ public class ThePrince extends TamableAnimal {
     }
 
     @Override
-    public boolean canBreatheUnderwater() {
-        return true;
+    protected int decreaseAirSupply(int airSupply) {
+        return airSupply;
     }
 
     public int mygetMaxHealth() {
@@ -277,7 +282,7 @@ public class ThePrince extends TamableAnimal {
             if (var3 != null) {
                 if (!this.level().isClientSide) {
                     if ((float) this.mygetMaxHealth() > this.getHealth()) {
-                        this.heal((float) (var3.getNutrition() * 10));
+                        this.heal((float) (var3.nutrition() * 10));
                     }
                     spawnTamingParticles(true);
                     this.level().broadcastEntityEvent(this, (byte) 7);
@@ -452,11 +457,11 @@ public class ThePrince extends TamableAnimal {
     }
 
     @Override
-    protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+    protected void dropCustomDeathLoot(net.minecraft.server.level.ServerLevel serverLevel, DamageSource source, boolean recentlyHit) {
         if (DatapackLoot.useEntityTable(this)) {
             return;
         }
-        super.dropCustomDeathLoot(source, looting, recentlyHit);
+        super.dropCustomDeathLoot(serverLevel, source, recentlyHit);
         if (ChaosPersists.ThePrinceEgg != null) {
             this.spawnAtLocation(ChaosPersists.ThePrinceEgg);
         }
@@ -478,7 +483,7 @@ public class ThePrince extends TamableAnimal {
     }
 
     /**
-     * 1.7.10 flight used {@code noClip}, which never applied cobweb slowdown. In 1.20
+     * 1.7.10 flight used {@code noClip}, which never applied cobweb slowdown. Modern
      * {@code checkInsideBlocks} still calls cobweb {@code makeStuckInBlock} even with
      * {@code noPhysics}, so ignore cobwebs entirely for Prince stages.
      */
@@ -1134,7 +1139,7 @@ public class ThePrince extends TamableAnimal {
             return;
         }
         if (ent instanceof TamableAnimal tame && ownerUuid != null) {
-            tame.setTame(true);
+            tame.setTame(true, true);
             tame.setOwnerUUID(ownerUuid);
         }
         copyPrinceControlState(ent, this);
@@ -1171,10 +1176,10 @@ public class ThePrince extends TamableAnimal {
     public static Entity spawnCreature(Level level, String par1, double par2, double par4, double par6) {
         ResourceLocation res =
                 par1.contains(":")
-                        ? new ResourceLocation(par1)
-                        : new ResourceLocation(
+                        ? ResourceLocation.parse(par1)
+                        : ResourceLocation.fromNamespaceAndPath(
                                 "chaospersists", par1.toLowerCase(Locale.ROOT).replace(' ', '_'));
-        EntityType<?> type = ForgeRegistries.ENTITY_TYPES.getValue(res);
+        EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.get(res);
         if (type == null || !(level instanceof ServerLevel serverLevel)) {
             return null;
         }

@@ -14,9 +14,9 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderBrutalfly extends MobRenderer<Brutalfly, ModelBrutalfly> {
     private static final ResourceLocation TEXTURE =
-            new ResourceLocation("chaospersists", "textures/entity/brutalflytexture.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/brutalflytexture.png");
     private static final ResourceLocation OVERLAY =
-            new ResourceLocation("chaospersists", "textures/entity/brutalfly_overlay2.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/brutalfly_overlay2.png");
     private final float scale;
 
     public RenderBrutalfly(EntityRendererProvider.Context context, ModelBrutalfly model, float shadow, float scale) {
@@ -65,10 +65,7 @@ public class RenderBrutalfly extends MobRenderer<Brutalfly, ModelBrutalfly> {
                             vertexConsumer,
                             packedLight,
                             OverlayTexture.NO_OVERLAY,
-                            0.5f,
-                            0.5f,
-                            0.5f,
-                            1.0f);
+                            net.minecraft.util.FastColor.ARGB32.colorFromFloat(1.0f, 0.5f, 0.5f, 0.5f));
             poseStack.popPose();
         }
     }

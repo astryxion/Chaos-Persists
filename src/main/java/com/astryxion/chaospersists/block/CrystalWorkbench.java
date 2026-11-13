@@ -5,7 +5,6 @@ import com.astryxion.chaospersists.core.ChaosPersists;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Player;
@@ -18,7 +17,6 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraftforge.network.NetworkHooks;
 
 public class CrystalWorkbench extends CraftingTableBlock {
 
@@ -27,19 +25,17 @@ public class CrystalWorkbench extends CraftingTableBlock {
     }
 
     @Override
-    public InteractionResult use(
+    public InteractionResult useWithoutItem(
             BlockState state,
             Level level,
             BlockPos pos,
             Player player,
-            InteractionHand hand,
             BlockHitResult hit) {
         if (level.isClientSide) {
             return InteractionResult.SUCCESS;
         }
         if (player instanceof ServerPlayer serverPlayer) {
-            NetworkHooks.openScreen(
-                    serverPlayer,
+            serverPlayer.openMenu(
                     new SimpleMenuProvider(
                             (windowId, inventory, ignored) ->
                                     new ContainerCrystalWorkbench(windowId, inventory, level, pos),

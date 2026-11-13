@@ -21,7 +21,7 @@ public class CrystalGrass extends Block {
                 .sound(SoundType.GRASS)
                 .forceSolidOn()
                 .noOcclusion()
-                .isValidSpawn((state, level, pos, entityType) -> Blocks.GRASS.defaultBlockState().isValidSpawn(level, pos, entityType))
+                .isValidSpawn((state, level, pos, entityType) -> Blocks.SHORT_GRASS.defaultBlockState().isValidSpawn(level, pos, entityType))
                 .isSuffocating((state, level, pos) -> false)
                 .isViewBlocking((state, level, pos) -> false));
     }
@@ -49,7 +49,7 @@ public class CrystalGrass extends Block {
     }
 
     @Override
-    public boolean canSustainPlant(BlockState state, BlockGetter level, BlockPos pos, Direction direction, net.minecraftforge.common.IPlantable plantable) {
-        return true;
+    public net.neoforged.neoforge.common.util.TriState canSustainPlant(BlockState state, BlockGetter level, BlockPos pos, Direction direction, BlockState plant) {
+        return net.neoforged.neoforge.common.util.TriState.TRUE;
     }
 }

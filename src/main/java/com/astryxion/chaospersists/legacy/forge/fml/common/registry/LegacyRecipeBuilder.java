@@ -21,7 +21,7 @@ final class LegacyRecipeBuilder {
 
   private LegacyRecipeBuilder() {}
 
-  static Recipe<?> buildShaped(
+  static net.minecraft.world.item.crafting.RecipeHolder<?> buildShaped(
       ResourceLocation id, ResourceLocation group, ItemStack output, Object... recipe) {
     List<String> rows = new ArrayList<>();
     Map<Character, Ingredient> keys = new HashMap<>();
@@ -40,37 +40,21 @@ final class LegacyRecipeBuilder {
         i++;
       }
     }
-    int height = rows.size();
-    int width = 0;
-    for (String row : rows) {
-      width = Math.max(width, row.length());
-    }
-    NonNullList<Ingredient> ingredients =
-        NonNullList.withSize(width * height, Ingredient.EMPTY);
-    for (int y = 0; y < height; y++) {
-      String row = rows.get(y);
-      for (int x = 0; x < width; x++) {
-        char ch = x < row.length() ? row.charAt(x) : ' ';
-        if (ch != ' ') {
-          Ingredient ing = keys.get(ch);
-          if (ing != null) {
-            ingredients.set(y * width + x, ing);
-          }
-        }
-      }
-    }
-    return new ShapedRecipe(
-        id, group.getPath(), CraftingBookCategory.MISC, width, height, ingredients, output, false);
+    int width = rows.stream().mapToInt(String::length).max().orElseThrow();
+    var paddedRows = rows.stream().map(row -> row + " ".repeat(width - row.length())).toList();
+    var pattern = net.minecraft.world.item.crafting.ShapedRecipePattern.of(keys, paddedRows);
+    return new net.minecraft.world.item.crafting.RecipeHolder<>(id,
+        new ShapedRecipe(group.getPath(), CraftingBookCategory.MISC, pattern, output, false));
   }
 
-  static Recipe<?> buildShapeless(
+  static net.minecraft.world.item.crafting.RecipeHolder<?> buildShapeless(
       ResourceLocation id, ResourceLocation group, ItemStack output, Ingredient... ingredients) {
     NonNullList<Ingredient> list = NonNullList.create();
     for (Ingredient ingredient : ingredients) {
       list.add(ingredient);
     }
-    return new ShapelessRecipe(
-        id, group.getPath(), CraftingBookCategory.MISC, output, list);
+    return new net.minecraft.world.item.crafting.RecipeHolder<>(id,
+        new ShapelessRecipe(group.getPath(), CraftingBookCategory.MISC, output, list));
   }
 
   static Ingredient ingredientFrom(Object in) {

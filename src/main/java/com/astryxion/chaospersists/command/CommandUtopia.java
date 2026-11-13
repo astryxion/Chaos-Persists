@@ -44,7 +44,7 @@ public final class CommandUtopia {
             return 0;
         }
         UtopiaTeleporter teleporter = new UtopiaTeleporter(player.getX(), player.getZ());
-        player.changeDimension(world, teleporter);
+        player.changeDimension(teleporter.transition(player, world));
         player.displayClientMessage(
                 Component.literal("Teleported to Utopia.").withStyle(ChatFormatting.GREEN), true);
         return 1;

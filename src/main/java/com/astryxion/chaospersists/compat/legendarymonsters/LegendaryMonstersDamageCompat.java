@@ -1,5 +1,6 @@
 package com.astryxion.chaospersists.compat.legendarymonsters;
 
+import net.neoforged.fml.common.EventBusSubscriber;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.util.ChaosBosses;
 import net.minecraft.resources.ResourceKey;
@@ -11,11 +12,11 @@ import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraftforge.entity.PartEntity;
-import net.minecraftforge.event.entity.living.LivingHurtEvent;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.neoforge.entity.PartEntity;
+import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
+import net.neoforged.bus.api.EventPriority;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
 
 /**
  * Legendary Monsters puts laser / ghost / clouds / gravity / void / cut / impale in
@@ -23,7 +24,7 @@ import net.minecraftforge.fml.common.Mod;
  * {@code getArmorValue()}, so Obliterator melts Jeffery while Ignis flame strike does not.
  * Same 1.7.10 boss curve Cataclysm already uses.
  */
-@Mod.EventBusSubscriber(modid = ChaosPersists.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(modid = ChaosPersists.MODID, bus = EventBusSubscriber.Bus.GAME)
 public final class LegendaryMonstersDamageCompat {
 
     private static final float BOSS_WEAPON_DAMAGE_CAP = 40.0f;
@@ -31,7 +32,7 @@ public final class LegendaryMonstersDamageCompat {
     private LegendaryMonstersDamageCompat() {}
 
     @SubscribeEvent(priority = EventPriority.HIGH)
-    public static void onLivingHurt(LivingHurtEvent event) {
+    public static void onLivingHurt(LivingIncomingDamageEvent event) {
         if (!LegendaryMonstersBeamCompat.isPresent()
                 || event.isCanceled()
                 || event.getAmount() <= 0.0f) {

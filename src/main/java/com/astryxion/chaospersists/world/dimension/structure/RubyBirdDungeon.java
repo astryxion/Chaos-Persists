@@ -7,7 +7,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntityType;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -97,8 +97,8 @@ public class RubyBirdDungeon {
         BlockEntity spawnerEntity = level.getBlockEntity(spawnerPos);
         if (spawnerEntity instanceof SpawnerBlockEntity spawner) {
             EntityType<?> rubyBird =
-                    ForgeRegistries.ENTITY_TYPES.getValue(
-                            new ResourceLocation("chaospersists", "ruby_bird"));
+                    BuiltInRegistries.ENTITY_TYPE.get(
+                            ResourceLocation.fromNamespaceAndPath("chaospersists", "ruby_bird"));
             if (rubyBird != null) {
                 spawner.setEntityId(rubyBird, level.getRandom());
             }

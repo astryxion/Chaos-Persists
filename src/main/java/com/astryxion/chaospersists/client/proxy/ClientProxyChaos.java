@@ -35,7 +35,6 @@ import com.astryxion.chaospersists.block.QueenSpawnerBlock;
 import com.astryxion.chaospersists.item.CreeperRepellent;
 import com.astryxion.chaospersists.item.ItemSpawnEgg;
 import com.astryxion.chaospersists.core.ChaosPersists;
-import com.astryxion.chaospersists.core.ChaosSounds;
 import com.astryxion.chaospersists.util.MyBlockFlower;
 import net.minecraft.world.level.block.FlowerPotBlock;
 import com.astryxion.chaospersists.world.ore.OreBasicStone;
@@ -59,7 +58,7 @@ import net.minecraft.world.level.GrassColor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
-import net.minecraftforge.common.MinecraftForge;
+import net.neoforged.neoforge.common.NeoForge;
 
 public class ClientProxyChaos extends CommonProxyChaos {
 
@@ -210,12 +209,8 @@ public class ClientProxyChaos extends CommonProxyChaos {
 
     @Override
     public void registerRenderThings() {
-        MinecraftForge.EVENT_BUS.register(new GirlfriendOverlayGui(Minecraft.getInstance()));
+        NeoForge.EVENT_BUS.register(new GirlfriendOverlayGui(Minecraft.getInstance()));
         // Entity renderers: ChaosPersists.registerEntityRenderers (EntityRenderersEvent.RegisterRenderers)
-    }
-
-    public void registerSoundThings() {
-        MinecraftForge.EVENT_BUS.register(new ChaosSounds());
     }
 
     public void registerKeyboardInput() {
@@ -230,11 +225,6 @@ public class ClientProxyChaos extends CommonProxyChaos {
     @Override
     public void applyLocalMountControls(ICustomMoveController controller) {
         MountFlightClientEvents.applyTo(controller);
-    }
-
-    public void registerNetworkStuff() {
-        super.registerNetworkStuff();
-        MinecraftForge.EVENT_BUS.register(new MountFlightClientEvents());
     }
 
     public int setArmorPrefix(String string) {

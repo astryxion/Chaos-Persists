@@ -4,7 +4,7 @@ import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.entity.EntityThrownRock;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Position;
-import net.minecraft.core.BlockSource;
+import net.minecraft.core.dispenser.BlockSource;
 import net.minecraft.core.dispenser.DefaultDispenseItemBehavior;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -14,9 +14,9 @@ import net.minecraft.world.level.block.DispenserBlock;
 public final class MyDispenserBehaviorRock extends DefaultDispenseItemBehavior {
     @Override
     protected ItemStack execute(BlockSource source, ItemStack stack) {
-        Level level = source.getLevel();
+        Level level = source.level();
         Position position = DispenserBlock.getDispensePosition(source);
-        Direction direction = source.getBlockState().getValue(DispenserBlock.FACING);
+        Direction direction = source.state().getValue(DispenserBlock.FACING);
         EntityThrownRock projectile =
                 new EntityThrownRock(
                         ChaosPersists.ENTITY_TYPE_THROWN_ROCK.get(),

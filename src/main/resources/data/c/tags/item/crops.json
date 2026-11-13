@@ -1,0 +1,12 @@
+{
+  "replace": false,
+  "values": [
+    "#c:crops/tomato",
+    "#c:crops/lettuce",
+    "#c:crops/corn",
+    "#c:crops/radish",
+    "#c:crops/rice",
+    "#c:crops/strawberry",
+    "#c:crops/quinoa"
+  ]
+}

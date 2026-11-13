@@ -1,5 +1,7 @@
 package com.astryxion.chaospersists.compat.mutantmonsters;
 
+import net.neoforged.neoforge.event.tick.EntityTickEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.entity.QueenHead;
 import com.astryxion.chaospersists.entity.TheQueen;
@@ -14,12 +16,12 @@ import net.minecraft.world.entity.Entity.RemovalReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.AABB;
-import net.minecraftforge.event.entity.living.LivingEvent;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.event.entity.living.LivingEvent;
+import net.neoforged.bus.api.EventPriority;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModList;
+import net.neoforged.fml.common.Mod;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 /**
  * Mutant Zombie {@code die()} never calls {@code super.die()}. It stays at 0 HP and
@@ -28,7 +30,7 @@ import net.minecraftforge.registries.ForgeRegistries;
  * {@code isAlive()} is false. This compat force-removes a downed Mutant Zombie when the Queen is
  * involved.
  */
-@Mod.EventBusSubscriber(modid = ChaosPersists.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(modid = ChaosPersists.MODID, bus = EventBusSubscriber.Bus.GAME)
 public final class MutantMonstersExecuteCompat {
 
     public static final String MUTANT_MONSTERS_MODID = "mutantmonsters";
@@ -101,8 +103,9 @@ public final class MutantMonstersExecuteCompat {
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
-    public static void onLivingTick(LivingEvent.LivingTickEvent event) {
-        LivingEntity living = event.getEntity();
+    public static void onLivingTick(EntityTickEvent.Post event) {
+        if (!(event.getEntity() instanceof net.minecraft.world.entity.LivingEntity)) return;
+        LivingEntity living = (LivingEntity) event.getEntity();
         if (living.level().isClientSide || living.isRemoved() || !isResurrectionMob(living)) {
             return;
         }
@@ -110,10 +113,7 @@ public final class MutantMonstersExecuteCompat {
             return;
         }
         forceExecute(living);
-        if (event.isCancelable()) {
-            event.setCanceled(true);
-        }
-    }
+}
 
     private static boolean isQueenInvolved(LivingEntity living) {
         if (isQueenRelated(living.getLastHurtByMob()) || isQueenRelated(living.getKillCredit())) {
@@ -133,7 +133,7 @@ public final class MutantMonstersExecuteCompat {
 
     @Nullable
     private static ResourceLocation entityId(Entity entity) {
-        ResourceLocation id = ForgeRegistries.ENTITY_TYPES.getKey(entity.getType());
+        ResourceLocation id = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
         return id != null ? id : EntityType.getKey(entity.getType());
     }
 

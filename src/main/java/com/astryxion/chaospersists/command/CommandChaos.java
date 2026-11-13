@@ -44,7 +44,7 @@ public final class CommandChaos {
             return 0;
         }
         ChaosTeleporter teleporter = new ChaosTeleporter(player.getX(), player.getZ());
-        player.changeDimension(world, teleporter);
+        player.changeDimension(teleporter.transition(player, world));
         player.displayClientMessage(
                 Component.literal("Teleported to Chaos.").withStyle(ChatFormatting.GREEN), true);
         return 1;

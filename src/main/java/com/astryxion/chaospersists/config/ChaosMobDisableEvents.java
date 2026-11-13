@@ -1,5 +1,7 @@
 package com.astryxion.chaospersists.config;
 
+import net.neoforged.neoforge.event.entity.living.FinalizeSpawnEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.mojang.brigadier.ParseResults;
 import net.minecraft.commands.CommandSourceStack;
@@ -7,19 +9,19 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Mob;
-import net.minecraftforge.event.CommandEvent;
-import net.minecraftforge.event.entity.living.MobSpawnEvent;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.neoforge.event.CommandEvent;
+import net.neoforged.neoforge.event.entity.living.MobSpawnEvent;
+import net.neoforged.bus.api.EventPriority;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
 
 /** Per-mob Enable bans spawn/summon/give. AllMobsDisable only cancels natural spawns. */
-@Mod.EventBusSubscriber(modid = ChaosPersists.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(modid = ChaosPersists.MODID, bus = EventBusSubscriber.Bus.GAME)
 public final class ChaosMobDisableEvents {
     private ChaosMobDisableEvents() {}
 
     @SubscribeEvent
-    public static void onFinalizeSpawn(MobSpawnEvent.FinalizeSpawn event) {
+    public static void onFinalizeSpawn(FinalizeSpawnEvent event) {
         if (event == null || event.getEntity() == null) {
             return;
         }
@@ -95,7 +97,7 @@ public final class ChaosMobDisableEvents {
         if (ChaosPersists.MODID.equals(id.getNamespace())) {
             return null;
         }
-        return ChaosMobAccess.disabledGiveMessage(new ResourceLocation(ChaosPersists.MODID, id.getPath()));
+        return ChaosMobAccess.disabledGiveMessage(ResourceLocation.fromNamespaceAndPath(ChaosPersists.MODID, id.getPath()));
     }
 
     private static Component disabledSummon(ResourceLocation id) {
@@ -106,7 +108,7 @@ public final class ChaosMobDisableEvents {
         if (ChaosPersists.MODID.equals(id.getNamespace())) {
             return null;
         }
-        return ChaosMobAccess.disabledSummonMessage(new ResourceLocation(ChaosPersists.MODID, id.getPath()));
+        return ChaosMobAccess.disabledSummonMessage(ResourceLocation.fromNamespaceAndPath(ChaosPersists.MODID, id.getPath()));
     }
 
     private static String commandName(String token) {

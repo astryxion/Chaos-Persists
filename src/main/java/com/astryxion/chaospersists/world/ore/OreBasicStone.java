@@ -21,7 +21,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.MapColor;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 public class OreBasicStone extends Block {
 
@@ -139,22 +139,22 @@ public class OreBasicStone extends Block {
         }
         switch (legacyName) {
             case "Rat":
-                return new ResourceLocation("chaospersists", "rat");
+                return ResourceLocation.fromNamespaceAndPath("chaospersists", "rat");
             case "Fairy":
-                return new ResourceLocation("chaospersists", "fairy");
+                return ResourceLocation.fromNamespaceAndPath("chaospersists", "fairy");
             case "Red Ant":
-                return new ResourceLocation("chaospersists", "red_ant");
+                return ResourceLocation.fromNamespaceAndPath("chaospersists", "red_ant");
             case "Termite":
-                return new ResourceLocation("chaospersists", "termite");
+                return ResourceLocation.fromNamespaceAndPath("chaospersists", "termite");
             default:
-                return new ResourceLocation(
+                return ResourceLocation.fromNamespaceAndPath(
                         "chaospersists", legacyName.toLowerCase(java.util.Locale.ROOT).replace(' ', '_'));
         }
     }
 
     public static Entity spawnCreature(Level world, int id, String name, double x, double y, double z) {
         ResourceLocation entityId = legacySpawnNameToRegistry(name);
-        EntityType<?> type = entityId != null ? ForgeRegistries.ENTITY_TYPES.getValue(entityId) : null;
+        EntityType<?> type = entityId != null ? BuiltInRegistries.ENTITY_TYPE.get(entityId) : null;
         if (type == null || !(world instanceof ServerLevel serverLevel)) {
             return null;
         }

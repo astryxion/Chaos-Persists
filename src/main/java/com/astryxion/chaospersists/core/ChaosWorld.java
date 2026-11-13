@@ -2,7 +2,7 @@
  * Decompiled with CFR 0_125.
  * 
  * Could not load the following classes:
- *  net.minecraftforge.fml.common.IWorldGenerator
+ *  net.neoforged.fml.common.IWorldGenerator
  *  com.astryxion.chaospersists.BasiliskMaze
  *  com.astryxion.chaospersists.GenericDungeon
  *  com.astryxion.chaospersists.ItemAppleSeed
@@ -83,13 +83,14 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.level.ChunkEvent;
-import net.minecraftforge.event.level.LevelEvent;
-import net.minecraftforge.event.server.ServerStartedEvent;
-import net.minecraftforge.event.server.ServerStoppingEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.neoforged.neoforge.event.level.ChunkEvent;
+import net.neoforged.neoforge.event.level.LevelEvent;
+import net.neoforged.neoforge.event.server.ServerStartedEvent;
+import net.neoforged.neoforge.event.server.ServerStoppingEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.minecraft.core.registries.BuiltInRegistries;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -758,22 +759,22 @@ public class ChaosWorld {
      * Chunks that missed decoration are re-queued while a player is in a mod dimension.
      */
     @SubscribeEvent
-    public void onPlayerTickCatchUpDeferredPopulate(TickEvent.PlayerTickEvent event) {
-        if (event.phase != TickEvent.Phase.END || event.player.level().isClientSide()) {
+    public void onPlayerTickCatchUpDeferredPopulate(PlayerTickEvent.Post event) {
+        if (event.getEntity().level().isClientSide()) {
             return;
         }
-        if (!(event.player.level() instanceof ServerLevel level)) {
+        if (!(event.getEntity().level() instanceof ServerLevel level)) {
             return;
         }
         ResourceKey<Level> dimension = level.dimension();
         if (!isDeferredPopulateDimension(dimension)) {
             return;
         }
-        if (event.player.tickCount % 20 != 0) {
+        if (event.getEntity().tickCount % 20 != 0) {
             return;
         }
-        int centerX = event.player.chunkPosition().x;
-        int centerZ = event.player.chunkPosition().z;
+        int centerX = event.getEntity().chunkPosition().x;
+        int centerZ = event.getEntity().chunkPosition().z;
         for (int dx = -NEAR_PLAYER_CHUNK_RADIUS; dx <= NEAR_PLAYER_CHUNK_RADIUS; ++dx) {
             for (int dz = -NEAR_PLAYER_CHUNK_RADIUS; dz <= NEAR_PLAYER_CHUNK_RADIUS; ++dz) {
                 int chunkX = centerX + dx;
@@ -838,10 +839,7 @@ public class ChaosWorld {
     }
 
     @SubscribeEvent
-    public void onServerTick(TickEvent.ServerTickEvent event) {
-        if (event.phase != TickEvent.Phase.END) {
-            return;
-        }
+    public void onServerTick(ServerTickEvent.Post event) {
         if (CHUNK_GEN_QUEUE.isEmpty()
                 && MOD_NEAR_CHUNK_GEN_QUEUE.isEmpty()
                 && IDLE_CHUNK_GEN_QUEUE.isEmpty()) {
@@ -873,8 +871,9 @@ public class ChaosWorld {
             }
 
             ResourceKey<Level> dimension = pending.dimension;
+            // Always re-check proximity: MOD_NEAR entries can outlive the player leaving the dim.
+            // Decorating/spawning into an empty unloading dimension corrupts entity chunk unload sets.
             if (isDeferredPopulateDimension(dimension)
-                    && !fromNear
                     && !this.isChunkNearPlayer(level, pending.chunkX, pending.chunkZ)) {
                 IDLE_CHUNK_GEN_QUEUE.add(pending);
                 ++parkedIdle;
@@ -2971,10 +2970,10 @@ public class ChaosWorld {
         if (blockEntity instanceof net.minecraft.world.level.block.entity.SpawnerBlockEntity spawner) {
             net.minecraft.resources.ResourceLocation id =
                     SpawnerFixHelper.normalizeSpawnerEntityId(
-                            new net.minecraft.resources.ResourceLocation(
+                            net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(
                                     "chaospersists", mobPath));
             net.minecraft.world.entity.EntityType<?> type =
-                    net.minecraftforge.registries.ForgeRegistries.ENTITY_TYPES.getValue(id);
+                    net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.get(id);
             if (type != null) {
                 spawner.setEntityId(type, level.getRandom());
             }
@@ -3135,7 +3134,7 @@ public class ChaosWorld {
                 --startY;
             }
             this.placeChaosPlantCluster(
-                    level, random, posX, startY + 1, posZ, Blocks.GRASS.defaultBlockState(), 128);
+                    level, random, posX, startY + 1, posZ, Blocks.SHORT_GRASS.defaultBlockState(), 128);
         }
     }
 
@@ -3527,7 +3526,7 @@ public class ChaosWorld {
                 }
                 net.minecraft.core.BlockPos below = new net.minecraft.core.BlockPos(posX, posY - 1, posZ);
                 Block bid = level.getBlockState(below).getBlock();
-                if (bid != Blocks.GRASS && bid != Blocks.SAND && bid != crystalGrass) {
+                if (bid != Blocks.SHORT_GRASS && bid != Blocks.SAND && bid != crystalGrass) {
                     continue;
                 }
                 this.spawnCreature(level, "Rock", (double) posX, (double) posY, (double) posZ);
@@ -4514,13 +4513,13 @@ public class ChaosWorld {
         net.minecraft.resources.ResourceLocation requested;
         if (par1 != null && par1.contains(":")) {
             String[] parts = par1.split(":", 2);
-            requested = new net.minecraft.resources.ResourceLocation(parts[0], parts[1]);
+            requested = net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(parts[0], parts[1]);
         } else {
             String normalizedPath = (par1 == null ? "" : par1.trim().toLowerCase(Locale.ROOT).replace(' ', '_'));
-            requested = new net.minecraft.resources.ResourceLocation("chaospersists", normalizedPath);
+            requested = net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("chaospersists", normalizedPath);
         }
         requested = SpawnerFixHelper.normalizeEntityLookupId(requested);
-        EntityType<?> entityType = ForgeRegistries.ENTITY_TYPES.getValue(requested);
+        EntityType<?> entityType = BuiltInRegistries.ENTITY_TYPE.get(requested);
         if (entityType != null) {
             var8 = entityType.create(level);
         }

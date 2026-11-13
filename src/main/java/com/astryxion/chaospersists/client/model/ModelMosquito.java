@@ -72,14 +72,11 @@ public class ModelMosquito extends EntityModel<EntityMosquito> {
             VertexConsumer buffer,
             int packedLight,
             int packedOverlay,
-            float red,
-            float green,
-            float blue,
-            float alpha) {
-        this.body.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.leftwing1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.rightwing1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.leftwing2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.rightwing2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+            int color) {
+        this.body.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.leftwing1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.rightwing1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.leftwing2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.rightwing2.render(poseStack, buffer, packedLight, packedOverlay, color);
     }
 }

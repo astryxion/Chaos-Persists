@@ -2,8 +2,8 @@
  * Decompiled with CFR 0_125.
  * 
  * Could not load the following classes:
- *  net.minecraftforge.fml.relauncher.Side
- *  net.minecraftforge.fml.relauncher.SideOnly
+ *  net.neoforged.fml.relauncher.Side
+ *  net.neoforged.fml.relauncher.SideOnly
  *  com.astryxion.chaospersists.BerthaHit
  *  com.astryxion.chaospersists.Boyfriend
  *  com.astryxion.chaospersists.Girlfriend
@@ -25,6 +25,7 @@
  */
 package com.astryxion.chaospersists.item;
 
+import net.neoforged.fml.common.EventBusSubscriber;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.entity.BerthaHit;
 import com.astryxion.chaospersists.entity.Boyfriend;
@@ -42,35 +43,35 @@ import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import java.util.Map;
 import java.util.WeakHashMap;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.neoforged.bus.api.EventPriority;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
 import net.minecraft.world.InteractionHand;
 
-@Mod.EventBusSubscriber(modid = ChaosPersists.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(modid = ChaosPersists.MODID, bus = EventBusSubscriber.Bus.GAME)
 public class Slice extends SwordItem {
     private static final Map<Player, Integer> SUPPRESS_INTERACT_SWING_TICK = new WeakHashMap<>();
 
     public Slice(Tier par2EnumToolMaterial) {
-        super(par2EnumToolMaterial, 3, -2.4f, new Properties().stacksTo(1).durability(2600));
+        super(par2EnumToolMaterial, new Properties().stacksTo(1).durability(2600).attributes(SwordItem.createAttributes(par2EnumToolMaterial, 3, -2.4f)));
     }
 
     @Override
     public void onCraftedBy(ItemStack par1ItemStack, Level par2World, Player par3EntityPlayer) {
-        ensureEnchantments(par1ItemStack);
+        ensureEnchantments(par1ItemStack, par2World);
     }
 
-    private void ensureEnchantments(ItemStack stack) {
-        if (EnchantmentHelper.getItemEnchantmentLevel(Enchantments.SHARPNESS, stack) <= 0) {
-            stack.enchant(Enchantments.SHARPNESS, 5);
-            stack.enchant(Enchantments.BANE_OF_ARTHROPODS, 1);
+    private void ensureEnchantments(ItemStack stack, Level level) {
+        if (com.astryxion.chaospersists.util.ChaosEnchantments.level(Enchantments.SHARPNESS, stack) <= 0) {
+            stack.enchant(level.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.SHARPNESS), 5);
+            stack.enchant(level.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.BANE_OF_ARTHROPODS), 1);
         }
     }
 
     @Override
     public void inventoryTick(ItemStack stack, Level par2World, Entity par3Entity, int par4, boolean par5) {
-        ensureEnchantments(stack);
+        ensureEnchantments(stack, par2World);
     }
 
     @Override
@@ -87,7 +88,7 @@ public class Slice extends SwordItem {
             Integer suppressTick = SUPPRESS_INTERACT_SWING_TICK.get(player);
             if (suppressTick == null || suppressTick != player.tickCount) {
                 InteractionHand hand = InteractionHand.MAIN_HAND;
-                if (ItemStack.isSameItemSameTags(stack, player.getOffhandItem())) {
+                if (ItemStack.isSameItemSameComponents(stack, player.getOffhandItem())) {
                     hand = InteractionHand.OFF_HAND;
                 }
                 spawnProjectile(player, stack, hand);
@@ -146,7 +147,7 @@ public class Slice extends SwordItem {
             player.level().addFreshEntity(lb);
         }
         EquipmentSlot slot = hand == InteractionHand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND;
-        stack.hurtAndBreak(1, player, e -> e.broadcastBreakEvent(slot));
+        stack.hurtAndBreak(1, player, slot);
     }
 
     public String getMaterialName() {
@@ -155,12 +156,12 @@ public class Slice extends SwordItem {
 
     @Override
     public boolean hurtEnemy(ItemStack par1ItemStack, LivingEntity par2EntityLiving, LivingEntity par3EntityLiving) {
-        par1ItemStack.hurtAndBreak(1, par3EntityLiving, e -> e.broadcastBreakEvent(EquipmentSlot.MAINHAND));
+        par1ItemStack.hurtAndBreak(1, par3EntityLiving, EquipmentSlot.MAINHAND);
         return true;
     }
 
     @Override
-    public int getUseDuration(ItemStack par1ItemStack) {
+    public int getUseDuration(ItemStack par1ItemStack, net.minecraft.world.entity.LivingEntity user) {
         return 9000;
     }
 }

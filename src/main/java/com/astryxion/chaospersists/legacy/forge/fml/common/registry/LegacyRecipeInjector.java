@@ -13,30 +13,30 @@ final class LegacyRecipeInjector {
 
   private LegacyRecipeInjector() {}
 
-  static void inject(RecipeManager manager, List<Recipe<?>> recipes) {
+  static void inject(RecipeManager manager, List<net.minecraft.world.item.crafting.RecipeHolder<?>> recipes) {
     if (manager == null || recipes == null || recipes.isEmpty()) {
       return;
     }
-    Map<ResourceLocation, Recipe<?>> byId = new LinkedHashMap<>();
-    for (Recipe<?> existing : manager.getRecipes()) {
-      if (existing != null && existing.getId() != null) {
-        byId.put(existing.getId(), existing);
+    Map<ResourceLocation, net.minecraft.world.item.crafting.RecipeHolder<?>> byId = new LinkedHashMap<>();
+    for (net.minecraft.world.item.crafting.RecipeHolder<?> existing : manager.getRecipes()) {
+      if (existing != null && existing.id() != null) {
+        byId.put(existing.id(), existing);
       }
     }
-    for (Recipe<?> recipe : recipes) {
-      if (recipe != null && recipe.getId() != null) {
+    for (net.minecraft.world.item.crafting.RecipeHolder<?> recipe : recipes) {
+      if (recipe != null && recipe.id() != null) {
         // Datapack/JSON recipes win. Java GameRegistry entries are defaults only.
-        byId.putIfAbsent(recipe.getId(), recipe);
+        byId.putIfAbsent(recipe.id(), recipe);
       }
     }
     manager.replaceRecipes(new ArrayList<>(byId.values()));
   }
 
-  static List<Recipe<?>> drainPending(
+  static List<net.minecraft.world.item.crafting.RecipeHolder<?>> drainPending(
       List<GameRegistry.RecipeEntry> entries,
       List<GameRegistry.SmeltEntry> smelts,
       List<GameRegistry.SmeltEntry> smoking) {
-    List<Recipe<?>> out = new ArrayList<>();
+    List<net.minecraft.world.item.crafting.RecipeHolder<?>> out = new ArrayList<>();
     for (GameRegistry.RecipeEntry entry : entries) {
       out.add(entry.build());
     }

@@ -16,29 +16,29 @@ import org.joml.Matrix4f;
 
 public class RenderThrownRock extends EntityRenderer<EntityThrownRock> {
     private static final ResourceLocation TEXTURE1 =
-            new ResourceLocation("chaospersists", "textures/item/rocksmall.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/item/rocksmall.png");
     private static final ResourceLocation TEXTURE2 =
-            new ResourceLocation("chaospersists", "textures/item/rock.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/item/rock.png");
     private static final ResourceLocation TEXTURE3 =
-            new ResourceLocation("chaospersists", "textures/item/rockred.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/item/rockred.png");
     private static final ResourceLocation TEXTURE4 =
-            new ResourceLocation("chaospersists", "textures/item/rockgreen.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/item/rockgreen.png");
     private static final ResourceLocation TEXTURE5 =
-            new ResourceLocation("chaospersists", "textures/item/rockblue.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/item/rockblue.png");
     private static final ResourceLocation TEXTURE6 =
-            new ResourceLocation("chaospersists", "textures/item/rockpurple.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/item/rockpurple.png");
     private static final ResourceLocation TEXTURE7 =
-            new ResourceLocation("chaospersists", "textures/item/rockspikey.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/item/rockspikey.png");
     private static final ResourceLocation TEXTURE8 =
-            new ResourceLocation("chaospersists", "textures/item/rocktnt.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/item/rocktnt.png");
     private static final ResourceLocation TEXTURE9 =
-            new ResourceLocation("chaospersists", "textures/item/rockcrystalred.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/item/rockcrystalred.png");
     private static final ResourceLocation TEXTURE10 =
-            new ResourceLocation("chaospersists", "textures/item/rockcrystalgreen.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/item/rockcrystalgreen.png");
     private static final ResourceLocation TEXTURE11 =
-            new ResourceLocation("chaospersists", "textures/item/rockcrystalblue.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/item/rockcrystalblue.png");
     private static final ResourceLocation TEXTURE12 =
-            new ResourceLocation("chaospersists", "textures/item/rockcrystaltnt.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/item/rockcrystaltnt.png");
 
     public RenderThrownRock(EntityRendererProvider.Context context) {
         super(context);
@@ -74,35 +74,34 @@ public class RenderThrownRock extends EntityRenderer<EntityThrownRock> {
         float hy = 0.25f;
         PoseStack.Pose pose = poseStack.last();
         Matrix4f matrix = pose.pose();
-        Matrix3f normal = pose.normal();
-        buffer.vertex(matrix, 0.0f - hx, 0.0f - hy, 0.0f)
-                .color(255, 255, 255, 255)
-                .uv(u0, v1)
-                .overlayCoords(OverlayTexture.NO_OVERLAY)
-                .uv2(packedLight)
-                .normal(normal, 0.0f, 1.0f, 0.0f)
-                .endVertex();
-        buffer.vertex(matrix, size - hx, 0.0f - hy, 0.0f)
-                .color(255, 255, 255, 255)
-                .uv(u1, v1)
-                .overlayCoords(OverlayTexture.NO_OVERLAY)
-                .uv2(packedLight)
-                .normal(normal, 0.0f, 1.0f, 0.0f)
-                .endVertex();
-        buffer.vertex(matrix, size - hx, size - hy, 0.0f)
-                .color(255, 255, 255, 255)
-                .uv(u1, v0)
-                .overlayCoords(OverlayTexture.NO_OVERLAY)
-                .uv2(packedLight)
-                .normal(normal, 0.0f, 1.0f, 0.0f)
-                .endVertex();
-        buffer.vertex(matrix, 0.0f - hx, size - hy, 0.0f)
-                .color(255, 255, 255, 255)
-                .uv(u0, v0)
-                .overlayCoords(OverlayTexture.NO_OVERLAY)
-                .uv2(packedLight)
-                .normal(normal, 0.0f, 1.0f, 0.0f)
-                .endVertex();
+        buffer.addVertex(matrix, 0.0f - hx, 0.0f - hy, 0.0f)
+                .setColor(255, 255, 255, 255)
+                .setUv(u0, v1)
+                .setOverlay(OverlayTexture.NO_OVERLAY)
+                .setLight(packedLight)
+                .setNormal(pose, 0.0f, 1.0f, 0.0f)
+                ;
+        buffer.addVertex(matrix, size - hx, 0.0f - hy, 0.0f)
+                .setColor(255, 255, 255, 255)
+                .setUv(u1, v1)
+                .setOverlay(OverlayTexture.NO_OVERLAY)
+                .setLight(packedLight)
+                .setNormal(pose, 0.0f, 1.0f, 0.0f)
+                ;
+        buffer.addVertex(matrix, size - hx, size - hy, 0.0f)
+                .setColor(255, 255, 255, 255)
+                .setUv(u1, v0)
+                .setOverlay(OverlayTexture.NO_OVERLAY)
+                .setLight(packedLight)
+                .setNormal(pose, 0.0f, 1.0f, 0.0f)
+                ;
+        buffer.addVertex(matrix, 0.0f - hx, size - hy, 0.0f)
+                .setColor(255, 255, 255, 255)
+                .setUv(u0, v0)
+                .setOverlay(OverlayTexture.NO_OVERLAY)
+                .setLight(packedLight)
+                .setNormal(pose, 0.0f, 1.0f, 0.0f)
+                ;
     }
 
     @Override

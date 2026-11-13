@@ -1,5 +1,6 @@
 package com.astryxion.chaospersists.compat.torchesbecomesunlight;
 
+import net.neoforged.fml.common.EventBusSubscriber;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.util.ChaosBossTrueDamage;
 import com.astryxion.chaospersists.util.ChaosBosses;
@@ -11,12 +12,12 @@ import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraftforge.entity.PartEntity;
-import net.minecraftforge.event.entity.living.LivingHurtEvent;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.neoforge.entity.PartEntity;
+import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
+import net.neoforged.bus.api.EventPriority;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModList;
+import net.neoforged.fml.common.Mod;
 
 /**
  * Gathering Torches Become Sunlight Gun Knight Patriot phase two slams with
@@ -25,7 +26,7 @@ import net.minecraftforge.fml.common.Mod;
  * {@code LivingEntity.hurt}. That skips {@code Godzilla.hurt}'s 750 / 120 caps.
  * Same 1.7.10 boss curve Cataclysm / EEEAB already use.
  */
-@Mod.EventBusSubscriber(modid = ChaosPersists.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(modid = ChaosPersists.MODID, bus = EventBusSubscriber.Bus.GAME)
 public final class TorchesBecomeSunlightDamageCompat {
 
     public static final String TORCHES_BECOME_SUNLIGHT_MODID = "torchesbecomesunlight";
@@ -45,7 +46,7 @@ public final class TorchesBecomeSunlightDamageCompat {
     }
 
     @SubscribeEvent(priority = EventPriority.HIGH)
-    public static void onLivingHurt(LivingHurtEvent event) {
+    public static void onLivingHurt(LivingIncomingDamageEvent event) {
         if (!isPresent() || event.isCanceled() || event.getAmount() <= 0.0f) {
             return;
         }

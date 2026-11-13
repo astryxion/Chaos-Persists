@@ -1,0 +1,10 @@
+{
+  "type": "neoforge:add_spawns",
+  "spawners": {
+    "type": "chaospersists:leaf_monster",
+    "weight": 35,
+    "minCount": 2,
+    "maxCount": 4
+  },
+  "biomes": "chaospersists:danger_dimension"
+}

@@ -77,10 +77,9 @@ public class BetterFireball extends AbstractHurtingProjectile implements ItemSup
             this.discard();
             return;
         }
-        // Vanilla AbstractHurtingProjectile leaves unloaded / non-ticking chunks; also drop if
-        // shooter is gone. hasChunkAt alone is not enough (simulation-distance freeze).
+        // hasChunkAt alone is not enough (simulation-distance freeze).
         if (!this.level().isClientSide) {
-            if (this.shootingEntity != null && this.shootingEntity.isRemoved()) {
+            if (this.shootingEntity != null && !this.shootingEntity.isAlive()) {
                 this.discard();
                 return;
             }
@@ -88,7 +87,7 @@ public class BetterFireball extends AbstractHurtingProjectile implements ItemSup
                 return;
             }
         }
-        this.setSecondsOnFire(1);
+        this.igniteForSeconds(1);
         ++this.ticksInAir;
         Vec3 from = new Vec3(this.getX(), this.getY(), this.getZ());
         Vec3 to = from.add(this.getDeltaMovement());
@@ -221,10 +220,10 @@ public class BetterFireball extends AbstractHurtingProjectile implements ItemSup
             }
             if (!this.small) {
                 hit.hurt(this.damageSources().mobProjectile(this, this.shootingEntity), 10.0f);
-                hit.setSecondsOnFire(5);
+                hit.igniteForSeconds(5);
             } else {
                 hit.hurt(this.damageSources().mobProjectile(this, this.shootingEntity), 5.0f);
-                hit.setSecondsOnFire(5);
+                hit.igniteForSeconds(5);
             }
             if (hit instanceof LivingEntity livingHit) {
                 MutantMonstersExecuteCompat.forceExecuteIfDowned(livingHit);

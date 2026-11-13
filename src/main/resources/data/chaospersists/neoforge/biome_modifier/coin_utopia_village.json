@@ -1,0 +1,13 @@
+{
+  "type": "neoforge:add_spawns",
+  "spawners": {
+    "type": "chaospersists:coin",
+    "weight": 2,
+    "minCount": 1,
+    "maxCount": 1
+  },
+  "biomes": [
+    "chaospersists:utopia",
+    "chaospersists:village_dimension"
+  ]
+}

@@ -100,7 +100,7 @@ public class ModelGiantRobot extends EntityModel<GiantRobot> {
     }
 
     @Override
-    public void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
+    public void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, int color) {
         GiantRobot e = this.animEntity;
         if (e == null) {
             return;
@@ -124,7 +124,7 @@ public class ModelGiantRobot extends EntityModel<GiantRobot> {
         this.Hip.y = this.hipy + newangle * 4.0f;
         this.Hip.xRot = r.hipxdisplayangle;
         this.Hip.yRot = (float)((double)r.hipydisplayangle + 1.5707963267948966);
-        this.Hip.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Hip.render(poseStack, buffer, packedLight, packedOverlay, color);
         this.Thigh2.xRot = this.Thigh3.xRot = r.thighdisplayangle[0];
         this.Thigh.xRot = this.Thigh3.xRot;
         this.Thigh2.y = this.Thigh3.y = this.Hip.y - (float)Math.sin(this.Hip.xRot) * 13.0f;
@@ -133,14 +133,14 @@ public class ModelGiantRobot extends EntityModel<GiantRobot> {
         this.Thigh.z = this.Thigh3.z;
         this.Thigh2.x = this.Thigh3.x = this.Hip.x + (float)Math.cos(this.Hip.xRot) * (float)Math.sin(this.Hip.yRot) * 13.0f;
         this.Thigh.x = this.Thigh3.x;
-        this.Thigh.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Thigh2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Thigh3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Thigh.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Thigh2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Thigh3.render(poseStack, buffer, packedLight, packedOverlay, color);
         this.Shin.xRot = r.shindisplayangle[0];
         this.Shin.y = this.Thigh.y + (float)Math.cos(this.Thigh.xRot) * 40.0f;
         this.Shin.z = this.Thigh.z + (float)Math.sin(this.Thigh.xRot) * 40.0f;
         this.Shin.x = this.Thigh.x;
-        this.Shin.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Shin.render(poseStack, buffer, packedLight, packedOverlay, color);
         this.Foot2.xRot = this.Foot3.xRot = r.shindisplayangle[0];
         this.Foot1.xRot = this.Foot3.xRot;
         this.Foot2.y = this.Foot3.y = this.Shin.y;
@@ -149,9 +149,9 @@ public class ModelGiantRobot extends EntityModel<GiantRobot> {
         this.Foot1.z = this.Foot3.z;
         this.Foot2.x = this.Foot3.x = this.Shin.x;
         this.Foot1.x = this.Foot3.x;
-        this.Foot1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Foot2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Foot3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Foot1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Foot2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Foot3.render(poseStack, buffer, packedLight, packedOverlay, color);
         this.Thigh2.xRot = this.Thigh3.xRot = r.thighdisplayangle[1];
         this.Thigh.xRot = this.Thigh3.xRot;
         this.Thigh2.y = this.Thigh3.y = this.Hip.y + (float)Math.sin(this.Hip.xRot) * 13.0f;
@@ -160,14 +160,14 @@ public class ModelGiantRobot extends EntityModel<GiantRobot> {
         this.Thigh.z = this.Thigh3.z;
         this.Thigh2.x = this.Thigh3.x = this.Hip.x - (float)Math.cos(this.Hip.xRot) * (float)Math.sin(this.Hip.yRot) * 13.0f;
         this.Thigh.x = this.Thigh3.x;
-        this.Thigh.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Thigh2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Thigh3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Thigh.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Thigh2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Thigh3.render(poseStack, buffer, packedLight, packedOverlay, color);
         this.Shin.xRot = r.shindisplayangle[1];
         this.Shin.y = this.Thigh.y + (float)Math.cos(this.Thigh.xRot) * 40.0f;
         this.Shin.z = this.Thigh.z + (float)Math.sin(this.Thigh.xRot) * 40.0f;
         this.Shin.x = this.Thigh.x;
-        this.Shin.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Shin.render(poseStack, buffer, packedLight, packedOverlay, color);
         this.Foot2.xRot = this.Foot3.xRot = r.shindisplayangle[1];
         this.Foot1.xRot = this.Foot3.xRot;
         this.Foot2.y = this.Foot3.y = this.Shin.y;
@@ -176,9 +176,9 @@ public class ModelGiantRobot extends EntityModel<GiantRobot> {
         this.Foot1.z = this.Foot3.z;
         this.Foot2.x = this.Foot3.x = this.Shin.x;
         this.Foot1.x = this.Foot3.x;
-        this.Foot1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Foot2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Foot3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Foot1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Foot2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Foot3.render(poseStack, buffer, packedLight, packedOverlay, color);
         float shoulderangle = - r.hipydisplayangle;
         float a1angle = a2angle = r.thighdisplayangle[1];
         float b1angle = b2angle = r.thighdisplayangle[0];
@@ -199,37 +199,37 @@ public class ModelGiantRobot extends EntityModel<GiantRobot> {
         this.Arm1.x = this.Arm2.x = this.Hip.x + 26.0f;
         this.Arm1.z = this.Arm2.z = this.Shoulders.z - (float)Math.sin(this.Shoulders.yRot) * 26.0f;
         this.Arm1.xRot = this.Arm2.xRot = a1angle;
-        this.Arm1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Arm2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Arm1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Arm2.render(poseStack, buffer, packedLight, packedOverlay, color);
         this.Arm3.xRot = this.Knuckles.xRot = (float)((double)a2angle - 0.19634954084936207);
         this.Arm3.y = this.Knuckles.y = this.Arm1.y + (float)Math.cos(this.Arm1.xRot) * 41.0f;
         this.Arm3.z = this.Knuckles.z = this.Arm1.z + (float)Math.sin(this.Arm1.xRot) * 41.0f;
         this.Arm3.x = this.Knuckles.x = this.Arm1.x;
-        this.Arm3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Knuckles.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Arm3.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Knuckles.render(poseStack, buffer, packedLight, packedOverlay, color);
         this.Arm1.y = this.Arm2.y = this.Hip.y - 60.0f;
         this.Arm1.x = this.Arm2.x = this.Hip.x - 26.0f;
         this.Arm1.z = this.Arm2.z = this.Shoulders.z + (float)Math.sin(this.Shoulders.yRot) * 26.0f;
         this.Arm1.xRot = this.Arm2.xRot = b1angle;
-        this.Arm1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Arm2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Arm1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Arm2.render(poseStack, buffer, packedLight, packedOverlay, color);
         this.Arm3.xRot = this.Knuckles.xRot = (float)((double)b2angle - 0.19634954084936207);
         this.Arm3.y = this.Knuckles.y = this.Arm1.y + (float)Math.cos(this.Arm1.xRot) * 41.0f;
         this.Arm3.z = this.Knuckles.z = this.Arm1.z + (float)Math.sin(this.Arm1.xRot) * 41.0f;
         this.Arm3.x = this.Knuckles.x = this.Arm1.x;
-        this.Arm3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Knuckles.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Arm3.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Knuckles.render(poseStack, buffer, packedLight, packedOverlay, color);
         this.Back2.y = this.Back3.y = this.Hip.y;
         this.Back1.y = this.Back3.y;
         this.Neck.y = this.Head.y = this.Hip.y;
         this.Shoulders.y = this.Head.y;
         this.Head.yRot = (float)Math.toRadians(this.animNetHeadYaw);
         this.Head.xRot = (float)Math.toRadians(this.animHeadPitch) / 3.0f;
-        this.Back1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Back2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Back3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Shoulders.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Neck.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Head.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Back1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Back2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Back3.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Shoulders.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Neck.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Head.render(poseStack, buffer, packedLight, packedOverlay, color);
     }
 }

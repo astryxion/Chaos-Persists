@@ -44,7 +44,7 @@ public final class CommandDanger {
             return 0;
         }
         DangerTeleporter teleporter = new DangerTeleporter(player.getX(), player.getZ());
-        player.changeDimension(world, teleporter);
+        player.changeDimension(teleporter.transition(player, world));
         player.displayClientMessage(
                 Component.literal("Teleported to Danger.").withStyle(ChatFormatting.GREEN), true);
         return 1;

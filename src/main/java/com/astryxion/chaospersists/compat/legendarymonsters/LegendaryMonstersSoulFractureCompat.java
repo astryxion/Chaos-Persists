@@ -1,25 +1,27 @@
 package com.astryxion.chaospersists.compat.legendarymonsters;
 
+import net.neoforged.neoforge.event.tick.EntityTickEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.util.ChaosBosses;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraftforge.event.entity.living.LivingEvent;
-import net.minecraftforge.event.entity.living.MobEffectEvent;
-import net.minecraftforge.eventbus.api.Event;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.event.entity.living.LivingEvent;
+import net.neoforged.neoforge.event.entity.living.MobEffectEvent;
+import net.neoforged.bus.api.Event;
+import net.neoforged.bus.api.EventPriority;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 /**
  * Possessed Paladin applies {@code legendary_monsters:soul_fracture}, which stacks and shrinks
  * max health. Legendary Monsters bosses reject every {@code addEffect} ({@code IAnimatedBoss}
  * returns false). Chaos Persists bosses get the same immunity when that mod is loaded.
  */
-@Mod.EventBusSubscriber(modid = ChaosPersists.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(modid = ChaosPersists.MODID, bus = EventBusSubscriber.Bus.GAME)
 public final class LegendaryMonstersSoulFractureCompat {
 
     private LegendaryMonstersSoulFractureCompat() {}
@@ -30,23 +32,24 @@ public final class LegendaryMonstersSoulFractureCompat {
             return;
         }
         MobEffectInstance instance = event.getEffectInstance();
-        if (instance == null || !isSoulFracture(instance.getEffect())) {
+        if (instance == null || !isSoulFracture(instance.getEffect().value())) {
             return;
         }
-        LivingEntity entity = event.getEntity();
+        LivingEntity entity = (LivingEntity) event.getEntity();
         if (entity != null && ChaosBosses.isBoss(entity)) {
-            event.setResult(Event.Result.DENY);
+            event.setResult(MobEffectEvent.Applicable.Result.DO_NOT_APPLY);
         }
     }
 
     @SubscribeEvent
-    public static void onLivingTick(LivingEvent.LivingTickEvent event) {
+    public static void onLivingTick(EntityTickEvent.Post event) {
+        if (!(event.getEntity() instanceof net.minecraft.world.entity.LivingEntity)) return;
         if (!LegendaryMonstersBeamCompat.isPresent()
                 || event.getEntity() == null
                 || event.getEntity().level().isClientSide) {
             return;
         }
-        LivingEntity entity = event.getEntity();
+        LivingEntity entity = (LivingEntity) event.getEntity();
         if (entity.tickCount % 10 != 0 || !ChaosBosses.isBoss(entity)) {
             return;
         }
@@ -54,9 +57,9 @@ public final class LegendaryMonstersSoulFractureCompat {
     }
 
     private static void stripSoulFracture(LivingEntity entity) {
-        MobEffect toRemove = null;
+        net.minecraft.core.Holder<MobEffect> toRemove = null;
         for (MobEffectInstance instance : entity.getActiveEffects()) {
-            if (isSoulFracture(instance.getEffect())) {
+            if (isSoulFracture(instance.getEffect().value())) {
                 toRemove = instance.getEffect();
                 break;
             }
@@ -70,7 +73,7 @@ public final class LegendaryMonstersSoulFractureCompat {
         if (effect == null) {
             return false;
         }
-        ResourceLocation id = ForgeRegistries.MOB_EFFECTS.getKey(effect);
+        ResourceLocation id = BuiltInRegistries.MOB_EFFECT.getKey(effect);
         if (id == null
                 || !LegendaryMonstersBeamCompat.LEGENDARY_MONSTERS_MODID.equals(id.getNamespace())) {
             return false;

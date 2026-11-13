@@ -8,6 +8,7 @@ A modern reimagining inspired by the classic OreSpawn-style adventure experience
 
 **Credits:**
 - Astryxion — Author and Maintenance
+- Revington2000 — initial NeoForge 1.21.1 port
 - TheMasterPeace — Bug testing and Spider Driver texture
 
 ## License

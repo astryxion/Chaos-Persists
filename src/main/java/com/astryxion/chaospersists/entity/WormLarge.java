@@ -43,7 +43,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.SpawnerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 public class WormLarge extends Monster {
     private int wormsSpawned = 0;
@@ -255,7 +255,7 @@ public class WormLarge extends Monster {
                         target.setItemSlot(EquipmentSlot.FEET, ItemStack.EMPTY);
                         bid = boots.getMaxDamage() - boots.getDamageValue();
                         bid = bid > 10 ? bid / 10 : 1;
-                        boots.hurtAndBreak(bid, this, e -> e.broadcastBreakEvent(EquipmentSlot.FEET));
+                        boots.hurtAndBreak(bid, this, EquipmentSlot.FEET);
                         dropped =
                                 new ItemEntity(
                                         this.level(),
@@ -274,7 +274,7 @@ public class WormLarge extends Monster {
                             target.setItemSlot(EquipmentSlot.LEGS, ItemStack.EMPTY);
                             bid = boots.getMaxDamage() - boots.getDamageValue();
                             bid = bid > 10 ? bid / 10 : 1;
-                            boots.hurtAndBreak(bid, this, e -> e.broadcastBreakEvent(EquipmentSlot.LEGS));
+                            boots.hurtAndBreak(bid, this, EquipmentSlot.LEGS);
                             dropped =
                                     new ItemEntity(
                                             this.level(),
@@ -295,7 +295,7 @@ public class WormLarge extends Monster {
                     target.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
                     bid = boots.getMaxDamage() - boots.getDamageValue();
                     bid = bid > 10 ? bid / 10 : 1;
-                    boots.hurtAndBreak(bid, this, e -> e.broadcastBreakEvent(EquipmentSlot.MAINHAND));
+                    boots.hurtAndBreak(bid, this, EquipmentSlot.MAINHAND);
                     dropped =
                             new ItemEntity(
                                     this.level(),
@@ -498,9 +498,9 @@ public class WormLarge extends Monster {
     public static Entity spawnCreature(Level level, String par1, double x, double y, double z) {
         ResourceLocation res =
                 par1.contains(":")
-                        ? new ResourceLocation(par1)
-                        : new ResourceLocation("chaospersists", par1.toLowerCase().replace(" ", "_"));
-        EntityType<?> type = ForgeRegistries.ENTITY_TYPES.getValue(res);
+                        ? ResourceLocation.parse(par1)
+                        : ResourceLocation.fromNamespaceAndPath("chaospersists", par1.toLowerCase().replace(" ", "_"));
+        EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.get(res);
         if (type == null || !(level instanceof ServerLevel serverLevel)) {
             return null;
         }
@@ -515,8 +515,8 @@ public class WormLarge extends Monster {
 
     private Item resolveModItem(String registryPath, Item fallback) {
         Item item =
-                ForgeRegistries.ITEMS.getValue(
-                        new ResourceLocation("chaospersists", registryPath));
+                BuiltInRegistries.ITEM.get(
+                        ResourceLocation.fromNamespaceAndPath("chaospersists", registryPath));
         return item != null ? item : fallback;
     }
 
@@ -539,11 +539,11 @@ public class WormLarge extends Monster {
     }
 
     @Override
-    protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+    protected void dropCustomDeathLoot(net.minecraft.server.level.ServerLevel serverLevel, DamageSource source, boolean recentlyHit) {
         if (DatapackLoot.useEntityTable(this)) {
             return;
         }
-        super.dropCustomDeathLoot(source, looting, recentlyHit);
+        super.dropCustomDeathLoot(serverLevel, source, recentlyHit);
         int var4;
         this.dropItemRand(this.resolveModItem("wormtooth", ChaosPersists.WormTooth), 1);
         this.dropItemRand(Items.ITEM_FRAME, 1);

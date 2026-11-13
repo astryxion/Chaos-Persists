@@ -239,43 +239,43 @@ public class ModelMolenoid extends EntityModel<Molenoid> {
 
 
     @Override
-    public void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
-        this.body.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.shoulders.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.head1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.head2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.head3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.nosestar1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.nosestar2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.nosestar3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.larm.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.lhand.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.lclaw1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.lclaw2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.lclaw3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.lclaw4.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.nosestar4.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.nosestar5.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.nosestar6.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.butt.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.tail.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.lleg.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.lfoot.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.ltoe1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.ltoe2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.ltoe3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.ltoe4.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.rarm.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.rhand.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.rclaw1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.rclaw2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.rclaw3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.rclaw4.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.rleg.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.rfoot.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.rtoe1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.rtoe2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.rtoe3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.rtoe4.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+    public void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, int color) {
+        this.body.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.shoulders.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.head1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.head2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.head3.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.nosestar1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.nosestar2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.nosestar3.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.larm.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.lhand.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.lclaw1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.lclaw2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.lclaw3.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.lclaw4.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.nosestar4.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.nosestar5.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.nosestar6.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.butt.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.tail.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.lleg.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.lfoot.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.ltoe1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.ltoe2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.ltoe3.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.ltoe4.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.rarm.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.rhand.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.rclaw1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.rclaw2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.rclaw3.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.rclaw4.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.rleg.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.rfoot.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.rtoe1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.rtoe2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.rtoe3.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.rtoe4.render(poseStack, buffer, packedLight, packedOverlay, color);
     }
 }

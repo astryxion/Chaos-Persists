@@ -10,11 +10,7 @@ public class AmethystSword extends SwordItem {
     private static final int WEAPON_DAMAGE = 15;
 
     public AmethystSword(Tier tier) {
-        super(
-                tier,
-                ChaosWeaponDamage.modifierFor(tier, WEAPON_DAMAGE),
-                -2.4f,
-                new Properties().stacksTo(1).durability(2000));
+        super(tier, new Properties().stacksTo(1).durability(2000).attributes(SwordItem.createAttributes(tier, ChaosWeaponDamage.modifierFor(tier, WEAPON_DAMAGE), -2.4f)));
     }
 
     public String getMaterialName() {
@@ -23,12 +19,12 @@ public class AmethystSword extends SwordItem {
 
     @Override
     public boolean hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
-        stack.hurtAndBreak(1, attacker, e -> e.broadcastBreakEvent(EquipmentSlot.MAINHAND));
+        stack.hurtAndBreak(1, attacker, EquipmentSlot.MAINHAND);
         return true;
     }
 
     @Override
-    public int getUseDuration(ItemStack stack) {
+    public int getUseDuration(ItemStack stack, net.minecraft.world.entity.LivingEntity user) {
         return 3500;
     }
 }

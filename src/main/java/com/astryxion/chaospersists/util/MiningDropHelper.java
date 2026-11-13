@@ -25,7 +25,7 @@ public final class MiningDropHelper {
       return datapack;
     }
     ItemStack tool = builder.getOptionalParameter(LootContextParams.TOOL);
-    if (tool != null && EnchantmentHelper.getItemEnchantmentLevel(Enchantments.SILK_TOUCH, tool) > 0) {
+    if (tool != null && com.astryxion.chaospersists.util.ChaosEnchantments.level(Enchantments.SILK_TOUCH, tool) > 0) {
       return Collections.singletonList(new ItemStack(block));
     }
     return Collections.singletonList(new ItemStack(block.asItem()));

@@ -130,17 +130,14 @@ public class ModelRubberDucky extends EntityModel<RubberDucky> {
             VertexConsumer buffer,
             int packedLight,
             int packedOverlay,
-            float red,
-            float green,
-            float blue,
-            float alpha) {
-        this.bottom.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.body.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.back.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.neck.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.head.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.beak.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Lwing.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Rwing.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+            int color) {
+        this.bottom.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.body.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.back.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.neck.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.head.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.beak.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Lwing.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Rwing.render(poseStack, buffer, packedLight, packedOverlay, color);
     }
 }

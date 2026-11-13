@@ -1,5 +1,6 @@
 package com.astryxion.chaospersists.config;
 
+import net.neoforged.fml.common.EventBusSubscriber;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import javax.annotation.Nullable;
 import net.minecraft.resources.ResourceKey;
@@ -10,11 +11,10 @@ import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraftforge.entity.PartEntity;
-import net.minecraftforge.event.entity.living.LivingHurtEvent;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.neoforge.entity.PartEntity;
+import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
+import net.neoforged.bus.api.EventPriority;
+import net.neoforged.bus.api.SubscribeEvent;
 
 /**
  * Cataclysm-style hits are {@code flat + maxHealth * percent}. Huge OreSpawn HP then becomes a
@@ -24,7 +24,7 @@ import net.minecraftforge.fml.common.Mod;
  * alone — OreSpawn {@code getArmorValue()} / legacy armor parity already handles those. Only
  * magic, armor-bypass, and custom damage types are scanned for percent-of-max-health payloads.
  */
-@Mod.EventBusSubscriber(modid = ChaosPersists.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(modid = ChaosPersists.MODID, bus = EventBusSubscriber.Bus.GAME)
 public final class ChaosPercentHealthDamageGuard {
     /** Vanilla-ish HP used when converting a percent-of-max-health slice. */
     private static final float BASELINE = 100.0f;
@@ -42,7 +42,7 @@ public final class ChaosPercentHealthDamageGuard {
     private ChaosPercentHealthDamageGuard() {}
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
-    public static void onHurt(LivingHurtEvent event) {
+    public static void onHurt(LivingIncomingDamageEvent event) {
         if (event == null || event.isCanceled()) {
             return;
         }

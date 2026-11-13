@@ -26,7 +26,6 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -51,7 +50,7 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.SpawnerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 public class TrooperBug extends Monster {
     private static final EntityDataAccessor<Byte> ATTACKING =
@@ -91,15 +90,11 @@ public class TrooperBug extends Monster {
                 .add(Attributes.ARMOR, (double) ChaosPersists.TrooperBug_stats.defense);
     }
 
-    @Override
-    public MobType getMobType() {
-        return MobType.ARTHROPOD;
-    }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(ATTACKING, (byte) 0);
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(ATTACKING, (byte) 0);
     }
 
     @Override
@@ -225,7 +220,7 @@ public class TrooperBug extends Monster {
     }
 
     @Override
-    protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+    protected void dropCustomDeathLoot(net.minecraft.server.level.ServerLevel serverLevel, DamageSource source, boolean recentlyHit) {
         if (DatapackLoot.useEntityTable(this)) {
             return;
         }
@@ -257,25 +252,25 @@ public class TrooperBug extends Monster {
                     is = this.dropItemRand(ChaosPersists.MyAmethystSword, 1);
                     if (is != null) {
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.SHARPNESS, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.SHARPNESS), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.BANE_OF_ARTHROPODS, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.BANE_OF_ARTHROPODS), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.KNOCKBACK, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.KNOCKBACK), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.MOB_LOOTING, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.LOOTING), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(2) == 1) {
-                            is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.FIRE_ASPECT, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FIRE_ASPECT), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.SHARPNESS, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.SHARPNESS), 1 + this.getRandom().nextInt(5));
                         }
                     }
                     continue block16;
@@ -284,10 +279,10 @@ public class TrooperBug extends Monster {
                     is = this.dropItemRand(ChaosPersists.MyAmethystShovel, 1);
                     if (is != null) {
                         if (this.getRandom().nextInt(2) == 1) {
-                            is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.BLOCK_EFFICIENCY, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.EFFICIENCY), 1 + this.getRandom().nextInt(5));
                         }
                     }
                     continue block16;
@@ -296,13 +291,13 @@ public class TrooperBug extends Monster {
                     is = this.dropItemRand(ChaosPersists.MyAmethystPickaxe, 1);
                     if (is != null) {
                         if (this.getRandom().nextInt(2) == 1) {
-                            is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.BLOCK_EFFICIENCY, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.EFFICIENCY), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.BLOCK_FORTUNE, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FORTUNE), 1 + this.getRandom().nextInt(5));
                         }
                     }
                     continue block16;
@@ -311,10 +306,10 @@ public class TrooperBug extends Monster {
                     is = this.dropItemRand(ChaosPersists.MyAmethystAxe, 1);
                     if (is != null) {
                         if (this.getRandom().nextInt(2) == 1) {
-                            is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.BLOCK_EFFICIENCY, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.EFFICIENCY), 1 + this.getRandom().nextInt(5));
                         }
                     }
                     continue block16;
@@ -323,10 +318,10 @@ public class TrooperBug extends Monster {
                     is = this.dropItemRand(ChaosPersists.MyAmethystHoe, 1);
                     if (is != null) {
                         if (this.getRandom().nextInt(2) == 1) {
-                            is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.BLOCK_EFFICIENCY, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.EFFICIENCY), 1 + this.getRandom().nextInt(5));
                         }
                     }
                     continue block16;
@@ -335,25 +330,25 @@ public class TrooperBug extends Monster {
                     is = this.dropItemRand(ChaosPersists.AmethystHelmet, 1);
                     if (is != null) {
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.ALL_DAMAGE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROTECTION), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.BLAST_PROTECTION, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.BLAST_PROTECTION), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.FIRE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FIRE_PROTECTION), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.PROJECTILE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROJECTILE_PROTECTION), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(2) == 1) {
-                            is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.RESPIRATION, 1 + this.getRandom().nextInt(2));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.RESPIRATION), 1 + this.getRandom().nextInt(2));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.AQUA_AFFINITY, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.AQUA_AFFINITY), 1 + this.getRandom().nextInt(5));
                         }
                     }
                     continue block16;
@@ -362,21 +357,21 @@ public class TrooperBug extends Monster {
                     is = this.dropItemRand(ChaosPersists.AmethystBody, 1);
                     if (is != null) {
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.ALL_DAMAGE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROTECTION), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.BLAST_PROTECTION, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.BLAST_PROTECTION), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.FIRE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FIRE_PROTECTION), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.PROJECTILE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROJECTILE_PROTECTION), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(2) != 1) {
                             continue block16;
                         }
-                        is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                     }
                     continue block16;
                 }
@@ -384,21 +379,21 @@ public class TrooperBug extends Monster {
                     is = this.dropItemRand(ChaosPersists.AmethystLegs, 1);
                     if (is != null) {
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.ALL_DAMAGE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROTECTION), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.BLAST_PROTECTION, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.BLAST_PROTECTION), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.FIRE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FIRE_PROTECTION), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.PROJECTILE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROJECTILE_PROTECTION), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(2) != 1) {
                             continue block16;
                         }
-                        is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                     }
                     continue block16;
                 }
@@ -406,12 +401,12 @@ public class TrooperBug extends Monster {
                     is = this.dropItemRand(ChaosPersists.AmethystBoots, 1);
                     if (is != null) {
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.FALL_PROTECTION, 5 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FEATHER_FALLING), 5 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(2) != 1) {
                             continue block16;
                         }
-                        is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                     }
                     continue block16;
                 }
@@ -557,9 +552,9 @@ public class TrooperBug extends Monster {
     public static Entity spawnCreature(Level level, String par1, double x, double y, double z) {
         ResourceLocation res =
                 par1.contains(":")
-                        ? new ResourceLocation(par1)
-                        : new ResourceLocation("chaospersists", par1);
-        EntityType<?> type = ForgeRegistries.ENTITY_TYPES.getValue(res);
+                        ? ResourceLocation.parse(par1)
+                        : ResourceLocation.fromNamespaceAndPath("chaospersists", par1);
+        EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.get(res);
         if (type == null || !(level instanceof ServerLevel serverLevel)) {
             return null;
         }

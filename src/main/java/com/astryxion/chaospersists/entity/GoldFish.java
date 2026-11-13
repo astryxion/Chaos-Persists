@@ -25,10 +25,15 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 import com.astryxion.chaospersists.util.MyUtils;
 
 public class GoldFish extends Animal {
+    @Override
+    public boolean isFood(net.minecraft.world.item.ItemStack stack) {
+        return stack.is(net.minecraft.world.item.Items.WHEAT);
+    }
+
     private BlockPos currentFlightTarget = null;
 
     public GoldFish(EntityType<? extends GoldFish> type, Level level) {
@@ -207,7 +212,7 @@ public class GoldFish extends Animal {
     }
 
     @Override
-    protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+    protected void dropCustomDeathLoot(net.minecraft.server.level.ServerLevel serverLevel, DamageSource source, boolean recentlyHit) {
         if (DatapackLoot.useEntityTable(this)) {
             return;
         }
@@ -216,8 +221,8 @@ public class GoldFish extends Animal {
             this.spawnAtLocation(new ItemStack(Blocks.GOLD_BLOCK));
         } else if (i == 1) {
             Item uranium =
-                    ForgeRegistries.ITEMS.getValue(
-                            new net.minecraft.resources.ResourceLocation(
+                    BuiltInRegistries.ITEM.get(
+                            net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(
                                     "chaospersists", "uraniumnugget"));
             if (uranium == null) {
                 uranium = ChaosPersists.UraniumNugget;
@@ -227,8 +232,8 @@ public class GoldFish extends Animal {
             }
         } else if (i == 2) {
             Item titanium =
-                    ForgeRegistries.ITEMS.getValue(
-                            new net.minecraft.resources.ResourceLocation(
+                    BuiltInRegistries.ITEM.get(
+                            net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(
                                     "chaospersists", "titaniumnugget"));
             if (titanium == null) {
                 titanium = ChaosPersists.TitaniumNugget;
@@ -245,7 +250,7 @@ public class GoldFish extends Animal {
     }
 
     @Override
-    public boolean canBreatheUnderwater() {
-        return true;
+    protected int decreaseAirSupply(int airSupply) {
+        return airSupply;
     }
 }

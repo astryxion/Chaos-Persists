@@ -12,7 +12,7 @@ public class RatSword extends SwordItem {
     private static final int WEAPON_DAMAGE = 10;
 
     public RatSword(Tier tier) {
-        super(tier, ChaosWeaponDamage.modifierFor(tier, WEAPON_DAMAGE), -2.4f, new Properties().stacksTo(1).durability(1300));
+        super(tier, new Properties().stacksTo(1).durability(1300).attributes(SwordItem.createAttributes(tier, ChaosWeaponDamage.modifierFor(tier, WEAPON_DAMAGE), -2.4f)));
     }
 
     public String getMaterialName() {
@@ -43,12 +43,12 @@ public class RatSword extends SwordItem {
                 }
             }
         }
-        stack.hurtAndBreak(1, attacker, e -> e.broadcastBreakEvent(EquipmentSlot.MAINHAND));
+        stack.hurtAndBreak(1, attacker, EquipmentSlot.MAINHAND);
         return true;
     }
 
     @Override
-    public int getUseDuration(ItemStack stack) {
+    public int getUseDuration(ItemStack stack, net.minecraft.world.entity.LivingEntity user) {
         return 3000;
     }
 }

@@ -76,7 +76,7 @@ public class ModelEasterBunny extends EntityModel<EasterBunny> {
     }
 
     @Override
-    public void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
+    public void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, int color) {
         EasterBunny entity = this.animEntity;
         float ageInTicks = this.animAgeInTicks;
         float limbSwingAmount = this.animLimbSwingAmount;
@@ -93,18 +93,18 @@ float newangle = 0.0f;
         this.rleg.xRot = this.rfoot.xRot = - newangle;
         this.lear.xRot = -0.226f + newangle2;
         this.rear.xRot = -0.418f - newangle2;
-        this.body.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.tail.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.lfoot.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.lleg.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.upperbody.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.head.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.nose.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.lear.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.lpaw.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.rleg.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.rfoot.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.rear.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.rpaw.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.body.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.tail.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.lfoot.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.lleg.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.upperbody.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.head.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.nose.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.lear.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.lpaw.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.rleg.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.rfoot.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.rear.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.rpaw.render(poseStack, buffer, packedLight, packedOverlay, color);
     }
 }

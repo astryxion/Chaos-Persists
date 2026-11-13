@@ -118,7 +118,7 @@ public class ModelAntRobot extends EntityModel<AntRobot> {
     }
 
     @Override
-    public void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
+    public void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, int color) {
         AntRobot e = this.animEntity;
         if (e == null) {
             return;
@@ -174,16 +174,16 @@ public class ModelAntRobot extends EntityModel<AntRobot> {
             this.Foot7.x = this.Leg3.x;
             this.Foot7.y = this.Leg3.y;
             this.Foot7.z = this.Leg3.z;
-            this.Leg1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-            this.Leg2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-            this.Leg3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-            this.Foot1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-            this.Foot2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-            this.Foot3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-            this.Foot4.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-            this.Foot5.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-            this.Foot6.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-            this.Foot7.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+            this.Leg1.render(poseStack, buffer, packedLight, packedOverlay, color);
+            this.Leg2.render(poseStack, buffer, packedLight, packedOverlay, color);
+            this.Leg3.render(poseStack, buffer, packedLight, packedOverlay, color);
+            this.Foot1.render(poseStack, buffer, packedLight, packedOverlay, color);
+            this.Foot2.render(poseStack, buffer, packedLight, packedOverlay, color);
+            this.Foot3.render(poseStack, buffer, packedLight, packedOverlay, color);
+            this.Foot4.render(poseStack, buffer, packedLight, packedOverlay, color);
+            this.Foot5.render(poseStack, buffer, packedLight, packedOverlay, color);
+            this.Foot6.render(poseStack, buffer, packedLight, packedOverlay, color);
+            this.Foot7.render(poseStack, buffer, packedLight, packedOverlay, color);
         }
         if (e.getAttacking() == 0) {
             this.LJaw1.yRot = 0.89f;
@@ -205,22 +205,22 @@ public class ModelAntRobot extends EntityModel<AntRobot> {
             this.RAntenna.xRot = Mth.cos((float)((float)r.gpcounter * 0.4f)) * 3.1415927f * 0.1f;
             this.RAntenna.zRot = -0.54f + Mth.cos((float)((float)r.gpcounter * 0.55f)) * 3.1415927f * 0.1f;
         }
-        this.Body.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Abdomen.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Head.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Jet1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Jet2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Hip1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Hip2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Hip3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Hip4.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Hip5.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Hip6.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.LJaw1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.RJaw1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.LJaw2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.RJaw2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.LAntenna.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.RAntenna.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Body.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Abdomen.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Head.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Jet1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Jet2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Hip1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Hip2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Hip3.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Hip4.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Hip5.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Hip6.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.LJaw1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.RJaw1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.LJaw2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.RJaw2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.LAntenna.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.RAntenna.render(poseStack, buffer, packedLight, packedOverlay, color);
     }
 }

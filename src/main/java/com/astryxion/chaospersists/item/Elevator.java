@@ -39,8 +39,8 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 public class Elevator extends Mob implements ChaosFlyingMount {
     private static final EntityDataAccessor<Integer> I20 =
@@ -64,25 +64,25 @@ public class Elevator extends Mob implements ChaosFlyingMount {
     private final ChaosMountFlight mountFlight = new ChaosMountFlight(this);
 
     private static final ResourceLocation TEXTURE1 =
-            new ResourceLocation("chaospersists", "textures/entity/elevator1.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/elevator1.png");
     private static final ResourceLocation TEXTURE2 =
-            new ResourceLocation("chaospersists", "textures/entity/elevator2.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/elevator2.png");
     private static final ResourceLocation TEXTURE3 =
-            new ResourceLocation("chaospersists", "textures/entity/elevator3.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/elevator3.png");
     private static final ResourceLocation TEXTURE4 =
-            new ResourceLocation("chaospersists", "textures/entity/elevator4.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/elevator4.png");
     private static final ResourceLocation TEXTURE5 =
-            new ResourceLocation("chaospersists", "textures/entity/elevator5.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/elevator5.png");
     private static final ResourceLocation TEXTURE6 =
-            new ResourceLocation("chaospersists", "textures/entity/elevator6.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/elevator6.png");
     private static final ResourceLocation TEXTURE7 =
-            new ResourceLocation("chaospersists", "textures/entity/elevator7.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/elevator7.png");
     private static final ResourceLocation TEXTURE8 =
-            new ResourceLocation("chaospersists", "textures/entity/elevator8.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/elevator8.png");
     private static final ResourceLocation TEXTURE9 =
-            new ResourceLocation("chaospersists", "textures/entity/elevator9.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/elevator9.png");
     private static final ResourceLocation TEXTURE10 =
-            new ResourceLocation("chaospersists", "textures/entity/elevator10.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/elevator10.png");
 
     private int exploding = 0;
     private int color = 1;
@@ -97,7 +97,7 @@ public class Elevator extends Mob implements ChaosFlyingMount {
 
     public Elevator(Level level, double x, double y, double z) {
         this(ChaosPersists.ENTITY_TYPE_ELEVATOR.get(), level);
-        this.moveTo(x, y + this.getMyRidingOffset(), z, 0.0f, 0.0f);
+        this.moveTo(x, y, z, 0.0f, 0.0f);
         this.setDeltaMovement(Vec3.ZERO);
         this.xo = x;
         this.yo = y;
@@ -146,17 +146,17 @@ public class Elevator extends Mob implements ChaosFlyingMount {
     }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(I22, 0);
-        this.entityData.define(I23, 1);
-        this.entityData.define(F24, 0.0f);
-        this.entityData.define(I20, 0);
-        this.entityData.define(I21, 1);
-        this.entityData.define(DATA_FORWARD, false);
-        this.entityData.define(CONTROL_STATE, (byte) 0);
-        this.entityData.define(FLYING, false);
-        this.entityData.define(HOVERING, false);
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(I22, 0);
+        builder.define(I23, 1);
+        builder.define(F24, 0.0f);
+        builder.define(I20, 0);
+        builder.define(I21, 1);
+        builder.define(DATA_FORWARD, false);
+        builder.define(CONTROL_STATE, (byte) 0);
+        builder.define(FLYING, false);
+        builder.define(HOVERING, false);
     }
 
     @Override
@@ -175,6 +175,12 @@ public class Elevator extends Mob implements ChaosFlyingMount {
     }
 
     @Override
+    protected net.minecraft.world.phys.Vec3 getPassengerAttachmentPoint(Entity passenger,
+            net.minecraft.world.entity.EntityDimensions dimensions, float scale) {
+        var attachment = super.getPassengerAttachmentPoint(passenger, dimensions, scale);
+        return new net.minecraft.world.phys.Vec3(attachment.x, getPassengersRidingOffset(), attachment.z);
+    }
+
     public double getPassengersRidingOffset() {
         return 0.5;
     }
@@ -205,11 +211,11 @@ public class Elevator extends Mob implements ChaosFlyingMount {
 
     @Override
     @OnlyIn(Dist.CLIENT)
-    public void lerpTo(double x, double y, double z, float yaw, float pitch, int steps, boolean interpolate) {
+    public void lerpTo(double x, double y, double z, float yaw, float pitch, int steps) {
         if (this.isControlledByLocalInstance()) {
             return;
         }
-        super.lerpTo(x, y, z, yaw, pitch, steps, interpolate);
+        super.lerpTo(x, y, z, yaw, pitch, steps);
     }
 
     @Override
@@ -429,7 +435,7 @@ public class Elevator extends Mob implements ChaosFlyingMount {
                                 this.getX(),
                                 this.getY(),
                                 this.getZ(),
-                                SoundEvents.GENERIC_EXPLODE,
+                                SoundEvents.GENERIC_EXPLODE.value(),
                                 SoundSource.NEUTRAL,
                                 0.55f,
                                 0.75f + this.getRandom().nextFloat());

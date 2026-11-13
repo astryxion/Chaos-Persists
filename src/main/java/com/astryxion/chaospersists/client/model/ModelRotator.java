@@ -66,10 +66,7 @@ public class ModelRotator extends EntityModel<Rotator> {
             VertexConsumer buffer,
             int packedLight,
             int packedOverlay,
-            float red,
-            float green,
-            float blue,
-            float alpha) {
+            int color) {
         if (this.animEntity == null) {
             return;
         }
@@ -81,7 +78,7 @@ public class ModelRotator extends EntityModel<Rotator> {
         for (int i = 0; i < 8; ++i) {
             poseStack.pushPose();
             poseStack.mulPose(Axis.ZP.rotation(newangle));
-            this.shape1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+            this.shape1.render(poseStack, buffer, packedLight, packedOverlay, color);
             poseStack.popPose();
             newangle += 0.7853982f;
         }
@@ -93,7 +90,7 @@ public class ModelRotator extends EntityModel<Rotator> {
         for (int i = 0; i < 8; ++i) {
             poseStack.pushPose();
             poseStack.mulPose(Axis.ZP.rotation(newangle));
-            this.shape2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+            this.shape2.render(poseStack, buffer, packedLight, packedOverlay, color);
             poseStack.popPose();
             newangle += 0.7853982f;
         }
@@ -105,7 +102,7 @@ public class ModelRotator extends EntityModel<Rotator> {
         for (int i = 0; i < 8; ++i) {
             poseStack.pushPose();
             poseStack.mulPose(Axis.ZP.rotation(newangle));
-            this.shape3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+            this.shape3.render(poseStack, buffer, packedLight, packedOverlay, color);
             poseStack.popPose();
             newangle += 0.7853982f;
         }

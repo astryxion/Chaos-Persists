@@ -89,9 +89,9 @@ public class EntityRedAnt extends EntityAnt {
             return InteractionResult.FAIL;
         }
         if (toOverworld) {
-            serverPlayer.changeDimension(world, new UtopiaTeleporter(serverPlayer.getX(), serverPlayer.getZ()));
+            serverPlayer.changeDimension((new UtopiaTeleporter(serverPlayer.getX(), serverPlayer.getZ())).transition(serverPlayer, world));
         } else {
-            serverPlayer.changeDimension(world, new MiningTeleporter(serverPlayer.getX(), serverPlayer.getZ()));
+            serverPlayer.changeDimension((new MiningTeleporter(serverPlayer.getX(), serverPlayer.getZ())).transition(serverPlayer, world));
         }
         return InteractionResult.SUCCESS;
     }

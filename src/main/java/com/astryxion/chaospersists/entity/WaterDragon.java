@@ -62,8 +62,8 @@ import net.minecraft.world.level.block.entity.SpawnerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.phys.AABB;
-import net.minecraftforge.common.ForgeMod;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.common.NeoForgeMod;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 public class WaterDragon extends TamableAnimal {
     private static final Ingredient TAMING_FISH =
@@ -90,7 +90,7 @@ public class WaterDragon extends TamableAnimal {
         this.renderdata = new RenderInfo();
         this.getNavigation().setCanFloat(true);
         // 1.1 clears a full block via collide() step-up; 1.0 often fails on exact 1-block height.
-        this.setMaxUpStep(1.1F);
+        getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.STEP_HEIGHT).setBaseValue(1.1F);
         // Surface skim via SurfaceWaterFloat — FloatGoal hop-jumps with swim speed.
         this.goalSelector.addGoal(1, new BreedGoal(this, 1.0));
         this.goalSelector.addGoal(2, new MyEntityAIFollowOwner(this, 2.0f, 10.0f, 2.0f));
@@ -108,11 +108,11 @@ public class WaterDragon extends TamableAnimal {
                 .add(Attributes.ATTACK_DAMAGE, (double) ChaosPersists.WaterDragon_stats.attack)
                 .add(Attributes.ARMOR, (double) ChaosPersists.WaterDragon_stats.defense)
                 // 1.13+ water travel ignores MOVEMENT_SPEED; Forge swim speed is the only multiplier.
-                .add(ForgeMod.SWIM_SPEED.get(), 4.0D);
+                .add(NeoForgeMod.SWIM_SPEED, 4.0D);
     }
 
     /**
-     * Forge multiplies liquid jumps by {@link ForgeMod#SWIM_SPEED}; keep vanilla 0.04 upward
+     * Forge multiplies liquid jumps by {@link NeoForgeMod#SWIM_SPEED}; keep vanilla 0.04 upward
      * so any jump (pathing, etc.) does not become a surface hop.
      */
     @Override
@@ -121,9 +121,9 @@ public class WaterDragon extends TamableAnimal {
     }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(ATTACKING, (byte) 0);
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(ATTACKING, (byte) 0);
         if (this.renderdata == null) {
             this.renderdata = new RenderInfo();
         }
@@ -151,7 +151,7 @@ public class WaterDragon extends TamableAnimal {
             if (!this.isTame()) {
                 if (!this.level().isClientSide) {
                     if (this.getRandom().nextInt(3) == 0) {
-                        this.setTame(true);
+                        this.setTame(true, true);
                         this.setOwnerUUID(par1EntityPlayer.getUUID());
                         spawnTamingParticles(true);
                         this.level().broadcastEntityEvent(this, (byte) 7);
@@ -185,7 +185,7 @@ public class WaterDragon extends TamableAnimal {
                 && par1EntityPlayer.distanceToSqr(this) < 25.0
                 && this.isOwnedBy(par1EntityPlayer)) {
             if (!this.level().isClientSide) {
-                this.setTame(false);
+                this.setTame(false, true);
                 this.setOwnerUUID(null);
                 spawnTamingParticles(false);
                 this.level().broadcastEntityEvent(this, (byte) 6);
@@ -354,8 +354,8 @@ public class WaterDragon extends TamableAnimal {
 
     private ItemStack dropItemRandMod(String path, int count) {
         Item item =
-                ForgeRegistries.ITEMS.getValue(
-                        new ResourceLocation("chaospersists", path));
+                BuiltInRegistries.ITEM.get(
+                        ResourceLocation.fromNamespaceAndPath("chaospersists", path));
         if (item == null) {
             return null;
         }
@@ -363,11 +363,11 @@ public class WaterDragon extends TamableAnimal {
     }
 
     @Override
-    protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+    protected void dropCustomDeathLoot(net.minecraft.server.level.ServerLevel serverLevel, DamageSource source, boolean recentlyHit) {
         if (DatapackLoot.useEntityTable(this)) {
             return;
         }
-        super.dropCustomDeathLoot(source, looting, recentlyHit);
+        super.dropCustomDeathLoot(serverLevel, source, recentlyHit);
         this.dropFewItems();
     }
 
@@ -397,151 +397,151 @@ public class WaterDragon extends TamableAnimal {
             case 3: {
                 is = this.dropItemRand(Items.IRON_SWORD, 1);
                 if (this.getRandom().nextInt(6) == 1) {
-                    is.enchant(Enchantments.SHARPNESS, 1 + this.getRandom().nextInt(5));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.SHARPNESS), 1 + this.getRandom().nextInt(5));
                 }
                 if (this.getRandom().nextInt(6) == 1) {
-                    is.enchant(Enchantments.BANE_OF_ARTHROPODS, 1 + this.getRandom().nextInt(5));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.BANE_OF_ARTHROPODS), 1 + this.getRandom().nextInt(5));
                 }
                 if (this.getRandom().nextInt(6) == 1) {
-                    is.enchant(Enchantments.KNOCKBACK, 1 + this.getRandom().nextInt(5));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.KNOCKBACK), 1 + this.getRandom().nextInt(5));
                 }
                 if (this.getRandom().nextInt(6) == 1) {
-                    is.enchant(Enchantments.MOB_LOOTING, 1 + this.getRandom().nextInt(5));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.LOOTING), 1 + this.getRandom().nextInt(5));
                 }
                 if (this.getRandom().nextInt(2) == 1) {
-                    is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                 }
                 if (this.getRandom().nextInt(6) == 1) {
-                    is.enchant(Enchantments.FIRE_ASPECT, 1 + this.getRandom().nextInt(5));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FIRE_ASPECT), 1 + this.getRandom().nextInt(5));
                 }
                 if (this.getRandom().nextInt(6) != 1) {
                     break;
                 }
-                is.enchant(Enchantments.SHARPNESS, 1 + this.getRandom().nextInt(5));
+                is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.SHARPNESS), 1 + this.getRandom().nextInt(5));
                 break;
             }
             case 4: {
                 is = this.dropItemRand(Items.IRON_SHOVEL, 1);
                 if (this.getRandom().nextInt(2) == 1) {
-                    is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                 }
                 if (this.getRandom().nextInt(6) != 1) {
                     break;
                 }
-                is.enchant(Enchantments.BLOCK_EFFICIENCY, 1 + this.getRandom().nextInt(5));
+                is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.EFFICIENCY), 1 + this.getRandom().nextInt(5));
                 break;
             }
             case 5: {
                 is = this.dropItemRand(Items.IRON_PICKAXE, 1);
                 if (this.getRandom().nextInt(2) == 1) {
-                    is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                 }
                 if (this.getRandom().nextInt(6) == 1) {
-                    is.enchant(Enchantments.BLOCK_EFFICIENCY, 1 + this.getRandom().nextInt(5));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.EFFICIENCY), 1 + this.getRandom().nextInt(5));
                 }
                 if (this.getRandom().nextInt(6) != 1) {
                     break;
                 }
-                is.enchant(Enchantments.BLOCK_FORTUNE, 1 + this.getRandom().nextInt(5));
+                is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FORTUNE), 1 + this.getRandom().nextInt(5));
                 break;
             }
             case 6: {
                 is = this.dropItemRand(Items.IRON_AXE, 1);
                 if (this.getRandom().nextInt(2) == 1) {
-                    is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                 }
                 if (this.getRandom().nextInt(6) != 1) {
                     break;
                 }
-                is.enchant(Enchantments.BLOCK_EFFICIENCY, 1 + this.getRandom().nextInt(5));
+                is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.EFFICIENCY), 1 + this.getRandom().nextInt(5));
                 break;
             }
             case 7: {
                 is = this.dropItemRand(Items.IRON_HOE, 1);
                 if (this.getRandom().nextInt(2) == 1) {
-                    is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                 }
                 if (this.getRandom().nextInt(6) != 1) {
                     break;
                 }
-                is.enchant(Enchantments.BLOCK_EFFICIENCY, 1 + this.getRandom().nextInt(5));
+                is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.EFFICIENCY), 1 + this.getRandom().nextInt(5));
                 break;
             }
             case 8: {
                 is = this.dropItemRand(Items.IRON_HELMET, 1);
                 if (this.getRandom().nextInt(6) == 1) {
-                    is.enchant(Enchantments.ALL_DAMAGE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROTECTION), 1 + this.getRandom().nextInt(5));
                 }
                 if (this.getRandom().nextInt(6) == 1) {
-                    is.enchant(Enchantments.BLAST_PROTECTION, 1 + this.getRandom().nextInt(5));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.BLAST_PROTECTION), 1 + this.getRandom().nextInt(5));
                 }
                 if (this.getRandom().nextInt(6) == 1) {
-                    is.enchant(Enchantments.FIRE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FIRE_PROTECTION), 1 + this.getRandom().nextInt(5));
                 }
                 if (this.getRandom().nextInt(6) == 1) {
-                    is.enchant(Enchantments.PROJECTILE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROJECTILE_PROTECTION), 1 + this.getRandom().nextInt(5));
                 }
                 if (this.getRandom().nextInt(2) == 1) {
-                    is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                 }
                 if (this.getRandom().nextInt(6) == 1) {
-                    is.enchant(Enchantments.RESPIRATION, 1 + this.getRandom().nextInt(2));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.RESPIRATION), 1 + this.getRandom().nextInt(2));
                 }
                 if (this.getRandom().nextInt(6) != 1) {
                     break;
                 }
-                is.enchant(Enchantments.AQUA_AFFINITY, 1 + this.getRandom().nextInt(5));
+                is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.AQUA_AFFINITY), 1 + this.getRandom().nextInt(5));
                 break;
             }
             case 9: {
                 is = this.dropItemRand(Items.IRON_CHESTPLATE, 1);
                 if (this.getRandom().nextInt(6) == 1) {
-                    is.enchant(Enchantments.ALL_DAMAGE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROTECTION), 1 + this.getRandom().nextInt(5));
                 }
                 if (this.getRandom().nextInt(6) == 1) {
-                    is.enchant(Enchantments.BLAST_PROTECTION, 1 + this.getRandom().nextInt(5));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.BLAST_PROTECTION), 1 + this.getRandom().nextInt(5));
                 }
                 if (this.getRandom().nextInt(6) == 1) {
-                    is.enchant(Enchantments.FIRE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FIRE_PROTECTION), 1 + this.getRandom().nextInt(5));
                 }
                 if (this.getRandom().nextInt(6) == 1) {
-                    is.enchant(Enchantments.PROJECTILE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROJECTILE_PROTECTION), 1 + this.getRandom().nextInt(5));
                 }
                 if (this.getRandom().nextInt(2) != 1) {
                     break;
                 }
-                is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                 break;
             }
             case 10: {
                 is = this.dropItemRand(Items.IRON_LEGGINGS, 1);
                 if (this.getRandom().nextInt(6) == 1) {
-                    is.enchant(Enchantments.ALL_DAMAGE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROTECTION), 1 + this.getRandom().nextInt(5));
                 }
                 if (this.getRandom().nextInt(6) == 1) {
-                    is.enchant(Enchantments.BLAST_PROTECTION, 1 + this.getRandom().nextInt(5));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.BLAST_PROTECTION), 1 + this.getRandom().nextInt(5));
                 }
                 if (this.getRandom().nextInt(6) == 1) {
-                    is.enchant(Enchantments.FIRE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FIRE_PROTECTION), 1 + this.getRandom().nextInt(5));
                 }
                 if (this.getRandom().nextInt(6) == 1) {
-                    is.enchant(Enchantments.PROJECTILE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROJECTILE_PROTECTION), 1 + this.getRandom().nextInt(5));
                 }
                 if (this.getRandom().nextInt(2) != 1) {
                     break;
                 }
-                is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                 break;
             }
             case 11: {
                 is = this.dropItemRand(Items.IRON_BOOTS, 1);
                 if (this.getRandom().nextInt(6) == 1) {
-                    is.enchant(Enchantments.FALL_PROTECTION, 5 + this.getRandom().nextInt(5));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FEATHER_FALLING), 5 + this.getRandom().nextInt(5));
                 }
                 if (this.getRandom().nextInt(2) != 1) {
                     break;
                 }
-                is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                 break;
             }
             case 12: {
@@ -817,12 +817,7 @@ public class WaterDragon extends TamableAnimal {
             this.setAttacking(2);
             if (this.getRandom().nextInt(15) == 1) {
                 SmallFireball sf =
-                        new SmallFireball(
-                                this.level(),
-                                this,
-                                e.getX() - this.getX(),
-                                e.getY() + 0.75 - (this.getY() + yoff),
-                                e.getZ() - this.getZ());
+                        new SmallFireball(this.level(), this, new net.minecraft.world.phys.Vec3(e.getX() - this.getX(), e.getY() + 0.75 - (this.getY() + yoff), e.getZ() - this.getZ()));
                 sf.moveTo(
                         this.getX() - xzoff * Math.sin(Math.toRadians(this.getYHeadRot())),
                         this.getY() + yoff,
@@ -1076,7 +1071,7 @@ public class WaterDragon extends TamableAnimal {
     public AgeableMob getBreedOffspring(ServerLevel level, AgeableMob partner) {
         WaterDragon w = (WaterDragon) this.getType().create(level);
         if (this.isTame()) {
-            w.setTame(true);
+            w.setTame(true, true);
             w.setOwnerUUID(this.getOwnerUUID());
         }
         return w;
@@ -1088,8 +1083,8 @@ public class WaterDragon extends TamableAnimal {
 
     public boolean isBreedingItem(ItemStack par1ItemStack) {
         Item crystal =
-                ForgeRegistries.ITEMS.getValue(
-                        new ResourceLocation("chaospersists", "crystalapple"));
+                BuiltInRegistries.ITEM.get(
+                        ResourceLocation.fromNamespaceAndPath("chaospersists", "crystalapple"));
         if (crystal == null) {
             crystal = ChaosPersists.MyCrystalApple;
         }
@@ -1102,7 +1097,7 @@ public class WaterDragon extends TamableAnimal {
     }
 
     @Override
-    public boolean canBreatheUnderwater() {
-        return true;
+    protected int decreaseAirSupply(int airSupply) {
+        return airSupply;
     }
 }

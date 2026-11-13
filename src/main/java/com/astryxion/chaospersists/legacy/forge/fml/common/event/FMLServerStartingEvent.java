@@ -2,7 +2,7 @@ package com.astryxion.chaospersists.legacy.forge.fml.common.event;
 
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraftforge.event.RegisterCommandsEvent;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
 
 /** Legacy 1.12 server-start event — forwards to brigadier command registration. */
 public final class FMLServerStartingEvent {

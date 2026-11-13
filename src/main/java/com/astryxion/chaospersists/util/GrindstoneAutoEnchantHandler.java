@@ -1,5 +1,6 @@
 package com.astryxion.chaospersists.util;
 
+import net.neoforged.fml.common.EventBusSubscriber;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.entity.Bertha;
 import com.astryxion.chaospersists.item.EmeraldPickaxe;
@@ -19,11 +20,11 @@ import com.astryxion.chaospersists.item.UltimateShovel;
 import com.astryxion.chaospersists.item.UltimateSword;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.event.GrindstoneEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.neoforge.event.GrindstoneEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
 
-@Mod.EventBusSubscriber(modid = ChaosPersists.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(modid = ChaosPersists.MODID, bus = EventBusSubscriber.Bus.GAME)
 public final class GrindstoneAutoEnchantHandler {
 
     private GrindstoneAutoEnchantHandler() {}

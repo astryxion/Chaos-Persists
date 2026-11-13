@@ -75,11 +75,16 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import net.minecraft.client.player.LocalPlayer;
 
 public class Leon extends TamableAnimal implements ChaosFlyingMount {
+    @Override
+    public boolean isFood(net.minecraft.world.item.ItemStack stack) {
+        return stack.is(net.minecraft.world.item.Items.WHEAT);
+    }
+
     private static final EntityDataAccessor<Integer> INT20 =
             SynchedEntityData.defineId(Leon.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> INT21 =
@@ -120,6 +125,10 @@ public class Leon extends TamableAnimal implements ChaosFlyingMount {
 
     public Leon(EntityType<? extends Leon> type, Level level) {
         super(type, level);
+        this.setActivity(0);
+        this.setAttacking(0);
+        this.setBeingRidden(0);
+        this.setTame(false, true);
         this.xpReward = 300;
         this.moveSpeed = 0.4f;
         this.setOrderedToSit(false);
@@ -347,13 +356,13 @@ public class Leon extends TamableAnimal implements ChaosFlyingMount {
     }
 
     @Override
-    public EntityDimensions getDimensions(Pose pose) {
+    public EntityDimensions getDefaultDimensions(Pose pose) {
         return EntityDimensions.scalable(3.5f, 8.25f);
     }
 
     @Override
-    public void onAddedToWorld() {
-        super.onAddedToWorld();
+    public void onAddedToLevel() {
+        super.onAddedToLevel();
         this.refreshDimensions();
     }
 
@@ -381,6 +390,12 @@ public class Leon extends TamableAnimal implements ChaosFlyingMount {
     }
 
     @Override
+    protected net.minecraft.world.phys.Vec3 getPassengerAttachmentPoint(Entity passenger,
+            net.minecraft.world.entity.EntityDimensions dimensions, float scale) {
+        var attachment = super.getPassengerAttachmentPoint(passenger, dimensions, scale);
+        return new net.minecraft.world.phys.Vec3(attachment.x, getPassengersRidingOffset(), attachment.z);
+    }
+
     public double getPassengersRidingOffset() {
         return 3.75;
     }
@@ -391,7 +406,7 @@ public class Leon extends TamableAnimal implements ChaosFlyingMount {
             this.copyRiderRotation(passenger);
             float f = 0.65f;
             double x = this.getX() - (double) f * Math.sin(Math.toRadians(this.getYRot()));
-            double y = this.getY() + this.getPassengersRidingOffset() + passenger.getMyRidingOffset();
+            double y = this.getY() + this.getPassengersRidingOffset() + -passenger.getVehicleAttachmentPoint(this).y;
             double z = this.getZ() + (double) f * Math.cos(Math.toRadians(this.getYRot()));
             moveFunction.accept(passenger, x, y, z);
         } else {
@@ -474,18 +489,14 @@ public class Leon extends TamableAnimal implements ChaosFlyingMount {
     }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(INT20, 0);
-        this.entityData.define(INT21, 0);
-        this.entityData.define(INT22, 0);
-        this.entityData.define(CONTROL_STATE, (byte) 0);
-        this.entityData.define(FLYING, false);
-        this.entityData.define(HOVERING, false);
-        this.setActivity(0);
-        this.setAttacking(0);
-        this.setBeingRidden(0);
-        this.setTame(false);
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(INT20, 0);
+        builder.define(INT21, 0);
+        builder.define(INT22, 0);
+        builder.define(CONTROL_STATE, (byte) 0);
+        builder.define(FLYING, false);
+        builder.define(HOVERING, false);
         if (this.renderdata == null) {
             this.renderdata = new RenderInfo();
         }
@@ -578,15 +589,11 @@ public class Leon extends TamableAnimal implements ChaosFlyingMount {
     }
 
     @Override
-    protected void jumpFromGround() {
+    public void jumpFromGround() {
         this.setDeltaMovement(this.getDeltaMovement().add(0.0, 0.25, 0.0));
         super.jumpFromGround();
     }
 
-    @Override
-    public boolean canBreatheUnderwater() {
-        return false;
-    }
 
     @Override
     protected SoundEvent getAmbientSound() {
@@ -650,7 +657,7 @@ public class Leon extends TamableAnimal implements ChaosFlyingMount {
     }
 
     @Override
-    protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+    protected void dropCustomDeathLoot(net.minecraft.server.level.ServerLevel serverLevel, DamageSource source, boolean recentlyHit) {
         if (DatapackLoot.useEntityTable(this)) {
             return;
         }
@@ -970,7 +977,7 @@ public class Leon extends TamableAnimal implements ChaosFlyingMount {
                         continue;
                     }
                     ResourceLocation leonId =
-                            new ResourceLocation("chaospersists", "leonopteryx");
+                            ResourceLocation.fromNamespaceAndPath("chaospersists", "leonopteryx");
                     ResourceLocation norm = SpawnerFixHelper.normalizeSpawnerEntityId(id);
                     if (SpawnerFixHelper.entityIdsMatchForSpawner(norm, leonId)
                             || "Leonopteryx".equals(id.getPath())) {
@@ -1019,7 +1026,7 @@ public class Leon extends TamableAnimal implements ChaosFlyingMount {
                         continue;
                     }
                     ResourceLocation leonId =
-                            new ResourceLocation("chaospersists", "leonopteryx");
+                            ResourceLocation.fromNamespaceAndPath("chaospersists", "leonopteryx");
                     ResourceLocation norm = SpawnerFixHelper.normalizeSpawnerEntityId(id);
                     if (SpawnerFixHelper.entityIdsMatchForSpawner(norm, leonId)
                             || "Leonopteryx".equals(id.getPath())) {
@@ -1058,7 +1065,7 @@ public class Leon extends TamableAnimal implements ChaosFlyingMount {
     @OnlyIn(Dist.CLIENT)
     @Override
     public void lerpTo(
-            double par1, double par3, double par5, float par7, float par8, int par9, boolean interpolate) {
+            double par1, double par3, double par5, float par7, float par8, int par9) {
         if (this.isOrderedToSit() || this.landingTicks > 0) {
             this.boatPosRotationIncrements = 0;
             this.setPos(par1, par3, par5);
@@ -1071,7 +1078,7 @@ public class Leon extends TamableAnimal implements ChaosFlyingMount {
         if (this.isControlledByLocalInstance()) {
             return;
         }
-        super.lerpTo(par1, par3, par5, par7, par8, par9, interpolate);
+        super.lerpTo(par1, par3, par5, par7, par8, par9);
     }
 
     @OnlyIn(Dist.CLIENT)
@@ -1416,7 +1423,7 @@ public class Leon extends TamableAnimal implements ChaosFlyingMount {
                 && var2.is(net.minecraft.world.item.Items.DIAMOND)
                 && par1EntityPlayer.distanceToSqr(this) < 49.0) {
             if (!this.level().isClientSide) {
-                this.setTame(true);
+                this.setTame(true, true);
                 this.setOwnerUUID(par1EntityPlayer.getUUID());
                 spawnTamingParticles(true);
                 this.level().broadcastEntityEvent(this, (byte) 7);
@@ -1434,7 +1441,7 @@ public class Leon extends TamableAnimal implements ChaosFlyingMount {
             if (!var2.isEmpty() && var2.is(Items.BEEF) && par1EntityPlayer.distanceToSqr(this) < 49.0) {
                 if (!this.level().isClientSide) {
                     if (this.getRandom().nextInt(3) == 1) {
-                        this.setTame(true);
+                        this.setTame(true, true);
                         this.setOwnerUUID(par1EntityPlayer.getUUID());
                         spawnTamingParticles(true);
                         this.level().broadcastEntityEvent(this, (byte) 7);
@@ -1499,7 +1506,7 @@ public class Leon extends TamableAnimal implements ChaosFlyingMount {
                     && var2.is(Blocks.DEAD_BUSH.asItem())
                     && this.canOwnerReach(par1EntityPlayer)) {
                 if (!this.level().isClientSide) {
-                    this.setTame(false);
+                    this.setTame(false, true);
                     this.setOwnerUUID(null);
                     spawnTamingParticles(false);
                     this.level().broadcastEntityEvent(this, (byte) 6);

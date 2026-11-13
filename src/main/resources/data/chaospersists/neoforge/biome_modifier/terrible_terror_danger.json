@@ -1,0 +1,10 @@
+{
+  "type": "neoforge:add_spawns",
+  "spawners": {
+    "type": "chaospersists:terrible_terror",
+    "weight": 25,
+    "minCount": 3,
+    "maxCount": 6
+  },
+  "biomes": "chaospersists:danger_dimension"
+}

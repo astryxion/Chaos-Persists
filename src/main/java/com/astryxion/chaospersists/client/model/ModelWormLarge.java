@@ -193,29 +193,29 @@ public class ModelWormLarge extends EntityModel<WormLarge> {
     }
 
     @Override
-    public void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
-        this.head1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.head2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.head3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.head4.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.head5.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.neck1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.neck4.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.neck5.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.neck2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.neck3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.tail1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.tailtip.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.tail2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.tail3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.tail4.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.tooth1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.tooth2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.tooth3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.tooth4.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.tooth5.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.tooth6.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.tooth7.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.tooth8.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+    public void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, int color) {
+        this.head1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.head2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.head3.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.head4.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.head5.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.neck1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.neck4.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.neck5.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.neck2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.neck3.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.tail1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.tailtip.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.tail2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.tail3.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.tail4.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.tooth1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.tooth2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.tooth3.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.tooth4.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.tooth5.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.tooth6.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.tooth7.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.tooth8.render(poseStack, buffer, packedLight, packedOverlay, color);
     }
 }

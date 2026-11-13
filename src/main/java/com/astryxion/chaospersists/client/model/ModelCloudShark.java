@@ -66,14 +66,14 @@ public class ModelCloudShark extends EntityModel<CloudShark> {
     }
 
     @Override
-    public void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
-        this.body.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.head.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.jaw.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.topfin.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.bbody.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.fins.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.leftfin.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.rightfin.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+    public void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, int color) {
+        this.body.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.head.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.jaw.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.topfin.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.bbody.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.fins.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.leftfin.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.rightfin.render(poseStack, buffer, packedLight, packedOverlay, color);
     }
 }

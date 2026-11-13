@@ -1,0 +1,10 @@
+{
+  "type": "neoforge:add_spawns",
+  "spawners": {
+    "type": "chaospersists:moth",
+    "weight": 20,
+    "minCount": 1,
+    "maxCount": 5
+  },
+  "biomes": "chaospersists:village_dimension"
+}

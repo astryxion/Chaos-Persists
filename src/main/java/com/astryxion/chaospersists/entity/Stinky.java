@@ -64,6 +64,11 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 
 public class Stinky extends TamableAnimal {
+    @Override
+    public boolean isFood(net.minecraft.world.item.ItemStack stack) {
+        return stack.is(net.minecraft.world.item.Items.WHEAT);
+    }
+
     private static final EntityDataAccessor<Integer> SPYRO_FIRE =
             SynchedEntityData.defineId(Stinky.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> ACTIVITY =
@@ -89,6 +94,8 @@ public class Stinky extends TamableAnimal {
 
     public Stinky(EntityType<? extends Stinky> type, Level level) {
         super(type, level);
+        this.setOrderedToSit(false);
+        this.setTame(false, true);
         this.fireImmune();
         this.xpReward = 35;
         this.moveSpeed = 0.3f;
@@ -119,21 +126,20 @@ public class Stinky extends TamableAnimal {
     }
 
     @Override
-    public EntityDimensions getDimensions(Pose pose) {
+    public EntityDimensions getDefaultDimensions(Pose pose) {
         return EntityDimensions.scalable(0.75f, 0.75f);
     }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
         this.activity = 1;
-        this.entityData.define(SKIN_COLOR, 0);
-        this.entityData.define(ACTIVITY, this.activity);
-        this.entityData.define(SPYRO_FIRE, 1);
-        this.entityData.define(POOP_ENABLE, 1);
-        this.entityData.define(SKIN_LOCK, 0);
-        this.setOrderedToSit(false);
-        this.setTame(false);
+        builder.define(SKIN_COLOR, 0);
+        builder.define(ACTIVITY, this.activity);
+        builder.define(SPYRO_FIRE, 1);
+        builder.define(POOP_ENABLE, 1);
+        builder.define(SKIN_LOCK, 0);
+
     }
 
     @Override
@@ -204,8 +210,8 @@ public class Stinky extends TamableAnimal {
     }
 
     @Override
-    public boolean canBreatheUnderwater() {
-        return true;
+    protected int decreaseAirSupply(int airSupply) {
+        return airSupply;
     }
 
     public int mygetMaxHealth() {
@@ -252,7 +258,7 @@ public class Stinky extends TamableAnimal {
             if (!this.isTame()) {
                 if (!this.level().isClientSide) {
                     if (this.getRandom().nextInt(2) == 1) {
-                        this.setTame(true);
+                        this.setTame(true, true);
                         this.setOwnerUUID(par1EntityPlayer.getUUID());
                         spawnTamingParticles(true);
                         this.level().broadcastEntityEvent(this, (byte) 7);
@@ -286,7 +292,7 @@ public class Stinky extends TamableAnimal {
                 && par1EntityPlayer.distanceToSqr(this) < 16.0
                 && this.isOwnedBy(par1EntityPlayer)) {
             if (!this.level().isClientSide) {
-                this.setTame(false);
+                this.setTame(false, true);
                 this.setHealth((float) this.mygetMaxHealth());
                 this.setOwnerUUID(null);
                 spawnTamingParticles(false);
@@ -427,11 +433,11 @@ public class Stinky extends TamableAnimal {
     }
 
     @Override
-    protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+    protected void dropCustomDeathLoot(net.minecraft.server.level.ServerLevel serverLevel, DamageSource source, boolean recentlyHit) {
         if (DatapackLoot.useEntityTable(this)) {
             return;
         }
-        super.dropCustomDeathLoot(source, looting, recentlyHit);
+        super.dropCustomDeathLoot(serverLevel, source, recentlyHit);
         if (this.isTame()) {
             // Was `var4 < ++var3` (OreSpawn copy) — increments every check and never ends.
             int var3 = this.getRandom().nextInt(4) + 1;

@@ -56,16 +56,15 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
-import net.minecraftforge.client.event.RenderGuiOverlayEvent;
-import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.neoforged.neoforge.client.event.RenderGuiEvent;
+import net.neoforged.bus.api.SubscribeEvent;
 
 public class GirlfriendOverlayGui {
     private final Minecraft mc;
     private static final ResourceLocation TEXTURE =
-            new ResourceLocation("chaospersists", "textures/entity/girlfriendgui.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/girlfriendgui.png");
     private static final ResourceLocation LEGACY_TEXTURE =
-            new ResourceLocation("chaospersists", "textures/girlfriendgui.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/girlfriendgui.png");
     private static final int TEXTURE_WIDTH = 256;
     private static final int TEXTURE_HEIGHT = 256;
 
@@ -74,10 +73,7 @@ public class GirlfriendOverlayGui {
     }
 
     @SubscribeEvent
-    public void onRenderOverlay(RenderGuiOverlayEvent.Post event) {
-        if (event.getOverlay() != VanillaGuiOverlay.HOTBAR.type()) {
-            return;
-        }
+    public void onRenderOverlay(RenderGuiEvent.Post event) {
 
         int u = 0;
         int v = 0;

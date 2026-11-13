@@ -22,7 +22,7 @@ public class SkateBow extends Item {
     }
 
     @Override
-    public int getUseDuration(ItemStack stack) {
+    public int getUseDuration(ItemStack stack, net.minecraft.world.entity.LivingEntity user) {
         return 72000;
     }
 
@@ -50,7 +50,7 @@ public class SkateBow extends Item {
             return;
         }
 
-        int charge = this.getUseDuration(stack) - timeLeft;
+        int charge = this.getUseDuration(stack, entity) - timeLeft;
         float pull = charge / 20.0F;
         pull = (pull * pull + pull * 2.0F) / 3.0F;
         if (pull < 0.1F) {
@@ -68,16 +68,16 @@ public class SkateBow extends Item {
             arrow.setCritArrow(true);
         }
 
-        int punchLevel = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.PUNCH_ARROWS, stack);
+        int punchLevel = com.astryxion.chaospersists.util.ChaosEnchantments.level(Enchantments.PUNCH, stack);
         if (punchLevel > 0) {
             arrow.setKnockbackStrength(punchLevel);
         }
 
-        if (EnchantmentHelper.getItemEnchantmentLevel(Enchantments.FLAMING_ARROWS, stack) > 0) {
+        if (com.astryxion.chaospersists.util.ChaosEnchantments.level(Enchantments.FLAME, stack) > 0) {
             arrow.setSharedFlagOnFire(true);
         }
 
-        stack.hurtAndBreak(1, player, p -> p.broadcastBreakEvent(player.getUsedItemHand()));
+        stack.hurtAndBreak(1, player, net.minecraft.world.entity.LivingEntity.getSlotForHand(player.getUsedItemHand()));
 
         level.playSound(
                 null,

@@ -67,8 +67,8 @@ public class Shoes extends ThrowableProjectile {
     }
 
     @Override
-    protected void defineSynchedData() {
-        this.entityData.define(SHOE_ID, 0);
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        builder.define(SHOE_ID, 0);
     }
 
     public int getShoeId() {

@@ -110,16 +110,13 @@ public class ModelBandP extends EntityModel<BandP> {
             VertexConsumer buffer,
             int packedLight,
             int packedOverlay,
-            float red,
-            float green,
-            float blue,
-            float alpha) {
-        this.belly.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.chest.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.head.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.lleg.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.rleg.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.larm.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.rarm.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+            int color) {
+        this.belly.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.chest.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.head.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.lleg.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.rleg.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.larm.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.rarm.render(poseStack, buffer, packedLight, packedOverlay, color);
     }
 }

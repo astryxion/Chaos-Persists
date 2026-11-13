@@ -26,7 +26,6 @@ package com.astryxion.chaospersists.core;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.function.Function;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
@@ -40,9 +39,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
-import net.minecraftforge.common.util.ITeleporter;
 
-public class ChaosTeleporter implements ITeleporter {
+public class ChaosTeleporter {
     private final ServerLevel world;
     private final Level oldWorld;
     private final int newdim;
@@ -53,16 +51,6 @@ public class ChaosTeleporter implements ITeleporter {
         this.newdim = dim;
     }
 
-    @Override
-    public Entity placeEntity(
-            Entity par1Entity,
-            ServerLevel currentWorld,
-            ServerLevel destWorld,
-            float rotationYaw,
-            Function<Boolean, Entity> repositionEntity) {
-        this.justPutMe(destWorld, par1Entity);
-        return par1Entity;
-    }
 
     private boolean isGroundBlock(Block bid) {
         if (bid == Blocks.AIR) {

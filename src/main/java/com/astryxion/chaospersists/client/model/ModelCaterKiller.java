@@ -130,7 +130,7 @@ public class ModelCaterKiller extends EntityModel<CaterKiller> {
     }
 
     @Override
-    public void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
+    public void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, int color) {
         CaterKiller entity = this.animEntity;
         float ageInTicks = this.animAgeInTicks;
         float limbSwingAmount = this.animLimbSwingAmount;
@@ -155,14 +155,14 @@ public class ModelCaterKiller extends EntityModel<CaterKiller> {
         this.ltusk2.yRot = 0.802f + newangle;
         newangle = Mth.cos((float)(ageInTicks * 2.3f * this.wingspeed)) * 3.1415927f * 0.08f;
         this.rtusk2.yRot = -0.802f + newangle;
-        this.Head.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.falsehead.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.ltusk1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.ltusk2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.rtusk1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.rtusk2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.ljaw.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.rjaw.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.Head.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.falsehead.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.ltusk1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.ltusk2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.rtusk1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.rtusk2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.ljaw.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.rjaw.render(poseStack, buffer, packedLight, packedOverlay, color);
         for (i = 0; i < 3; ++i) {
             this.seg1.y = -8.0f + headoff / (float)(i + 1) + (float)(8 * i);
             this.seg1lspike.y = -32.0f + headoff / (float)(i + 1) + (float)(8 * i);
@@ -183,13 +183,13 @@ public class ModelCaterKiller extends EntityModel<CaterKiller> {
             newangle = entity.getAttacking() != 0 ? Mth.cos((float)((float)((double)(ageInTicks * 2.91f * this.wingspeed) + 0.39269908169872414 * (double)i))) * 3.1415927f * 0.15f : Mth.cos((float)((float)((double)(ageInTicks * 0.35f * this.wingspeed) + 0.39269908169872414 * (double)i))) * 3.1415927f * 0.04f;
             this.seg1lleg.xRot = newangle;
             this.seg1rleg.xRot = - newangle;
-            this.seg1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-            this.seg1lspike.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-            this.seg1rspike.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-            this.seg1ltopspike.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-            this.seg1rtopspike.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-            this.seg1lleg.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-            this.seg1rleg.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+            this.seg1.render(poseStack, buffer, packedLight, packedOverlay, color);
+            this.seg1lspike.render(poseStack, buffer, packedLight, packedOverlay, color);
+            this.seg1rspike.render(poseStack, buffer, packedLight, packedOverlay, color);
+            this.seg1ltopspike.render(poseStack, buffer, packedLight, packedOverlay, color);
+            this.seg1rtopspike.render(poseStack, buffer, packedLight, packedOverlay, color);
+            this.seg1lleg.render(poseStack, buffer, packedLight, packedOverlay, color);
+            this.seg1rleg.render(poseStack, buffer, packedLight, packedOverlay, color);
         }
         for (i = 0; i < 6; ++i) {
             zdist = Mth.cos((float)(ageInTicks * 1.7f * this.wingspeed + zpi)) * 1.5f * limbSwingAmount;
@@ -202,13 +202,13 @@ public class ModelCaterKiller extends EntityModel<CaterKiller> {
             this.seg2rspike.z = 39.0f + (16.0f + zdist) * (float)i;
             this.seg2lspike.zRot = newangle = Mth.cos((float)((float)((double)(ageInTicks * 0.4f * this.wingspeed) - 0.39269908169872414 * (double)i))) * 3.1415927f * 0.07f;
             this.seg2rspike.zRot = - newangle;
-            this.seg2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-            this.seg2lfoot.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-            this.seg2rfoot.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-            this.seg2ltopspike.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-            this.seg2rtopspike.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-            this.seg2lspike.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-            this.seg2rspike.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+            this.seg2.render(poseStack, buffer, packedLight, packedOverlay, color);
+            this.seg2lfoot.render(poseStack, buffer, packedLight, packedOverlay, color);
+            this.seg2rfoot.render(poseStack, buffer, packedLight, packedOverlay, color);
+            this.seg2ltopspike.render(poseStack, buffer, packedLight, packedOverlay, color);
+            this.seg2rtopspike.render(poseStack, buffer, packedLight, packedOverlay, color);
+            this.seg2lspike.render(poseStack, buffer, packedLight, packedOverlay, color);
+            this.seg2rspike.render(poseStack, buffer, packedLight, packedOverlay, color);
             zpi += 0.7853982f;
         }
         this.seg3lfoot.z = this.seg3.z = this.seg2rspike.z + 16.0f;
@@ -230,14 +230,14 @@ public class ModelCaterKiller extends EntityModel<CaterKiller> {
         this.seg3lbackspike.yRot = 0.28f + newangle;
         newangle = Mth.cos((float)(ageInTicks * 1.3f * this.wingspeed)) * 3.1415927f * 0.04f;
         this.seg3rbackspike.yRot = -0.28f + newangle;
-        this.seg3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.seg3lfoot.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.seg3rfoot.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.seg3lspike.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.seg3rspike.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.seg3ltopspike.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.seg3rtopspike.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.seg3lbackspike.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.seg3rbackspike.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        this.seg3.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.seg3lfoot.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.seg3rfoot.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.seg3lspike.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.seg3rspike.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.seg3ltopspike.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.seg3rtopspike.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.seg3lbackspike.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.seg3rbackspike.render(poseStack, buffer, packedLight, packedOverlay, color);
     }
 }

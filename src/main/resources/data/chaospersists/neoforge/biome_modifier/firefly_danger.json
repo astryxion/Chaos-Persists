@@ -1,0 +1,10 @@
+{
+  "type": "neoforge:add_spawns",
+  "spawners": {
+    "type": "chaospersists:firefly",
+    "weight": 10,
+    "minCount": 4,
+    "maxCount": 8
+  },
+  "biomes": "chaospersists:danger_dimension"
+}

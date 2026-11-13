@@ -111,26 +111,26 @@ public class ModelAnt extends EntityModel<EntityAnt> {
     }
 
     @Override
-    public void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
-        this.thorax.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.thorax1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.thorax3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.abdomen.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.abdomen1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.head.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.jawsr.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.jawsl.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.llegtop1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.llegbot1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.llegtop2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.llegbot2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.llegtop3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.llegbot3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.rlegtop1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.rlegbot1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.rlegtop2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.rlegbot2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.rlegtop3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.rlegbot3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+    public void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, int color) {
+        this.thorax.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.thorax1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.thorax3.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.abdomen.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.abdomen1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.head.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.jawsr.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.jawsl.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.llegtop1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.llegbot1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.llegtop2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.llegbot2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.llegtop3.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.llegbot3.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.rlegtop1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.rlegbot1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.rlegtop2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.rlegbot2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.rlegtop3.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.rlegbot3.render(poseStack, buffer, packedLight, packedOverlay, color);
     }
 }

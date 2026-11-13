@@ -19,7 +19,7 @@ public class ChaosChaseMoveControl extends MoveControl {
         super(mob);
         // 1.7 EntityLivingBase.stepHeight was 0.5 with MoveHelper jumps for full blocks.
         // 1.0 lets these walkers clear a full block (with vanilla jump still available above that).
-        mob.setMaxUpStep(1.0F);
+        mob.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.STEP_HEIGHT).setBaseValue(1.0F);
     }
 
     @Override

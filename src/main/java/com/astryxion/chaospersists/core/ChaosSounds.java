@@ -3,7 +3,7 @@ package com.astryxion.chaospersists.core;
 import java.util.function.Consumer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraftforge.registries.RegisterEvent;
+import net.neoforged.neoforge.registries.RegisterEvent;
 
 /**
  * All Chaos Persists / OreSpawn sound events. Mapped from 1.7.10 orespawn sounds.json.
@@ -143,12 +143,12 @@ public class ChaosSounds {
     public static SoundEvent WTF_LIVING;
 
     private static SoundEvent create(String name) {
-        ResourceLocation loc = new ResourceLocation(MODID, name);
+        ResourceLocation loc = ResourceLocation.fromNamespaceAndPath(MODID, name);
         return SoundEvent.createVariableRangeEvent(loc);
     }
 
     private static void register(RegisterEvent event, String name, Consumer<SoundEvent> assign) {
-        ResourceLocation loc = new ResourceLocation(MODID, name);
+        ResourceLocation loc = ResourceLocation.fromNamespaceAndPath(MODID, name);
         SoundEvent sound = SoundEvent.createVariableRangeEvent(loc);
         assign.accept(sound);
         event.register(net.minecraft.core.registries.Registries.SOUND_EVENT, loc, () -> sound);

@@ -18,7 +18,7 @@ import org.joml.Matrix4f;
 public class RenderSpinner extends EntityRenderer<Entity> {
     public int spinItemIconIndex = 160;
     private static final ResourceLocation TEXTURE =
-            new ResourceLocation("chaospersists", "textures/entity/spinners.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/spinners.png");
 
     public RenderSpinner(EntityRendererProvider.Context context) {
         super(context);
@@ -56,35 +56,34 @@ public class RenderSpinner extends EntityRenderer<Entity> {
         float hy = 0.25f;
         PoseStack.Pose pose = poseStack.last();
         Matrix4f matrix = pose.pose();
-        Matrix3f normal = pose.normal();
-        buffer.vertex(matrix, 0.0f - hx, 0.0f - hy, 0.0f)
-                .color(255, 255, 255, 255)
-                .uv(u0, v1)
-                .overlayCoords(OverlayTexture.NO_OVERLAY)
-                .uv2(packedLight)
-                .normal(normal, 0.0f, 1.0f, 0.0f)
-                .endVertex();
-        buffer.vertex(matrix, size - hx, 0.0f - hy, 0.0f)
-                .color(255, 255, 255, 255)
-                .uv(u1, v1)
-                .overlayCoords(OverlayTexture.NO_OVERLAY)
-                .uv2(packedLight)
-                .normal(normal, 0.0f, 1.0f, 0.0f)
-                .endVertex();
-        buffer.vertex(matrix, size - hx, size - hy, 0.0f)
-                .color(255, 255, 255, 255)
-                .uv(u1, v0)
-                .overlayCoords(OverlayTexture.NO_OVERLAY)
-                .uv2(packedLight)
-                .normal(normal, 0.0f, 1.0f, 0.0f)
-                .endVertex();
-        buffer.vertex(matrix, 0.0f - hx, size - hy, 0.0f)
-                .color(255, 255, 255, 255)
-                .uv(u0, v0)
-                .overlayCoords(OverlayTexture.NO_OVERLAY)
-                .uv2(packedLight)
-                .normal(normal, 0.0f, 1.0f, 0.0f)
-                .endVertex();
+        buffer.addVertex(matrix, 0.0f - hx, 0.0f - hy, 0.0f)
+                .setColor(255, 255, 255, 255)
+                .setUv(u0, v1)
+                .setOverlay(OverlayTexture.NO_OVERLAY)
+                .setLight(packedLight)
+                .setNormal(pose, 0.0f, 1.0f, 0.0f)
+                ;
+        buffer.addVertex(matrix, size - hx, 0.0f - hy, 0.0f)
+                .setColor(255, 255, 255, 255)
+                .setUv(u1, v1)
+                .setOverlay(OverlayTexture.NO_OVERLAY)
+                .setLight(packedLight)
+                .setNormal(pose, 0.0f, 1.0f, 0.0f)
+                ;
+        buffer.addVertex(matrix, size - hx, size - hy, 0.0f)
+                .setColor(255, 255, 255, 255)
+                .setUv(u1, v0)
+                .setOverlay(OverlayTexture.NO_OVERLAY)
+                .setLight(packedLight)
+                .setNormal(pose, 0.0f, 1.0f, 0.0f)
+                ;
+        buffer.addVertex(matrix, 0.0f - hx, size - hy, 0.0f)
+                .setColor(255, 255, 255, 255)
+                .setUv(u0, v0)
+                .setOverlay(OverlayTexture.NO_OVERLAY)
+                .setLight(packedLight)
+                .setNormal(pose, 0.0f, 1.0f, 0.0f)
+                ;
     }
 
     @Override

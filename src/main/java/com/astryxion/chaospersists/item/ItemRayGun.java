@@ -50,7 +50,7 @@ public class ItemRayGun extends Item {
                 Math.cos(Math.toRadians(player.getYRot() - 90.0f)) * 1.5,
                 0.3,
                 Math.sin(Math.toRadians(player.getYRot() - 90.0f)) * 1.5);
-        stack.hurtAndBreak(1, player, p -> p.broadcastBreakEvent(hand));
+        stack.hurtAndBreak(1, player, net.minecraft.world.entity.LivingEntity.getSlotForHand(hand));
         player.awardStat(Stats.ITEM_USED.get(this));
         return InteractionResultHolder.sidedSuccess(stack, world.isClientSide);
     }

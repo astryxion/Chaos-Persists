@@ -21,7 +21,6 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
@@ -44,7 +43,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 public class Brutalfly extends Monster {
     private BlockPos currentFlightTarget = null;
@@ -72,10 +71,6 @@ public class Brutalfly extends Monster {
                 .add(Attributes.ARMOR, (double) ChaosPersists.Brutalfly_stats.defense);
     }
 
-    @Override
-    public MobType getMobType() {
-        return MobType.ARTHROPOD;
-    }
 
     @Override
     public boolean removeWhenFarAway(double distanceToClosestPlayer) {
@@ -111,7 +106,7 @@ public class Brutalfly extends Monster {
 
     @Override
     protected net.minecraft.sounds.SoundEvent getDeathSound() {
-        return SoundEvents.GENERIC_EXPLODE;
+        return SoundEvents.GENERIC_EXPLODE.value();
     }
 
     @Override
@@ -448,7 +443,7 @@ public class Brutalfly extends Monster {
     }
 
     @Override
-    protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+    protected void dropCustomDeathLoot(net.minecraft.server.level.ServerLevel serverLevel, DamageSource source, boolean recentlyHit) {
         if (DatapackLoot.useEntityTable(this)) {
             return;
         }
@@ -470,7 +465,7 @@ public class Brutalfly extends Monster {
         for (var4 = 0; var4 < 53; ++var4) {
             this.dropItemRand(Items.GOLD_NUGGET, 1);
         }
-        if (this.level() instanceof ServerLevel serverLevel) {
+        {
             for (var4 = 0; var4 < 20; ++var4) {
                 spawnCreature(serverLevel, "butterfly", this.getX() + 0.5, this.getY() + 1.0, this.getZ() + 0.5);
             }
@@ -480,9 +475,9 @@ public class Brutalfly extends Monster {
     public static Entity spawnCreature(ServerLevel level, String par1, double par2, double par4, double par6) {
         ResourceLocation res =
                 par1.contains(":")
-                        ? new ResourceLocation(par1)
-                        : new ResourceLocation("chaospersists", par1);
-        EntityType<?> type = ForgeRegistries.ENTITY_TYPES.getValue(res);
+                        ? ResourceLocation.parse(par1)
+                        : ResourceLocation.fromNamespaceAndPath("chaospersists", par1);
+        EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.get(res);
         if (type == null) {
             return null;
         }
@@ -504,12 +499,7 @@ public class Brutalfly extends Monster {
         double cz = this.getZ() + xzoff * Math.cos(Math.toRadians(this.getYRot()));
         if (this.level().getDifficulty() == Difficulty.EASY) {
             SmallFireball sf =
-                    new SmallFireball(
-                            this.level(),
-                            this,
-                            par1.getX() - cx,
-                            par1.getY() + 0.55 - (this.getY() + yoff),
-                            par1.getZ() - cz);
+                    new SmallFireball(this.level(), this, new net.minecraft.world.phys.Vec3(par1.getX() - cx, par1.getY() + 0.55 - (this.getY() + yoff), par1.getZ() - cz));
             sf.moveTo(cx, this.getY() + yoff, cz, this.getYRot(), 0.0f);
             this.level()
                     .playSound(
@@ -525,12 +515,7 @@ public class Brutalfly extends Monster {
         } else if (this.level().getDifficulty() == Difficulty.NORMAL) {
             if (this.getRandom().nextInt(2) == 0) {
                 SmallFireball sf =
-                        new SmallFireball(
-                                this.level(),
-                                this,
-                                par1.getX() - cx,
-                                par1.getY() + 0.55 - (this.getY() + yoff),
-                                par1.getZ() - cz);
+                        new SmallFireball(this.level(), this, new net.minecraft.world.phys.Vec3(par1.getX() - cx, par1.getY() + 0.55 - (this.getY() + yoff), par1.getZ() - cz));
                 sf.moveTo(cx, this.getY() + yoff, cz, this.getYRot(), 0.0f);
                 this.level()
                         .playSound(

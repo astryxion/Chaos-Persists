@@ -1,6 +1,6 @@
 package com.astryxion.chaospersists.world.dimension.chunkgenerator;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.lang.reflect.Field;
 import java.util.List;
@@ -31,8 +31,8 @@ public class ChaosIslandsChunkGenerator extends ChaosChunkGeneratorWrapper {
     public static final int ISLAND_TOP = 128;
     public static final int SEA_LEVEL = 64;
 
-    public static final Codec<ChaosIslandsChunkGenerator> CODEC =
-            RecordCodecBuilder.create(instance ->
+    public static final MapCodec<ChaosIslandsChunkGenerator> CODEC =
+            RecordCodecBuilder.mapCodec(instance ->
                     instance.group(ChunkGenerator.CODEC.fieldOf("wrapped_generator").forGetter(generator -> generator.delegate))
                             .apply(instance, ChaosIslandsChunkGenerator::new));
 
@@ -45,7 +45,7 @@ public class ChaosIslandsChunkGenerator extends ChaosChunkGeneratorWrapper {
     }
 
     @Override
-    protected Codec<? extends ChunkGenerator> codec() {
+    protected MapCodec<? extends ChunkGenerator> codec() {
         return CODEC;
     }
 
@@ -67,9 +67,7 @@ public class ChaosIslandsChunkGenerator extends ChaosChunkGeneratorWrapper {
     }
 
     @Override
-    public CompletableFuture<ChunkAccess> fillFromNoise(
-            Executor executor,
-            Blender blender,
+    public CompletableFuture<ChunkAccess> fillFromNoise(Blender blender,
             RandomState random,
             StructureManager structureManager,
             ChunkAccess chunkAccess) {

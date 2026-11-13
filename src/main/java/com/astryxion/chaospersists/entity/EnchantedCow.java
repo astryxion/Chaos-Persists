@@ -33,7 +33,8 @@ public class EnchantedCow extends RedCow {
     }
 
     @Override
-    protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+    protected void dropCustomDeathLoot(net.minecraft.server.level.ServerLevel serverLevel, DamageSource source, boolean recentlyHit) {
+        int looting = com.astryxion.chaospersists.util.ChaosEnchantments.looting(source);
         if (DatapackLoot.useEntityTable(this)) {
             return;
         }
@@ -43,6 +44,6 @@ public class EnchantedCow extends RedCow {
         }
         this.spawnAtLocation(new ItemStack(Items.GOLDEN_APPLE, 2));
         this.dropEnchantedGoldenApple();
-        super.dropCustomDeathLoot(source, looting, recentlyHit);
+        super.dropCustomDeathLoot(serverLevel, source, recentlyHit);
     }
 }

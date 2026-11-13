@@ -1,22 +1,35 @@
 package com.astryxion.chaospersists.network;
 
-import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.entity.util.ICustomMoveController;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.fml.LogicalSide;
-import net.minecraftforge.network.NetworkEvent;
 
-import java.util.function.Supplier;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 /**
  * Ice and Fire 1.20.1 {@code MessageDragonControl}. Control bits only — never {@code setPos} for
  * flying mounts, or server-side movement checks fail ("moved wrongly").
  */
-public class MessageMountControl {
+public class MessageMountControl implements CustomPacketPayload {
+    public static final Type<MessageMountControl> TYPE =
+            new Type<>(ResourceLocation.fromNamespaceAndPath("chaospersists", "mount_control"));
+    public static final StreamCodec<FriendlyByteBuf, MessageMountControl> CODEC =
+            StreamCodec.of((buffer, message) -> encode(message, buffer), MessageMountControl::decode);
+
+    @Override
+    public Type<MessageMountControl> type() {
+        return TYPE;
+    }
+
+    public static void register(RegisterPayloadHandlersEvent event) {
+        event.registrar("1").playToServer(TYPE, CODEC, MessageMountControl::handle);
+    }
+
     public int dragonId;
     public byte controlState;
     private double posX;
@@ -47,32 +60,8 @@ public class MessageMountControl {
         buf.writeDouble(message.posZ);
     }
 
-    /**
-     * Ice and Fire {@code MessageHandler}: run on both physical dists so integrated singleplayer
-     * (Dist.CLIENT + logical server) actually applies the packet.
-     */
-    public static void handle(final MessageMountControl message, final Supplier<NetworkEvent.Context> contextSupplier) {
-        NetworkEvent.Context context = contextSupplier.get();
-        Player sender = context.getSender();
-        context.enqueueWork(
-                () -> {
-                    DistExecutor.unsafeRunWhenOn(
-                            Dist.DEDICATED_SERVER, () -> () -> apply(message, sender, context));
-                    DistExecutor.unsafeRunWhenOn(
-                            Dist.CLIENT, () -> () -> apply(message, sender, context));
-                });
-        context.setPacketHandled(true);
-    }
-
-    private static void apply(
-            MessageMountControl message, Player sender, NetworkEvent.Context context) {
-        Player player = sender;
-        if (context.getDirection().getReceptionSide() == LogicalSide.CLIENT) {
-            player = ChaosPersists.proxy.getClientSidePlayer();
-        }
-        if (player == null) {
-            return;
-        }
+    private static void handle(MessageMountControl message, IPayloadContext context) {
+        Player player = context.player();
         Entity entity = player.getVehicle();
         if (!(entity instanceof ICustomMoveController) || entity.getId() != message.dragonId) {
             entity = player.level().getEntity(message.dragonId);

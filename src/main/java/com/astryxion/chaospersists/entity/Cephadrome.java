@@ -2,8 +2,8 @@
  * Ported from Chaos Persists 1.12.2 — original decompiled with CFR 0_125.
  * 
  * Could not load the following classes:
- *  net.minecraftforge.fml.relauncher.Side
- *  net.minecraftforge.fml.relauncher.SideOnly
+ *  net.neoforged.fml.relauncher.Side
+ *  net.neoforged.fml.relauncher.SideOnly
  *  com.astryxion.chaospersists.Cephadrome
  *  com.astryxion.chaospersists.GammaMetroid
  *  com.astryxion.chaospersists.GenericTargetSorter
@@ -125,9 +125,9 @@ import net.minecraft.world.level.block.entity.SpawnerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerInputPacket;
@@ -170,6 +170,8 @@ public class Cephadrome extends PathfinderMob implements ChaosFlyingMount {
 
         public Cephadrome(EntityType<? extends Cephadrome> type, Level level) {
         super(type, level);
+        this.setActivity(0);
+        this.setAttacking(0);
         this.xpReward = 200;
         this.targetSorter = new GenericTargetSorter(this);
         this.renderdata = new RenderInfo();
@@ -179,7 +181,7 @@ public class Cephadrome extends PathfinderMob implements ChaosFlyingMount {
         this.targetSelector.addGoal(1, new ChaosHurtByTargetGoal(this));
         this.moveControl = new ChaosChaseMoveControl(this);
         // 1.1 clears a full block via collide() step-up; 1.0 often fails on exact 1-block height.
-        this.setMaxUpStep(1.1F);
+        getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.STEP_HEIGHT).setBaseValue(1.1F);
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -233,6 +235,12 @@ public class Cephadrome extends PathfinderMob implements ChaosFlyingMount {
     }
 
     @Override
+    protected net.minecraft.world.phys.Vec3 getPassengerAttachmentPoint(Entity passenger,
+            net.minecraft.world.entity.EntityDimensions dimensions, float scale) {
+        var attachment = super.getPassengerAttachmentPoint(passenger, dimensions, scale);
+        return new net.minecraft.world.phys.Vec3(attachment.x, getPassengersRidingOffset(), attachment.z);
+    }
+
     public double getPassengersRidingOffset() {
         return 2.2;
     }
@@ -243,7 +251,7 @@ public class Cephadrome extends PathfinderMob implements ChaosFlyingMount {
             this.copyRiderRotation(passenger);
             float f = 0.75f;
             double x = this.getX() - (double) f * Math.sin(Math.toRadians(this.getYRot()));
-            double y = this.getY() + this.getPassengersRidingOffset() + passenger.getMyRidingOffset();
+            double y = this.getY() + this.getPassengersRidingOffset() + -passenger.getVehicleAttachmentPoint(this).y;
             double z = this.getZ() + (double) f * Math.cos(Math.toRadians(this.getYRot()));
             moveFunction.accept(passenger, x, y, z);
         } else {
@@ -313,15 +321,13 @@ public class Cephadrome extends PathfinderMob implements ChaosFlyingMount {
     }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(ATTACKING, (byte)0);
-        this.entityData.define(STATE2, (byte)0);
-        this.entityData.define(CONTROL_STATE, (byte) 0);
-        this.entityData.define(FLYING, false);
-        this.entityData.define(HOVERING, false);
-        this.setActivity(0);
-        this.setAttacking(0);
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(ATTACKING, (byte)0);
+        builder.define(STATE2, (byte)0);
+        builder.define(CONTROL_STATE, (byte) 0);
+        builder.define(FLYING, false);
+        builder.define(HOVERING, false);
         if (this.renderdata == null) {
             this.renderdata = new RenderInfo();
         }
@@ -404,7 +410,7 @@ public class Cephadrome extends PathfinderMob implements ChaosFlyingMount {
     }
 
     @Override
-    protected void jumpFromGround() {
+    public void jumpFromGround() {
         this.setDeltaMovement(this.getDeltaMovement().add(0.0, 0.1, 0.0));
         super.jumpFromGround();
     }
@@ -462,11 +468,11 @@ public class Cephadrome extends PathfinderMob implements ChaosFlyingMount {
     }
 
     @Override
-    protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+    protected void dropCustomDeathLoot(net.minecraft.server.level.ServerLevel serverLevel, DamageSource source, boolean recentlyHit) {
         if (DatapackLoot.useEntityTable(this)) {
             return;
         }
-        super.dropCustomDeathLoot(source, looting, recentlyHit);
+        super.dropCustomDeathLoot(serverLevel, source, recentlyHit);
         int var4;
         int i = 4 + this.getRandom().nextInt(6);
         for (var4 = 0; var4 < i; ++var4) {
@@ -497,133 +503,133 @@ public class Cephadrome extends PathfinderMob implements ChaosFlyingMount {
                 case 3: {
                     is = this.dropItemRand(ChaosPersists.MyRubySword, 1);
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.SHARPNESS, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.SHARPNESS), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.BANE_OF_ARTHROPODS, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.BANE_OF_ARTHROPODS), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.KNOCKBACK, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.KNOCKBACK), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.MOB_LOOTING, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.LOOTING), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(2) == 1) {
-                        is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.FIRE_ASPECT, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FIRE_ASPECT), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) != 1) continue block17;
-                    is.enchant(Enchantments.SHARPNESS, 1 + this.getRandom().nextInt(5));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.SHARPNESS), 1 + this.getRandom().nextInt(5));
                     continue block17;
                 }
                 case 4: {
                     is = this.dropItemRand(ChaosPersists.MyRubyShovel, 1);
                     if (this.getRandom().nextInt(2) == 1) {
-                        is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                     }
                     if (this.getRandom().nextInt(6) != 1) continue block17;
-                    is.enchant(Enchantments.BLOCK_EFFICIENCY, 1 + this.getRandom().nextInt(5));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.EFFICIENCY), 1 + this.getRandom().nextInt(5));
                     continue block17;
                 }
                 case 5: {
                     is = this.dropItemRand(ChaosPersists.MyRubyPickaxe, 1);
                     if (this.getRandom().nextInt(2) == 1) {
-                        is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.BLOCK_EFFICIENCY, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.EFFICIENCY), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) != 1) continue block17;
-                    is.enchant(Enchantments.BLOCK_FORTUNE, 1 + this.getRandom().nextInt(5));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FORTUNE), 1 + this.getRandom().nextInt(5));
                     continue block17;
                 }
                 case 6: {
                     is = this.dropItemRand(ChaosPersists.MyRubyAxe, 1);
                     if (this.getRandom().nextInt(2) == 1) {
-                        is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                     }
                     if (this.getRandom().nextInt(6) != 1) continue block17;
-                    is.enchant(Enchantments.BLOCK_EFFICIENCY, 1 + this.getRandom().nextInt(5));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.EFFICIENCY), 1 + this.getRandom().nextInt(5));
                     continue block17;
                 }
                 case 7: {
                     is = this.dropItemRand(ChaosPersists.MyRubyHoe, 1);
                     if (this.getRandom().nextInt(2) == 1) {
-                        is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                     }
                     if (this.getRandom().nextInt(6) != 1) continue block17;
-                    is.enchant(Enchantments.BLOCK_EFFICIENCY, 1 + this.getRandom().nextInt(5));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.EFFICIENCY), 1 + this.getRandom().nextInt(5));
                     continue block17;
                 }
                 case 8: {
                     is = this.dropItemRand((Item)ChaosPersists.RubyHelmet, 1);
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.ALL_DAMAGE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROTECTION), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.BLAST_PROTECTION, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.BLAST_PROTECTION), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.FIRE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FIRE_PROTECTION), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.PROJECTILE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROJECTILE_PROTECTION), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(2) == 1) {
-                        is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.RESPIRATION, 1 + this.getRandom().nextInt(2));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.RESPIRATION), 1 + this.getRandom().nextInt(2));
                     }
                     if (this.getRandom().nextInt(6) != 1) continue block17;
-                    is.enchant(Enchantments.AQUA_AFFINITY, 1 + this.getRandom().nextInt(5));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.AQUA_AFFINITY), 1 + this.getRandom().nextInt(5));
                     continue block17;
                 }
                 case 9: {
                     is = this.dropItemRand((Item)ChaosPersists.RubyBody, 1);
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.ALL_DAMAGE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROTECTION), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.BLAST_PROTECTION, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.BLAST_PROTECTION), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.FIRE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FIRE_PROTECTION), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.PROJECTILE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROJECTILE_PROTECTION), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(2) != 1) continue block17;
-                    is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                     continue block17;
                 }
                 case 10: {
                     is = this.dropItemRand((Item)ChaosPersists.RubyLegs, 1);
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.ALL_DAMAGE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROTECTION), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.BLAST_PROTECTION, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.BLAST_PROTECTION), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.FIRE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FIRE_PROTECTION), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.PROJECTILE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROJECTILE_PROTECTION), 1 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(2) != 1) continue block17;
-                    is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                     continue block17;
                 }
                 case 11: {
                     is = this.dropItemRand((Item)ChaosPersists.RubyBoots, 1);
                     if (this.getRandom().nextInt(6) == 1) {
-                        is.enchant(Enchantments.FALL_PROTECTION, 5 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FEATHER_FALLING), 5 + this.getRandom().nextInt(5));
                     }
                     if (this.getRandom().nextInt(2) != 1) continue block17;
-                    is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                    is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                     continue block17;
                 }
                 case 12: 
@@ -1039,11 +1045,11 @@ public class Cephadrome extends PathfinderMob implements ChaosFlyingMount {
 
     @OnlyIn(Dist.CLIENT)
     @Override
-    public void lerpTo(double par1, double par3, double par5, float par7, float par8, int par9, boolean p_19902_) {
+    public void lerpTo(double par1, double par3, double par5, float par7, float par8, int par9) {
         if (this.isControlledByLocalInstance()) {
             return;
         }
-        super.lerpTo(par1, par3, par5, par7, par8, par9, p_19902_);
+        super.lerpTo(par1, par3, par5, par7, par8, par9);
     }
 
     @Override

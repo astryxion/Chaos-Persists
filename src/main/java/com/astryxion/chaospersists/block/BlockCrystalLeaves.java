@@ -18,7 +18,7 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
-import net.minecraftforge.common.IForgeShearable;
+import net.neoforged.neoforge.common.IShearable;
 
 /**
  * Crystal leaves use 1.7 OreSpawn decay: only fall if no nearby log can sustain them.
@@ -26,10 +26,10 @@ import net.minecraftforge.common.IForgeShearable;
  * {@code setBlockFast} and trunks were not in {@code #minecraft:logs}, so every leaf
  * sat at distance 7 and dropped as items.
  */
-public class BlockCrystalLeaves extends LeavesBlock implements IForgeShearable {
+public class BlockCrystalLeaves extends LeavesBlock implements IShearable {
 
     public BlockCrystalLeaves() {
-        super(Block.Properties.copy(Blocks.OAK_LEAVES).sound(SoundType.GRASS).randomTicks());
+        super(Block.Properties.ofFullCopy(Blocks.OAK_LEAVES).sound(SoundType.GRASS).randomTicks());
     }
 
     @Override
@@ -104,7 +104,7 @@ public class BlockCrystalLeaves extends LeavesBlock implements IForgeShearable {
     }
 
     @Override
-    public List<ItemStack> onSheared(net.minecraft.world.entity.player.Player player, ItemStack item, Level level, BlockPos pos, int fortune) {
+    public List<ItemStack> onSheared(net.minecraft.world.entity.player.Player player, ItemStack item, Level level, BlockPos pos) {
         return Collections.singletonList(new ItemStack(this));
     }
 

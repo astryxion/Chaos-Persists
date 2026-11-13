@@ -1,5 +1,6 @@
 package com.astryxion.chaospersists.compat.artifacts;
 
+import net.neoforged.fml.common.EventBusSubscriber;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import javax.annotation.Nullable;
 import net.minecraft.resources.ResourceLocation;
@@ -10,12 +11,11 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.neoforged.bus.api.EventPriority;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModList;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 /**
  * Artifacts Everlasting Beef / Eternal Steak return the same stack from {@code finishUsingItem}
@@ -27,7 +27,7 @@ import net.minecraftforge.registries.ForgeRegistries;
  * interact task finishes; if the stack was consumed, put it back and apply the Artifacts
  * cooldown.
  */
-@Mod.EventBusSubscriber(modid = ChaosPersists.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(modid = ChaosPersists.MODID, bus = EventBusSubscriber.Bus.GAME)
 public final class ArtifactsEternalFoodCompat {
 
     public static final String ARTIFACTS_MODID = "artifacts";
@@ -55,7 +55,7 @@ public final class ArtifactsEternalFoodCompat {
         if (!isPresent() || stack == null || stack.isEmpty()) {
             return false;
         }
-        ResourceLocation id = ForgeRegistries.ITEMS.getKey(stack.getItem());
+        ResourceLocation id = BuiltInRegistries.ITEM.getKey(stack.getItem());
         return id != null
                 && ARTIFACTS_MODID.equals(id.getNamespace())
                 && (EVERLASTING_BEEF.equals(id.getPath()) || ETERNAL_STEAK.equals(id.getPath()));
@@ -89,8 +89,13 @@ public final class ArtifactsEternalFoodCompat {
             return;
         }
         if (player.getCooldowns().isOnCooldown(stack.getItem())) {
-            event.setCanceled(true);
-            event.setCancellationResult(InteractionResult.SUCCESS);
+            if (event instanceof PlayerInteractEvent.EntityInteract interact) {
+                interact.setCanceled(true);
+                interact.setCancellationResult(InteractionResult.SUCCESS);
+            } else if (event instanceof PlayerInteractEvent.EntityInteractSpecific interact) {
+                interact.setCanceled(true);
+                interact.setCancellationResult(InteractionResult.SUCCESS);
+            }
             return;
         }
         if (!(event.getLevel() instanceof ServerLevel serverLevel)) {
@@ -98,7 +103,6 @@ public final class ArtifactsEternalFoodCompat {
         }
         ItemStack saved = stack.copy();
         InteractionHand hand = event.getHand();
-        // EntityInteract fires before mobInteract shrinks; restore after this packet finishes.
         serverLevel.getServer().execute(() -> restoreIfConsumed(player, hand, saved));
     }
 

@@ -8,7 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderCaveFisher extends MobRenderer<CaveFisher, ModelCaveFisher> {
     private static final ResourceLocation TEXTURE =
-            new ResourceLocation("chaospersists", "textures/entity/cavefisher.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/cavefisher.png");
     private final float scale;
 
     public RenderCaveFisher(

@@ -149,26 +149,23 @@ public class ModelFairy extends EntityModel<Fairy> {
             VertexConsumer buffer,
             int packedLight,
             int packedOverlay,
-            float red,
-            float green,
-            float blue,
-            float alpha) {
-        this.lwing2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.lwing1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.rwing2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.rwing1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+            int color) {
+        this.lwing2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.lwing1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.rwing2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.rwing1.render(poseStack, buffer, packedLight, packedOverlay, color);
         int bodyLight =
                 this.animatingEntity != null && this.animatingEntity.getBlink() > 1.0f ? 15728880 : packedLight;
-        this.head.render(poseStack, buffer, bodyLight, packedOverlay, red, green, blue, alpha);
-        this.chest.render(poseStack, buffer, bodyLight, packedOverlay, red, green, blue, alpha);
-        this.waist.render(poseStack, buffer, bodyLight, packedOverlay, red, green, blue, alpha);
-        this.hips.render(poseStack, buffer, bodyLight, packedOverlay, red, green, blue, alpha);
-        this.lleg1.render(poseStack, buffer, bodyLight, packedOverlay, red, green, blue, alpha);
-        this.lleg2.render(poseStack, buffer, bodyLight, packedOverlay, red, green, blue, alpha);
-        this.rleg.render(poseStack, buffer, bodyLight, packedOverlay, red, green, blue, alpha);
-        this.b1.render(poseStack, buffer, bodyLight, packedOverlay, red, green, blue, alpha);
-        this.b2.render(poseStack, buffer, bodyLight, packedOverlay, red, green, blue, alpha);
-        this.larm.render(poseStack, buffer, bodyLight, packedOverlay, red, green, blue, alpha);
-        this.rarm.render(poseStack, buffer, bodyLight, packedOverlay, red, green, blue, alpha);
+        this.head.render(poseStack, buffer, bodyLight, packedOverlay, color);
+        this.chest.render(poseStack, buffer, bodyLight, packedOverlay, color);
+        this.waist.render(poseStack, buffer, bodyLight, packedOverlay, color);
+        this.hips.render(poseStack, buffer, bodyLight, packedOverlay, color);
+        this.lleg1.render(poseStack, buffer, bodyLight, packedOverlay, color);
+        this.lleg2.render(poseStack, buffer, bodyLight, packedOverlay, color);
+        this.rleg.render(poseStack, buffer, bodyLight, packedOverlay, color);
+        this.b1.render(poseStack, buffer, bodyLight, packedOverlay, color);
+        this.b2.render(poseStack, buffer, bodyLight, packedOverlay, color);
+        this.larm.render(poseStack, buffer, bodyLight, packedOverlay, color);
+        this.rarm.render(poseStack, buffer, bodyLight, packedOverlay, color);
     }
 }

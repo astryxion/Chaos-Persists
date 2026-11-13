@@ -1,8 +1,8 @@
 package com.astryxion.chaospersists.item;
 
 import com.astryxion.chaospersists.compat.illageandspillage.IllageAndSpillageExecuteCompat;
-import com.astryxion.chaospersists.compat.mutantmonsters.MutantMonstersExecuteCompat;
 import com.astryxion.chaospersists.util.MyUtils;
+import com.astryxion.chaospersists.compat.mutantmonsters.MutantMonstersExecuteCompat;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.Entity;
@@ -84,7 +84,7 @@ public class ThunderBolt extends ThrowableProjectile {
                             this.random.nextGaussian(),
                             this.random.nextGaussian());
         }
-        this.playSound(SoundEvents.GENERIC_EXPLODE, 0.5f, 1.0f + (this.random.nextFloat() - this.random.nextFloat()) * 0.5f);
+        this.playSound(SoundEvents.GENERIC_EXPLODE.value(), 0.5f, 1.0f + (this.random.nextFloat() - this.random.nextFloat()) * 0.5f);
         if (!this.level().isClientSide) {
             this.level()
                     .explode(
@@ -143,5 +143,5 @@ public class ThunderBolt extends ThrowableProjectile {
     }
 
     @Override
-    protected void defineSynchedData() {}
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {}
 }

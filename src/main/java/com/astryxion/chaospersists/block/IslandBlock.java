@@ -35,7 +35,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 public class IslandBlock extends Block {
     private static final float HALF = 0.375f;
@@ -143,13 +143,13 @@ public class IslandBlock extends Block {
     public static Entity spawnCreature(Level par0World, String par1, double par2, double par4, double par6) {
         ResourceLocation rl;
         if ("Island".equals(par1)) {
-            rl = new ResourceLocation("chaospersists", "island");
+            rl = ResourceLocation.fromNamespaceAndPath("chaospersists", "island");
         } else if ("IslandToo".equals(par1)) {
-            rl = new ResourceLocation("chaospersists", "island_too");
+            rl = ResourceLocation.fromNamespaceAndPath("chaospersists", "island_too");
         } else {
-            rl = new ResourceLocation("chaospersists", par1.toLowerCase(Locale.ROOT));
+            rl = ResourceLocation.fromNamespaceAndPath("chaospersists", par1.toLowerCase(Locale.ROOT));
         }
-        EntityType<?> type = ForgeRegistries.ENTITY_TYPES.getValue(rl);
+        EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.get(rl);
         if (type == null) {
             return null;
         }
@@ -175,14 +175,14 @@ public class IslandBlock extends Block {
 
         @Override
         public void onCraftedBy(ItemStack stack, Level world, Player player) {
-            stack.enchant(Enchantments.BLOCK_FORTUNE, 2);
+            stack.enchant(world.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FORTUNE), 2);
         }
 
         @Override
         public void inventoryTick(ItemStack stack, Level world, net.minecraft.world.entity.Entity entity, int slot, boolean selected) {
-            int lvl = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.BLOCK_FORTUNE, stack);
+            int lvl = com.astryxion.chaospersists.util.ChaosEnchantments.level(Enchantments.FORTUNE, stack);
             if (lvl <= 0) {
-                stack.enchant(Enchantments.BLOCK_FORTUNE, 2);
+                stack.enchant(world.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FORTUNE), 2);
             }
         }
 

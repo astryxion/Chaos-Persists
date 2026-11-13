@@ -9,7 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderFrog extends MobRenderer<Frog, ModelFrog> {
     private static final ResourceLocation TEXTURE =
-            new ResourceLocation("chaospersists", "textures/entity/frogtexture.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/frogtexture.png");
     private final float scale;
 
     public RenderFrog(EntityRendererProvider.Context context, ModelFrog model, float shadow, float scale) {

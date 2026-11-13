@@ -33,23 +33,23 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 public class Cockateil extends Animal {
     private static final EntityDataAccessor<Integer> BIRD_TYPE =
             SynchedEntityData.defineId(Cockateil.class, EntityDataSerializers.INT);
     private static final ResourceLocation TEXTURE1 =
-            new ResourceLocation("chaospersists", "textures/entity/bird1.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/bird1.png");
     private static final ResourceLocation TEXTURE2 =
-            new ResourceLocation("chaospersists", "textures/entity/bird2.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/bird2.png");
     private static final ResourceLocation TEXTURE3 =
-            new ResourceLocation("chaospersists", "textures/entity/bird3.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/bird3.png");
     private static final ResourceLocation TEXTURE4 =
-            new ResourceLocation("chaospersists", "textures/entity/bird4.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/bird4.png");
     private static final ResourceLocation TEXTURE5 =
-            new ResourceLocation("chaospersists", "textures/entity/bird5.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/bird5.png");
     private static final ResourceLocation TEXTURE6 =
-            new ResourceLocation("chaospersists", "textures/entity/bird6.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/bird6.png");
 
     private BlockPos currentFlightTarget = null;
     public int birdtype;
@@ -73,10 +73,10 @@ public class Cockateil extends Animal {
     }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
         this.birdtype = this.getRandom().nextInt(6);
-        this.entityData.define(BIRD_TYPE, this.birdtype);
+        builder.define(BIRD_TYPE, this.birdtype);
     }
 
     @Override
@@ -298,13 +298,13 @@ public class Cockateil extends Animal {
     }
 
     @Override
-    protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+    protected void dropCustomDeathLoot(net.minecraft.server.level.ServerLevel serverLevel, DamageSource source, boolean recentlyHit) {
         if (DatapackLoot.useEntityTable(this)) {
             return;
         }
         this.birdtype = this.getBirdType();
         if (this.birdtype == 5 && this.killedByPlayer && this.getRandom().nextInt(3) == 1) {
-            Item ruby = ForgeRegistries.ITEMS.getValue(new ResourceLocation("chaospersists", "ruby"));
+            Item ruby = BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath("chaospersists", "ruby"));
             if (ruby != null) {
                 this.spawnAtLocation(ruby);
                 return;

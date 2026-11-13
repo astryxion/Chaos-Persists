@@ -39,18 +39,18 @@ public class UltimateArrow extends AbstractArrow {
     }
 
     public UltimateArrow(Level level, LivingEntity shooter, float velocity) {
-        super(ChaosPersists.ENTITY_TYPE_ULTIMATE_ARROW.get(), shooter, level);
+        super(ChaosPersists.ENTITY_TYPE_ULTIMATE_ARROW.get(), shooter, level, new ItemStack(Items.ARROW), null);
         this.shootFromRotation(shooter, shooter.getXRot(), shooter.getYRot(), 0.0F, velocity, 1.0F);
     }
 
     public UltimateArrow(
             Level level, LivingEntity shooter, LivingEntity target, float velocity, float inaccuracy) {
-        super(ChaosPersists.ENTITY_TYPE_ULTIMATE_ARROW.get(), shooter, level);
+        super(ChaosPersists.ENTITY_TYPE_ULTIMATE_ARROW.get(), shooter, level, new ItemStack(Items.ARROW), null);
         this.shootFromRotation(shooter, shooter.getXRot(), shooter.getYRot(), 0.0F, velocity, inaccuracy);
     }
 
     @Override
-    protected ItemStack getPickupItem() {
+    protected ItemStack getDefaultPickupItem() {
         return new ItemStack(Items.ARROW);
     }
 
@@ -136,7 +136,7 @@ public class UltimateArrow extends AbstractArrow {
                         : this.damageSources().arrow(this, this.getOwner());
 
         if (this.isOnFire()) {
-            hit.setSecondsOnFire(5);
+            hit.igniteForSeconds(5);
         }
 
         if (hit.hurt(source, damage)) {

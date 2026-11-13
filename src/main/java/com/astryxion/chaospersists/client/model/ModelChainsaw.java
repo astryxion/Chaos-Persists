@@ -71,13 +71,13 @@ public class ModelChainsaw {
         if ((double) this.blade2.xRot > 6.283185307179586) {
             this.blade2.xRot = 0.0f;
         }
-        this.engine.render(poseStack, buffer, packedLight, packedOverlay, 1.0f, 1.0f, 1.0f, 1.0f);
-        this.handle1.render(poseStack, buffer, packedLight, packedOverlay, 1.0f, 1.0f, 1.0f, 1.0f);
-        this.handle2.render(poseStack, buffer, packedLight, packedOverlay, 1.0f, 1.0f, 1.0f, 1.0f);
-        this.handle3.render(poseStack, buffer, packedLight, packedOverlay, 1.0f, 1.0f, 1.0f, 1.0f);
-        this.muffler.render(poseStack, buffer, packedLight, packedOverlay, 1.0f, 1.0f, 1.0f, 1.0f);
-        this.blade1.render(poseStack, buffer, packedLight, packedOverlay, 1.0f, 1.0f, 1.0f, 1.0f);
-        this.blade2.render(poseStack, buffer, packedLight, packedOverlay, 1.0f, 1.0f, 1.0f, 1.0f);
+        this.engine.render(poseStack, buffer, packedLight, packedOverlay, net.minecraft.util.FastColor.ARGB32.colorFromFloat(1.0f, 1.0f, 1.0f, 1.0f));
+        this.handle1.render(poseStack, buffer, packedLight, packedOverlay, net.minecraft.util.FastColor.ARGB32.colorFromFloat(1.0f, 1.0f, 1.0f, 1.0f));
+        this.handle2.render(poseStack, buffer, packedLight, packedOverlay, net.minecraft.util.FastColor.ARGB32.colorFromFloat(1.0f, 1.0f, 1.0f, 1.0f));
+        this.handle3.render(poseStack, buffer, packedLight, packedOverlay, net.minecraft.util.FastColor.ARGB32.colorFromFloat(1.0f, 1.0f, 1.0f, 1.0f));
+        this.muffler.render(poseStack, buffer, packedLight, packedOverlay, net.minecraft.util.FastColor.ARGB32.colorFromFloat(1.0f, 1.0f, 1.0f, 1.0f));
+        this.blade1.render(poseStack, buffer, packedLight, packedOverlay, net.minecraft.util.FastColor.ARGB32.colorFromFloat(1.0f, 1.0f, 1.0f, 1.0f));
+        this.blade2.render(poseStack, buffer, packedLight, packedOverlay, net.minecraft.util.FastColor.ARGB32.colorFromFloat(1.0f, 1.0f, 1.0f, 1.0f));
     }
 
     private void renderTooth(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay) {
@@ -98,7 +98,7 @@ public class ModelChainsaw {
                 this.toothdir = 0;
             }
         }
-                this.tooth.render(poseStack, buffer, packedLight, packedOverlay, 1.0f, 1.0f, 1.0f, 1.0f);
+                this.tooth.render(poseStack, buffer, packedLight, packedOverlay, net.minecraft.util.FastColor.ARGB32.colorFromFloat(1.0f, 1.0f, 1.0f, 1.0f));
     }
 
     private void renderTooth1(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay) {
@@ -119,7 +119,7 @@ public class ModelChainsaw {
                 this.toothdir1 = 0;
             }
         }
-                this.tooth.render(poseStack, buffer, packedLight, packedOverlay, 1.0f, 1.0f, 1.0f, 1.0f);
+                this.tooth.render(poseStack, buffer, packedLight, packedOverlay, net.minecraft.util.FastColor.ARGB32.colorFromFloat(1.0f, 1.0f, 1.0f, 1.0f));
     }
 
     private void renderTooth2(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay) {
@@ -140,7 +140,7 @@ public class ModelChainsaw {
                 this.toothdir2 = 0;
             }
         }
-                this.tooth.render(poseStack, buffer, packedLight, packedOverlay, 1.0f, 1.0f, 1.0f, 1.0f);
+                this.tooth.render(poseStack, buffer, packedLight, packedOverlay, net.minecraft.util.FastColor.ARGB32.colorFromFloat(1.0f, 1.0f, 1.0f, 1.0f));
     }
 
     private void renderTooth3(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay) {
@@ -161,7 +161,7 @@ public class ModelChainsaw {
                 this.toothdir3 = 0;
             }
         }
-                this.tooth.render(poseStack, buffer, packedLight, packedOverlay, 1.0f, 1.0f, 1.0f, 1.0f);
+                this.tooth.render(poseStack, buffer, packedLight, packedOverlay, net.minecraft.util.FastColor.ARGB32.colorFromFloat(1.0f, 1.0f, 1.0f, 1.0f));
     }
 
     private void renderTooth4(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay) {
@@ -182,7 +182,7 @@ public class ModelChainsaw {
                 this.toothdir4 = 0;
             }
         }
-                this.tooth.render(poseStack, buffer, packedLight, packedOverlay, 1.0f, 1.0f, 1.0f, 1.0f);
+                this.tooth.render(poseStack, buffer, packedLight, packedOverlay, net.minecraft.util.FastColor.ARGB32.colorFromFloat(1.0f, 1.0f, 1.0f, 1.0f));
     }
 
     private void renderTooth5(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay) {
@@ -203,6 +203,6 @@ public class ModelChainsaw {
                 this.toothdir5 = 0;
             }
         }
-        this.tooth.render(poseStack, buffer, packedLight, packedOverlay, 1.0f, 1.0f, 1.0f, 1.0f);
+        this.tooth.render(poseStack, buffer, packedLight, packedOverlay, net.minecraft.util.FastColor.ARGB32.colorFromFloat(1.0f, 1.0f, 1.0f, 1.0f));
     }
 }

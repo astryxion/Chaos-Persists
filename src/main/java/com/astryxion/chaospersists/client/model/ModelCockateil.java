@@ -147,25 +147,22 @@ public class ModelCockateil extends EntityModel<Cockateil> {
             VertexConsumer buffer,
             int packedLight,
             int packedOverlay,
-            float red,
-            float green,
-            float blue,
-            float alpha) {
-        this.body.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.head.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.beak.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.lowerBeak.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.feather2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.feather1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.feather3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.tailfeather1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.rwing1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.lwing1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.leg.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.otherleg.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.lwing2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.rwing2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.tailfeather2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.tailfeather3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+            int color) {
+        this.body.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.head.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.beak.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.lowerBeak.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.feather2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.feather1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.feather3.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.tailfeather1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.rwing1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.lwing1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.leg.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.otherleg.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.lwing2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.rwing2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.tailfeather2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.tailfeather3.render(poseStack, buffer, packedLight, packedOverlay, color);
     }
 }

@@ -56,9 +56,8 @@ abstract class ChaosChunkGeneratorWrapper extends ChunkGenerator {
     }
 
     @Override
-    public CompletableFuture<ChunkAccess> fillFromNoise(
-            Executor executor, Blender blender, RandomState random, StructureManager structureManager, ChunkAccess chunkAccess) {
-        return this.delegate.fillFromNoise(executor, blender, random, structureManager, chunkAccess);
+    public CompletableFuture<ChunkAccess> fillFromNoise(Blender blender, RandomState random, StructureManager structureManager, ChunkAccess chunkAccess) {
+        return this.delegate.fillFromNoise(blender, random, structureManager, chunkAccess);
     }
 
     @Override

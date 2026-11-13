@@ -22,21 +22,21 @@ public class UltimateBow extends Item {
 
     @Override
     public void onCraftedBy(ItemStack stack, Level level, Player player) {
-        applyEnchantments(stack);
+        applyEnchantments(stack, level);
     }
 
     @Override
     public void onUseTick(Level level, LivingEntity entity, ItemStack stack, int count) {
-        if (EnchantmentHelper.getItemEnchantmentLevel(Enchantments.INFINITY_ARROWS, stack) <= 0) {
-            applyEnchantments(stack);
+        if (com.astryxion.chaospersists.util.ChaosEnchantments.level(Enchantments.INFINITY, stack) <= 0) {
+            applyEnchantments(stack, level);
         }
     }
 
-    private void applyEnchantments(ItemStack stack) {
-        stack.enchant(Enchantments.POWER_ARROWS, 5);
-        stack.enchant(Enchantments.FLAMING_ARROWS, 3);
-        stack.enchant(Enchantments.PUNCH_ARROWS, 2);
-        stack.enchant(Enchantments.INFINITY_ARROWS, 1);
+    private void applyEnchantments(ItemStack stack, Level level) {
+        stack.enchant(level.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.POWER), 5);
+        stack.enchant(level.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FLAME), 3);
+        stack.enchant(level.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PUNCH), 2);
+        stack.enchant(level.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.INFINITY), 1);
     }
 
     @Override
@@ -58,12 +58,12 @@ public class UltimateBow extends Item {
                 arrow.setCritArrow(true);
             }
 
-            int punchLevel = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.PUNCH_ARROWS, stack);
+            int punchLevel = com.astryxion.chaospersists.util.ChaosEnchantments.level(Enchantments.PUNCH, stack);
             if (punchLevel > 0) {
                 arrow.setKnockbackStrength(punchLevel);
             }
-            if (EnchantmentHelper.getItemEnchantmentLevel(Enchantments.FLAMING_ARROWS, stack) > 0) {
-                arrow.setSecondsOnFire(100);
+            if (com.astryxion.chaospersists.util.ChaosEnchantments.level(Enchantments.FLAME, stack) > 0) {
+                arrow.igniteForSeconds(100);
             }
 
             arrow.pickup = AbstractArrow.Pickup.CREATIVE_ONLY;
@@ -79,7 +79,7 @@ public class UltimateBow extends Item {
                 SoundSource.PLAYERS,
                 1.0F,
                 1.0F / (level.getRandom().nextFloat() * 0.4F + 1.2F) + 0.5F);
-        stack.hurtAndBreak(1, player, p -> p.broadcastBreakEvent(player.getUsedItemHand()));
+        stack.hurtAndBreak(1, player, net.minecraft.world.entity.LivingEntity.getSlotForHand(player.getUsedItemHand()));
     }
 
     @Override
@@ -88,7 +88,7 @@ public class UltimateBow extends Item {
     }
 
     @Override
-    public int getUseDuration(ItemStack stack) {
+    public int getUseDuration(ItemStack stack, net.minecraft.world.entity.LivingEntity user) {
         return 9000;
     }
 

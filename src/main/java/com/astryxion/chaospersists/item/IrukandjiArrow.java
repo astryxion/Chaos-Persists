@@ -40,18 +40,18 @@ public class IrukandjiArrow extends AbstractArrow {
     }
 
     public IrukandjiArrow(Level level, LivingEntity shooter, float velocity) {
-        super(ChaosPersists.ENTITY_TYPE_IRUKANDJI_ARROW.get(), shooter, level);
+        super(ChaosPersists.ENTITY_TYPE_IRUKANDJI_ARROW.get(), shooter, level, ItemStack.EMPTY, null);
         this.shootFromRotation(shooter, shooter.getXRot(), shooter.getYRot(), 0.0F, velocity, 1.0F);
     }
 
     public IrukandjiArrow(
             Level level, LivingEntity shooter, LivingEntity target, float velocity, float inaccuracy) {
-        super(ChaosPersists.ENTITY_TYPE_IRUKANDJI_ARROW.get(), shooter, level);
+        super(ChaosPersists.ENTITY_TYPE_IRUKANDJI_ARROW.get(), shooter, level, ItemStack.EMPTY, null);
         this.shootFromRotation(shooter, shooter.getXRot(), shooter.getYRot(), 0.0F, velocity, inaccuracy);
     }
 
     @Override
-    protected ItemStack getPickupItem() {
+    protected ItemStack getDefaultPickupItem() {
         return new ItemStack((Item) (Object) ChaosPersists.MyIrukandjiArrow);
     }
 
@@ -133,7 +133,7 @@ public class IrukandjiArrow extends AbstractArrow {
                         : this.damageSources().arrow(this, this.getOwner());
 
         if (this.isOnFire()) {
-            target.setSecondsOnFire(5);
+            target.igniteForSeconds(5);
         }
 
         if (target.hurt(source, damage)) {

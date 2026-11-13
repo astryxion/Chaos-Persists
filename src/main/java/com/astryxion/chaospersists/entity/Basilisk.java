@@ -42,7 +42,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantments;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.ServerLevelAccessor;
@@ -79,9 +79,9 @@ public class Basilisk extends Monster {
     }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(ATTACKING, (byte) 0);
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(ATTACKING, (byte) 0);
     }
 
     @Override
@@ -115,7 +115,7 @@ public class Basilisk extends Monster {
     }
 
     @Override
-    protected void jumpFromGround() {
+    public void jumpFromGround() {
         super.jumpFromGround();
         this.setDeltaMovement(
                 this.getDeltaMovement().x,
@@ -152,7 +152,7 @@ public class Basilisk extends Monster {
     }
 
     private static Item chaosItem(String path) {
-        return ForgeRegistries.ITEMS.getValue(new ResourceLocation("chaospersists", path));
+        return BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath("chaospersists", path));
     }
 
     private ItemStack dropItemRand(Item index, int par1) {
@@ -172,7 +172,7 @@ public class Basilisk extends Monster {
     }
 
     @Override
-    protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+    protected void dropCustomDeathLoot(net.minecraft.server.level.ServerLevel serverLevel, DamageSource source, boolean recentlyHit) {
         if (DatapackLoot.useEntityTable(this)) {
             return;
         }
@@ -204,25 +204,25 @@ public class Basilisk extends Monster {
                     is = this.dropItemRand(ChaosPersists.MyEmeraldSword, 1);
                     if (is != null) {
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.SHARPNESS, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.SHARPNESS), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.BANE_OF_ARTHROPODS, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.BANE_OF_ARTHROPODS), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.KNOCKBACK, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.KNOCKBACK), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.MOB_LOOTING, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.LOOTING), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(2) == 1) {
-                            is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.FIRE_ASPECT, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FIRE_ASPECT), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.SHARPNESS, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.SHARPNESS), 1 + this.getRandom().nextInt(5));
                         }
                     }
                     continue block15;
@@ -231,12 +231,12 @@ public class Basilisk extends Monster {
                     is = this.dropItemRand(ChaosPersists.MyEmeraldShovel, 1);
                     if (is != null) {
                         if (this.getRandom().nextInt(2) == 1) {
-                            is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                         }
                         if (this.getRandom().nextInt(6) != 1) {
                             continue block15;
                         }
-                        is.enchant(Enchantments.BLOCK_EFFICIENCY, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.EFFICIENCY), 1 + this.getRandom().nextInt(5));
                     }
                     continue block15;
                 }
@@ -244,15 +244,15 @@ public class Basilisk extends Monster {
                     is = this.dropItemRand(ChaosPersists.MyEmeraldPickaxe, 1);
                     if (is != null) {
                         if (this.getRandom().nextInt(2) == 1) {
-                            is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.BLOCK_EFFICIENCY, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.EFFICIENCY), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(6) != 1) {
                             continue block15;
                         }
-                        is.enchant(Enchantments.BLOCK_FORTUNE, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FORTUNE), 1 + this.getRandom().nextInt(5));
                     }
                     continue block15;
                 }
@@ -260,12 +260,12 @@ public class Basilisk extends Monster {
                     is = this.dropItemRand(ChaosPersists.MyEmeraldAxe, 1);
                     if (is != null) {
                         if (this.getRandom().nextInt(2) == 1) {
-                            is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                         }
                         if (this.getRandom().nextInt(6) != 1) {
                             continue block15;
                         }
-                        is.enchant(Enchantments.BLOCK_EFFICIENCY, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.EFFICIENCY), 1 + this.getRandom().nextInt(5));
                     }
                     continue block15;
                 }
@@ -273,12 +273,12 @@ public class Basilisk extends Monster {
                     is = this.dropItemRand(ChaosPersists.MyEmeraldHoe, 1);
                     if (is != null) {
                         if (this.getRandom().nextInt(2) == 1) {
-                            is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                         }
                         if (this.getRandom().nextInt(6) != 1) {
                             continue block15;
                         }
-                        is.enchant(Enchantments.BLOCK_EFFICIENCY, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.EFFICIENCY), 1 + this.getRandom().nextInt(5));
                     }
                     continue block15;
                 }
@@ -286,30 +286,30 @@ public class Basilisk extends Monster {
                     is = this.dropItemRand(chaosItem("emerald_helmet"), 1);
                     if (is != null) {
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.ALL_DAMAGE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROTECTION), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.BLAST_PROTECTION, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.BLAST_PROTECTION), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.FIRE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FIRE_PROTECTION), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.PROJECTILE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROJECTILE_PROTECTION), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(2) == 1) {
-                            is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.RESPIRATION, 1 + this.getRandom().nextInt(2));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.RESPIRATION), 1 + this.getRandom().nextInt(2));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.AQUA_AFFINITY, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.AQUA_AFFINITY), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(6) != 1) {
                             continue block15;
                         }
-                        is.enchant(Enchantments.SHARPNESS, 1 + this.getRandom().nextInt(5));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.SHARPNESS), 1 + this.getRandom().nextInt(5));
                     }
                     continue block15;
                 }
@@ -317,21 +317,21 @@ public class Basilisk extends Monster {
                     is = this.dropItemRand(chaosItem("emerald_chest"), 1);
                     if (is != null) {
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.ALL_DAMAGE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROTECTION), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.BLAST_PROTECTION, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.BLAST_PROTECTION), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.FIRE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FIRE_PROTECTION), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.PROJECTILE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROJECTILE_PROTECTION), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(2) != 1) {
                             continue block15;
                         }
-                        is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                     }
                     continue block15;
                 }
@@ -339,21 +339,21 @@ public class Basilisk extends Monster {
                     is = this.dropItemRand(chaosItem("emerald_leggings"), 1);
                     if (is != null) {
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.ALL_DAMAGE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROTECTION), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.BLAST_PROTECTION, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.BLAST_PROTECTION), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.FIRE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FIRE_PROTECTION), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.PROJECTILE_PROTECTION, 1 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.PROJECTILE_PROTECTION), 1 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(2) != 1) {
                             continue block15;
                         }
-                        is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                     }
                     continue block15;
                 }
@@ -361,12 +361,12 @@ public class Basilisk extends Monster {
                     is = this.dropItemRand(chaosItem("emerald_boots"), 1);
                     if (is != null) {
                         if (this.getRandom().nextInt(6) == 1) {
-                            is.enchant(Enchantments.FALL_PROTECTION, 5 + this.getRandom().nextInt(5));
+                            is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.FEATHER_FALLING), 5 + this.getRandom().nextInt(5));
                         }
                         if (this.getRandom().nextInt(2) != 1) {
                             continue block15;
                         }
-                        is.enchant(Enchantments.UNBREAKING, 2 + this.getRandom().nextInt(4));
+                        is.enchant(this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.UNBREAKING), 2 + this.getRandom().nextInt(4));
                     }
                     break;
                 }
@@ -518,7 +518,7 @@ public class Basilisk extends Monster {
             MobSpawnType spawnType,
             BlockPos pos,
             net.minecraft.util.RandomSource random) {
-        ResourceLocation basiliskId = new ResourceLocation("chaospersists", "basilisk");
+        ResourceLocation basiliskId = ResourceLocation.fromNamespaceAndPath("chaospersists", "basilisk");
         BlockPos.MutableBlockPos checkPos = new BlockPos.MutableBlockPos();
         for (int k = -3; k < 3; ++k) {
             for (int j = -3; j < 3; ++j) {
@@ -564,7 +564,7 @@ public class Basilisk extends Monster {
     @Override
     public boolean checkSpawnRules(LevelAccessor level, MobSpawnType spawnReason) {
         BlockPos pos = this.blockPosition();
-        ResourceLocation basiliskId = new ResourceLocation("chaospersists", "basilisk");
+        ResourceLocation basiliskId = ResourceLocation.fromNamespaceAndPath("chaospersists", "basilisk");
         BlockPos.MutableBlockPos checkPos = new BlockPos.MutableBlockPos();
         for (int k = -3; k < 3; ++k) {
             for (int j = -3; j < 3; ++j) {

@@ -170,10 +170,7 @@ public class ModelRockBase extends EntityModel<RockBase> {
             VertexConsumer buffer,
             int packedLight,
             int packedOverlay,
-            float red,
-            float green,
-            float blue,
-            float alpha) {
+            int color) {
         RockBase entity = this.animEntity;
         if (entity == null) {
             return;
@@ -183,36 +180,36 @@ public class ModelRockBase extends EntityModel<RockBase> {
             return;
         }
         if (rt == 1) {
-            this.rockSmallShape1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-            this.rockSmallShape2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+            this.rockSmallShape1.render(poseStack, buffer, packedLight, packedOverlay, color);
+            this.rockSmallShape2.render(poseStack, buffer, packedLight, packedOverlay, color);
         } else if (rt == 7) {
-            this.rockSpikeyShape1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-            this.rockSpikeyShape2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-            this.rockSpikeyShape3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+            this.rockSpikeyShape1.render(poseStack, buffer, packedLight, packedOverlay, color);
+            this.rockSpikeyShape2.render(poseStack, buffer, packedLight, packedOverlay, color);
+            this.rockSpikeyShape3.render(poseStack, buffer, packedLight, packedOverlay, color);
         } else if (rt == 8) {
-            this.rockTntShape1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-            this.rockTntShape2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-            this.rockTntShape3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-            this.rockTntShape4.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+            this.rockTntShape1.render(poseStack, buffer, packedLight, packedOverlay, color);
+            this.rockTntShape2.render(poseStack, buffer, packedLight, packedOverlay, color);
+            this.rockTntShape3.render(poseStack, buffer, packedLight, packedOverlay, color);
+            this.rockTntShape4.render(poseStack, buffer, packedLight, packedOverlay, color);
         } else if (rt >= 9 && rt <= 12) {
             float crystalRed = 0.75f;
             float crystalGreen = 0.75f;
             float crystalBlue = 0.75f;
             float crystalAlpha = 0.55f;
-            this.crystalShape1.render(poseStack, buffer, packedLight, packedOverlay, crystalRed, crystalGreen, crystalBlue, crystalAlpha);
-            this.crystalShape2.render(poseStack, buffer, packedLight, packedOverlay, crystalRed, crystalGreen, crystalBlue, crystalAlpha);
-            this.crystalShape3a.render(poseStack, buffer, packedLight, packedOverlay, crystalRed, crystalGreen, crystalBlue, crystalAlpha);
-            this.crystalShape3b.render(poseStack, buffer, packedLight, packedOverlay, crystalRed, crystalGreen, crystalBlue, crystalAlpha);
-            this.crystalShape3c.render(poseStack, buffer, packedLight, packedOverlay, crystalRed, crystalGreen, crystalBlue, crystalAlpha);
-            this.crystalShape3d.render(poseStack, buffer, packedLight, packedOverlay, crystalRed, crystalGreen, crystalBlue, crystalAlpha);
-            this.crystalShape4a.render(poseStack, buffer, packedLight, packedOverlay, crystalRed, crystalGreen, crystalBlue, crystalAlpha);
-            this.crystalShape4b.render(poseStack, buffer, packedLight, packedOverlay, crystalRed, crystalGreen, crystalBlue, crystalAlpha);
-            this.crystalShape4c.render(poseStack, buffer, packedLight, packedOverlay, crystalRed, crystalGreen, crystalBlue, crystalAlpha);
-            this.crystalShape4d.render(poseStack, buffer, packedLight, packedOverlay, crystalRed, crystalGreen, crystalBlue, crystalAlpha);
+            this.crystalShape1.render(poseStack, buffer, packedLight, packedOverlay, net.minecraft.util.FastColor.ARGB32.colorFromFloat(crystalAlpha, crystalRed, crystalGreen, crystalBlue));
+            this.crystalShape2.render(poseStack, buffer, packedLight, packedOverlay, net.minecraft.util.FastColor.ARGB32.colorFromFloat(crystalAlpha, crystalRed, crystalGreen, crystalBlue));
+            this.crystalShape3a.render(poseStack, buffer, packedLight, packedOverlay, net.minecraft.util.FastColor.ARGB32.colorFromFloat(crystalAlpha, crystalRed, crystalGreen, crystalBlue));
+            this.crystalShape3b.render(poseStack, buffer, packedLight, packedOverlay, net.minecraft.util.FastColor.ARGB32.colorFromFloat(crystalAlpha, crystalRed, crystalGreen, crystalBlue));
+            this.crystalShape3c.render(poseStack, buffer, packedLight, packedOverlay, net.minecraft.util.FastColor.ARGB32.colorFromFloat(crystalAlpha, crystalRed, crystalGreen, crystalBlue));
+            this.crystalShape3d.render(poseStack, buffer, packedLight, packedOverlay, net.minecraft.util.FastColor.ARGB32.colorFromFloat(crystalAlpha, crystalRed, crystalGreen, crystalBlue));
+            this.crystalShape4a.render(poseStack, buffer, packedLight, packedOverlay, net.minecraft.util.FastColor.ARGB32.colorFromFloat(crystalAlpha, crystalRed, crystalGreen, crystalBlue));
+            this.crystalShape4b.render(poseStack, buffer, packedLight, packedOverlay, net.minecraft.util.FastColor.ARGB32.colorFromFloat(crystalAlpha, crystalRed, crystalGreen, crystalBlue));
+            this.crystalShape4c.render(poseStack, buffer, packedLight, packedOverlay, net.minecraft.util.FastColor.ARGB32.colorFromFloat(crystalAlpha, crystalRed, crystalGreen, crystalBlue));
+            this.crystalShape4d.render(poseStack, buffer, packedLight, packedOverlay, net.minecraft.util.FastColor.ARGB32.colorFromFloat(crystalAlpha, crystalRed, crystalGreen, crystalBlue));
         } else {
-            this.rockShape1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-            this.rockShape2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-            this.rockShape3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+            this.rockShape1.render(poseStack, buffer, packedLight, packedOverlay, color);
+            this.rockShape2.render(poseStack, buffer, packedLight, packedOverlay, color);
+            this.rockShape3.render(poseStack, buffer, packedLight, packedOverlay, color);
         }
     }
 }

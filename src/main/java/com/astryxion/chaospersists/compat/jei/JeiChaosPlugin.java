@@ -27,7 +27,7 @@ public class JeiChaosPlugin implements IModPlugin {
 
   @Override
   public ResourceLocation getPluginUid() {
-    return new ResourceLocation(ChaosPersists.MODID, "jei");
+    return ResourceLocation.fromNamespaceAndPath(ChaosPersists.MODID, "jei");
   }
 
   @Override

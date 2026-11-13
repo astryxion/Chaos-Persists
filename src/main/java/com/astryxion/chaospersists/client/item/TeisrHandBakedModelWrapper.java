@@ -16,11 +16,11 @@ import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.client.model.data.ModelData;
+import net.neoforged.neoforge.client.model.data.ModelData;
 
 /**
  * Marks an item as using a custom in-hand renderer and records per-item {@link BlockEntityWithoutLevelRenderer}
- * instances for {@link net.minecraftforge.client.extensions.common.IClientItemExtensions}.
+ * instances for {@link net.neoforged.neoforge.client.extensions.common.IClientItemExtensions}.
  */
 public class TeisrHandBakedModelWrapper implements BakedModel {
 

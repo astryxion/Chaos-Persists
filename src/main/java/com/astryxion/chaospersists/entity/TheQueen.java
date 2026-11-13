@@ -58,9 +58,9 @@ import net.minecraft.world.level.block.DoublePlantBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 public class TheQueen extends Monster {
     private static final EntityDataAccessor<Integer> ATTACKING =
@@ -116,17 +116,17 @@ public class TheQueen extends Monster {
     }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(ATTACKING, 0);
-        this.entityData.define(PLAY_NICELY, ChaosPersists.PlayNicely);
-        this.entityData.define(MOOD, this.mood);
-        this.entityData.define(POWER, this.attack_level);
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(ATTACKING, 0);
+        builder.define(PLAY_NICELY, ChaosPersists.PlayNicely);
+        builder.define(MOOD, this.mood);
+        builder.define(POWER, this.attack_level);
     }
 
     @Override
-    public void onAddedToWorld() {
-        super.onAddedToWorld();
+    public void onAddedToLevel() {
+        super.onAddedToLevel();
         this.refreshDimensions();
         MyUtils.ensureBossMaxHealth(this, this.mygetMaxHealth());
         if (!this.level().isClientSide && this.tickCount <= 1) {
@@ -135,7 +135,7 @@ public class TheQueen extends Monster {
     }
 
     @Override
-    public EntityDimensions getDimensions(Pose pose) {
+    public EntityDimensions getDefaultDimensions(Pose pose) {
         if (ChaosPersists.PlayNicely == 0) {
             return EntityDimensions.scalable(22.0f, 24.0f);
         }
@@ -245,7 +245,7 @@ public class TheQueen extends Monster {
     }
 
     @Override
-    protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+    protected void dropCustomDeathLoot(net.minecraft.server.level.ServerLevel serverLevel, DamageSource source, boolean recentlyHit) {
         if (DatapackLoot.useEntityTable(this)) {
             return;
         }
@@ -348,7 +348,11 @@ public class TheQueen extends Monster {
 
     @Override
     public void remove(Entity.RemovalReason reason) {
-        this.discardAttachedHeads();
+        // Only destroy heads on death/discard. Nested discard during chunk unload corrupts
+        // PersistentEntitySectionManager.chunksToUnload (FastUtil removeIf AIOOBE).
+        if (reason.shouldDestroy()) {
+            this.discardAttachedHeads();
+        }
         super.remove(reason);
     }
 
@@ -1279,9 +1283,8 @@ public class TheQueen extends Monster {
             ServerLevelAccessor level,
             DifficultyInstance difficulty,
             MobSpawnType spawnType,
-            @Nullable SpawnGroupData spawnData,
-            @Nullable CompoundTag dataTag) {
-        spawnData = super.finalizeSpawn(level, difficulty, spawnType, spawnData, dataTag);
+            @Nullable SpawnGroupData spawnData) {
+        spawnData = super.finalizeSpawn(level, difficulty, spawnType, spawnData);
         if (spawnType == MobSpawnType.SPAWNER) {
             this.setBadMood(1);
         }
@@ -1310,7 +1313,7 @@ public class TheQueen extends Monster {
 
     public static Entity spawnCreature(Level level, String par1, double par2, double par4, double par6) {
         ResourceLocation res = resolveSpawnId(par1);
-        EntityType<?> type = ForgeRegistries.ENTITY_TYPES.getValue(res);
+        EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.get(res);
         if (type == null || !(level instanceof ServerLevel serverLevel)) {
             return null;
         }
@@ -1325,16 +1328,16 @@ public class TheQueen extends Monster {
 
     private static ResourceLocation resolveSpawnId(String par1) {
         if (par1.contains(":")) {
-            return new ResourceLocation(par1);
+            return ResourceLocation.parse(par1);
         }
         return switch (par1) {
-            case "QueenHead" -> new ResourceLocation("chaospersists", "queen_head");
-            case "PurplePower" -> new ResourceLocation("chaospersists", "purple_power");
-            case "Butterfly" -> new ResourceLocation("chaospersists", "butterfly");
-            case "Bird" -> new ResourceLocation("chaospersists", "bird");
-            case "The Princess" -> new ResourceLocation("chaospersists", "the_princess");
+            case "QueenHead" -> ResourceLocation.fromNamespaceAndPath("chaospersists", "queen_head");
+            case "PurplePower" -> ResourceLocation.fromNamespaceAndPath("chaospersists", "purple_power");
+            case "Butterfly" -> ResourceLocation.fromNamespaceAndPath("chaospersists", "butterfly");
+            case "Bird" -> ResourceLocation.fromNamespaceAndPath("chaospersists", "bird");
+            case "The Princess" -> ResourceLocation.fromNamespaceAndPath("chaospersists", "the_princess");
             default ->
-                    new ResourceLocation(
+                    ResourceLocation.fromNamespaceAndPath(
                             "chaospersists", par1.toLowerCase(Locale.ROOT).replace(' ', '_'));
         };
     }
@@ -1366,7 +1369,7 @@ public class TheQueen extends Monster {
                             var4.getX(),
                             var4.getY(),
                             var4.getZ(),
-                            SoundEvents.GENERIC_EXPLODE,
+                            SoundEvents.GENERIC_EXPLODE.value(),
                             this.getSoundSource(),
                             0.65f,
                             1.0f + (this.getRandom().nextFloat() - this.getRandom().nextFloat()) * 0.5f);

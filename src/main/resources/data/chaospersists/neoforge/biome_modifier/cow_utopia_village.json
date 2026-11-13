@@ -1,0 +1,13 @@
+{
+  "type": "neoforge:add_spawns",
+  "biomes": [
+    "chaospersists:utopia",
+    "chaospersists:village_dimension"
+  ],
+  "spawners": {
+    "type": "minecraft:cow",
+    "weight": 8,
+    "minCount": 4,
+    "maxCount": 4
+  }
+}

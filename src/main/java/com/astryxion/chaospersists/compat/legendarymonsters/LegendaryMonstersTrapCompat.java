@@ -1,5 +1,6 @@
 package com.astryxion.chaospersists.compat.legendarymonsters;
 
+import net.neoforged.fml.common.EventBusSubscriber;
 import com.astryxion.chaospersists.core.ChaosPersists;
 import com.astryxion.chaospersists.item.ItemChaosArmor;
 import net.minecraft.resources.ResourceKey;
@@ -10,11 +11,11 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.event.entity.living.LivingHurtEvent;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
+import net.neoforged.bus.api.EventPriority;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 /**
  * Possessed Paladin dungeon traps: swinging axes deal {@code legendary_monsters:cut} (13)
@@ -22,7 +23,7 @@ import net.minecraftforge.registries.ForgeRegistries;
  * {@code minecraft:tags/damage_type/bypasses_armor.json}, so vanilla never runs armor.
  * High-tier Chaos Persists armor soaks those hits the same way Cataclysm bypasses do.
  */
-@Mod.EventBusSubscriber(modid = ChaosPersists.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(modid = ChaosPersists.MODID, bus = EventBusSubscriber.Bus.GAME)
 public final class LegendaryMonstersTrapCompat {
 
     private static final EquipmentSlot[] ARMOR_SLOTS = {
@@ -32,7 +33,7 @@ public final class LegendaryMonstersTrapCompat {
     private LegendaryMonstersTrapCompat() {}
 
     @SubscribeEvent(priority = EventPriority.HIGH)
-    public static void onLivingHurt(LivingHurtEvent event) {
+    public static void onLivingHurt(LivingIncomingDamageEvent event) {
         if (!LegendaryMonstersBeamCompat.isPresent()
                 || event.isCanceled()
                 || event.getAmount() <= 0.0f) {
@@ -89,7 +90,7 @@ public final class LegendaryMonstersTrapCompat {
         if (material == 10 || material == 11 || material == 13) {
             return true;
         }
-        ResourceLocation id = ForgeRegistries.ITEMS.getKey(stack.getItem());
+        ResourceLocation id = BuiltInRegistries.ITEM.getKey(stack.getItem());
         return id != null
                 && ChaosPersists.MODID.equals(id.getNamespace())
                 && id.getPath().startsWith("ultimate_");

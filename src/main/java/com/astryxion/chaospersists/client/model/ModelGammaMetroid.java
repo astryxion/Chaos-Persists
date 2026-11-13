@@ -172,27 +172,27 @@ public class ModelGammaMetroid extends EntityModel<GammaMetroid> {
     }
 
     @Override
-    public void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
-        this.Core.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Shell3.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Shell4.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Head.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.BeakUpper.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.BeakLower.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.LeftTusk.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.MiddleTusk.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.RightTusk.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.LeftFrontUpperLeg.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.LeftFrontLowerLeg.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.LeftRearUpperLeg.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.LeftRearLowerLeg.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.RightFrontUpperLeg.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.RightFrontLowerLeg.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.RightRearUpperLeg.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.RightRearLowerLeg.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Bellyinside.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Shell1.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Shell2.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
-        this.Bellyoutside.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+    public void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, int color) {
+        this.Core.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Shell3.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Shell4.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Head.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.BeakUpper.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.BeakLower.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.LeftTusk.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.MiddleTusk.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.RightTusk.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.LeftFrontUpperLeg.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.LeftFrontLowerLeg.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.LeftRearUpperLeg.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.LeftRearLowerLeg.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.RightFrontUpperLeg.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.RightFrontLowerLeg.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.RightRearUpperLeg.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.RightRearLowerLeg.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Bellyinside.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Shell1.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Shell2.render(poseStack, buffer, packedLight, packedOverlay, color);
+        this.Bellyoutside.render(poseStack, buffer, packedLight, packedOverlay, color);
     }
 }

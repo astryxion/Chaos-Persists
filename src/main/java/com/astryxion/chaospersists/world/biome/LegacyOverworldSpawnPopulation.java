@@ -11,7 +11,7 @@ import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.MobSpawnSettings;
-import net.minecraftforge.event.level.LevelEvent;
+import net.neoforged.neoforge.event.level.LevelEvent;
 
 /**
  * Injects {@link EntityRegistry#addSpawn} entries when Minecraft rolls spawns in the Nether/End.

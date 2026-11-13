@@ -89,7 +89,7 @@ public class StepDown extends Item {
                 player.getX(),
                 player.getY(),
                 player.getZ(),
-                SoundEvents.GENERIC_EXPLODE,
+                SoundEvents.GENERIC_EXPLODE.value(),
                 SoundSource.PLAYERS,
                 1.0f,
                 1.5f);

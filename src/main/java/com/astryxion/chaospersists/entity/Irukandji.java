@@ -41,7 +41,7 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 public class Irukandji extends Monster {
     private static final EntityDataAccessor<Byte> ATTACKING =
@@ -74,9 +74,9 @@ public class Irukandji extends Monster {
     }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(ATTACKING, (byte) 0);
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(ATTACKING, (byte) 0);
     }
 
     @Override
@@ -88,8 +88,8 @@ public class Irukandji extends Monster {
     }
 
     @Override
-    public boolean canBreatheUnderwater() {
-        return true;
+    protected int decreaseAirSupply(int airSupply) {
+        return airSupply;
     }
 
     @Override
@@ -132,15 +132,15 @@ public class Irukandji extends Monster {
     }
 
     @Override
-    protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+    protected void dropCustomDeathLoot(net.minecraft.server.level.ServerLevel serverLevel, DamageSource source, boolean recentlyHit) {
         if (DatapackLoot.useEntityTable(this)) {
             return;
         }
         Item drop = ChaosPersists.MyIrukandji;
         if (drop == null) {
             drop =
-                    ForgeRegistries.ITEMS.getValue(
-                            new ResourceLocation("chaospersists", "deadirukandji"));
+                    BuiltInRegistries.ITEM.get(
+                            ResourceLocation.fromNamespaceAndPath("chaospersists", "deadirukandji"));
         }
         if (drop != null) {
             this.spawnAtLocation(new ItemStack(drop));

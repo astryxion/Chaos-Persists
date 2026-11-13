@@ -40,7 +40,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 public class Peacock extends Animal {
     private final float moveSpeed = 0.38f;
@@ -93,10 +93,6 @@ public class Peacock extends Animal {
         }
     }
 
-    @Override
-    public boolean canBreatheUnderwater() {
-        return false;
-    }
 
     public int mygetMaxHealth() {
         return 15;
@@ -126,7 +122,7 @@ public class Peacock extends Animal {
     }
 
     @Override
-    protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+    protected void dropCustomDeathLoot(net.minecraft.server.level.ServerLevel serverLevel, DamageSource source, boolean recentlyHit) {
         if (DatapackLoot.useEntityTable(this)) {
             return;
         }
@@ -245,7 +241,7 @@ public class Peacock extends Animal {
 
     public boolean isBreedingItem(ItemStack par1ItemStack) {
         Item crystal =
-                ForgeRegistries.ITEMS.getValue(new ResourceLocation("chaospersists", "crystalapple"));
+                BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath("chaospersists", "crystalapple"));
         if (crystal == null) {
             crystal = ChaosPersists.MyCrystalApple;
         }

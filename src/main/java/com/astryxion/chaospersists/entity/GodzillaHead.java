@@ -18,8 +18,8 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 public class GodzillaHead extends LivingEntity {
     private int boatPosRotationIncrements;
@@ -39,8 +39,8 @@ public class GodzillaHead extends LivingEntity {
     }
 
     @Override
-    public void onAddedToWorld() {
-        super.onAddedToWorld();
+    public void onAddedToLevel() {
+        super.onAddedToLevel();
         this.refreshDimensions();
     }
 
@@ -57,7 +57,7 @@ public class GodzillaHead extends LivingEntity {
     }
 
     @Override
-    public EntityDimensions getDimensions(Pose pose) {
+    public EntityDimensions getDefaultDimensions(Pose pose) {
         return EntityDimensions.scalable(9.9f, 10.0f);
     }
 
@@ -133,7 +133,7 @@ public class GodzillaHead extends LivingEntity {
 
     @OnlyIn(Dist.CLIENT)
     @Override
-    public void lerpTo(double x, double y, double z, float yRot, float xRot, int steps, boolean teleport) {
+    public void lerpTo(double x, double y, double z, float yRot, float xRot, int steps) {
         this.boatX = x;
         this.boatY = y;
         this.boatZ = z;

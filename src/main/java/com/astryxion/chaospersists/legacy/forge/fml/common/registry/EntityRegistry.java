@@ -15,7 +15,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.biome.MobSpawnSettings;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 /**
  * Legacy 1.12 {@code EntityRegistry.addSpawn} — records spawn entries during {@code ChaosPersists}
@@ -94,7 +94,7 @@ public final class EntityRegistry {
       if (!LegacyBiomeMatcher.matches(biome, entry.legacyBiomeGroup())) {
         continue;
       }
-      EntityType<?> type = ForgeRegistries.ENTITY_TYPES.getValue(entry.entityId());
+      EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.get(entry.entityId());
       if (type == null) {
         continue;
       }
@@ -111,7 +111,7 @@ public final class EntityRegistry {
     }
     for (LegacySpawnEntry entry : LEGACY_SPAWNS) {
       if (LegacyBiomeMatcher.matches(biome, entry.legacyBiomeGroup())) {
-        EntityType<?> type = ForgeRegistries.ENTITY_TYPES.getValue(entry.entityId());
+        EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.get(entry.entityId());
         if (type != null) {
           return true;
         }
@@ -130,7 +130,7 @@ public final class EntityRegistry {
       if (!LegacyBiomeMatcher.matches(biome, entry.legacyBiomeGroup())) {
         continue;
       }
-      EntityType<?> type = ForgeRegistries.ENTITY_TYPES.getValue(entry.entityId());
+      EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.get(entry.entityId());
       if (type == null) {
         continue;
       }
@@ -153,7 +153,7 @@ public final class EntityRegistry {
           || !LegacyBiomeMatcher.matches(biome, entry.legacyBiomeGroup())) {
         continue;
       }
-      EntityType<?> type = ForgeRegistries.ENTITY_TYPES.getValue(entry.entityId());
+      EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.get(entry.entityId());
       if (type == null) {
         continue;
       }
@@ -189,7 +189,7 @@ public final class EntityRegistry {
     if (type == null) {
       return MobCategory.MONSTER;
     }
-    ResourceLocation id = ForgeRegistries.ENTITY_TYPES.getKey(type);
+    ResourceLocation id = BuiltInRegistries.ENTITY_TYPE.getKey(type);
     if (id == null) {
       return type.getCategory();
     }

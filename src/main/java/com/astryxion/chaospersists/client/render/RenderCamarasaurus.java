@@ -8,7 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RenderCamarasaurus extends MobRenderer<Camarasaurus, ModelCamarasaurus> {
     private static final ResourceLocation TEXTURE =
-            new ResourceLocation("chaospersists", "textures/entity/camarasaurus.png");
+            ResourceLocation.fromNamespaceAndPath("chaospersists", "textures/entity/camarasaurus.png");
     private final float scale;
 
     public RenderCamarasaurus(
